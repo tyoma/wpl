@@ -12,31 +12,6 @@ namespace wpl
 {
    namespace mt
    {
-	   struct waitable
-	   {
-		   enum wait_status { satisfied, timeout, abandoned };
-
-		   static const unsigned int infinite = static_cast<unsigned int>(-1);
-
-		   virtual wait_status wait(unsigned int timeout = infinite) volatile = 0;
-	   };
-
-
-	   class event_flag : waitable
-	   {
-		   void *_handle;
-
-	   public:
-		   explicit event_flag(bool raised, bool auto_reset);
-		   ~event_flag();
-
-		   void raise();
-		   void lower();
-
-		   virtual wait_status wait(unsigned int timeout = infinite) volatile;
-	   };
-
-
 	   class thread
 	   {
 		   unsigned int _id;
