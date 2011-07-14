@@ -30,8 +30,41 @@ namespace wpl
 	   };
 
 
+		class tls_base
+		{
+			unsigned int _index;
+
+			tls_base(const tls_base &other);
+			const tls_base &operator =(const tls_base &rhs);
+
+		protected:
+			tls_base();
+			~tls_base();
+
+			void *get() const;
+			void set(const void *value);
+		};
+
+		template <typename T>
+		struct tls : private tls_base
+		{
+			T *get() const;
+			void set(T *value);
+		};
+
+
 	   // thread - inline definitions
 	   inline unsigned int thread::id() const throw()
 	   {	return _id;	}
+
+
+		// tls<T> - inline definitions
+		template <typename T>
+		inline T *tls<T>::get() const
+		{	return reinterpret_cast<T *>(tls_base::get());	}
+
+		template <typename T>
+		inline void tls<T>::set(T *value)
+		{	tls_base::set(value);	}
    }
 }
