@@ -30,6 +30,10 @@ namespace wpl
 						::Sleep(wait_ms);
 					*thread_id = ::GetCurrentThreadId();
 				}
+
+				template <typename T>
+				void get_from_tls(const tls<T> *ptls, T **result)
+				{	*result = ptls->get();	}
 			}
 
 			[TestClass]
@@ -158,6 +162,94 @@ namespace wpl
 					// ASSERT
 					Assert::IsTrue(t1->id() == id_initializer1);
 					Assert::IsTrue(t2->id() == id_initializer2);
+				}
+
+
+				[TestMethod]
+				void TlsValueIsNullAfterInitialization()
+				{
+					// INIT / ACT
+					tls<int> tls_int;
+					tls<const double> tls_dbl;
+
+					// ACT / ASSERT
+					Assert::IsTrue(tls_int.get() == 0);
+					Assert::IsTrue(tls_dbl.get() == 0);
+				}
+
+
+				[TestMethod]
+				void TlsReturnsSameObjectInHostThread()
+				{
+					// INIT
+					int a = 123;
+					double b = 12.3;
+
+					// ACT
+					tls<int> tls_int;
+					tls<const double> tls_dbl;
+
+					tls_int.set(&a);
+					tls_dbl.set(&b);
+
+					int *ptr_a = tls_int.get();
+					const double *ptr_b = tls_dbl.get();
+
+					// ASSERT
+					Assert::IsTrue(ptr_a == &a);
+					Assert::IsTrue(ptr_b == &b);
+				}
+
+
+				[TestMethod]
+				void TlsReturnsNullWhenValueGotFromAnotherThread()
+				{
+					// INIT
+					tls<int> tls_int;
+					tls<const double> tls_dbl;
+					int a = 123;
+					int *ptr_a = &a;
+					double b = 12.3;
+					const double *ptr_b = &b;
+
+					tls_int.set(&a);
+					tls_dbl.set(&b);
+
+					// ACT
+					thread(bind(&get_from_tls<int>, &tls_int, &ptr_a));
+					thread(bind(&get_from_tls<const double>, &tls_dbl, &ptr_b));
+
+					// ASSERT
+					Assert::IsTrue(ptr_a == 0);
+					Assert::IsTrue(ptr_b == 0);
+				}
+
+
+				[TestMethod]
+				void TlsReturnsValueSetInSpecificThread()
+				{
+					// INIT
+					tls<int> tls_int;
+					tls<const double> tls_dbl;
+					int a = 123;
+					int a2 = 234;
+					int *ptr_a = &a;
+					double b = 12.3;
+					double b2 = 23.4;
+					const double *ptr_b = &b;
+
+					tls_int.set(&a);
+					tls_dbl.set(&b);
+
+					// ACT
+					thread::run(bind(&tls<int>::set, &tls_int, &a2), bind(&get_from_tls<int>, &tls_int, &ptr_a));
+					thread::run(bind(&tls<const double>::set, &tls_dbl, &b2), bind(&get_from_tls<const double>, &tls_dbl, &ptr_b));
+
+					// ASSERT
+					Assert::IsTrue(ptr_a == &a2);
+					Assert::IsTrue(ptr_b == &b2);
+					Assert::IsTrue(tls_int.get() == &a);
+					Assert::IsTrue(tls_dbl.get() == &b);
 				}
 			};
 		}
