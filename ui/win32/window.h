@@ -9,6 +9,8 @@
 namespace std
 {
 	using tr1::enable_shared_from_this;
+	using tr1::function;
+	using tr1::shared_ptr;
 }
 
 namespace wpl
@@ -18,8 +20,8 @@ namespace wpl
 		class window_wrapper : public std::enable_shared_from_this<window_wrapper>
 		{
 		public:
-			typedef std::function<LRESULT (UINT, WPARAM, LPARAM)> previous_handler_t;
-			typedef std::function<LRESULT (UINT, WPARAM, LPARAM, const previous_handler_t &)> user_handler_t;
+			typedef std::function<LRESULT (UINT, WPARAM, LPARAM)> original_handler_t;
+			typedef std::function<LRESULT (UINT, WPARAM, LPARAM, const original_handler_t &)> user_handler_t;
 
 		public:
 			static std::shared_ptr<window_wrapper> attach(HWND hwnd);
@@ -32,9 +34,9 @@ namespace wpl
 
 		private:
 			HWND _window;
-			WNDPROC _previous_handler;
-			std::shared_ptr<window_wrapper> _this;
+			WNDPROC _original_handler;
 			std::shared_ptr<user_handler_t> _user_handler;
+			std::shared_ptr<window_wrapper> _this;
 
 			window_wrapper(HWND hwnd);
 

@@ -17,6 +17,7 @@
     <ClCompile Include="window.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
+    <ProjectGuid>{2423F23A-B689-F3F7-A864-A1729EC337C9}</ProjectGuid>
     <RootNamespace>wpl.ui</RootNamespace>
     <Keyword>Win32Proj</Keyword>
   </PropertyGroup>

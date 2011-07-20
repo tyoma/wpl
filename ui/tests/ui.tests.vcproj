@@ -4,6 +4,7 @@
 	Version="9.00"
 	Name="ui.tests"
 	ProjectTypes="{3AC096D0-A1C2-E12C-1390-A8335801FDAB};{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}"
+	ProjectGUID="{685F6A5E-B74A-4ACF-873F-A5A6FB6AC8C9}"
 	RootNamespace="ui.tests"
 	Keyword="Win32Proj"
 	TargetFrameworkVersion="196613"
@@ -170,13 +171,21 @@
 			MinFrameworkVersion="131072"
 		/>
 		<ProjectReference
-			ReferencedProjectIdentifier="{4DB355C8-12F1-4BBD-842C-F8D085B52F8C}"
-			RelativePathToProject=".\mt\src\mt.vcproj"
+			ReferencedProjectIdentifier="{7F59DBD6-D111-41FE-B246-4D21AC5212CB}"
+			RelativePathToProject=".\ui\src\ui.vcproj"
 		/>
 	</References>
 	<Files>
 		<File
-			RelativePath=".\ThreadTests.cpp"
+			RelativePath=".\TestHelpers.cpp"
+			>
+		</File>
+		<File
+			RelativePath=".\TestHelpers.h"
+			>
+		</File>
+		<File
+			RelativePath=".\WindowingTests.cpp"
 			>
 		</File>
 	</Files>

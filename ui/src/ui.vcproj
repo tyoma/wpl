@@ -2,7 +2,8 @@
 <VisualStudioProject
 	ProjectType="Visual C++"
 	Version="9.00"
-	Name="mt"
+	Name="ui"
+	ProjectGUID="{7F59DBD6-D111-41FE-B246-4D21AC5212CB}"
 	RootNamespace="wpl.ui"
 	Keyword="Win32Proj"
 	TargetFrameworkVersion="196613"
@@ -59,6 +60,7 @@
 			/>
 			<Tool
 				Name="VCLibrarianTool"
+				AdditionalDependencies="user32.lib"
 			/>
 			<Tool
 				Name="VCALinkTool"
@@ -123,6 +125,7 @@
 			/>
 			<Tool
 				Name="VCLibrarianTool"
+				AdditionalDependencies="user32.lib"
 			/>
 			<Tool
 				Name="VCALinkTool"
@@ -150,11 +153,7 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
-				RelativePath=".\synchronization.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\thread.cpp"
+				RelativePath=".\window.cpp"
 				>
 			</File>
 		</Filter>
@@ -167,14 +166,14 @@
 				RelativePath="..\concepts.h"
 				>
 			</File>
-			<File
-				RelativePath="..\synchronization.h"
+			<Filter
+				Name="win32"
 				>
-			</File>
-			<File
-				RelativePath="..\thread.h"
-				>
-			</File>
+				<File
+					RelativePath="..\win32\window.h"
+					>
+				</File>
+			</Filter>
 		</Filter>
 	</Files>
 	<Globals>

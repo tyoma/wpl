@@ -177,6 +177,10 @@
 	</References>
 	<Files>
 		<File
+			RelativePath=".\SynchronizationTests.cpp"
+			>
+		</File>
+		<File
 			RelativePath=".\ThreadTests.cpp"
 			>
 		</File>

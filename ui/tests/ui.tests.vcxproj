@@ -12,6 +12,7 @@
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectTypes>{3AC096D0-A1C2-E12C-1390-A8335801FDAB};{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}</ProjectTypes>
+    <ProjectGuid>{685F6A5E-B74A-4ACF-873F-A5A6FB6AC8C9}</ProjectGuid>
     <RootNamespace>ui.tests</RootNamespace>
     <Keyword>Win32Proj</Keyword>
   </PropertyGroup>
@@ -114,7 +115,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\src\ui.vcxproj">
-      <Project>{66ec3643-af84-7463-ee6a-b764bafe9211}</Project>
+      <Project>{2423f23a-b689-f3f7-a864-a1729ec337c9}</Project>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

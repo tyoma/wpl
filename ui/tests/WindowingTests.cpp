@@ -7,7 +7,8 @@
 #include <vector>
 
 using namespace std;
-using namespace placeholders;
+using namespace tr1;
+using namespace tr1::placeholders;
 using namespace System;
 using namespace Microsoft::VisualStudio::TestTools::UnitTesting;
 
