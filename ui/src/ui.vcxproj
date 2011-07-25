@@ -11,6 +11,8 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\concepts.h" />
+    <ClInclude Include="..\listview.h" />
     <ClInclude Include="..\win32\window.h" />
   </ItemGroup>
   <ItemGroup>
