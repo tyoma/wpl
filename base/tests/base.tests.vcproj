@@ -2,9 +2,10 @@
 <VisualStudioProject
 	ProjectType="Visual C++"
 	Version="9.00"
-	Name="ui"
-	ProjectGUID="{7F59DBD6-D111-41FE-B246-4D21AC5212CB}"
-	RootNamespace="wpl.ui"
+	Name="base.tests"
+	ProjectTypes="{3AC096D0-A1C2-E12C-1390-A8335801FDAB};{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}"
+	ProjectGUID="{D5D8229B-9269-4165-BD5E-0DC5504E120B}"
+	RootNamespace="base.tests"
 	Keyword="Win32Proj"
 	TargetFrameworkVersion="196613"
 	>
@@ -18,10 +19,11 @@
 	<Configurations>
 		<Configuration
 			Name="Debug|Win32"
-			OutputDirectory="$(SolutionDir)/_lib/$(ConfigurationName)"
+			OutputDirectory="$(SolutionDir)/_bin/$(ConfigurationName)"
 			IntermediateDirectory="$(SolutionDir)/_obj/$(ConfigurationName)/$(ProjectName)"
-			ConfigurationType="4"
+			ConfigurationType="2"
 			CharacterSet="1"
+			ManagedExtensions="1"
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
@@ -43,9 +45,9 @@
 				Optimization="0"
 				AdditionalIncludeDirectories=".."
 				PreprocessorDefinitions="WIN32;_DEBUG;_LIB"
-				MinimalRebuild="true"
-				BasicRuntimeChecks="3"
-				RuntimeLibrary="1"
+				MinimalRebuild="false"
+				BasicRuntimeChecks="0"
+				RuntimeLibrary="3"
 				WarningLevel="4"
 				DebugInformationFormat="3"
 			/>
@@ -59,11 +61,16 @@
 				Name="VCPreLinkEventTool"
 			/>
 			<Tool
-				Name="VCLibrarianTool"
-				AdditionalDependencies="user32.lib"
+				Name="VCLinkerTool"
+				IgnoreDefaultLibraryNames="libcmtd.lib;libcpmtd.lib"
+				GenerateDebugInformation="true"
+				AssemblyDebug="1"
 			/>
 			<Tool
 				Name="VCALinkTool"
+			/>
+			<Tool
+				Name="VCManifestTool"
 			/>
 			<Tool
 				Name="VCXDCMakeTool"
@@ -75,15 +82,19 @@
 				Name="VCFxCopTool"
 			/>
 			<Tool
+				Name="VCAppVerifierTool"
+			/>
+			<Tool
 				Name="VCPostBuildEventTool"
 			/>
 		</Configuration>
 		<Configuration
 			Name="Release|Win32"
-			OutputDirectory="$(SolutionDir)/_lib/$(ConfigurationName)"
+			OutputDirectory="$(SolutionDir)/_bin/$(ConfigurationName)"
 			IntermediateDirectory="$(SolutionDir)/_obj/$(ConfigurationName)/$(ProjectName)"
-			ConfigurationType="4"
+			ConfigurationType="2"
 			CharacterSet="1"
+			ManagedExtensions="1"
 			WholeProgramOptimization="1"
 			>
 			<Tool
@@ -104,13 +115,10 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="2"
-				InlineFunctionExpansion="2"
 				EnableIntrinsicFunctions="true"
-				FavorSizeOrSpeed="1"
-				OmitFramePointers="true"
 				AdditionalIncludeDirectories=".."
 				PreprocessorDefinitions="WIN32;NDEBUG;_LIB"
-				RuntimeLibrary="0"
+				RuntimeLibrary="2"
 				WarningLevel="4"
 				DebugInformationFormat="3"
 			/>
@@ -124,11 +132,15 @@
 				Name="VCPreLinkEventTool"
 			/>
 			<Tool
-				Name="VCLibrarianTool"
-				AdditionalDependencies="user32.lib"
+				Name="VCLinkerTool"
+				IgnoreDefaultLibraryNames="libcpmt.lib"
+				GenerateDebugInformation="true"
 			/>
 			<Tool
 				Name="VCALinkTool"
+			/>
+			<Tool
+				Name="VCManifestTool"
 			/>
 			<Tool
 				Name="VCXDCMakeTool"
@@ -140,45 +152,38 @@
 				Name="VCFxCopTool"
 			/>
 			<Tool
+				Name="VCAppVerifierTool"
+			/>
+			<Tool
 				Name="VCPostBuildEventTool"
 			/>
 		</Configuration>
 	</Configurations>
 	<References>
+		<AssemblyReference
+			RelativePath="Microsoft.VisualStudio.QualityTools.UnitTestFramework.dll"
+			AssemblyName="Microsoft.VisualStudio.QualityTools.UnitTestFramework, Version=9.0.0.0, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL"
+			MinFrameworkVersion="131072"
+		/>
+		<AssemblyReference
+			RelativePath="System.dll"
+			AssemblyName="System, Version=2.0.0.0, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL"
+			MinFrameworkVersion="131072"
+		/>
+		<ProjectReference
+			ReferencedProjectIdentifier="{4DB355C8-12F1-4BBD-842C-F8D085B52F8C}"
+			RelativePathToProject=".\mt\src\mt.vcproj"
+		/>
 	</References>
 	<Files>
-		<Filter
-			Name="Source Files"
-			Filter="cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx"
-			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
+		<File
+			RelativePath=".\SynchronizationTests.cpp"
 			>
-			<File
-				RelativePath=".\window.cpp"
-				>
-			</File>
-		</Filter>
-		<Filter
-			Name="Library Header Files"
-			Filter="h;hpp;hxx;hm;inl;inc;xsd"
-			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
+		</File>
+		<File
+			RelativePath=".\ThreadTests.cpp"
 			>
-			<File
-				RelativePath="..\concepts.h"
-				>
-			</File>
-			<File
-				RelativePath="..\listview.h"
-				>
-			</File>
-			<Filter
-				Name="win32"
-				>
-				<File
-					RelativePath="..\win32\window.h"
-					>
-				</File>
-			</Filter>
-		</Filter>
+		</File>
 	</Files>
 	<Globals>
 	</Globals>
