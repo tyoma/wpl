@@ -1,0 +1,16 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="SignalTests.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Library Header Files">
+      <UniqueIdentifier>{beceaef0-3457-4002-89b0-519886c6a23a}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\signals.h">
+      <Filter>Library Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>

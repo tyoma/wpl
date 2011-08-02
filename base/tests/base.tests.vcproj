@@ -176,12 +176,16 @@
 		/>
 	</References>
 	<Files>
-		<File
-			RelativePath=".\SynchronizationTests.cpp"
+		<Filter
+			Name="Library Header Files"
 			>
-		</File>
+			<File
+				RelativePath="..\signals.h"
+				>
+			</File>
+		</Filter>
 		<File
-			RelativePath=".\ThreadTests.cpp"
+			RelativePath=".\SignalTests.cpp"
 			>
 		</File>
 	</Files>
