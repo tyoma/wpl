@@ -21,11 +21,13 @@
 #pragma once
 
 #include <functional>
+#include <memory>
 #include <vector>
 
 namespace std
 {
-	using namespace tr1;
+	using tr1::function;
+	using tr1::shared_ptr;
 }
 
 namespace wpl
@@ -33,53 +35,87 @@ namespace wpl
 	template <typename F>
 	class signal
 	{
+	protected:
+		typedef std::vector<F> _slots_t;
+		typedef std::shared_ptr< _slots_t > _slots_ptr_t;
+		typedef typename _slots_t::const_iterator _slots_iterator_t;
+
+		const _slots_ptr_t _slots;
+
+		signal();
+
+	public:
+		void operator +=(const F &slot);
 	};
 
 	template <typename R>
-	class signal<R ()> : signal< std::function<void ()> >
+	struct signal<R ()> : signal< std::function<void ()> >
 	{
-	public:
-		void operator ()() const
-		{	}
+		void operator ()() const;
 	};
 
 	template <typename R, typename T1>
-	class signal<R (T1)> : signal< std::function<void (T1)> >
+	struct signal<R (T1)> : signal< std::function<void (T1)> >
 	{
-	public:
-		void operator ()(T1 /*arg1*/) const
-		{	}
+		void operator ()(T1 arg1) const;
 	};
 
 	template <typename R, typename T1, typename T2>
-	class signal<R (T1, T2)> : signal< std::function<void (T1, T2)> >
+	struct signal<R (T1, T2)> : signal< std::function<void (T1, T2)> >
 	{
-	public:
-		void operator ()(T1 /*arg1*/, T2 /*arg2*/) const
-		{	}
+		void operator ()(T1 arg1, T2 arg2) const;
 	};
 
 	template <typename R, typename T1, typename T2, typename T3>
-	class signal<R (T1, T2, T3)> : signal< std::function<void (T1, T2, T3)> >
+	struct signal<R (T1, T2, T3)> : signal< std::function<void (T1, T2, T3)> >
 	{
-	public:
-		void operator ()(T1 /*arg1*/, T2 /*arg2*/, T3 /*arg3*/) const
-		{	}
+		void operator ()(T1 arg1, T2 arg2, T3 arg3) const;
 	};
 
 	template <typename R, typename T1, typename T2, typename T3, typename T4>
-	class signal<R (T1, T2, T3, T4)> : signal< std::function<void (T1, T2, T3, T4)> >
+	struct signal<R (T1, T2, T3, T4)> : signal< std::function<void (T1, T2, T3, T4)> >
 	{
-	public:
-		void operator ()(T1 /*arg1*/, T2 /*arg2*/, T3 /*arg3*/, T4 /*arg4*/) const
-		{	}
+		void operator ()(T1 arg1, T2 arg2, T3 arg3, T4 arg4) const;
 	};
 
 	template <typename R, typename T1, typename T2, typename T3, typename T4, typename T5>
-	class signal<R (T1, T2, T3, T4, T5)> : signal< std::function<void (T1, T2, T3, T4, T5)> >
+	struct signal<R (T1, T2, T3, T4, T5)> : signal< std::function<void (T1, T2, T3, T4, T5)> >
 	{
-	public:
-		void operator ()(T1 /*arg1*/, T2 /*arg2*/, T3 /*arg3*/, T4 /*arg4*/, T5 /*arg5*/) const
-		{	}
+		void operator ()(T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5) const;
 	};
+
+
+	template <typename F>
+	inline signal<F>::signal()
+		: _slots(new _slots_t())
+	{	}
+
+	template <typename F>
+	inline void signal<F>::operator +=(const F &slot)
+	{	_slots->push_back(slot);	}
+
+
+	template <typename R>
+	inline void signal<R ()>::operator ()() const
+	{	for (_slots_iterator_t i = _slots->begin(); i != _slots->end(); ++i)	(*i)();	}
+
+	template <typename R, typename T1>
+	inline void signal<R (T1)>::operator ()(T1 arg1) const
+	{	for (_slots_iterator_t i = _slots->begin(); i != _slots->end(); ++i)	(*i)(arg1);	}
+
+	template <typename R, typename T1, typename T2>
+	inline void signal<R (T1, T2)>::operator ()(T1 arg1, T2 arg2) const
+	{	for (_slots_iterator_t i = _slots->begin(); i != _slots->end(); ++i)	(*i)(arg1, arg2);	}
+
+	template <typename R, typename T1, typename T2, typename T3>
+	inline void signal<R (T1, T2, T3)>::operator ()(T1 arg1, T2 arg2, T3 arg3) const
+	{	for (_slots_iterator_t i = _slots->begin(); i != _slots->end(); ++i)	(*i)(arg1, arg2, arg3);	}
+
+	template <typename R, typename T1, typename T2, typename T3, typename T4>
+	inline void signal<R (T1, T2, T3, T4)>::operator ()(T1 arg1, T2 arg2, T3 arg3, T4 arg4) const
+	{	for (_slots_iterator_t i = _slots->begin(); i != _slots->end(); ++i)	(*i)(arg1, arg2, arg3, arg4);	}
+
+	template <typename R, typename T1, typename T2, typename T3, typename T4, typename T5>
+	inline void signal<R (T1, T2, T3, T4, T5)>::operator ()(T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5) const
+	{	for (_slots_iterator_t i = _slots->begin(); i != _slots->end(); ++i)	(*i)(arg1, arg2, arg3, arg4, arg5);	}
 }
