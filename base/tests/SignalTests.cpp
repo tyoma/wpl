@@ -13,6 +13,7 @@ namespace wpl
 		namespace
 		{
 			int s1_n;
+			int s1x_n;
 			int s2_n, s2_arg1;
 			int s3_n;
 			string s3_arg1;
@@ -32,6 +33,9 @@ namespace wpl
 
 			void s1_f()
 			{	++s1_n;	}
+
+			void s1x_f()
+			{	++s1x_n;	}
 
 			void s2_f(int arg1)
 			{	++s2_n, s2_arg1 = arg1;	}
@@ -71,7 +75,7 @@ namespace wpl
 			[TestInitialize]
 			void Init()
 			{
-				s1_n = s2_n = s3_n = s4_n = s5_n = s6_n = s7_n = s8_n = s9_n = s10_n = s11_n = 0;
+				s1_n = s1x_n = s2_n = s3_n = s4_n = s5_n = s6_n = s7_n = s8_n = s9_n = s10_n = s11_n = 0;
 				s2_arg1 = 0;
 				s3_arg1 = string();
 				s4_arg1 = s4_arg2 = 0;
@@ -119,6 +123,7 @@ namespace wpl
 			void ConnectAndCallSignalReceiver()
 			{
 				// INIT
+				vector<slot_connection> cx;
 				signal<void ()> s1;
 				signal<void (int)> s2;
 				signal<void (string)> s3;
@@ -133,20 +138,20 @@ namespace wpl
 				int a = 3322;
 				string b = "doodle";
 
-				s1 += &s1_f;
-				s2 += &s2_f;
-				s2 += &s2_f;	// will be called twice
-				s3 += &s3_f;
-				s3 += &s3_f;
-				s3 += &s3_f;	// will be called three times
-				s4 += &s4_f;
-				s5 += &s5_f;
-				s6 += &s6_f;
-				s7 += &s7_f;
-				s8 += &s8_f;
-				s9 += &s9_f;
-				s10 += &s10_f;
-				s11 += &s11_f;
+				cx.push_back(s1 += &s1_f);
+				cx.push_back(s2 += &s2_f);
+				cx.push_back(s2 += &s2_f);	// will be called twice
+				cx.push_back(s3 += &s3_f);
+				cx.push_back(s3 += &s3_f);
+				cx.push_back(s3 += &s3_f);	// will be called three times
+				cx.push_back(s4 += &s4_f);
+				cx.push_back(s5 += &s5_f);
+				cx.push_back(s6 += &s6_f);
+				cx.push_back(s7 += &s7_f);
+				cx.push_back(s8 += &s8_f);
+				cx.push_back(s9 += &s9_f);
+				cx.push_back(s10 += &s10_f);
+				cx.push_back(s11 += &s11_f);
 
 				// ACT
 				s1();
@@ -203,6 +208,83 @@ namespace wpl
 				Assert::IsTrue(1001 == s11_arg3);
 				Assert::IsTrue(2001 == s11_arg4);
 				Assert::IsTrue(&b == s11_arg5);
+			}
+
+
+			[TestMethod]
+			void DisconnectedSlotIsNotCalled()
+			{
+				// INIT
+				signal<void ()> s;
+				slot_connection c2;
+
+				// ACT
+				{
+					slot_connection c(s += &s1_f);
+					c2 = s += s1x_f;
+				}
+				s();
+
+				// ASSERT
+				Assert::IsTrue(0 == s1_n);
+				Assert::IsTrue(1 == s1x_n);
+			}
+
+
+			[TestMethod]
+			void DisconnectedSlotIsNotCalledForAllSignatures()
+			{
+				// INIT
+				signal<void ()> s1;
+				signal<void (int)> s2;
+				signal<void (int, int)> s4;
+				signal<void (int, int, int)> s6;
+				signal<void (int, int, int, int)> s8;
+				signal<void (int, int, int, const int &, int)> s10;
+
+				// ACT (connect and disconnect at statement completion)
+				s1 += &s1_f;
+				s2 += &s2_f;
+				s4 += &s4_f;
+				s6 += &s6_f;
+				s8 += &s8_f;
+				s10 += &s10_f;
+
+				// ACT / ASSERT (must not throw)
+				s1();
+				s2(123);
+				s4(123, 234);
+				s6(345, 456, 567);
+				s8(567, 678, 789, 890);
+				s10(789, 890, 901, 2002, 1001);
+
+				// ASSERT
+				Assert::IsTrue(0 == s1_n);
+				Assert::IsTrue(0 == s2_n);
+				Assert::IsTrue(0 == s4_n);
+				Assert::IsTrue(0 == s6_n);
+				Assert::IsTrue(0 == s8_n);
+				Assert::IsTrue(0 == s10_n);
+			}
+
+
+			[TestMethod]
+			void SlotConnectionIsAssignable()
+			{
+				// INIT
+				signal<void ()> s;
+				slot_connection c2;
+
+				// ACT
+				{
+					slot_connection c(s += &s1_f);
+
+					c2 = c;
+				}
+				s();
+
+				// ASSERT
+				Assert::IsTrue(1 == s1_n);
 			}
 		};
 	}

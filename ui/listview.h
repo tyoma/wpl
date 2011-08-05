@@ -41,6 +41,8 @@ namespace wpl
 		{
 			typedef listview::index_type index_type;
 
+			virtual void set_order(index_type column, bool ascending) = 0;
+			virtual void precache(index_type from, index_type count) const = 0;
 			virtual void get_text(index_type item, index_type subitem, std::wstring &text) const = 0;
 		};
 	}
