@@ -20,7 +20,7 @@
 
 #pragma once
 
-#include "../concepts.h"
+#include <wpl/base/concepts.h>
 
 #include <windows.h>
 #include <memory>

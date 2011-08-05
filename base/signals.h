@@ -20,6 +20,8 @@
 
 #pragma once
 
+#include "concepts.h"
+
 #include <functional>
 #include <memory>
 #include <vector>
@@ -32,11 +34,6 @@ namespace std
 
 namespace wpl
 {
-	struct destructible
-	{
-		virtual ~destructible()	throw()	{	}
-	};
-
 	typedef std::shared_ptr<destructible> slot_connection;
 
 	template <typename F>

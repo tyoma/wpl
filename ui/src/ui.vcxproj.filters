@@ -17,9 +17,6 @@
     <ClInclude Include="..\win32\window.h">
       <Filter>Library Header Files\win32</Filter>
     </ClInclude>
-    <ClInclude Include="..\concepts.h">
-      <Filter>Library Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\listview.h">
       <Filter>Library Header Files</Filter>
     </ClInclude>

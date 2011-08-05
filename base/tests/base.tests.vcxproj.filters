@@ -12,5 +12,8 @@
     <ClInclude Include="..\signals.h">
       <Filter>Library Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\concepts.h">
+      <Filter>Library Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

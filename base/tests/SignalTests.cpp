@@ -1,4 +1,4 @@
-#include <signals.h>
+#include <wpl/base/signals.h>
 
 #include <string>
 

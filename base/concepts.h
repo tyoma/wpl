@@ -22,25 +22,22 @@
 
 namespace wpl
 {
-	namespace ui
+	struct destructible
 	{
-		struct destructible
-		{
-			virtual ~destructible() throw() {	}
-		};
+		virtual ~destructible() throw() {	}
+	};
 
 
-		class noncopyable
-		{
-			noncopyable(const noncopyable &other);
-			const noncopyable &operator =(const noncopyable &rhs);
+	class noncopyable
+	{
+		noncopyable(const noncopyable &other);
+		const noncopyable &operator =(const noncopyable &rhs);
 
-		protected:
-			noncopyable();
-		};
+	protected:
+		noncopyable();
+	};
 
 
-		inline noncopyable::noncopyable()
-		{	}
-	}
+	inline noncopyable::noncopyable()
+	{	}
 }

@@ -1,6 +1,6 @@
-#include <thread.h>
+#include <wpl/mt/thread.h>
 
-#include <synchronization.h>
+#include <wpl/mt/synchronization.h>
 #include <windows.h>
 #include <functional>
 

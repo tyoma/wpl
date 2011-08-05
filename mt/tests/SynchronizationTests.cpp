@@ -1,4 +1,4 @@
-#include <synchronization.h>
+#include <wpl/mt/synchronization.h>
 
 using namespace Microsoft::VisualStudio::TestTools::UnitTesting;
 

@@ -18,8 +18,8 @@
 //	OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //	THE SOFTWARE.
 
-#include <thread.h>
-#include <synchronization.h>
+#include "../thread.h"
+#include "../synchronization.h"
 
 #include <process.h>
 #include <windows.h>
