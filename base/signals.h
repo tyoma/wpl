@@ -143,25 +143,61 @@ namespace wpl
 
 	template <typename R>
 	inline void signal<R ()>::operator ()() const
-	{	for (_slots_iterator_t i = _slots->begin(); i != _slots->end(); ++i)	if (*i)	(*i)();	}
+	{
+		_slots_ptr_t slots(_slots);
+
+		for (_slots_iterator_t i = slots->begin(); i != slots->end(); ++i)
+			if (*i)
+				(*i)();
+	}
 
 	template <typename R, typename T1>
 	inline void signal<R (T1)>::operator ()(T1 arg1) const
-	{	for (_slots_iterator_t i = _slots->begin(); i != _slots->end(); ++i)	if (*i)	(*i)(arg1);	}
+	{
+		_slots_ptr_t slots(_slots);
+
+		for (_slots_iterator_t i = slots->begin(); i != slots->end(); ++i)
+			if (*i)
+				(*i)(arg1);
+	}
 
 	template <typename R, typename T1, typename T2>
 	inline void signal<R (T1, T2)>::operator ()(T1 arg1, T2 arg2) const
-	{	for (_slots_iterator_t i = _slots->begin(); i != _slots->end(); ++i)	if (*i)	(*i)(arg1, arg2);	}
+	{
+		_slots_ptr_t slots(_slots);
+
+		for (_slots_iterator_t i = slots->begin(); i != slots->end(); ++i)
+			if (*i)
+				(*i)(arg1, arg2);
+	}
 
 	template <typename R, typename T1, typename T2, typename T3>
 	inline void signal<R (T1, T2, T3)>::operator ()(T1 arg1, T2 arg2, T3 arg3) const
-	{	for (_slots_iterator_t i = _slots->begin(); i != _slots->end(); ++i)	if (*i)	(*i)(arg1, arg2, arg3);	}
+	{
+		_slots_ptr_t slots(_slots);
+
+		for (_slots_iterator_t i = slots->begin(); i != slots->end(); ++i)
+			if (*i)
+				(*i)(arg1, arg2, arg3);
+	}
 
 	template <typename R, typename T1, typename T2, typename T3, typename T4>
 	inline void signal<R (T1, T2, T3, T4)>::operator ()(T1 arg1, T2 arg2, T3 arg3, T4 arg4) const
-	{	for (_slots_iterator_t i = _slots->begin(); i != _slots->end(); ++i)	if (*i)	(*i)(arg1, arg2, arg3, arg4);	}
+	{
+		_slots_ptr_t slots(_slots);
+
+		for (_slots_iterator_t i = slots->begin(); i != slots->end(); ++i)
+			if (*i)
+				(*i)(arg1, arg2, arg3, arg4);
+	}
 
 	template <typename R, typename T1, typename T2, typename T3, typename T4, typename T5>
 	inline void signal<R (T1, T2, T3, T4, T5)>::operator ()(T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5) const
-	{	for (_slots_iterator_t i = _slots->begin(); i != _slots->end(); ++i)	if (*i)	(*i)(arg1, arg2, arg3, arg4, arg5);	}
+	{
+		_slots_ptr_t slots(_slots);
+
+		for (_slots_iterator_t i = slots->begin(); i != slots->end(); ++i)
+			if (*i)
+				(*i)(arg1, arg2, arg3, arg4, arg5);
+	}
 }

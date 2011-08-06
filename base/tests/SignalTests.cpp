@@ -3,6 +3,7 @@
 #include <string>
 
 using namespace std;
+using namespace tr1;
 using namespace System;
 using namespace	Microsoft::VisualStudio::TestTools::UnitTesting;
 
@@ -353,6 +354,120 @@ namespace wpl
 
 				// ASSERT
 				Assert::IsTrue(ref == &s_clone);
+			}
+
+
+			[TestMethod]
+			void SelfDestructionIsSupportedFromSignal0()
+			{
+				// INIT
+				typedef signal<void ()> signal_type;
+
+				auto_ptr<signal_type> ps(new signal_type());
+				slot_connection c1(*ps += bind(&auto_ptr<signal_type>::reset, &ps, static_cast<signal_type *>(0)));
+				slot_connection c2(*ps += s1_f);
+				
+				// ACT / ASSERT (must not throw)
+				(*ps)();
+
+				// ASSERT
+				Assert::IsTrue(1 == s1_n);
+				Assert::IsTrue(ps.get() == 0);
+			}
+
+
+			[TestMethod]
+			void SelfDestructionIsSupportedFromSignal1()
+			{
+				// INIT
+				typedef signal<void (int)> signal_type;
+
+				auto_ptr<signal_type> ps(new signal_type());
+				slot_connection c1(*ps += bind(&auto_ptr<signal_type>::reset, &ps, static_cast<signal_type *>(0)));
+				slot_connection c2(*ps += s2_f);
+				
+				// ACT / ASSERT (must not throw)
+				(*ps)(0);
+
+				// ASSERT
+				Assert::IsTrue(1 == s2_n);
+				Assert::IsTrue(ps.get() == 0);
+			}
+
+
+			[TestMethod]
+			void SelfDestructionIsSupportedFromSignal2()
+			{
+				// INIT
+				typedef signal<void (int, int)> signal_type;
+
+				auto_ptr<signal_type> ps(new signal_type());
+				slot_connection c1(*ps += bind(&auto_ptr<signal_type>::reset, &ps, static_cast<signal_type *>(0)));
+				slot_connection c2(*ps += s4_f);
+				
+				// ACT / ASSERT (must not throw)
+				(*ps)(0, 0);
+
+				// ASSERT
+				Assert::IsTrue(1 == s4_n);
+				Assert::IsTrue(ps.get() == 0);
+			}
+
+
+			[TestMethod]
+			void SelfDestructionIsSupportedFromSignal3()
+			{
+				// INIT
+				typedef signal<void (int, int, int)> signal_type;
+
+				auto_ptr<signal_type> ps(new signal_type());
+				slot_connection c1(*ps += bind(&auto_ptr<signal_type>::reset, &ps, static_cast<signal_type *>(0)));
+				slot_connection c2(*ps += s6_f);
+				
+				// ACT / ASSERT (must not throw)
+				(*ps)(0, 0, 0);
+
+				// ASSERT
+				Assert::IsTrue(1 == s6_n);
+				Assert::IsTrue(ps.get() == 0);
+			}
+
+
+			[TestMethod]
+			void SelfDestructionIsSupportedFromSignal4()
+			{
+				// INIT
+				typedef signal<void (int, int, int, int)> signal_type;
+
+				auto_ptr<signal_type> ps(new signal_type());
+				slot_connection c1(*ps += bind(&auto_ptr<signal_type>::reset, &ps, static_cast<signal_type *>(0)));
+				slot_connection c2(*ps += s8_f);
+				
+				// ACT / ASSERT (must not throw)
+				(*ps)(0, 0, 0, 0);
+
+				// ASSERT
+				Assert::IsTrue(1 == s8_n);
+				Assert::IsTrue(ps.get() == 0);
+			}
+
+
+			[TestMethod]
+			void SelfDestructionIsSupportedFromSignal5()
+			{
+				// INIT
+				typedef signal<void (int, int, int, int, int)> signal_type;
+
+				auto_ptr<signal_type> ps(new signal_type());
+				slot_connection c1(*ps += bind(&auto_ptr<signal_type>::reset, &ps, static_cast<signal_type *>(0)));
+				slot_connection c2(*ps += s10_f);
+				
+				// ACT / ASSERT (must not throw)
+				(*ps)(0, 0, 0, 0, 0);
+
+				// ASSERT
+				Assert::IsTrue(1 == s10_n);
+				Assert::IsTrue(ps.get() == 0);
 			}
 		};
 	}
