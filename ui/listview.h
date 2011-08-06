@@ -20,7 +20,7 @@
 
 #pragma once
 
-#include "../base/concepts.h"
+#include "../base/signals.h"
 
 #include <string>
 
@@ -35,6 +35,9 @@ namespace wpl
 			struct datasource;
 
 		public:
+			signal<void (index_type /*item*/)> item_activate;
+			signal<void (index_type /*item*/, bool /*becomes selected*/)> selection_changing;
+			signal<void (index_type /*item*/, bool /*became selected*/)> selection_changed;
 		};
 
 		struct listview::datasource : destructible
