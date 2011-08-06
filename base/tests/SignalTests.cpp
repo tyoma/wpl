@@ -286,6 +286,74 @@ namespace wpl
 				// ASSERT
 				Assert::IsTrue(1 == s1_n);
 			}
+
+
+			[TestMethod]
+			void CopyingOfSignalDoesNotCopyConnectedSlots()
+			{
+				// INIT
+				signal<void ()> s_src;
+				slot_connection c(s_src += &s1_f);
+
+				// ACT
+				signal<void ()> s_clone(s_src);
+				
+				s_clone();
+
+				// ASSERT
+				Assert::IsTrue(0 == s1_n);
+			}
+
+
+			[TestMethod]
+			void CopiedSignalIsWorkable()
+			{
+				// INIT
+				signal<void ()> s_src;
+
+				// ACT
+				signal<void ()> s_clone(s_src);
+				slot_connection c(s_clone += &s1_f);	// must not throw
+				
+				s_clone();	// must not throw
+
+				// ASSERT
+				Assert::IsTrue(1 == s1_n);
+			}
+
+
+			[TestMethod]
+			void AssigningOfSignalDoesNotAssignConnectedSlotsAndContinueToCallOldSlots()
+			{
+				// INIT
+				signal<void ()> s_src;
+				signal<void ()> s_clone;
+				slot_connection c1(s_src += &s1_f);
+				slot_connection c2(s_clone += &s1x_f);
+
+				// ACT
+				s_clone = s_src;
+				s_clone();
+
+				// ASSERT
+				Assert::IsTrue(0 == s1_n);
+				Assert::IsTrue(1 == s1x_n);
+			}
+
+
+			[TestMethod]
+			void AssigningReturnsConstThis()
+			{
+				// INIT
+				signal<void ()> s_src;
+				signal<void ()> s_clone;
+
+				// ACT
+				signal<void ()> *ref = &(s_clone = s_src);
+
+				// ASSERT
+				Assert::IsTrue(ref == &s_clone);
+			}
 		};
 	}
 }

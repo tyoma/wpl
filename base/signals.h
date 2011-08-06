@@ -49,6 +49,9 @@ namespace wpl
 		const _slots_ptr_t _slots;
 
 		signal();
+		signal(const signal &other);
+
+		const signal &operator =(const signal &rhs);
 
 	public:
 		slot_connection operator +=(const F &slot);
@@ -117,6 +120,15 @@ namespace wpl
 	inline signal<F>::signal()
 		: _slots(new _slots_t())
 	{	}
+
+	template <typename F>
+	inline signal<F>::signal(const signal &)
+		: _slots(new _slots_t())
+	{	}
+
+	template <typename F>
+	inline const signal<F> &signal<F>::operator =(const signal &)
+	{	return *this;	}
 
 	template <typename F>
 	inline slot_connection signal<F>::operator +=(const F &slot)
