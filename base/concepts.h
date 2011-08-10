@@ -24,7 +24,7 @@ namespace wpl
 {
 	struct destructible
 	{
-		virtual ~destructible() throw() {	}
+		virtual ~destructible()	{	}
 	};
 
 

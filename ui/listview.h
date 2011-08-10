@@ -28,25 +28,22 @@ namespace wpl
 {
 	namespace ui
 	{
-		struct listview
+		struct listview : destructible
 		{
 			typedef unsigned int index_type;
 			struct datasource;
-
-			virtual ~listview() throw()	{	}
+			enum sort_direction	{	dir_none, dir_ascending, dir_descending	};
 
 			virtual void set_datasource(std::shared_ptr<datasource> ds) = 0;
-			virtual void add_column(const std::wstring &caption, const bool *default_sort_ascending) = 0;
+			virtual void add_column(const std::wstring &caption, sort_direction default_sort_direction) = 0;
 
 			signal<void (index_type /*item*/)> item_activate;
 			signal<void (index_type /*item*/, bool /*became selected*/)> selection_changed;
 		};
 
-		struct listview::datasource
+		struct listview::datasource : destructible
 		{
 			typedef listview::index_type index_type;
-
-			virtual ~datasource() throw()	{	}
 
 			virtual index_type get_count() const = 0;
 			virtual void set_order(index_type column, bool ascending) = 0;
