@@ -172,7 +172,7 @@
 		/>
 		<ProjectReference
 			ReferencedProjectIdentifier="{7F59DBD6-D111-41FE-B246-4D21AC5212CB}"
-			RelativePathToProject=".\ui\src\ui.vcproj"
+			RelativePathToProject=".\libraries\wpl\ui\src\ui.vcproj"
 		/>
 	</References>
 	<Files>
