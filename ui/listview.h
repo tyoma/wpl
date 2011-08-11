@@ -45,12 +45,16 @@ namespace wpl
 		{
 			typedef listview::index_type index_type;
 
-			virtual index_type get_count() const = 0;
-			virtual void set_order(index_type column, bool ascending) = 0;
-			virtual void precache(index_type from, index_type count) const = 0;
+			virtual index_type get_count() const throw() = 0;
 			virtual void get_text(index_type item, index_type subitem, std::wstring &text) const = 0;
+			virtual void set_order(index_type column, bool ascending) = 0;
+			virtual void precache(index_type from, index_type count) const;
 
 			signal<void (index_type /*new_count*/)> invalidated;
 		};
+
+
+		inline void listview::datasource::precache(index_type /*from*/, index_type /*count*/) const
+		{	}
 	}
 }
