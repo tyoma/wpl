@@ -35,10 +35,10 @@ namespace wpl
 
 			class disconnector : noncopyable, public destructible
 			{
-				shared_ptr<window_wrapper> _target;
+				shared_ptr<window> _target;
 
 			public:
-				disconnector(shared_ptr<window_wrapper> target);
+				disconnector(shared_ptr<window> target);
 				~disconnector() throw();
 			};
 
@@ -54,7 +54,7 @@ namespace wpl
 			};
 
 
-			disconnector::disconnector(shared_ptr<window_wrapper> target)
+			disconnector::disconnector(shared_ptr<window> target)
 				: _target(target)
 			{	}
 
@@ -70,16 +70,16 @@ namespace wpl
 			{	return ::CallWindowProc(_address, _hwnd, message, wparam, lparam);	}
 		}
 
-		window_wrapper::window_wrapper(HWND hwnd)
+		window::window(HWND hwnd)
 			: _window(hwnd), _original_wndproc(reinterpret_cast<WNDPROC>(::SetWindowLongPtr(hwnd, GWLP_WNDPROC,
-				reinterpret_cast<LONG_PTR>(&window_wrapper::windowproc_proxy))))
+				reinterpret_cast<LONG_PTR>(&window::windowproc_proxy))))
 		{
 			::SetProp(hwnd, c_wrapper_ptr_name, reinterpret_cast<HANDLE>(this));
 		}
 
-		LRESULT CALLBACK window_wrapper::windowproc_proxy(HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam)
+		LRESULT CALLBACK window::windowproc_proxy(HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam)
 		{
-			shared_ptr<window_wrapper> w(window_wrapper::extract(hwnd));
+			shared_ptr<window> w(window::extract(hwnd));
 
 			if (message == WM_NCDESTROY)
 				::RemoveProp(hwnd, c_wrapper_ptr_name);
@@ -92,22 +92,22 @@ namespace wpl
 			return result;
 		}
 
-		shared_ptr<window_wrapper> window_wrapper::extract(HWND hwnd)
+		shared_ptr<window> window::extract(HWND hwnd)
 		{
-			window_wrapper *attached = reinterpret_cast<window_wrapper *>(::GetProp(hwnd, c_wrapper_ptr_name));
+			window *attached = reinterpret_cast<window *>(::GetProp(hwnd, c_wrapper_ptr_name));
 
-			return attached ? attached->shared_from_this() : shared_ptr<window_wrapper>();
+			return attached ? attached->shared_from_this() : shared_ptr<window>();
 		}
 
-		shared_ptr<window_wrapper> window_wrapper::attach(HWND hwnd)
+		shared_ptr<window> window::attach(HWND hwnd)
 		{
 			if (::IsWindow(hwnd))
 			{
-				shared_ptr<window_wrapper> w(window_wrapper::extract(hwnd));
+				shared_ptr<window> w(window::extract(hwnd));
 
 				if (w == 0)
 				{
-					w.reset(new window_wrapper(hwnd));
+					w.reset(new window(hwnd));
 					w->_this = w;
 				}
 				return w;
@@ -116,7 +116,7 @@ namespace wpl
 				throw invalid_argument("");
 		}
 
-		bool window_wrapper::detach() throw()
+		bool window::detach() throw()
 		{
 			if (&windowproc_proxy != reinterpret_cast<WNDPROC>(::GetWindowLongPtr(_window, GWLP_WNDPROC)))
 				return false;
@@ -126,16 +126,16 @@ namespace wpl
 			return true;
 		}
 
-		shared_ptr<destructible> window_wrapper::advise(const user_handler_t &user_handler)
+		shared_ptr<destructible> window::advise(const user_handler_t &user_handler)
 		{
 			_user_handler = user_handler;
 			return shared_ptr<destructible>(new disconnector(shared_from_this()));
 		}
 
-		void window_wrapper::unadvise() throw()
+		void window::unadvise() throw()
 		{	_user_handler = user_handler_t();	}
 
-		HWND window_wrapper::hwnd() const
+		HWND window::hwnd() const
 		{	return _window;	}
 	}
 }

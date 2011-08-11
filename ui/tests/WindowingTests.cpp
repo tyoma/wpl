@@ -64,7 +64,7 @@ namespace wpl
 				void FailToWrapNonWindow()
 				{
 					// INIT / ACT / ASSERT
-					ASSERT_THROWS(window_wrapper::attach((HWND)0x12345678), invalid_argument);
+					ASSERT_THROWS(window::attach((HWND)0x12345678), invalid_argument);
 				}
 
 
@@ -75,7 +75,7 @@ namespace wpl
 					HWND hwnd = (HWND)create_window();
 
 					// ACT (must not throw)
-					shared_ptr<window_wrapper> w(window_wrapper::attach(hwnd));
+					shared_ptr<window> w(window::attach(hwnd));
 
 					// ASSERT
 					Assert::IsTrue(w != 0);
@@ -89,8 +89,8 @@ namespace wpl
 					HWND hwnd1 = (HWND)create_window(), hwnd2 = (HWND)create_window();
 
 					// ACT
-					shared_ptr<window_wrapper> w1(window_wrapper::attach(hwnd1));
-					shared_ptr<window_wrapper> w2(window_wrapper::attach(hwnd2));
+					shared_ptr<window> w1(window::attach(hwnd1));
+					shared_ptr<window> w2(window::attach(hwnd2));
 
 					// ASSERT
 					Assert::IsTrue(w1 != w2);
@@ -102,8 +102,8 @@ namespace wpl
 				{
 					// INIT
 					HWND hwnd1 = (HWND)create_window(), hwnd2 = (HWND)create_window();
-					shared_ptr<window_wrapper> w1(window_wrapper::attach(hwnd1));
-					shared_ptr<window_wrapper> w2(window_wrapper::attach(hwnd2));
+					shared_ptr<window> w1(window::attach(hwnd1));
+					shared_ptr<window> w2(window::attach(hwnd2));
 
 					// ACT / ASSERT
 					Assert::IsTrue(hwnd1 == w1->hwnd());
@@ -118,8 +118,8 @@ namespace wpl
 					HWND hwnd = (HWND)create_window();
 
 					// ACT
-					shared_ptr<window_wrapper> w1(window_wrapper::attach(hwnd));
-					shared_ptr<window_wrapper> w2(window_wrapper::attach(hwnd));
+					shared_ptr<window> w1(window::attach(hwnd));
+					shared_ptr<window> w2(window::attach(hwnd));
 
 					// ASSERT
 					Assert::IsTrue(w1 == w2);
@@ -133,8 +133,8 @@ namespace wpl
 					HWND hwnd = (HWND)create_window();
 
 					// ACT
-					window_wrapper * w1(window_wrapper::attach(hwnd).get());	// do not hold reference
-					shared_ptr<window_wrapper> w2(window_wrapper::attach(hwnd));
+					window * w1(window::attach(hwnd).get());	// do not hold reference
+					shared_ptr<window> w2(window::attach(hwnd));
 
 					// ASSERT
 					Assert::IsTrue(w2.get() == w1);
@@ -148,7 +148,7 @@ namespace wpl
 					HWND hwnd = (HWND)create_window();
 
 					// ACT
-					weak_ptr<window_wrapper> w(window_wrapper::attach(hwnd));
+					weak_ptr<window> w(window::attach(hwnd));
 
 					// ASSERT
 					Assert::IsFalse(w.expired());
@@ -168,7 +168,7 @@ namespace wpl
 					HWND hwnd = (HWND)create_window();
 					TCHAR buffer[256] = { 0 };
 
-					window_wrapper::attach(hwnd);
+					window::attach(hwnd);
 
 					// ACT
 					::SetWindowText(hwnd, _T("First message..."));
@@ -192,7 +192,7 @@ namespace wpl
 					// INIT
 					HWND hwnd = (HWND)create_window();
 					handler h;
-					shared_ptr<window_wrapper> w(window_wrapper::attach(hwnd));
+					shared_ptr<window> w(window::attach(hwnd));
 					LPCTSTR s1 = _T("Text #1");
 					LPCTSTR s2 = _T("Text #2");
 					TCHAR buffer[5] = { 0 };
@@ -223,7 +223,7 @@ namespace wpl
 					// INIT
 					HWND hwnd = (HWND)create_window();
 					handler h;
-					shared_ptr<window_wrapper> w(window_wrapper::attach(hwnd));
+					shared_ptr<window> w(window::attach(hwnd));
 
 					shared_ptr<destructible> c(w->advise(bind(&handler::on_message, &h, _1, _2, _3, _4)));
 
@@ -245,7 +245,7 @@ namespace wpl
 					// INIT
 					HWND hwnd = (HWND)create_window();
 					handler h;
-					shared_ptr<window_wrapper> w(window_wrapper::attach(hwnd));
+					shared_ptr<window> w(window::attach(hwnd));
 
 					shared_ptr<destructible> c(w->advise(bind(&handler::on_message, &h, _1, _2, _3, _4)));
 
@@ -269,7 +269,7 @@ namespace wpl
 					// INIT
 					HWND hwnd = (HWND)create_window();
 					handler h;
-					shared_ptr<window_wrapper> w(window_wrapper::attach(hwnd));
+					shared_ptr<window> w(window::attach(hwnd));
 					shared_ptr<destructible> c(w->advise(bind(&handler::on_message, &h, _1, _2, _3, _4)));
 
 					::SetWindowText(hwnd, _T("allowed"));
@@ -297,7 +297,7 @@ namespace wpl
 					// INIT
 					HWND hwnd = (HWND)create_window();
 					bool property_exists = true;
-					shared_ptr<window_wrapper> w(window_wrapper::attach(hwnd));
+					shared_ptr<window> w(window::attach(hwnd));
 					shared_ptr<destructible> c(w->advise(bind(&checker_handler, hwnd, &property_exists)));
 
 					// ACT / ASSERT
@@ -316,7 +316,7 @@ namespace wpl
 				{
 					// INIT
 					HWND hwnd = (HWND)create_window();
-					shared_ptr<window_wrapper> w(window_wrapper::attach(hwnd));
+					shared_ptr<window> w(window::attach(hwnd));
 					WNDPROC replacement_wndproc = (WNDPROC)::GetWindowLongPtr(hwnd, GWLP_WNDPROC);
 
 					// ACT
@@ -333,7 +333,7 @@ namespace wpl
 				{
 					// INIT
 					HWND hwnd = (HWND)create_window();
-					shared_ptr<window_wrapper> w(window_wrapper::attach(hwnd));
+					shared_ptr<window> w(window::attach(hwnd));
 
 					// ACT
 					w->detach();
@@ -348,8 +348,8 @@ namespace wpl
 				{
 					// INIT
 					HWND hwnd = (HWND)create_window();
-					shared_ptr<window_wrapper> w(window_wrapper::attach(hwnd));
-					weak_ptr<window_wrapper> w_weak(w);
+					shared_ptr<window> w(window::attach(hwnd));
+					weak_ptr<window> w_weak(w);
 
 					// ACT
 					w->detach();
@@ -365,7 +365,7 @@ namespace wpl
 				{
 					// INIT
 					HWND hwnd = (HWND)create_window();
-					shared_ptr<window_wrapper> w(window_wrapper::attach(hwnd));
+					shared_ptr<window> w(window::attach(hwnd));
 
 					::SetWindowLongPtr(hwnd, GWLP_WNDPROC, (LONG_PTR)replacement_proc);
 
@@ -383,7 +383,7 @@ namespace wpl
 				{
 					// INIT
 					HWND hwnd = (HWND)create_window();
-					shared_ptr<window_wrapper> w(window_wrapper::attach(hwnd));
+					shared_ptr<window> w(window::attach(hwnd));
 
 					::SetWindowLongPtr(hwnd, GWLP_WNDPROC, (LONG_PTR)replacement_proc);
 
@@ -400,8 +400,8 @@ namespace wpl
 				{
 					// INIT
 					HWND hwnd = (HWND)create_window();
-					shared_ptr<window_wrapper> w(window_wrapper::attach(hwnd));
-					weak_ptr<window_wrapper> w_weak(w);
+					shared_ptr<window> w(window::attach(hwnd));
+					weak_ptr<window> w_weak(w);
 
 					::SetWindowLongPtr(hwnd, GWLP_WNDPROC, (LONG_PTR)replacement_proc);
 

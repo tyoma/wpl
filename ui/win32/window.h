@@ -37,7 +37,7 @@ namespace wpl
 {
 	namespace ui
 	{
-		class window_wrapper : public std::enable_shared_from_this<window_wrapper>
+		class window : public std::enable_shared_from_this<window>
 		{
 			typedef std::function<LRESULT (UINT, WPARAM, LPARAM)> _original_handler_t;
 			typedef std::function<LRESULT (UINT, WPARAM, LPARAM, const _original_handler_t &)> _user_handler_t;
@@ -45,19 +45,19 @@ namespace wpl
 			HWND _window;
 			WNDPROC _original_wndproc;
 			_user_handler_t _user_handler;
-			std::shared_ptr<window_wrapper> _this;
+			std::shared_ptr<window> _this;
 
-			window_wrapper(HWND hwnd);
+			window(HWND hwnd);
 
 			static LRESULT CALLBACK windowproc_proxy(HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam);
-			static std::shared_ptr<window_wrapper> extract(HWND hwnd);
+			static std::shared_ptr<window> extract(HWND hwnd);
 
 		public:
 			typedef _original_handler_t original_handler_t;
 			typedef _user_handler_t user_handler_t;
 
 		public:
-			static std::shared_ptr<window_wrapper> attach(HWND hwnd);
+			static std::shared_ptr<window> attach(HWND hwnd);
 			bool detach() throw();
 
 			std::shared_ptr<destructible> advise(const user_handler_t &user_handler);
