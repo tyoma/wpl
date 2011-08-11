@@ -39,9 +39,22 @@ namespace wpl
 	{
 		class window_wrapper : public std::enable_shared_from_this<window_wrapper>
 		{
+			typedef std::function<LRESULT (UINT, WPARAM, LPARAM)> _original_handler_t;
+			typedef std::function<LRESULT (UINT, WPARAM, LPARAM, const _original_handler_t &)> _user_handler_t;
+
+			HWND _window;
+			WNDPROC _original_wndproc;
+			_user_handler_t _user_handler;
+			std::shared_ptr<window_wrapper> _this;
+
+			window_wrapper(HWND hwnd);
+
+			static LRESULT CALLBACK windowproc_proxy(HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam);
+			static std::shared_ptr<window_wrapper> extract(HWND hwnd);
+
 		public:
-			typedef std::function<LRESULT (UINT, WPARAM, LPARAM)> original_handler_t;
-			typedef std::function<LRESULT (UINT, WPARAM, LPARAM, const original_handler_t &)> user_handler_t;
+			typedef _original_handler_t original_handler_t;
+			typedef _user_handler_t user_handler_t;
 
 		public:
 			static std::shared_ptr<window_wrapper> attach(HWND hwnd);
@@ -50,18 +63,7 @@ namespace wpl
 			std::shared_ptr<destructible> advise(const user_handler_t &user_handler);
 			void unadvise() throw();
 
-			HWND hwnd() const;
-
-		private:
-			HWND _window;
-			WNDPROC _original_handler;
-			user_handler_t _user_handler;
-			std::shared_ptr<window_wrapper> _this;
-
-			window_wrapper(HWND hwnd);
-
-			static LRESULT CALLBACK windowproc_proxy(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
-			static std::shared_ptr<window_wrapper> extract(HWND hwnd);
+			HWND hwnd() const throw();
 		};
 	}
 }

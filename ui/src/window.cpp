@@ -38,12 +38,8 @@ namespace wpl
 				shared_ptr<window_wrapper> _target;
 
 			public:
-				disconnector(shared_ptr<window_wrapper> target)
-					: _target(target)
-				{	}
-
-				~disconnector() throw()
-				{	_target->unadvise();	}
+				disconnector(shared_ptr<window_wrapper> target);
+				~disconnector() throw();
 			};
 
 			class wndproc
@@ -52,17 +48,30 @@ namespace wpl
 				WNDPROC _address;
 
 			public:
-				wndproc(HWND hwnd, WNDPROC address)
-					: _hwnd(hwnd), _address(address)
-				{	}
+				wndproc(HWND hwnd, WNDPROC address);
 
-				LRESULT operator ()(UINT message, WPARAM wparam, LPARAM lparam) const
-				{	return ::CallWindowProc(_address, _hwnd, message, wparam, lparam);	}
+				LRESULT operator ()(UINT message, WPARAM wparam, LPARAM lparam) const;
 			};
+
+
+			disconnector::disconnector(shared_ptr<window_wrapper> target)
+				: _target(target)
+			{	}
+
+			disconnector::~disconnector() throw()
+			{	_target->unadvise();	}
+
+
+			wndproc::wndproc(HWND hwnd, WNDPROC address)
+				: _hwnd(hwnd), _address(address)
+			{	}
+
+			LRESULT wndproc::operator ()(UINT message, WPARAM wparam, LPARAM lparam) const
+			{	return ::CallWindowProc(_address, _hwnd, message, wparam, lparam);	}
 		}
 
 		window_wrapper::window_wrapper(HWND hwnd)
-			: _window(hwnd), _original_handler(reinterpret_cast<WNDPROC>(::SetWindowLongPtr(hwnd, GWLP_WNDPROC,
+			: _window(hwnd), _original_wndproc(reinterpret_cast<WNDPROC>(::SetWindowLongPtr(hwnd, GWLP_WNDPROC,
 				reinterpret_cast<LONG_PTR>(&window_wrapper::windowproc_proxy))))
 		{
 			::SetProp(hwnd, c_wrapper_ptr_name, reinterpret_cast<HANDLE>(this));
@@ -76,7 +85,7 @@ namespace wpl
 				::RemoveProp(hwnd, c_wrapper_ptr_name);
 
 			LRESULT result = w->_user_handler ? w->_user_handler(message, wparam, lparam,
-				wndproc(hwnd, w->_original_handler)) : w->_original_handler(hwnd, message, wparam, lparam);
+				wndproc(hwnd, w->_original_wndproc)) : w->_original_wndproc(hwnd, message, wparam, lparam);
 
 			if (message == WM_NCDESTROY)
 				w->_this.reset();
@@ -111,7 +120,7 @@ namespace wpl
 		{
 			if (&windowproc_proxy != reinterpret_cast<WNDPROC>(::GetWindowLongPtr(_window, GWLP_WNDPROC)))
 				return false;
-			::SetWindowLongPtr(_window, GWLP_WNDPROC, reinterpret_cast<LONG_PTR>(_original_handler));
+			::SetWindowLongPtr(_window, GWLP_WNDPROC, reinterpret_cast<LONG_PTR>(_original_wndproc));
 			::RemoveProp(_window, c_wrapper_ptr_name);
 			_this.reset();
 			return true;
