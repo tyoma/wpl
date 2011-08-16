@@ -16,7 +16,7 @@ namespace wpl
 		{
 			namespace
 			{
-				class test_model_1 : public listview::datasource
+				class test_model_1 : public listview::model
 				{
 					index_type _count;
 
@@ -80,13 +80,13 @@ namespace wpl
 					shared_ptr<listview> lv(wrap_listview(hlv));
 
 					// ACT
-					lv->set_datasource(model1_ptr(new test_model_1(11)));
+					lv->set_model(model1_ptr(new test_model_1(11)));
 
 					// ASSERT
 					Assert::IsTrue(ListView_GetItemCount(hlv) == 11);
 
 					// ACT
-					lv->set_datasource(model1_ptr(new test_model_1(23)));
+					lv->set_model(model1_ptr(new test_model_1(23)));
 
 					// ASSERT
 					Assert::IsTrue(ListView_GetItemCount(hlv) == 23);
@@ -101,7 +101,7 @@ namespace wpl
 					shared_ptr<listview> lv(wrap_listview(hlv));
 					model1_ptr m(new test_model_1(0));
 
-					lv->set_datasource(m);
+					lv->set_model(m);
 
 					// ACT
 					m->set_count(3);

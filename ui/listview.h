@@ -31,17 +31,17 @@ namespace wpl
 		struct listview : destructible
 		{
 			typedef unsigned int index_type;
-			struct datasource;
+			struct model;
 			enum sort_direction	{	dir_none, dir_ascending, dir_descending	};
 
-			virtual void set_datasource(std::shared_ptr<datasource> ds) = 0;
+			virtual void set_model(std::shared_ptr<model> ds) = 0;
 			virtual void add_column(const std::wstring &caption, sort_direction default_sort_direction) = 0;
 
 			signal<void (index_type /*item*/)> item_activate;
 			signal<void (index_type /*item*/, bool /*became selected*/)> selection_changed;
 		};
 
-		struct listview::datasource : destructible
+		struct listview::model : destructible
 		{
 			typedef listview::index_type index_type;
 
@@ -54,7 +54,7 @@ namespace wpl
 		};
 
 
-		inline void listview::datasource::precache(index_type /*from*/, index_type /*count*/) const
+		inline void listview::model::precache(index_type /*from*/, index_type /*count*/) const
 		{	}
 	}
 }

@@ -38,7 +38,7 @@ namespace wpl
 				shared_ptr<window> _listview;
 				shared_ptr<destructible> _invalidated_connection;
 
-				virtual void set_datasource(shared_ptr<datasource> ds);
+				virtual void set_model(shared_ptr<model> ds);
 				virtual void add_column(const wstring &caption, sort_direction default_sort_direction);
 
 				void on_invalidated(index_type new_count);
@@ -52,7 +52,7 @@ namespace wpl
 				: _listview(window::attach(hwnd))
 			{	}
 
-			void listview_impl::set_datasource(shared_ptr<datasource> ds)
+			void listview_impl::set_model(shared_ptr<model> ds)
 			{
 				ListView_SetItemCountEx(_listview->hwnd(), ds->get_count(), 0);
 				_invalidated_connection = ds->invalidated += bind(&listview_impl::on_invalidated, this, _1);
