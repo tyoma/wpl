@@ -20,9 +20,15 @@
     <ClInclude Include="..\listview.h">
       <Filter>Library Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\win32\controls.h">
+      <Filter>Library Header Files\win32</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="window.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="listview.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

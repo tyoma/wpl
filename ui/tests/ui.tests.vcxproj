@@ -107,6 +107,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="ListViewTests.cpp" />
     <ClCompile Include="TestHelpers.cpp" />
     <ClCompile Include="WindowingTests.cpp" />
   </ItemGroup>

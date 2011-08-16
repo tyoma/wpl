@@ -1,7 +1,9 @@
 #include "TestHelpers.h"
 
 #include <windows.h>
+#include <commctrl.h>
 #include <vcclr.h>
+#include <algorithm>
 
 using namespace std;
 using namespace System;
@@ -32,21 +34,20 @@ namespace ut
 	{	return create_window(_T("static"));	}
 
 	void *WindowTestsBase::create_window(const TCHAR *class_name)
+	{	return create_window(class_name, 0, WS_POPUP, 0);	}
+
+	void *WindowTestsBase::create_window(const TCHAR *class_name, void *parent, unsigned int style, unsigned int exstyle)
 	{
-		HWND hwnd = ::CreateWindow(class_name, NULL, WS_POPUP, 0, 0, 1, 1, NULL, NULL, NULL, NULL);
+		HWND hwnd = ::CreateWindowEx(exstyle, class_name, NULL, style, 0, 0, 1, 1, reinterpret_cast<HWND>(parent), NULL, NULL, NULL);
 
 		_windows->push_back(hwnd);
 		return hwnd;
 	}
 
-	void *WindowTestsBase::create_tree()
+	void WindowTestsBase::destroy_window(void *hwnd)
 	{
-		HWND hparent = ::CreateWindow(_T("static"), NULL, WS_POPUP, 0, 0, 1, 1, NULL, NULL, NULL, NULL);
-		HWND htree = ::CreateWindow(_T("systreeview32"), NULL, WS_CHILD | WS_VISIBLE, 0, 0, 1, 1, hparent, NULL, NULL, NULL);
-
-		_windows->push_back(htree);
-		_windows->push_back(hparent);
-		return htree;
+		_windows->erase(remove(_windows->begin(), _windows->end(), hwnd), _windows->end());
+		::DestroyWindow(reinterpret_cast<HWND>(hwnd));
 	}
 
 	void WindowTestsBase::cleanup()
@@ -54,5 +55,12 @@ namespace ut
 		for (vector<void *>::const_iterator i = _windows->begin(); i != _windows->end(); ++i)
 			if (::IsWindow(reinterpret_cast<HWND>(*i)))
 				::DestroyWindow(reinterpret_cast<HWND>(*i));
+	}
+
+	void WindowTestsBase::init_commctrl(TestContext ^context)
+	{
+		INITCOMMONCONTROLSEX icc = { sizeof(INITCOMMONCONTROLSEX), ICC_LISTVIEW_CLASSES };
+
+		::InitCommonControlsEx(&icc);
 	}
 }
