@@ -60,7 +60,7 @@
 			/>
 			<Tool
 				Name="VCLibrarianTool"
-				AdditionalDependencies="user32.lib"
+				AdditionalDependencies="user32.lib comctl32.lib"
 			/>
 			<Tool
 				Name="VCALinkTool"
@@ -125,7 +125,7 @@
 			/>
 			<Tool
 				Name="VCLibrarianTool"
-				AdditionalDependencies="user32.lib"
+				AdditionalDependencies="user32.lib comctl32.lib"
 			/>
 			<Tool
 				Name="VCALinkTool"
@@ -152,14 +152,14 @@
 			Filter="cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx"
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
-			<Filter
-				Name="win32"
+			<File
+				RelativePath=".\listview.cpp"
 				>
-				<File
-					RelativePath=".\window.cpp"
-					>
-				</File>
-			</Filter>
+			</File>
+			<File
+				RelativePath=".\window.cpp"
+				>
+			</File>
 		</Filter>
 		<Filter
 			Name="Library Header Files"

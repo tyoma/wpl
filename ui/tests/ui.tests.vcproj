@@ -177,6 +177,10 @@
 	</References>
 	<Files>
 		<File
+			RelativePath=".\ListViewTests.cpp"
+			>
+		</File>
+		<File
 			RelativePath=".\TestHelpers.cpp"
 			>
 		</File>
