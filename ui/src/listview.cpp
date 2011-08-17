@@ -97,6 +97,8 @@ namespace wpl
 				{
 					UINT code = reinterpret_cast<const NMHDR *>(lparam)->code;
 
+					if (LVN_ITEMACTIVATE == code)
+						item_activate(reinterpret_cast<const NMITEMACTIVATE *>(lparam)->iItem);
 					if (LVN_GETDISPINFO == code)
 					{
 						const NMLVDISPINFO *pdi = reinterpret_cast<const NMLVDISPINFO *>(lparam);

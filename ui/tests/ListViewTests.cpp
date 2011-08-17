@@ -7,6 +7,8 @@
 #include <olectl.h>
 
 using namespace std;
+using namespace tr1;
+using namespace tr1::placeholders;
 using namespace Microsoft::VisualStudio::TestTools::UnitTesting;
 
 namespace wpl
@@ -47,6 +49,10 @@ namespace wpl
 				};
 
 				typedef shared_ptr<test_model> model_ptr;
+
+				template <typename T>
+				void push_back(vector<T> &v, const T &value)
+				{	v.push_back(value);	}
 
 				listview::sort_direction get_column_direction(void *hlv, listview::index_type column)
 				{
@@ -448,6 +454,41 @@ namespace wpl
 					Assert::IsTrue(listview::dir_none == get_column_direction(hlv2, 0));
 					Assert::IsTrue(listview::dir_descending == get_column_direction(hlv2, 1));
 					Assert::IsTrue(listview::dir_none == get_column_direction(hlv2, 2));
+				}
+
+
+				[TestMethod]
+				void ItemActivationFiresCorrespondingEvent()
+				{
+					// INIT
+					vector<listview::index_type> selections;
+					HWND hlv = create_listview();
+					shared_ptr<listview> lv(wrap_listview(hlv));
+					shared_ptr<destructible> c =
+						lv->item_activate += bind(&push_back<listview::index_type>, ref(selections), _1);
+					NMITEMACTIVATE nm = {	{	0, 0, LVN_ITEMACTIVATE	},	};
+
+					// ACT
+					nm.iItem = 1;
+					::SendMessage(hlv, OCM_NOTIFY, 0, reinterpret_cast<LPARAM>(&nm));
+
+					// ASSERT
+					Assert::IsTrue(1 == selections.size());
+					Assert::IsTrue(1 == selections[0]);
+
+					// ACT
+					nm.iItem = 0;
+					::SendMessage(hlv, OCM_NOTIFY, 0, reinterpret_cast<LPARAM>(&nm));
+					nm.iItem = 3;
+					::SendMessage(hlv, OCM_NOTIFY, 0, reinterpret_cast<LPARAM>(&nm));
+					nm.iItem = 5;
+					::SendMessage(hlv, OCM_NOTIFY, 0, reinterpret_cast<LPARAM>(&nm));
+
+					// ASSERT
+					Assert::IsTrue(4 == selections.size());
+					Assert::IsTrue(0 == selections[1]);
+					Assert::IsTrue(3 == selections[2]);
+					Assert::IsTrue(5 == selections[3]);
 				}
 			};
 		}
