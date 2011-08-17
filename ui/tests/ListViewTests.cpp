@@ -47,6 +47,17 @@ namespace wpl
 				};
 
 				typedef shared_ptr<test_model> model_ptr;
+
+				listview::sort_direction get_column_direction(void *hlv, listview::index_type column)
+				{
+					HDITEM item = { 0 };
+					HWND hheader = ListView_GetHeader(reinterpret_cast<HWND>(hlv));
+					
+					item.mask = HDI_FORMAT;
+					Header_GetItem(hheader, column, &item);
+					return (item.fmt & HDF_SORTUP) ? listview::dir_ascending : (item.fmt & HDF_SORTDOWN) ?
+						listview::dir_descending : listview::dir_none;
+				}
 			}
 
 			[TestClass]
@@ -369,6 +380,74 @@ namespace wpl
 
 					// ASSERT
 					Assert::IsTrue(3 == m->ordering.size());	// clicking non-sorting column changes nothing
+				}
+
+
+
+				[TestMethod]
+				void ColumnMarkerIsSet()
+				{
+					// INIT
+					HWND hlv1 = create_listview(), hlv2 = create_listview();
+					shared_ptr<listview> lv1(wrap_listview(hlv1)), lv2(wrap_listview(hlv2));
+					model_ptr m(new test_model(0));
+					NMLISTVIEW nmlvdi = {
+						{	0, 0, LVN_COLUMNCLICK	},
+						/* iItem = */ 0, /* iSubItem = */ 0,
+					};
+
+					lv1->set_model(m);
+					lv2->set_model(m);
+
+					// ACT
+					lv1->add_column(L"", listview::dir_descending);
+					lv1->add_column(L"", listview::dir_ascending);
+					lv2->add_column(L"", listview::dir_ascending);
+					lv2->add_column(L"", listview::dir_descending);
+					lv2->add_column(L"", listview::dir_none);
+
+					// ASSERT
+					Assert::IsTrue(listview::dir_none == get_column_direction(hlv1, 0));
+					Assert::IsTrue(listview::dir_none == get_column_direction(hlv1, 1));
+					Assert::IsTrue(listview::dir_none == get_column_direction(hlv2, 0));
+					Assert::IsTrue(listview::dir_none == get_column_direction(hlv2, 1));
+					Assert::IsTrue(listview::dir_none == get_column_direction(hlv2, 2));
+
+					// ACT
+					nmlvdi.iSubItem = 0;
+					::SendMessage(hlv1, OCM_NOTIFY, 0, reinterpret_cast<LPARAM>(&nmlvdi));
+					::SendMessage(hlv2, OCM_NOTIFY, 0, reinterpret_cast<LPARAM>(&nmlvdi));
+
+					// ASSERT
+					Assert::IsTrue(listview::dir_descending == get_column_direction(hlv1, 0));
+					Assert::IsTrue(listview::dir_none == get_column_direction(hlv1, 1));
+					Assert::IsTrue(listview::dir_ascending == get_column_direction(hlv2, 0));
+					Assert::IsTrue(listview::dir_none == get_column_direction(hlv2, 1));
+					Assert::IsTrue(listview::dir_none == get_column_direction(hlv2, 2));
+
+					// ACT
+					nmlvdi.iSubItem = 1;
+					::SendMessage(hlv1, OCM_NOTIFY, 0, reinterpret_cast<LPARAM>(&nmlvdi));
+					::SendMessage(hlv2, OCM_NOTIFY, 0, reinterpret_cast<LPARAM>(&nmlvdi));
+
+					// ASSERT
+					Assert::IsTrue(listview::dir_none == get_column_direction(hlv1, 0));
+					Assert::IsTrue(listview::dir_ascending == get_column_direction(hlv1, 1));
+					Assert::IsTrue(listview::dir_none == get_column_direction(hlv2, 0));
+					Assert::IsTrue(listview::dir_descending == get_column_direction(hlv2, 1));
+					Assert::IsTrue(listview::dir_none == get_column_direction(hlv2, 2));
+
+					// ACT
+					::SendMessage(hlv1, OCM_NOTIFY, 0, reinterpret_cast<LPARAM>(&nmlvdi));
+					nmlvdi.iSubItem = 2;
+					::SendMessage(hlv2, OCM_NOTIFY, 0, reinterpret_cast<LPARAM>(&nmlvdi));
+
+					// ASSERT
+					Assert::IsTrue(listview::dir_none == get_column_direction(hlv1, 0));
+					Assert::IsTrue(listview::dir_descending == get_column_direction(hlv1, 1));
+					Assert::IsTrue(listview::dir_none == get_column_direction(hlv2, 0));
+					Assert::IsTrue(listview::dir_descending == get_column_direction(hlv2, 1));
+					Assert::IsTrue(listview::dir_none == get_column_direction(hlv2, 2));
 				}
 			};
 		}

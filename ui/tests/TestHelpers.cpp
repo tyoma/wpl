@@ -57,7 +57,7 @@ namespace ut
 				::DestroyWindow(reinterpret_cast<HWND>(*i));
 	}
 
-	void WindowTestsBase::init_commctrl(TestContext ^context)
+	void WindowTestsBase::init_commctrl(TestContext ^/*context*/)
 	{
 		INITCOMMONCONTROLSEX icc = { sizeof(INITCOMMONCONTROLSEX), ICC_LISTVIEW_CLASSES };
 
