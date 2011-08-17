@@ -40,6 +40,8 @@ namespace wpl
 				shared_ptr<window> _listview;
 				vector<sort_direction> _default_sorts;
 				shared_ptr<destructible> _advisory, _invalidated_connection;
+				index_type _sort_column;
+				bool _sort_ascending;
 
 				virtual void set_model(shared_ptr<model> model);
 				virtual void add_column(const wstring &caption, sort_direction default_sort_direction);
@@ -54,7 +56,7 @@ namespace wpl
 
 
 			listview_impl::listview_impl(HWND hwnd)
-				: _listview(window::attach(hwnd))
+				: _listview(window::attach(hwnd)), _sort_column(static_cast<index_type>(-1))
 			{
 				_advisory = _listview->advise(bind(&listview_impl::wndproc, this, _1, _2, _3, _4));
 			}
@@ -102,7 +104,11 @@ namespace wpl
 
 						if (default_sort != dir_none)
 						{
-							_model->set_order(column, default_sort == dir_ascending);
+							bool sort_ascending = _sort_column != column ? default_sort == dir_ascending : !_sort_ascending;
+							
+							_model->set_order(column, sort_ascending);
+							_sort_column = column;
+							_sort_ascending = sort_ascending;
 						}
 					}
 					return 0;

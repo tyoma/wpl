@@ -134,7 +134,6 @@ namespace wpl
 					HWND hlv = create_listview();
 					shared_ptr<listview> lv(wrap_listview(hlv));
 					model_ptr m(new test_model(0));
-					TCHAR buffer[100] = { 0 };
 					NMLVDISPINFO nmlvdi = {
 						{	0, 0, LVN_GETDISPINFO	},
 						{ /* mask = */ LVIF_STATE, /* item = */ 0, /* subitem = */ 0, 0, 0, 0, 0, }
@@ -262,6 +261,114 @@ namespace wpl
 					Assert::IsTrue(3 == m->ordering.size());
 					Assert::IsTrue(2 == m->ordering[2].first);
 					Assert::IsTrue(false == m->ordering[2].second);
+				}
+
+
+				[TestMethod]
+				void OrderReversing()
+				{
+					// INIT
+					HWND hlv1 = create_listview(), hlv2 = create_listview();
+					shared_ptr<listview> lv1(wrap_listview(hlv1)), lv2(wrap_listview(hlv2));
+					model_ptr m(new test_model(0));
+					NMLISTVIEW nmlvdi = {
+						{	0, 0, LVN_COLUMNCLICK	},
+						/* iItem = */ 0, /* iSubItem = */ 0,
+					};
+
+					lv1->set_model(m);
+					lv2->set_model(m);
+					lv1->add_column(L"", listview::dir_ascending);
+					lv1->add_column(L"", listview::dir_ascending);
+					lv2->add_column(L"", listview::dir_descending);
+					lv2->add_column(L"", listview::dir_descending);
+					lv2->add_column(L"", listview::dir_descending);
+					nmlvdi.iSubItem = 0;
+					::SendMessage(hlv1, OCM_NOTIFY, 0, reinterpret_cast<LPARAM>(&nmlvdi));
+					nmlvdi.iSubItem = 2;
+					::SendMessage(hlv2, OCM_NOTIFY, 0, reinterpret_cast<LPARAM>(&nmlvdi));
+
+					m->ordering.clear();
+
+					// ACT
+					nmlvdi.iSubItem = 0;
+					::SendMessage(hlv1, OCM_NOTIFY, 0, reinterpret_cast<LPARAM>(&nmlvdi));
+
+					// ASSERT
+					Assert::IsTrue(1 == m->ordering.size());
+					Assert::IsTrue(0 == m->ordering[0].first);
+					Assert::IsTrue(false == m->ordering[0].second);
+
+					// ACT
+					nmlvdi.iSubItem = 2;
+					::SendMessage(hlv2, OCM_NOTIFY, 0, reinterpret_cast<LPARAM>(&nmlvdi));
+					nmlvdi.iSubItem = 2;
+					::SendMessage(hlv2, OCM_NOTIFY, 0, reinterpret_cast<LPARAM>(&nmlvdi));
+
+					// ASSERT
+					Assert::IsTrue(3 == m->ordering.size());
+					Assert::IsTrue(2 == m->ordering[1].first);
+					Assert::IsTrue(true == m->ordering[1].second);
+					Assert::IsTrue(2 == m->ordering[2].first);
+					Assert::IsTrue(false == m->ordering[2].second);
+				}
+
+
+				[TestMethod]
+				void OrderDefaultingAfterSwitchigSortColumn()
+				{
+					// INIT
+					HWND hlv1 = create_listview(), hlv2 = create_listview();
+					shared_ptr<listview> lv1(wrap_listview(hlv1)), lv2(wrap_listview(hlv2));
+					model_ptr m(new test_model(0));
+					NMLISTVIEW nmlvdi = {
+						{	0, 0, LVN_COLUMNCLICK	},
+						/* iItem = */ 0, /* iSubItem = */ 0,
+					};
+
+					lv1->set_model(m);
+					lv2->set_model(m);
+					lv1->add_column(L"", listview::dir_ascending);
+					lv1->add_column(L"", listview::dir_ascending);
+					lv2->add_column(L"", listview::dir_descending);
+					lv2->add_column(L"", listview::dir_ascending);
+					lv2->add_column(L"", listview::dir_descending);
+					lv2->add_column(L"", listview::dir_none);
+					nmlvdi.iSubItem = 0;
+					::SendMessage(hlv1, OCM_NOTIFY, 0, reinterpret_cast<LPARAM>(&nmlvdi));
+					nmlvdi.iSubItem = 0;
+					::SendMessage(hlv2, OCM_NOTIFY, 0, reinterpret_cast<LPARAM>(&nmlvdi));
+
+					m->ordering.clear();
+
+					// ACT
+					nmlvdi.iSubItem = 1;
+					::SendMessage(hlv1, OCM_NOTIFY, 0, reinterpret_cast<LPARAM>(&nmlvdi));
+
+					// ASSERT
+					Assert::IsTrue(1 == m->ordering.size());
+					Assert::IsTrue(1 == m->ordering[0].first);
+					Assert::IsTrue(true == m->ordering[0].second);
+
+					// ACT
+					nmlvdi.iSubItem = 1;
+					::SendMessage(hlv2, OCM_NOTIFY, 0, reinterpret_cast<LPARAM>(&nmlvdi));
+					nmlvdi.iSubItem = 2;
+					::SendMessage(hlv2, OCM_NOTIFY, 0, reinterpret_cast<LPARAM>(&nmlvdi));
+
+					// ASSERT
+					Assert::IsTrue(3 == m->ordering.size());
+					Assert::IsTrue(1 == m->ordering[1].first);
+					Assert::IsTrue(true == m->ordering[1].second);
+					Assert::IsTrue(2 == m->ordering[2].first);
+					Assert::IsTrue(false == m->ordering[2].second);
+
+					// ACT
+					nmlvdi.iSubItem = 3;
+					::SendMessage(hlv2, OCM_NOTIFY, 0, reinterpret_cast<LPARAM>(&nmlvdi));
+
+					// ASSERT
+					Assert::IsTrue(3 == m->ordering.size());	// clicking non-sorting column changes nothing
 				}
 			};
 		}
