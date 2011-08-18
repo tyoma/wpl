@@ -267,6 +267,38 @@ namespace wpl
 
 
 				[TestMethod]
+				void GettingItemTextWithTruncation()
+				{
+					// INIT
+					HWND hlv = create_listview();
+					shared_ptr<listview> lv(wrap_listview(hlv));
+					model_ptr m(new test_model(0));
+					TCHAR buffer[4] = { 0 };
+					NMLVDISPINFO nmlvdi = {
+						{	0, 0, LVN_GETDISPINFO	},
+						{ /* mask = */ LVIF_TEXT, /* item = */ 0, /* subitem = */ 0, 0, 0, buffer, sizeof(buffer) / sizeof(TCHAR), }
+					};
+
+					m->set_count(3), m->items[0].resize(3);
+					m->items[0][0] = L"one", m->items[0][1] = L"two", m->items[0][2] = L"three";
+					lv->set_model(m);
+
+					// ACT / ASSERT
+					nmlvdi.item.iItem = 0, nmlvdi.item.iSubItem = 0;
+					::SendMessage(hlv, OCM_NOTIFY, 0, reinterpret_cast<LPARAM>(&nmlvdi));
+					Assert::IsTrue(0 == _tcscmp(_T("one"), buffer));
+
+					nmlvdi.item.iItem = 0, nmlvdi.item.iSubItem = 1;
+					::SendMessage(hlv, OCM_NOTIFY, 0, reinterpret_cast<LPARAM>(&nmlvdi));
+					Assert::IsTrue(0 == _tcscmp(_T("two"), buffer));
+
+					nmlvdi.item.iItem = 0, nmlvdi.item.iSubItem = 2;
+					::SendMessage(hlv, OCM_NOTIFY, 0, reinterpret_cast<LPARAM>(&nmlvdi));
+					Assert::IsTrue(0 == _tcscmp(_T("thr"), buffer));
+				}
+
+
+				[TestMethod]
 				void InitialOrdering()
 				{
 					// INIT
