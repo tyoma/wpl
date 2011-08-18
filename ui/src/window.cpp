@@ -135,7 +135,7 @@ namespace wpl
 		void window::unadvise() throw()
 		{	_user_handler = user_handler_t();	}
 
-		HWND window::hwnd() const
+		HWND window::hwnd() const throw()
 		{	return _window;	}
 	}
 }

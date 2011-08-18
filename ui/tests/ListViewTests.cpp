@@ -71,7 +71,7 @@ namespace wpl
 			{
 				HWND create_listview()
 				{
-					return reinterpret_cast<HWND>(create_window(_T("SysListView32"), create_window(),
+					return reinterpret_cast<HWND>(create_window(_T("SysListView32"), create_visible_window(),
 						WS_CHILD | WS_VISIBLE | LVS_REPORT | LVS_OWNERDATA, 0));
 				}
 

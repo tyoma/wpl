@@ -31,6 +31,9 @@ namespace ut
 	{	delete _windows;	}
 
 	void *WindowTestsBase::create_window()
+	{	return create_window(_T("static"), 0, WS_POPUP, 0);	}
+
+	void *WindowTestsBase::create_visible_window()
 	{	return create_window(_T("static"), 0, WS_POPUP | WS_VISIBLE, 0);	}
 
 	void *WindowTestsBase::create_window(const TCHAR *class_name)

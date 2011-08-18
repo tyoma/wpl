@@ -16,6 +16,7 @@ namespace ut
 
 	protected:
 		void *create_window();
+		void *create_visible_window();
 		void *create_window(const TCHAR *class_name);
 		void *create_window(const TCHAR *class_name, void *parent, unsigned int style, unsigned int stylex);
 

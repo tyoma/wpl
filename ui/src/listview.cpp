@@ -46,7 +46,7 @@ namespace wpl
 				virtual void set_model(shared_ptr<model> model);
 				virtual void add_column(const wstring &caption, sort_direction default_sort_direction);
 
-				void on_invalidated(index_type new_count);
+				void invalidate_view(index_type new_count) throw();
 
 				LRESULT wndproc(UINT message, WPARAM wparam, LPARAM lparam, const window::original_handler_t &previous);
 
@@ -67,8 +67,8 @@ namespace wpl
 			{
 				if (model && _sort_column != -1)
 					model->set_order(_sort_column, _sort_ascending);
-				ListView_SetItemCountEx(_listview->hwnd(), model ? model->get_count() : 0, 0);
-				_invalidated_connection = model ? model->invalidated += bind(&listview_impl::on_invalidated, this, _1) : 0;
+				_invalidated_connection = model ? model->invalidated += bind(&listview_impl::invalidate_view, this, _1) : 0;
+				invalidate_view(model ? model->get_count() : 0);
 				_model = model;
 			}
 
@@ -88,7 +88,7 @@ namespace wpl
 				_default_sorts.push_back(default_sort_direction);
 			}
 
-			void listview_impl::on_invalidated(index_type new_count)
+			void listview_impl::invalidate_view(index_type new_count) throw()
 			{
 				if (new_count != static_cast<index_type>(ListView_GetItemCount(_listview->hwnd())))
 					ListView_SetItemCountEx(_listview->hwnd(), new_count, 0);
