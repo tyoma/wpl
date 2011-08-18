@@ -96,10 +96,13 @@ namespace wpl
 				if (OCM_NOTIFY == message)
 				{
 					UINT code = reinterpret_cast<const NMHDR *>(lparam)->code;
+					const NMLISTVIEW *pnmlv = reinterpret_cast<const NMLISTVIEW *>(lparam);
 
-					if (LVN_ITEMACTIVATE == code)
+					if (LVN_ITEMCHANGED == code && (pnmlv->uOldState & LVIS_SELECTED) != (pnmlv->uNewState & LVIS_SELECTED))
+						selection_changed(pnmlv->iItem, 0 != (pnmlv->uNewState & LVIS_SELECTED));
+					else if (LVN_ITEMACTIVATE == code)
 						item_activate(reinterpret_cast<const NMITEMACTIVATE *>(lparam)->iItem);
-					if (LVN_GETDISPINFO == code)
+					else if (LVN_GETDISPINFO == code)
 					{
 						const NMLVDISPINFO *pdi = reinterpret_cast<const NMLVDISPINFO *>(lparam);
 
@@ -114,7 +117,7 @@ namespace wpl
 					}
 					else if (LVN_COLUMNCLICK == code)
 					{
-						int column = reinterpret_cast<const NMLISTVIEW *>(lparam)->iSubItem;
+						int column = pnmlv->iSubItem;
 						sort_direction default_sort = _default_sorts[column];
 
 						if (default_sort != dir_none)

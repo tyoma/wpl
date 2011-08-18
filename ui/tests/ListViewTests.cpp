@@ -490,6 +490,81 @@ namespace wpl
 					Assert::IsTrue(3 == selections[2]);
 					Assert::IsTrue(5 == selections[3]);
 				}
+
+
+				[TestMethod]
+				void ItemChangeWithSelectionRemainingDoesNotFireEvent()
+				{
+					// INIT
+					vector<listview::index_type> selection_indices;
+					vector<bool> selection_states;
+					HWND hlv = create_listview();
+					shared_ptr<listview> lv(wrap_listview(hlv));
+					shared_ptr<destructible>
+						c1 = lv->selection_changed += bind(&push_back<listview::index_type>, ref(selection_indices), _1),
+						c2 = lv->selection_changed += bind(&push_back<bool>, ref(selection_states), _2);
+					NMLISTVIEW nmlv = {
+						{	0, 0, LVN_ITEMCHANGED	},
+						/* iItem = */ 0, /* iSubItem = */ 0,
+					};
+
+					// ACT
+					nmlv.iItem = 0, nmlv.uOldState = LVIS_FOCUSED, nmlv.uNewState = 0;
+					::SendMessage(hlv, OCM_NOTIFY, 0, reinterpret_cast<LPARAM>(&nmlv));
+					nmlv.iItem = 1, nmlv.uOldState = 0, nmlv.uNewState = LVIS_FOCUSED;
+					::SendMessage(hlv, OCM_NOTIFY, 0, reinterpret_cast<LPARAM>(&nmlv));
+					nmlv.iItem = 3, nmlv.uOldState = LVIS_FOCUSED | LVIS_SELECTED, nmlv.uNewState = LVIS_SELECTED;
+					::SendMessage(hlv, OCM_NOTIFY, 0, reinterpret_cast<LPARAM>(&nmlv));
+
+					// ASSERT
+					Assert::IsTrue(selection_indices.empty());
+				}
+
+
+				[TestMethod]
+				void ItemChangeWithSelectionChangingDoesFireEvent()
+				{
+					// INIT
+					vector<listview::index_type> selection_indices;
+					vector<bool> selection_states;
+					HWND hlv = create_listview();
+					shared_ptr<listview> lv(wrap_listview(hlv));
+					shared_ptr<destructible>
+						c1 = lv->selection_changed += bind(&push_back<listview::index_type>, ref(selection_indices), _1),
+						c2 = lv->selection_changed += bind(&push_back<bool>, ref(selection_states), _2);
+					NMLISTVIEW nmlv = {
+						{	0, 0, LVN_ITEMCHANGED	},
+						/* iItem = */ 0, /* iSubItem = */ 0,
+					};
+
+					// ACT
+					nmlv.iItem = 1, nmlv.uOldState = LVIS_FOCUSED | LVIS_SELECTED, nmlv.uNewState = 0;
+					::SendMessage(hlv, OCM_NOTIFY, 0, reinterpret_cast<LPARAM>(&nmlv));
+					nmlv.iItem = 2, nmlv.uOldState = LVIS_SELECTED, nmlv.uNewState = LVIS_FOCUSED;
+					::SendMessage(hlv, OCM_NOTIFY, 0, reinterpret_cast<LPARAM>(&nmlv));
+					nmlv.iItem = 7, nmlv.uOldState = LVIS_FOCUSED, nmlv.uNewState = LVIS_FOCUSED | LVIS_SELECTED;
+					::SendMessage(hlv, OCM_NOTIFY, 0, reinterpret_cast<LPARAM>(&nmlv));
+
+					// ASSERT
+					Assert::IsTrue(3 == selection_indices.size());
+					Assert::IsTrue(3 == selection_states.size());
+					Assert::IsTrue(1 == selection_indices[0]);
+					Assert::IsFalse(selection_states[0]);
+					Assert::IsTrue(2 == selection_indices[1]);
+					Assert::IsFalse(selection_states[1]);
+					Assert::IsTrue(7 == selection_indices[2]);
+					Assert::IsTrue(selection_states[2]);
+
+					// ACT
+					nmlv.iItem = 9, nmlv.uOldState = 0, nmlv.uNewState = LVIS_SELECTED;
+					::SendMessage(hlv, OCM_NOTIFY, 0, reinterpret_cast<LPARAM>(&nmlv));
+
+					// ASSERT
+					Assert::IsTrue(4 == selection_indices.size());
+					Assert::IsTrue(4 == selection_states.size());
+					Assert::IsTrue(9 == selection_indices[3]);
+					Assert::IsTrue(selection_states[3]);
+				}
 			};
 		}
 	}
