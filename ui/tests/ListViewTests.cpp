@@ -237,16 +237,16 @@ namespace wpl
 
 
 				[TestMethod]
-				void GettingItemTextNoTruncation()
+				void GettingItemTextNoTruncationANSI()
 				{
 					// INIT
 					HWND hlv = create_listview();
 					shared_ptr<listview> lv(wrap_listview(hlv));
 					model_ptr m(new test_model(0));
-					TCHAR buffer[100] = { 0 };
-					NMLVDISPINFO nmlvdi = {
-						{	0, 0, LVN_GETDISPINFO	},
-						{ /* mask = */ LVIF_TEXT, /* item = */ 0, /* subitem = */ 0, 0, 0, buffer, sizeof(buffer) / sizeof(TCHAR), }
+					char buffer[100] = { 0 };
+					NMLVDISPINFOA nmlvdi = {
+						{	0, 0, LVN_GETDISPINFOA	},
+						{ /* mask = */ LVIF_TEXT, /* item = */ 0, /* subitem = */ 0, 0, 0, buffer, sizeof(buffer) / sizeof(buffer[0]), }
 					};
 
 					m->set_count(3), m->items[0].resize(3), m->items[1].resize(3), m->items[2].resize(3);
@@ -258,53 +258,111 @@ namespace wpl
 					// ACT / ASSERT
 					nmlvdi.item.iItem = 0, nmlvdi.item.iSubItem = 0;
 					::SendMessage(hlv, OCM_NOTIFY, 0, reinterpret_cast<LPARAM>(&nmlvdi));
-					Assert::IsTrue(0 == _tcscmp(_T("one"), buffer));
+					Assert::IsTrue(0 == strcmp("one", buffer));
 
 					nmlvdi.item.iItem = 0, nmlvdi.item.iSubItem = 1;
 					::SendMessage(hlv, OCM_NOTIFY, 0, reinterpret_cast<LPARAM>(&nmlvdi));
-					Assert::IsTrue(0 == _tcscmp(_T("two"), buffer));
+					Assert::IsTrue(0 == strcmp("two", buffer));
 
 					nmlvdi.item.iItem = 0, nmlvdi.item.iSubItem = 2;
 					::SendMessage(hlv, OCM_NOTIFY, 0, reinterpret_cast<LPARAM>(&nmlvdi));
-					Assert::IsTrue(0 == _tcscmp(_T("three"), buffer));
+					Assert::IsTrue(0 == strcmp("three", buffer));
 
 					nmlvdi.item.iItem = 1, nmlvdi.item.iSubItem = 0;
 					::SendMessage(hlv, OCM_NOTIFY, 0, reinterpret_cast<LPARAM>(&nmlvdi));
-					Assert::IsTrue(0 == _tcscmp(_T("four"), buffer));
+					Assert::IsTrue(0 == strcmp("four", buffer));
 
 					nmlvdi.item.iItem = 1, nmlvdi.item.iSubItem = 1;
 					::SendMessage(hlv, OCM_NOTIFY, 0, reinterpret_cast<LPARAM>(&nmlvdi));
-					Assert::IsTrue(0 == _tcscmp(_T("five"), buffer));
+					Assert::IsTrue(0 == strcmp("five", buffer));
 
 					nmlvdi.item.iItem = 1, nmlvdi.item.iSubItem = 2;
 					::SendMessage(hlv, OCM_NOTIFY, 0, reinterpret_cast<LPARAM>(&nmlvdi));
-					Assert::IsTrue(0 == _tcscmp(_T("six"), buffer));
+					Assert::IsTrue(0 == strcmp("six", buffer));
 
 					nmlvdi.item.iItem = 2, nmlvdi.item.iSubItem = 0;
 					::SendMessage(hlv, OCM_NOTIFY, 0, reinterpret_cast<LPARAM>(&nmlvdi));
-					Assert::IsTrue(0 == _tcscmp(_T("seven"), buffer));
+					Assert::IsTrue(0 == strcmp("seven", buffer));
 
 					nmlvdi.item.iItem = 2, nmlvdi.item.iSubItem = 1;
 					::SendMessage(hlv, OCM_NOTIFY, 0, reinterpret_cast<LPARAM>(&nmlvdi));
-					Assert::IsTrue(0 == _tcscmp(_T("eight"), buffer));
+					Assert::IsTrue(0 == strcmp("eight", buffer));
 
 					nmlvdi.item.iItem = 2, nmlvdi.item.iSubItem = 2;
 					::SendMessage(hlv, OCM_NOTIFY, 0, reinterpret_cast<LPARAM>(&nmlvdi));
-					Assert::IsTrue(0 == _tcscmp(_T("NINE"), buffer));
+					Assert::IsTrue(0 == strcmp("NINE", buffer));
 				}
 
 
 				[TestMethod]
-				void GettingItemTextWithTruncation()
+				void GettingItemTextNoTruncationUnicode()
 				{
 					// INIT
 					HWND hlv = create_listview();
 					shared_ptr<listview> lv(wrap_listview(hlv));
 					model_ptr m(new test_model(0));
-					TCHAR buffer[4] = { 0 };
-					NMLVDISPINFO nmlvdi = {
-						{	0, 0, LVN_GETDISPINFO	},
-						{ /* mask = */ LVIF_TEXT, /* item = */ 0, /* subitem = */ 0, 0, 0, buffer, sizeof(buffer) / sizeof(TCHAR), }
+					wchar_t buffer[100] = { 0 };
+					NMLVDISPINFOW nmlvdi = {
+						{	0, 0, LVN_GETDISPINFOW	},
+						{ /* mask = */ LVIF_TEXT, /* item = */ 0, /* subitem = */ 0, 0, 0, buffer, sizeof(buffer) / sizeof(buffer[0]), }
+					};
+
+					m->set_count(3), m->items[0].resize(3), m->items[1].resize(3), m->items[2].resize(3);
+					m->items[0][0] = L"one", m->items[0][1] = L"two", m->items[0][2] = L"three";
+					m->items[1][0] = L"four", m->items[1][1] = L"five", m->items[1][2] = L"six";
+					m->items[2][0] = L"seven", m->items[2][1] = L"eight", m->items[2][2] = L"NINE";
+					lv->set_model(m);
+
+					// ACT / ASSERT
+					nmlvdi.item.iItem = 0, nmlvdi.item.iSubItem = 0;
+					::SendMessage(hlv, OCM_NOTIFY, 0, reinterpret_cast<LPARAM>(&nmlvdi));
+					Assert::IsTrue(0 == wcscmp(L"one", buffer));
+
+					nmlvdi.item.iItem = 0, nmlvdi.item.iSubItem = 1;
+					::SendMessage(hlv, OCM_NOTIFY, 0, reinterpret_cast<LPARAM>(&nmlvdi));
+					Assert::IsTrue(0 == wcscmp(L"two", buffer));
+
+					nmlvdi.item.iItem = 0, nmlvdi.item.iSubItem = 2;
+					::SendMessage(hlv, OCM_NOTIFY, 0, reinterpret_cast<LPARAM>(&nmlvdi));
+					Assert::IsTrue(0 == wcscmp(L"three", buffer));
+
+					nmlvdi.item.iItem = 1, nmlvdi.item.iSubItem = 0;
+					::SendMessage(hlv, OCM_NOTIFY, 0, reinterpret_cast<LPARAM>(&nmlvdi));
+					Assert::IsTrue(0 == wcscmp(L"four", buffer));
+
+					nmlvdi.item.iItem = 1, nmlvdi.item.iSubItem = 1;
+					::SendMessage(hlv, OCM_NOTIFY, 0, reinterpret_cast<LPARAM>(&nmlvdi));
+					Assert::IsTrue(0 == wcscmp(L"five", buffer));
+
+					nmlvdi.item.iItem = 1, nmlvdi.item.iSubItem = 2;
+					::SendMessage(hlv, OCM_NOTIFY, 0, reinterpret_cast<LPARAM>(&nmlvdi));
+					Assert::IsTrue(0 == wcscmp(L"six", buffer));
+
+					nmlvdi.item.iItem = 2, nmlvdi.item.iSubItem = 0;
+					::SendMessage(hlv, OCM_NOTIFY, 0, reinterpret_cast<LPARAM>(&nmlvdi));
+					Assert::IsTrue(0 == wcscmp(L"seven", buffer));
+
+					nmlvdi.item.iItem = 2, nmlvdi.item.iSubItem = 1;
+					::SendMessage(hlv, OCM_NOTIFY, 0, reinterpret_cast<LPARAM>(&nmlvdi));
+					Assert::IsTrue(0 == wcscmp(L"eight", buffer));
+
+					nmlvdi.item.iItem = 2, nmlvdi.item.iSubItem = 2;
+					::SendMessage(hlv, OCM_NOTIFY, 0, reinterpret_cast<LPARAM>(&nmlvdi));
+					Assert::IsTrue(0 == wcscmp(L"NINE", buffer));
+				}
+
+
+				[TestMethod]
+				void GettingItemTextWithTruncationANSI()
+				{
+					// INIT
+					HWND hlv = create_listview();
+					shared_ptr<listview> lv(wrap_listview(hlv));
+					model_ptr m(new test_model(0));
+					char buffer[4] = { 0 };
+					NMLVDISPINFOA nmlvdi = {
+						{	0, 0, LVN_GETDISPINFOA	},
+						{ /* mask = */ LVIF_TEXT, /* item = */ 0, /* subitem = */ 0, 0, 0, buffer, sizeof(buffer) / sizeof(buffer[0]), }
 					};
 
 					m->set_count(3), m->items[0].resize(3);
@@ -314,15 +372,47 @@ namespace wpl
 					// ACT / ASSERT
 					nmlvdi.item.iItem = 0, nmlvdi.item.iSubItem = 0;
 					::SendMessage(hlv, OCM_NOTIFY, 0, reinterpret_cast<LPARAM>(&nmlvdi));
-					Assert::IsTrue(0 == _tcscmp(_T("one"), buffer));
+					Assert::IsTrue(0 == strcmp("one", buffer));
 
 					nmlvdi.item.iItem = 0, nmlvdi.item.iSubItem = 1;
 					::SendMessage(hlv, OCM_NOTIFY, 0, reinterpret_cast<LPARAM>(&nmlvdi));
-					Assert::IsTrue(0 == _tcscmp(_T("two"), buffer));
+					Assert::IsTrue(0 == strcmp("two", buffer));
 
 					nmlvdi.item.iItem = 0, nmlvdi.item.iSubItem = 2;
 					::SendMessage(hlv, OCM_NOTIFY, 0, reinterpret_cast<LPARAM>(&nmlvdi));
-					Assert::IsTrue(0 == _tcscmp(_T("thr"), buffer));
+					Assert::IsTrue(0 == strcmp("thr", buffer));
+				}
+
+
+				[TestMethod]
+				void GettingItemTextWithTruncationUnicode()
+				{
+					// INIT
+					HWND hlv = create_listview();
+					shared_ptr<listview> lv(wrap_listview(hlv));
+					model_ptr m(new test_model(0));
+					wchar_t buffer[4] = { 0 };
+					NMLVDISPINFOW nmlvdi = {
+						{	0, 0, LVN_GETDISPINFOW	},
+						{ /* mask = */ LVIF_TEXT, /* item = */ 0, /* subitem = */ 0, 0, 0, buffer, sizeof(buffer) / sizeof(buffer[0]), }
+					};
+
+					m->set_count(3), m->items[0].resize(3);
+					m->items[0][0] = L"one", m->items[0][1] = L"two", m->items[0][2] = L"three";
+					lv->set_model(m);
+
+					// ACT / ASSERT
+					nmlvdi.item.iItem = 0, nmlvdi.item.iSubItem = 0;
+					::SendMessage(hlv, OCM_NOTIFY, 0, reinterpret_cast<LPARAM>(&nmlvdi));
+					Assert::IsTrue(0 == wcscmp(L"one", buffer));
+
+					nmlvdi.item.iItem = 0, nmlvdi.item.iSubItem = 1;
+					::SendMessage(hlv, OCM_NOTIFY, 0, reinterpret_cast<LPARAM>(&nmlvdi));
+					Assert::IsTrue(0 == wcscmp(L"two", buffer));
+
+					nmlvdi.item.iItem = 0, nmlvdi.item.iSubItem = 2;
+					::SendMessage(hlv, OCM_NOTIFY, 0, reinterpret_cast<LPARAM>(&nmlvdi));
+					Assert::IsTrue(0 == wcscmp(L"thr", buffer));
 				}
 
 

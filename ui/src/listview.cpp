@@ -36,6 +36,8 @@ namespace wpl
 		{
 			class listview_impl : public listview
 			{
+				wstring _text_buffer;
+				CStringA _ansi_text_buffer;
 				shared_ptr<model> _model;
 				shared_ptr<window> _listview;
 				vector<sort_direction> _default_sorts;
@@ -107,17 +109,25 @@ namespace wpl
 						selection_changed(pnmlv->iItem, 0 != (pnmlv->uNewState & LVIS_SELECTED));
 					else if (LVN_ITEMACTIVATE == code)
 						item_activate(reinterpret_cast<const NMITEMACTIVATE *>(lparam)->iItem);
-					else if (LVN_GETDISPINFO == code)
+					else if (LVN_GETDISPINFOA == code)
 					{
-						const NMLVDISPINFO *pdi = reinterpret_cast<const NMLVDISPINFO *>(lparam);
+						const NMLVDISPINFOA *pdi = reinterpret_cast<const NMLVDISPINFOA *>(lparam);
 
 						if (pdi->item.mask & LVIF_TEXT)
 						{
-							wstring b1;
-	
-							_model->get_text(pdi->item.iItem, pdi->item.iSubItem, b1);
-							CString b2(b1.c_str());
-							_tcsncpy_s(pdi->item.pszText, pdi->item.cchTextMax, b2, _TRUNCATE);
+							_model->get_text(pdi->item.iItem, pdi->item.iSubItem, _text_buffer);
+							_ansi_text_buffer = _text_buffer.c_str();
+							strncpy_s(pdi->item.pszText, pdi->item.cchTextMax, _ansi_text_buffer, _TRUNCATE);
+						}
+					}
+					else if (LVN_GETDISPINFOW == code)
+					{
+						const NMLVDISPINFOW *pdi = reinterpret_cast<const NMLVDISPINFOW *>(lparam);
+
+						if (pdi->item.mask & LVIF_TEXT)
+						{
+							_model->get_text(pdi->item.iItem, pdi->item.iSubItem, _text_buffer);
+							wcsncpy_s(pdi->item.pszText, pdi->item.cchTextMax, _text_buffer.c_str(), _TRUNCATE);
 						}
 					}
 					else if (LVN_COLUMNCLICK == code)
