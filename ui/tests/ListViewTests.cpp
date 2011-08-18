@@ -70,7 +70,10 @@ namespace wpl
 			public ref class ListViewTests : ut::WindowTestsBase
 			{
 				HWND create_listview()
-				{	return reinterpret_cast<HWND>(create_window(_T("SysListView32"), create_window(), WS_CHILD | LVS_REPORT | LVS_OWNERDATA, 0));	}
+				{
+					return reinterpret_cast<HWND>(create_window(_T("SysListView32"), create_window(),
+						WS_CHILD | WS_VISIBLE | LVS_REPORT | LVS_OWNERDATA, 0));
+				}
 
 			public:
 				[TestMethod]
@@ -117,6 +120,31 @@ namespace wpl
 
 					// ASSERT
 					Assert::IsTrue(ListView_GetItemCount(hlv) == 23);
+				}
+
+
+				[TestMethod]
+				void ListViewInvalidatedOnModelInvalidate()
+				{
+					// INIT
+					HWND hlv = create_listview();
+					shared_ptr<listview> lv(wrap_listview(hlv));
+					model_ptr m(new test_model(11));
+
+					lv->add_column(L"test", listview::dir_none);
+					lv->set_model(m);
+
+					// ACT
+					::UpdateWindow(hlv);
+
+					// ASSERT
+					Assert::IsFalse(!!::GetUpdateRect(hlv, NULL, FALSE));
+
+					// ACT
+					m->invalidated(11);
+
+					// ASSERT
+					Assert::IsTrue(!!::GetUpdateRect(hlv, NULL, FALSE));
 				}
 
 

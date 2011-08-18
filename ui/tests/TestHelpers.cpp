@@ -31,14 +31,14 @@ namespace ut
 	{	delete _windows;	}
 
 	void *WindowTestsBase::create_window()
-	{	return create_window(_T("static"));	}
+	{	return create_window(_T("static"), 0, WS_POPUP | WS_VISIBLE, 0);	}
 
 	void *WindowTestsBase::create_window(const TCHAR *class_name)
 	{	return create_window(class_name, 0, WS_POPUP, 0);	}
 
 	void *WindowTestsBase::create_window(const TCHAR *class_name, void *parent, unsigned int style, unsigned int exstyle)
 	{
-		HWND hwnd = ::CreateWindowEx(exstyle, class_name, NULL, style, 0, 0, 1, 1, reinterpret_cast<HWND>(parent), NULL, NULL, NULL);
+		HWND hwnd = ::CreateWindowEx(exstyle, class_name, NULL, style, 0, 0, 50, 50, reinterpret_cast<HWND>(parent), NULL, NULL, NULL);
 
 		_windows->push_back(hwnd);
 		return hwnd;

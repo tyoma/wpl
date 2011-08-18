@@ -90,7 +90,10 @@ namespace wpl
 
 			void listview_impl::on_invalidated(index_type new_count)
 			{
-				ListView_SetItemCountEx(_listview->hwnd(), new_count, 0);
+				if (new_count != static_cast<index_type>(ListView_GetItemCount(_listview->hwnd())))
+					ListView_SetItemCountEx(_listview->hwnd(), new_count, 0);
+				else
+					::InvalidateRect(_listview->hwnd(), NULL, FALSE);
 			}
 
 			LRESULT listview_impl::wndproc(UINT message, WPARAM wparam, LPARAM lparam, const window::original_handler_t &previous)

@@ -30,24 +30,24 @@ namespace std
 
 namespace wpl
 {
-   namespace mt
-   {
-	   class thread
-	   {
-		   unsigned int _id;
-		   void *_thread;
+	namespace mt
+	{
+		class thread
+		{
+			unsigned int _id;
+			void *_thread;
 
-	   public:
-		   typedef std::function<void()> action;
+		public:
+			typedef std::function<void()> action;
 
-	   public:
-		   explicit thread(const action &job);
-		   virtual ~thread() throw();
+		public:
+			explicit thread(const action &job);
+			virtual ~thread() throw();
 
-		   static std::auto_ptr<thread> run(const action &initializer, const action &job);
+			static std::auto_ptr<thread> run(const action &initializer, const action &job);
 
-		   unsigned int id() const throw();
-	   };
+			unsigned int id() const throw();
+		};
 
 
 		class tls_base
@@ -73,9 +73,9 @@ namespace wpl
 		};
 
 
-	   // thread - inline definitions
-	   inline unsigned int thread::id() const throw()
-	   {	return _id;	}
+		// thread - inline definitions
+		inline unsigned int thread::id() const throw()
+		{	return _id;	}
 
 
 		// tls<T> - inline definitions
@@ -86,5 +86,5 @@ namespace wpl
 		template <typename T>
 		inline void tls<T>::set(T *value)
 		{	tls_base::set(value);	}
-   }
+	}
 }
