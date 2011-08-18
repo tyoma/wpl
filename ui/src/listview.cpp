@@ -65,8 +65,10 @@ namespace wpl
 
 			void listview_impl::set_model(shared_ptr<model> model)
 			{
-				ListView_SetItemCountEx(_listview->hwnd(), model->get_count(), 0);
-				_invalidated_connection = model->invalidated += bind(&listview_impl::on_invalidated, this, _1);
+				if (model && _sort_column != -1)
+					model->set_order(_sort_column, _sort_ascending);
+				ListView_SetItemCountEx(_listview->hwnd(), model ? model->get_count() : 0, 0);
+				_invalidated_connection = model ? model->invalidated += bind(&listview_impl::on_invalidated, this, _1) : 0;
 				_model = model;
 			}
 

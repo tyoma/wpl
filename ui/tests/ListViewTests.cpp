@@ -145,6 +145,49 @@ namespace wpl
 
 
 				[TestMethod]
+				void InvalidationsFromOldModelsAreNotAccepted()
+				{
+					// INIT
+					HWND hlv = create_listview();
+					shared_ptr<listview> lv(wrap_listview(hlv));
+					model_ptr m1(new test_model(5)), m2(new test_model(7));
+
+					lv->set_model(m1);
+
+					// ACT
+					lv->set_model(m2);
+					m1->set_count(3);
+
+					// ASSERT
+					Assert::IsTrue(7 == ListView_GetItemCount(hlv));
+				}
+
+
+				[TestMethod]
+				void ResettingModelSetsZeroItemsCountAndDisconnectsFromInvalidationEvent()
+				{
+					// INIT
+					HWND hlv = create_listview();
+					shared_ptr<listview> lv(wrap_listview(hlv));
+					model_ptr m(new test_model(5));
+
+					lv->set_model(m);
+
+					// ACT
+					lv->set_model(0);
+
+					// ASSERT
+					Assert::IsTrue(0 == ListView_GetItemCount(hlv));
+
+					// ACT
+					m->set_count(7);
+
+					// ASSERT
+					Assert::IsTrue(0 == ListView_GetItemCount(hlv));
+				}
+
+
+				[TestMethod]
 				void GettingDispInfoOtherThanTextIsNotFailing()
 				{
 					// INIT
@@ -278,6 +321,69 @@ namespace wpl
 					Assert::IsTrue(3 == m->ordering.size());
 					Assert::IsTrue(2 == m->ordering[2].first);
 					Assert::IsTrue(false == m->ordering[2].second);
+				}
+
+
+				[TestMethod]
+				void PreorderingOfANewModel()
+				{
+					// INIT
+					HWND hlv = create_listview();
+					shared_ptr<listview> lv(wrap_listview(hlv));
+					model_ptr m1(new test_model(0)), m2(new test_model(0));
+					NMLISTVIEW nmlvdi = {
+						{	0, 0, LVN_COLUMNCLICK	},
+						/* iItem = */ 0, /* iSubItem = */ 0,
+					};
+
+					lv->set_model(m1);
+					lv->add_column(L"", listview::dir_ascending);
+					lv->add_column(L"", listview::dir_descending);
+					nmlvdi.iSubItem = 0;
+					::SendMessage(hlv, OCM_NOTIFY, 0, reinterpret_cast<LPARAM>(&nmlvdi));
+
+					// ACT
+					lv->set_model(m2);
+
+					// ASSERT
+					Assert::IsTrue(1 == m2->ordering.size());
+					Assert::IsTrue(0 == m2->ordering[0].first);
+					Assert::IsTrue(m2->ordering[0].second);
+
+					// INIT
+					nmlvdi.iSubItem = 1;
+					::SendMessage(hlv, OCM_NOTIFY, 0, reinterpret_cast<LPARAM>(&nmlvdi));
+
+					// ACT
+					lv->set_model(m1);
+
+					// ASSERT
+					Assert::IsTrue(2 == m1->ordering.size());
+					Assert::IsTrue(1 == m1->ordering[1].first);
+					Assert::IsFalse(m1->ordering[1].second);
+				}
+
+
+				[TestMethod]
+				void PreorderingHandlesNullModelWell()
+				{
+					// INIT
+					HWND hlv = create_listview();
+					shared_ptr<listview> lv(wrap_listview(hlv));
+					model_ptr m(new test_model(0));
+					NMLISTVIEW nmlvdi = {
+						{	0, 0, LVN_COLUMNCLICK	},
+						/* iItem = */ 0, /* iSubItem = */ 0,
+					};
+
+					lv->set_model(m);
+					lv->add_column(L"", listview::dir_ascending);
+					lv->add_column(L"", listview::dir_descending);
+					nmlvdi.iSubItem = 0;
+					::SendMessage(hlv, OCM_NOTIFY, 0, reinterpret_cast<LPARAM>(&nmlvdi));
+
+					// ACT / ASSERT (must not throw)
+					lv->set_model(0);
 				}
 
 
