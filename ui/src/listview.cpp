@@ -135,6 +135,7 @@ namespace wpl
 							set_column_direction(column, sort_ascending ? dir_ascending : dir_descending);
 							_sort_column = column;
 							_sort_ascending = sort_ascending;
+							::InvalidateRect(_listview->hwnd(), NULL, FALSE);
 						}
 					}
 					return 0;

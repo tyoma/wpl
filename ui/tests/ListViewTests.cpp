@@ -621,6 +621,60 @@ namespace wpl
 					Assert::IsTrue(listview::dir_descending == get_column_direction(hlv2, 1));
 					Assert::IsTrue(listview::dir_none == get_column_direction(hlv2, 2));
 				}
+				
+
+				[TestMethod]
+				void TheWholeListViewIsInvalidatedOnReorder()
+				{
+					// INIT
+					HWND hlv = create_listview();
+					shared_ptr<listview> lv(wrap_listview(hlv));
+					model_ptr m(new test_model(0));
+					NMLISTVIEW nmlvdi = {
+						{	0, 0, LVN_COLUMNCLICK	},
+						/* iItem = */ 0, /* iSubItem = */ 0,
+					};
+					RECT rc_client = { 0 }, rc_invalidated = { 0 };
+
+					lv->set_model(m);
+					lv->add_column(L"", listview::dir_descending);
+					::UpdateWindow(hlv);
+					::GetClientRect(hlv, &rc_client);
+
+					// ACT
+					::SendMessage(hlv, OCM_NOTIFY, 0, reinterpret_cast<LPARAM>(&nmlvdi));
+
+					// ASSERT
+					::GetUpdateRect(hlv, &rc_invalidated, FALSE);
+					Assert::IsTrue(rc_client.left == rc_invalidated.left);
+					Assert::IsTrue(rc_client.top == rc_invalidated.top);
+					Assert::IsTrue(rc_client.right == rc_invalidated.right);
+					Assert::IsTrue(rc_client.bottom == rc_invalidated.bottom);
+				}
+				
+
+				[TestMethod]
+				void TheWholeListViewIsInvalidatedOnNoReorderingColumnClicked()
+				{
+					// INIT
+					HWND hlv = create_listview();
+					shared_ptr<listview> lv(wrap_listview(hlv));
+					model_ptr m(new test_model(0));
+					NMLISTVIEW nmlvdi = {
+						{	0, 0, LVN_COLUMNCLICK	},
+						/* iItem = */ 0, /* iSubItem = */ 0,
+					};
+
+					lv->set_model(m);
+					lv->add_column(L"", listview::dir_none);
+					::UpdateWindow(hlv);
+
+					// ACT
+					::SendMessage(hlv, OCM_NOTIFY, 0, reinterpret_cast<LPARAM>(&nmlvdi));
+
+					// ASSERT
+					Assert::IsFalse(!!::GetUpdateRect(hlv, NULL, FALSE));
+				}
 
 
 				[TestMethod]
