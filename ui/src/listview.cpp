@@ -22,7 +22,7 @@
 #include "../win32/window.h"
 
 #include <commctrl.h>
-#include <atlstr.h>
+#include <olectl.h>
 
 using namespace std;
 using namespace std::tr1;
@@ -37,7 +37,6 @@ namespace wpl
 			class listview_impl : public listview
 			{
 				wstring _text_buffer;
-				CStringA _ansi_text_buffer;
 				shared_ptr<model> _model;
 				shared_ptr<window> _listview;
 				vector<sort_direction> _default_sorts;
@@ -116,8 +115,7 @@ namespace wpl
 						if (pdi->item.mask & LVIF_TEXT)
 						{
 							_model->get_text(pdi->item.iItem, pdi->item.iSubItem, _text_buffer);
-							_ansi_text_buffer = _text_buffer.c_str();
-							strncpy_s(pdi->item.pszText, pdi->item.cchTextMax, _ansi_text_buffer, _TRUNCATE);
+							wcstombs_s(0, pdi->item.pszText, pdi->item.cchTextMax, _text_buffer.c_str(), _TRUNCATE);
 						}
 					}
 					else if (LVN_GETDISPINFOW == code)
