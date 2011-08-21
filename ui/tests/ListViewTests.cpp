@@ -5,6 +5,7 @@
 #include <windows.h>
 #include <commctrl.h>
 #include <olectl.h>
+#include <atlstr.h>
 
 using namespace std;
 using namespace tr1;
@@ -63,6 +64,29 @@ namespace wpl
 					Header_GetItem(hheader, column, &item);
 					return (item.fmt & HDF_SORTUP) ? listview::dir_ascending : (item.fmt & HDF_SORTDOWN) ?
 						listview::dir_descending : listview::dir_none;
+				}
+
+				CString get_column_text(void *hlv, listview::index_type column)
+				{
+					CString buffer;
+					HDITEM item = { 0 };
+					HWND hheader = ListView_GetHeader(reinterpret_cast<HWND>(hlv));
+					
+					item.mask = HDI_TEXT;
+					item.pszText = buffer.GetBuffer(item.cchTextMax = 100);
+					Header_GetItem(hheader, column, &item);
+					buffer.ReleaseBuffer();
+					return buffer;
+				}
+
+				int get_column_width(void *hlv, listview::index_type column)
+				{
+					HDITEM item = { 0 };
+					HWND hheader = ListView_GetHeader(reinterpret_cast<HWND>(hlv));
+					
+					item.mask = HDI_WIDTH;
+					Header_GetItem(hheader, column, &item);
+					return item.cxy;
 				}
 			}
 
@@ -874,6 +898,58 @@ namespace wpl
 					Assert::IsTrue(4 == selection_states.size());
 					Assert::IsTrue(9 == selection_indices[3]);
 					Assert::IsTrue(selection_states[3]);
+				}
+
+
+				[TestMethod]
+				void AddingColumnSetsItsText()
+				{
+					// INIT
+					HWND hlv = create_listview();
+					shared_ptr<listview> lv(wrap_listview(hlv));
+
+					// ACT
+					lv->add_column(L"First", listview::dir_none);
+					lv->add_column(L"Second", listview::dir_none);
+					lv->add_column(L"Third", listview::dir_none);
+
+					// ASSERT
+					Assert::IsTrue(_T("First") == get_column_text(hlv, 0));
+					Assert::IsTrue(_T("Second") == get_column_text(hlv, 1));
+					Assert::IsTrue(_T("Third") == get_column_text(hlv, 2));
+				}
+
+
+				[TestMethod]
+				void AutoAdjustColumnWidths()
+				{
+					// INIT
+					HWND hlv1 = create_listview(), hlv2 = create_listview();
+					shared_ptr<listview> lv1(wrap_listview(hlv1)), lv2(wrap_listview(hlv2));
+
+					lv1->add_column(L"ww", listview::dir_none);
+					lv1->add_column(L"wwwwww", listview::dir_none);
+					lv1->add_column(L"WW", listview::dir_none);
+					lv2->add_column(L"ii", listview::dir_none);
+					lv2->add_column(L"iiii", listview::dir_none);
+
+					// ACT
+					lv1->adjust_column_widths();
+					lv2->adjust_column_widths();
+
+					// ASSERT
+					int w10 = get_column_width(hlv1, 0);
+					int w11 = get_column_width(hlv1, 1);
+					int w12 = get_column_width(hlv1, 2);
+					int w20 = get_column_width(hlv2, 0);
+					int w21 = get_column_width(hlv2, 1);
+
+					Assert::IsTrue(w10 < w11);
+					Assert::IsTrue(w12 < w11);
+					Assert::IsTrue(w10 < w12);
+
+					Assert::IsTrue(w20 < w10);
+					Assert::IsTrue(w20 < w21);
 				}
 			};
 		}

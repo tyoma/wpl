@@ -36,6 +36,7 @@ namespace wpl
 
 			virtual void set_model(std::shared_ptr<model> ds) = 0;
 			virtual void add_column(const std::wstring &caption, sort_direction default_sort_direction) = 0;
+			virtual void adjust_column_widths() = 0;
 
 			signal<void (index_type /*item*/)> item_activate;
 			signal<void (index_type /*item*/, bool /*became selected*/)> selection_changed;

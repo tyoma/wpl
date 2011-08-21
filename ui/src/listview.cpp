@@ -23,6 +23,7 @@
 
 #include <commctrl.h>
 #include <olectl.h>
+#include <atlstr.h>
 
 using namespace std;
 using namespace std::tr1;
@@ -46,6 +47,7 @@ namespace wpl
 
 				virtual void set_model(shared_ptr<model> model);
 				virtual void add_column(const wstring &caption, sort_direction default_sort_direction);
+				virtual void adjust_column_widths();
 
 				void invalidate_view(index_type new_count) throw();
 
@@ -76,17 +78,24 @@ namespace wpl
 			void listview_impl::add_column(const wstring &caption, sort_direction default_sort_direction)
 			{
 				int index = _default_sorts.size();
+				CString tchar_buffer(caption.c_str());
 				LVCOLUMN column = {
-					/* mask = */ LVCF_SUBITEM | LVCF_WIDTH,
+					/* mask = */ LVCF_SUBITEM | LVCF_TEXT,
 					/* fmt = */ 0,
-					/* cx = */ -1,
-					/* pszText = */ 0,
+					/* cx = */ 0,
+					(LPTSTR)(LPCTSTR)tchar_buffer,
 					/* cchTextMax = */ 0,
 					/* iSubItem = */ index,
 				};
 
 				ListView_InsertColumn(_listview->hwnd(), index, &column);
 				_default_sorts.push_back(default_sort_direction);
+			}
+
+			void listview_impl::adjust_column_widths()
+			{
+				for (int i = 0; i != static_cast<int>(_default_sorts.size()); ++i)
+					ListView_SetColumnWidth(_listview->hwnd(), i, LVSCW_AUTOSIZE_USEHEADER);
 			}
 
 			void listview_impl::invalidate_view(index_type new_count) throw()
