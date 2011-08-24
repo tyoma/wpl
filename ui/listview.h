@@ -35,8 +35,12 @@ namespace wpl
 			enum sort_direction	{	dir_none, dir_ascending, dir_descending	};
 
 			virtual void set_model(std::shared_ptr<model> ds) = 0;
+
 			virtual void add_column(const std::wstring &caption, sort_direction default_sort_direction) = 0;
 			virtual void adjust_column_widths() = 0;
+
+			virtual void select(index_type item, bool reset_previous) = 0;
+			virtual void clear_selection() = 0;
 
 			signal<void (index_type /*item*/)> item_activate;
 			signal<void (index_type /*item*/, bool /*became selected*/)> selection_changed;

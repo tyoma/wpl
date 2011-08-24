@@ -88,6 +88,16 @@ namespace wpl
 					Header_GetItem(hheader, column, &item);
 					return item.cxy;
 				}
+
+				vector<int> get_selected_indices(void *hlv)
+				{
+					int i = -1;
+					vector<int> result;
+
+					while (i = ListView_GetNextItem(reinterpret_cast<HWND>(hlv), i, LVNI_ALL | LVNI_SELECTED), i != -1)
+						result.push_back(i);
+					return result;
+				}
 			}
 
 			[TestClass]
@@ -950,6 +960,128 @@ namespace wpl
 
 					Assert::IsTrue(w20 < w10);
 					Assert::IsTrue(w20 < w21);
+				}
+
+
+				[TestMethod]
+				void SelectionIsEmptyAtConstruction()
+				{
+					// INIT
+					HWND hlv = create_listview();
+					shared_ptr<listview> lv(wrap_listview(hlv));
+
+					// ACT
+					lv->set_model(model_ptr(new test_model(7)));
+
+					// ASSERT
+					Assert::IsTrue(get_selected_indices(hlv).empty());
+				}
+
+
+				[TestMethod]
+				void ResetSelection()
+				{
+					// INIT
+					HWND hlv = create_listview();
+					shared_ptr<listview> lv(wrap_listview(hlv));
+					vector<int> selection;
+
+					lv->set_model(model_ptr(new test_model(7)));
+
+					// ACT
+					lv->select(0, true);
+
+					// ASSERT
+					selection = get_selected_indices(hlv);
+
+					Assert::IsTrue(1 == selection.size());
+					Assert::IsTrue(0 == selection[0]);
+
+					// ACT
+					lv->select(3, true);
+
+					// ASSERT
+					selection = get_selected_indices(hlv);
+
+					Assert::IsTrue(1 == selection.size());
+					Assert::IsTrue(3 == selection[0]);
+
+					// ACT
+					lv->select(5, true);
+
+					// ASSERT
+					selection = get_selected_indices(hlv);
+
+					Assert::IsTrue(1 == selection.size());
+					Assert::IsTrue(5 == selection[0]);
+				}
+
+
+				[TestMethod]
+				void AppendSelection()
+				{
+					// INIT
+					HWND hlv = create_listview();
+					shared_ptr<listview> lv(wrap_listview(hlv));
+					vector<int> selection;
+
+					lv->set_model(model_ptr(new test_model(7)));
+
+					// ACT
+					lv->select(1, false);
+
+					// ASSERT
+					selection = get_selected_indices(hlv);
+
+					Assert::IsTrue(1 == selection.size());
+					Assert::IsTrue(1 == selection[0]);
+
+					// ACT
+					lv->select(2, false);
+
+					// ASSERT
+					selection = get_selected_indices(hlv);
+
+					Assert::IsTrue(2 == selection.size());
+					Assert::IsTrue(1 == selection[0]);
+					Assert::IsTrue(2 == selection[1]);
+
+					// ACT
+					lv->select(6, false);
+
+					// ASSERT
+					selection = get_selected_indices(hlv);
+
+					Assert::IsTrue(3 == selection.size());
+					Assert::IsTrue(1 == selection[0]);
+					Assert::IsTrue(2 == selection[1]);
+					Assert::IsTrue(6 == selection[2]);
+				}
+
+
+				[TestMethod]
+				void ClearNonEmptySelection()
+				{
+					// INIT
+					HWND hlv = create_listview();
+					shared_ptr<listview> lv(wrap_listview(hlv));
+
+					lv->set_model(model_ptr(new test_model(7)));
+
+					// ACT
+					lv->select(1, false);
+					lv->clear_selection();
+
+					// ASSERT
+					Assert::IsTrue(get_selected_indices(hlv).empty());
+
+					// ACT
+					lv->select(2, false);
+					lv->select(3, false);
+					lv->clear_selection();
+
+					// ASSERT
+					Assert::IsTrue(get_selected_indices(hlv).empty());
 				}
 			};
 		}

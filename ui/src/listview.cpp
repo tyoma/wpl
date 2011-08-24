@@ -46,8 +46,12 @@ namespace wpl
 				bool _sort_ascending;
 
 				virtual void set_model(shared_ptr<model> model);
+
 				virtual void add_column(const wstring &caption, sort_direction default_sort_direction);
 				virtual void adjust_column_widths();
+
+				virtual void select(index_type item, bool reset_previous);
+				virtual void clear_selection();
 
 				void invalidate_view(index_type new_count) throw();
 
@@ -97,6 +101,16 @@ namespace wpl
 				for (int i = 0; i != static_cast<int>(_default_sorts.size()); ++i)
 					ListView_SetColumnWidth(_listview->hwnd(), i, LVSCW_AUTOSIZE_USEHEADER);
 			}
+
+			void listview_impl::select(index_type item, bool reset_previous)
+			{
+				if (reset_previous)
+					clear_selection();
+				ListView_SetItemState(_listview->hwnd(), item, LVIS_SELECTED, LVIS_SELECTED);
+			}
+
+			void listview_impl::clear_selection()
+			{	ListView_SetItemState(_listview->hwnd(), -1, 0, LVIS_SELECTED);	}
 
 			void listview_impl::invalidate_view(index_type new_count) throw()
 			{
