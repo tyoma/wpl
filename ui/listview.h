@@ -42,6 +42,9 @@ namespace wpl
 			virtual void select(index_type item, bool reset_previous) = 0;
 			virtual void clear_selection() = 0;
 
+			virtual void ensure_visible(index_type item) = 0;
+			virtual bool is_visible(index_type item) const = 0;
+
 			signal<void (index_type /*item*/)> item_activate;
 			signal<void (index_type /*item*/, bool /*became selected*/)> selection_changed;
 		};

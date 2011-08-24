@@ -53,6 +53,9 @@ namespace wpl
 				virtual void select(index_type item, bool reset_previous);
 				virtual void clear_selection();
 
+				virtual void ensure_visible(index_type item);
+				virtual bool is_visible(index_type item) const;
+
 				void invalidate_view(index_type new_count) throw();
 
 				LRESULT wndproc(UINT message, WPARAM wparam, LPARAM lparam, const window::original_handler_t &previous);
@@ -111,6 +114,18 @@ namespace wpl
 
 			void listview_impl::clear_selection()
 			{	ListView_SetItemState(_listview->hwnd(), -1, 0, LVIS_SELECTED);	}
+
+			void listview_impl::ensure_visible(index_type item)
+			{	ListView_EnsureVisible(_listview->hwnd(), item, FALSE);	}
+
+			bool listview_impl::is_visible(index_type item) const
+			{
+				RECT item_rect, client_rect, intersection;
+
+				::GetClientRect(_listview->hwnd(), &client_rect);
+				ListView_GetItemRect(_listview->hwnd(), item, &item_rect, LVIR_BOUNDS);
+				return !!IntersectRect(&intersection, &client_rect, &item_rect);
+			}
 
 			void listview_impl::invalidate_view(index_type new_count) throw()
 			{

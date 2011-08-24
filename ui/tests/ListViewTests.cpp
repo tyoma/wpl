@@ -98,6 +98,15 @@ namespace wpl
 						result.push_back(i);
 					return result;
 				}
+
+				bool is_item_visible(void *hlv, int item)
+				{
+					RECT rc1, rc2, rc;
+
+					::GetClientRect(reinterpret_cast<HWND>(hlv), &rc1);
+					ListView_GetItemRect(reinterpret_cast<HWND>(hlv), item, &rc2, LVIR_BOUNDS);
+					return !!IntersectRect(&rc, &rc1, &rc2);
+				}
 			}
 
 			[TestClass]
@@ -1082,6 +1091,79 @@ namespace wpl
 
 					// ASSERT
 					Assert::IsTrue(get_selected_indices(hlv).empty());
+				}
+
+
+				[TestMethod]
+				void EnsureItemVisibility()
+				{
+					// INIT
+					HWND hlv = create_listview();
+					shared_ptr<listview> lv(wrap_listview(hlv));
+
+					lv->set_model(model_ptr(new test_model(100)));
+					lv->add_column(L"iiii", listview::dir_none);
+					lv->adjust_column_widths();
+
+					// ACT
+					lv->ensure_visible(99);
+
+					// ASSERT
+					Assert::IsTrue(is_item_visible(hlv, 99));
+					Assert::IsFalse(is_item_visible(hlv, 49));
+					Assert::IsFalse(is_item_visible(hlv, 0));
+
+					// ACT
+					lv->ensure_visible(49);
+
+					// ASSERT
+					Assert::IsFalse(is_item_visible(hlv, 99));
+					Assert::IsTrue(is_item_visible(hlv, 49));
+					Assert::IsFalse(is_item_visible(hlv, 0));
+
+					// ACT
+					lv->ensure_visible(0);
+
+					// ASSERT
+					Assert::IsFalse(is_item_visible(hlv, 99));
+					Assert::IsFalse(is_item_visible(hlv, 49));
+					Assert::IsTrue(is_item_visible(hlv, 0));
+				}
+
+
+				[TestMethod]
+				void ItemVisibilityCheck()
+				{
+					// INIT
+					HWND hlv = create_listview();
+					shared_ptr<listview> lv(wrap_listview(hlv));
+
+					lv->set_model(model_ptr(new test_model(100)));
+					lv->add_column(L"iiii", listview::dir_none);
+					lv->adjust_column_widths();
+
+					lv->ensure_visible(99);
+
+					// ACT / ASSERT
+					Assert::IsTrue(lv->is_visible(99));
+					Assert::IsFalse(lv->is_visible(49));
+					Assert::IsFalse(lv->is_visible(0));
+
+					// INIT
+					lv->ensure_visible(49);
+
+					// ACT / ASSERT
+					Assert::IsFalse(lv->is_visible(99));
+					Assert::IsTrue(lv->is_visible(49));
+					Assert::IsFalse(lv->is_visible(0));
+
+					// INIT
+					lv->ensure_visible(0);
+
+					// ACT / ASSERT
+					Assert::IsFalse(lv->is_visible(99));
+					Assert::IsFalse(lv->is_visible(49));
+					Assert::IsTrue(lv->is_visible(0));
 				}
 			};
 		}
