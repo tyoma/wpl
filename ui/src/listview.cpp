@@ -124,7 +124,7 @@ namespace wpl
 
 				::GetClientRect(_listview->hwnd(), &client_rect);
 				ListView_GetItemRect(_listview->hwnd(), item, &item_rect, LVIR_BOUNDS);
-				return !!IntersectRect(&intersection, &client_rect, &item_rect);
+				return !!::IntersectRect(&intersection, &client_rect, &item_rect);
 			}
 
 			void listview_impl::invalidate_view(index_type new_count) throw()

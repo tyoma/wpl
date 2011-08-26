@@ -1,7 +1,10 @@
 #include "TestHelpers.h"
 
+#include <wpl/ui/win32/window.h>
+
 #include <windows.h>
 #include <commctrl.h>
+#include <olectl.h>
 #include <vcclr.h>
 #include <algorithm>
 
@@ -13,6 +16,17 @@ using namespace Microsoft::VisualStudio::TestTools::UnitTesting;
 
 namespace ut
 {
+	namespace
+	{
+		LRESULT reflection_wndproc(UINT message, WPARAM wparam, LPARAM lparam, const wpl::ui::window::original_handler_t &previous)
+		{
+			if (WM_NOTIFY == message)
+				return ::SendMessage(reinterpret_cast<NMHDR *>(lparam)->hwndFrom, OCM_NOTIFY, wparam, lparam);
+			else
+				return previous(message, wparam, lparam);
+		}
+	}
+
 	wstring make_native(String ^managed_string)
 	{
 		pin_ptr<const wchar_t> buffer(PtrToStringChars(managed_string));
@@ -24,11 +38,14 @@ namespace ut
 	{	return gcnew String(native_string.c_str());	}
 
 	WindowTestsBase::WindowTestsBase()
-		: _windows(new vector<void *>())
+		: _windows(new vector<void *>()), _connections(new vector< shared_ptr<wpl::destructible> >)
 	{	}
 
 	WindowTestsBase::~WindowTestsBase()
-	{	delete _windows;	}
+	{
+		delete _connections;
+		delete _windows;
+	}
 
 	void *WindowTestsBase::create_window()
 	{	return create_window(_T("static"), 0, WS_POPUP, 0);	}
@@ -47,6 +64,9 @@ namespace ut
 		return hwnd;
 	}
 
+	void WindowTestsBase::enable_reflection(void *hwnd)
+	{	_connections->push_back(wpl::ui::window::attach(reinterpret_cast<HWND>(hwnd))->advise(&reflection_wndproc));	}
+
 	void WindowTestsBase::destroy_window(void *hwnd)
 	{
 		_windows->erase(remove(_windows->begin(), _windows->end(), hwnd), _windows->end());
@@ -58,6 +78,7 @@ namespace ut
 		for (vector<void *>::const_iterator i = _windows->begin(); i != _windows->end(); ++i)
 			if (::IsWindow(reinterpret_cast<HWND>(*i)))
 				::DestroyWindow(reinterpret_cast<HWND>(*i));
+		_connections->clear();
 	}
 
 	void WindowTestsBase::init_commctrl(TestContext ^/*context*/)

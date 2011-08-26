@@ -36,8 +36,8 @@ namespace wpl
 					{	ordering.push_back(make_pair(column, ascending));	}
 
 				public:
-					test_model(index_type count)
-					{	items.resize(count);	}
+					test_model(index_type count, index_type columns = 0)
+					{	items.resize(count, vector<wstring>(columns));	}
 
 					void set_count(index_type new_count)
 					{
@@ -114,7 +114,10 @@ namespace wpl
 			{
 				HWND create_listview()
 				{
-					return reinterpret_cast<HWND>(create_window(_T("SysListView32"), create_visible_window(),
+					void *hparent = create_visible_window();
+
+					enable_reflection(hparent);
+					return reinterpret_cast<HWND>(create_window(_T("SysListView32"), hparent,
 						WS_CHILD | WS_VISIBLE | LVS_REPORT | LVS_OWNERDATA, 0));
 				}
 
@@ -1101,7 +1104,7 @@ namespace wpl
 					HWND hlv = create_listview();
 					shared_ptr<listview> lv(wrap_listview(hlv));
 
-					lv->set_model(model_ptr(new test_model(100)));
+					lv->set_model(model_ptr(new test_model(100, 1)));
 					lv->add_column(L"iiii", listview::dir_none);
 					lv->adjust_column_widths();
 
@@ -1138,7 +1141,7 @@ namespace wpl
 					HWND hlv = create_listview();
 					shared_ptr<listview> lv(wrap_listview(hlv));
 
-					lv->set_model(model_ptr(new test_model(100)));
+					lv->set_model(model_ptr(new test_model(100, 1)));
 					lv->add_column(L"iiii", listview::dir_none);
 					lv->adjust_column_widths();
 
