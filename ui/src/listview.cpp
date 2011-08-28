@@ -77,7 +77,8 @@ namespace wpl
 			{
 				if (model && _sort_column != -1)
 					model->set_order(_sort_column, _sort_ascending);
-				_invalidated_connection = model ? model->invalidated += bind(&listview_impl::invalidate_view, this, _1) : 0;
+				_invalidated_connection = model ?
+					model->invalidated += bind(&listview_impl::invalidate_view, this, _1) : slot_connection();
 				invalidate_view(model ? model->get_count() : 0);
 				_model = model;
 			}

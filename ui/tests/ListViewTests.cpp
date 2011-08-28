@@ -248,7 +248,7 @@ namespace wpl
 					lv->set_model(m);
 
 					// ACT
-					lv->set_model(0);
+					lv->set_model(shared_ptr<listview::model>());
 
 					// ASSERT
 					Assert::IsTrue(0 == ListView_GetItemCount(hlv));
@@ -579,7 +579,7 @@ namespace wpl
 					::SendMessage(hlv, OCM_NOTIFY, 0, reinterpret_cast<LPARAM>(&nmlvdi));
 
 					// ACT / ASSERT (must not throw)
-					lv->set_model(0);
+					lv->set_model(shared_ptr<listview::model>());
 				}
 
 
