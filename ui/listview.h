@@ -32,6 +32,7 @@ namespace wpl
 		{
 			typedef unsigned int index_type;
 			struct model;
+			struct trackable;
 			enum sort_direction	{	dir_none, dir_ascending, dir_descending	};
 
 			virtual void set_model(std::shared_ptr<model> ds) = 0;
@@ -45,6 +46,8 @@ namespace wpl
 			virtual void ensure_visible(index_type item) = 0;
 			virtual bool is_visible(index_type item) const = 0;
 
+			virtual void set_selection_tracking(bool track);
+
 			signal<void (index_type /*item*/)> item_activate;
 			signal<void (index_type /*item*/, bool /*became selected*/)> selection_changed;
 		};
@@ -57,12 +60,25 @@ namespace wpl
 			virtual void get_text(index_type row, index_type column, std::wstring &text) const = 0;
 			virtual void set_order(index_type column, bool ascending) = 0;
 			virtual void precache(index_type from, index_type count) const;
+			virtual std::shared_ptr<listview::trackable> track(index_type row) const;
 
 			signal<void (index_type /*new_count*/)> invalidated;
 		};
 
+		struct listview::trackable : destructible
+		{
+			virtual listview::index_type index() const = 0;
+		};
+
+
+		inline void listview::set_selection_tracking(bool /*track*/)
+		{	}
+
 
 		inline void listview::model::precache(index_type /*from*/, index_type /*count*/) const
 		{	}
+
+		inline std::shared_ptr<listview::trackable> listview::model::track(index_type /*row*/) const
+		{	return std::shared_ptr<listview::trackable>();	}
 	}
 }
