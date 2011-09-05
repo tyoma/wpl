@@ -25,7 +25,7 @@ namespace wpl
 					virtual index_type get_count() const throw()
 					{	return items.size();	}
 
-					virtual void get_text(index_type item, index_type subitem, wstring &text) const
+					virtual void get_text(index_type row, index_type column, wstring &text) const
 					{
 						if (item >= items.size())
 							Assert::Fail("Requested item is at invalid index!");
