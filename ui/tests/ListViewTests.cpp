@@ -27,9 +27,9 @@ namespace wpl
 
 					virtual void get_text(index_type row, index_type column, wstring &text) const
 					{
-						if (item >= items.size())
+						if (row >= items.size())
 							Assert::Fail("Requested item is at invalid index!");
-						text = items[item][subitem];
+						text = items[row][column];
 					}
 
 					virtual void set_order(index_type column, bool ascending)
