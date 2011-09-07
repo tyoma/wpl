@@ -6,6 +6,7 @@
 #include <commctrl.h>
 #include <olectl.h>
 #include <atlstr.h>
+#include <map>
 
 using namespace std;
 using namespace tr1;
@@ -20,7 +21,18 @@ namespace wpl
 		{
 			namespace
 			{
-				class test_model : public listview::model
+				struct mock_trackable : public listview::trackable
+				{
+					~mock_trackable()
+					{	}
+
+					virtual listview::index_type index() const
+					{	return track_result;	}
+
+					listview::index_type track_result;
+				};
+
+				class mock_model : public listview::model
 				{
 					virtual index_type get_count() const throw()
 					{	return items.size();	}
@@ -35,8 +47,17 @@ namespace wpl
 					virtual void set_order(index_type column, bool ascending)
 					{	ordering.push_back(make_pair(column, ascending));	}
 
+					virtual shared_ptr<const listview::trackable> track(index_type row) const
+					{
+						tracking_requested.push_back(row);
+
+						map< index_type, shared_ptr<const listview::trackable> >::const_iterator i = trackables.find(row);
+
+						return i != trackables.end() ? i->second : shared_ptr<const listview::trackable>();
+					}
+
 				public:
-					test_model(index_type count, index_type columns = 0)
+					mock_model(index_type count, index_type columns = 0)
 					{	items.resize(count, vector<wstring>(columns));	}
 
 					void set_count(index_type new_count)
@@ -46,10 +67,13 @@ namespace wpl
 					}
 
 					vector< vector<wstring> > items;
+					map< index_type, shared_ptr<const listview::trackable> > trackables;
 					vector< pair<index_type, bool> > ordering;
+					mutable vector<index_type> tracking_requested;
 				};
 
-				typedef shared_ptr<test_model> model_ptr;
+				typedef shared_ptr<mock_model> model_ptr;
+				typedef shared_ptr<mock_trackable> trackable_ptr;
 
 				template <typename T>
 				void push_back(vector<T> &v, const T &value)
@@ -89,12 +113,13 @@ namespace wpl
 					return item.cxy;
 				}
 
-				vector<int> get_selected_indices(void *hlv)
+				vector<int> get_matching_indices(void *hlv, unsigned int mask)
 				{
 					int i = -1;
 					vector<int> result;
 
-					while (i = ListView_GetNextItem(reinterpret_cast<HWND>(hlv), i, LVNI_ALL | LVNI_SELECTED), i != -1)
+					mask &= LVNI_STATEMASK;
+					while (i = ListView_GetNextItem(reinterpret_cast<HWND>(hlv), i, LVNI_ALL | mask), i != -1)
 						result.push_back(i);
 					return result;
 				}
@@ -156,13 +181,13 @@ namespace wpl
 					shared_ptr<listview> lv(wrap_listview(hlv));
 
 					// ACT
-					lv->set_model(model_ptr(new test_model(11)));
+					lv->set_model(model_ptr(new mock_model(11)));
 
 					// ASSERT
 					Assert::IsTrue(ListView_GetItemCount(hlv) == 11);
 
 					// ACT
-					lv->set_model(model_ptr(new test_model(23)));
+					lv->set_model(model_ptr(new mock_model(23)));
 
 					// ASSERT
 					Assert::IsTrue(ListView_GetItemCount(hlv) == 23);
@@ -175,7 +200,7 @@ namespace wpl
 					// INIT
 					HWND hlv = create_listview();
 					shared_ptr<listview> lv(wrap_listview(hlv));
-					model_ptr m(new test_model(11));
+					model_ptr m(new mock_model(11, 1));
 
 					lv->add_column(L"test", listview::dir_none);
 					lv->set_model(m);
@@ -200,7 +225,7 @@ namespace wpl
 					// INIT
 					HWND hlv = create_listview();
 					shared_ptr<listview> lv(wrap_listview(hlv));
-					model_ptr m(new test_model(0));
+					model_ptr m(new mock_model(0));
 
 					lv->set_model(m);
 
@@ -224,7 +249,7 @@ namespace wpl
 					// INIT
 					HWND hlv = create_listview();
 					shared_ptr<listview> lv(wrap_listview(hlv));
-					model_ptr m1(new test_model(5)), m2(new test_model(7));
+					model_ptr m1(new mock_model(5)), m2(new mock_model(7));
 
 					lv->set_model(m1);
 
@@ -243,7 +268,7 @@ namespace wpl
 					// INIT
 					HWND hlv = create_listview();
 					shared_ptr<listview> lv(wrap_listview(hlv));
-					model_ptr m(new test_model(5));
+					model_ptr m(new mock_model(5));
 
 					lv->set_model(m);
 
@@ -267,7 +292,7 @@ namespace wpl
 					// INIT
 					HWND hlv = create_listview();
 					shared_ptr<listview> lv(wrap_listview(hlv));
-					model_ptr m(new test_model(0));
+					model_ptr m(new mock_model(0));
 					NMLVDISPINFO nmlvdi = {
 						{	0, 0, LVN_GETDISPINFO	},
 						{ /* mask = */ LVIF_STATE, /* item = */ 0, /* subitem = */ 0, 0, 0, 0, 0, }
@@ -288,7 +313,7 @@ namespace wpl
 					// INIT
 					HWND hlv = create_listview();
 					shared_ptr<listview> lv(wrap_listview(hlv));
-					model_ptr m(new test_model(0));
+					model_ptr m(new mock_model(0));
 					char buffer[100] = { 0 };
 					NMLVDISPINFOA nmlvdi = {
 						{	0, 0, LVN_GETDISPINFOA	},
@@ -346,7 +371,7 @@ namespace wpl
 					// INIT
 					HWND hlv = create_listview();
 					shared_ptr<listview> lv(wrap_listview(hlv));
-					model_ptr m(new test_model(0));
+					model_ptr m(new mock_model(0));
 					wchar_t buffer[100] = { 0 };
 					NMLVDISPINFOW nmlvdi = {
 						{	0, 0, LVN_GETDISPINFOW	},
@@ -404,7 +429,7 @@ namespace wpl
 					// INIT
 					HWND hlv = create_listview();
 					shared_ptr<listview> lv(wrap_listview(hlv));
-					model_ptr m(new test_model(0));
+					model_ptr m(new mock_model(0));
 					char buffer[4] = { 0 };
 					NMLVDISPINFOA nmlvdi = {
 						{	0, 0, LVN_GETDISPINFOA	},
@@ -436,7 +461,7 @@ namespace wpl
 					// INIT
 					HWND hlv = create_listview();
 					shared_ptr<listview> lv(wrap_listview(hlv));
-					model_ptr m(new test_model(0));
+					model_ptr m(new mock_model(0));
 					wchar_t buffer[4] = { 0 };
 					NMLVDISPINFOW nmlvdi = {
 						{	0, 0, LVN_GETDISPINFOW	},
@@ -468,7 +493,7 @@ namespace wpl
 					// INIT
 					HWND hlv1 = create_listview(), hlv2 = create_listview(), hlv3 = create_listview();
 					shared_ptr<listview> lv1(wrap_listview(hlv1)), lv2(wrap_listview(hlv2)), lv3(wrap_listview(hlv3));
-					model_ptr m(new test_model(0));
+					model_ptr m(new mock_model(0));
 					NMLISTVIEW nmlvdi = {
 						{	0, 0, LVN_COLUMNCLICK	},
 						/* iItem = */ LVIF_TEXT /* see if wndproc differentiates notifications */, /* iSubItem = */ 0,
@@ -526,7 +551,7 @@ namespace wpl
 					// INIT
 					HWND hlv = create_listview();
 					shared_ptr<listview> lv(wrap_listview(hlv));
-					model_ptr m1(new test_model(0)), m2(new test_model(0));
+					model_ptr m1(new mock_model(0)), m2(new mock_model(0));
 					NMLISTVIEW nmlvdi = {
 						{	0, 0, LVN_COLUMNCLICK	},
 						/* iItem = */ 0, /* iSubItem = */ 0,
@@ -566,7 +591,7 @@ namespace wpl
 					// INIT
 					HWND hlv = create_listview();
 					shared_ptr<listview> lv(wrap_listview(hlv));
-					model_ptr m(new test_model(0));
+					model_ptr m(new mock_model(0));
 					NMLISTVIEW nmlvdi = {
 						{	0, 0, LVN_COLUMNCLICK	},
 						/* iItem = */ 0, /* iSubItem = */ 0,
@@ -589,7 +614,7 @@ namespace wpl
 					// INIT
 					HWND hlv1 = create_listview(), hlv2 = create_listview();
 					shared_ptr<listview> lv1(wrap_listview(hlv1)), lv2(wrap_listview(hlv2));
-					model_ptr m(new test_model(0));
+					model_ptr m(new mock_model(0));
 					NMLISTVIEW nmlvdi = {
 						{	0, 0, LVN_COLUMNCLICK	},
 						/* iItem = */ 0, /* iSubItem = */ 0,
@@ -639,7 +664,7 @@ namespace wpl
 					// INIT
 					HWND hlv1 = create_listview(), hlv2 = create_listview();
 					shared_ptr<listview> lv1(wrap_listview(hlv1)), lv2(wrap_listview(hlv2));
-					model_ptr m(new test_model(0));
+					model_ptr m(new mock_model(0));
 					NMLISTVIEW nmlvdi = {
 						{	0, 0, LVN_COLUMNCLICK	},
 						/* iItem = */ 0, /* iSubItem = */ 0,
@@ -698,7 +723,7 @@ namespace wpl
 					// INIT
 					HWND hlv1 = create_listview(), hlv2 = create_listview();
 					shared_ptr<listview> lv1(wrap_listview(hlv1)), lv2(wrap_listview(hlv2));
-					model_ptr m(new test_model(0));
+					model_ptr m(new mock_model(0));
 					NMLISTVIEW nmlvdi = {
 						{	0, 0, LVN_COLUMNCLICK	},
 						/* iItem = */ 0, /* iSubItem = */ 0,
@@ -765,7 +790,7 @@ namespace wpl
 					// INIT
 					HWND hlv = create_listview();
 					shared_ptr<listview> lv(wrap_listview(hlv));
-					model_ptr m(new test_model(0));
+					model_ptr m(new mock_model(0));
 					NMLISTVIEW nmlvdi = {
 						{	0, 0, LVN_COLUMNCLICK	},
 						/* iItem = */ 0, /* iSubItem = */ 0,
@@ -795,7 +820,7 @@ namespace wpl
 					// INIT
 					HWND hlv = create_listview();
 					shared_ptr<listview> lv(wrap_listview(hlv));
-					model_ptr m(new test_model(0));
+					model_ptr m(new mock_model(0));
 					NMLISTVIEW nmlvdi = {
 						{	0, 0, LVN_COLUMNCLICK	},
 						/* iItem = */ 0, /* iSubItem = */ 0,
@@ -823,6 +848,8 @@ namespace wpl
 					shared_ptr<destructible> c =
 						lv->item_activate += bind(&push_back<listview::index_type>, ref(selections), _1);
 					NMITEMACTIVATE nm = {	{	0, 0, LVN_ITEMACTIVATE	},	};
+
+					lv->set_model(model_ptr(new mock_model(10)));
 
 					// ACT
 					nm.iItem = 1;
@@ -892,6 +919,8 @@ namespace wpl
 						{	0, 0, LVN_ITEMCHANGED	},
 						/* iItem = */ 0, /* iSubItem = */ 0,
 					};
+
+					lv->set_model(model_ptr(new mock_model(10)));
 
 					// ACT
 					nmlv.iItem = 1, nmlv.uOldState = LVIS_FOCUSED | LVIS_SELECTED, nmlv.uNewState = 0;
@@ -983,10 +1012,10 @@ namespace wpl
 					shared_ptr<listview> lv(wrap_listview(hlv));
 
 					// ACT
-					lv->set_model(model_ptr(new test_model(7)));
+					lv->set_model(model_ptr(new mock_model(7)));
 
 					// ASSERT
-					Assert::IsTrue(get_selected_indices(hlv).empty());
+					Assert::IsTrue(get_matching_indices(hlv, LVNI_SELECTED).empty());
 				}
 
 
@@ -998,13 +1027,13 @@ namespace wpl
 					shared_ptr<listview> lv(wrap_listview(hlv));
 					vector<int> selection;
 
-					lv->set_model(model_ptr(new test_model(7)));
+					lv->set_model(model_ptr(new mock_model(7)));
 
 					// ACT
 					lv->select(0, true);
 
 					// ASSERT
-					selection = get_selected_indices(hlv);
+					selection = get_matching_indices(hlv, LVNI_SELECTED);
 
 					Assert::IsTrue(1 == selection.size());
 					Assert::IsTrue(0 == selection[0]);
@@ -1013,7 +1042,7 @@ namespace wpl
 					lv->select(3, true);
 
 					// ASSERT
-					selection = get_selected_indices(hlv);
+					selection = get_matching_indices(hlv, LVNI_SELECTED);
 
 					Assert::IsTrue(1 == selection.size());
 					Assert::IsTrue(3 == selection[0]);
@@ -1022,7 +1051,7 @@ namespace wpl
 					lv->select(5, true);
 
 					// ASSERT
-					selection = get_selected_indices(hlv);
+					selection = get_matching_indices(hlv, LVNI_SELECTED);
 
 					Assert::IsTrue(1 == selection.size());
 					Assert::IsTrue(5 == selection[0]);
@@ -1037,13 +1066,13 @@ namespace wpl
 					shared_ptr<listview> lv(wrap_listview(hlv));
 					vector<int> selection;
 
-					lv->set_model(model_ptr(new test_model(7)));
+					lv->set_model(model_ptr(new mock_model(7)));
 
 					// ACT
 					lv->select(1, false);
 
 					// ASSERT
-					selection = get_selected_indices(hlv);
+					selection = get_matching_indices(hlv, LVNI_SELECTED);
 
 					Assert::IsTrue(1 == selection.size());
 					Assert::IsTrue(1 == selection[0]);
@@ -1052,7 +1081,7 @@ namespace wpl
 					lv->select(2, false);
 
 					// ASSERT
-					selection = get_selected_indices(hlv);
+					selection = get_matching_indices(hlv, LVNI_SELECTED);
 
 					Assert::IsTrue(2 == selection.size());
 					Assert::IsTrue(1 == selection[0]);
@@ -1062,7 +1091,7 @@ namespace wpl
 					lv->select(6, false);
 
 					// ASSERT
-					selection = get_selected_indices(hlv);
+					selection = get_matching_indices(hlv, LVNI_SELECTED);
 
 					Assert::IsTrue(3 == selection.size());
 					Assert::IsTrue(1 == selection[0]);
@@ -1078,14 +1107,14 @@ namespace wpl
 					HWND hlv = create_listview();
 					shared_ptr<listview> lv(wrap_listview(hlv));
 
-					lv->set_model(model_ptr(new test_model(7)));
+					lv->set_model(model_ptr(new mock_model(7)));
 
 					// ACT
 					lv->select(1, false);
 					lv->clear_selection();
 
 					// ASSERT
-					Assert::IsTrue(get_selected_indices(hlv).empty());
+					Assert::IsTrue(get_matching_indices(hlv, LVNI_SELECTED).empty());
 
 					// ACT
 					lv->select(2, false);
@@ -1093,7 +1122,7 @@ namespace wpl
 					lv->clear_selection();
 
 					// ASSERT
-					Assert::IsTrue(get_selected_indices(hlv).empty());
+					Assert::IsTrue(get_matching_indices(hlv, LVNI_SELECTED).empty());
 				}
 
 
@@ -1104,7 +1133,7 @@ namespace wpl
 					HWND hlv = create_listview();
 					shared_ptr<listview> lv(wrap_listview(hlv));
 
-					lv->set_model(model_ptr(new test_model(100, 1)));
+					lv->set_model(model_ptr(new mock_model(100, 1)));
 					lv->add_column(L"iiii", listview::dir_none);
 					lv->adjust_column_widths();
 
@@ -1141,7 +1170,7 @@ namespace wpl
 					HWND hlv = create_listview();
 					shared_ptr<listview> lv(wrap_listview(hlv));
 
-					lv->set_model(model_ptr(new test_model(100, 1)));
+					lv->set_model(model_ptr(new mock_model(100, 1)));
 					lv->add_column(L"iiii", listview::dir_none);
 					lv->adjust_column_widths();
 
@@ -1167,6 +1196,191 @@ namespace wpl
 					Assert::IsFalse(lv->is_visible(99));
 					Assert::IsFalse(lv->is_visible(49));
 					Assert::IsTrue(lv->is_visible(0));
+				}
+
+
+				[TestMethod]
+				void RequestProperTrackableOnFocusChange()
+				{
+					// INIT
+					HWND hlv = create_listview();
+					shared_ptr<listview> lv(wrap_listview(hlv));
+					model_ptr m(new mock_model(100, 1));
+					NMLISTVIEW nmlv = {
+						{	0, 0, LVN_ITEMCHANGED	},
+						/* iItem = */ 0, /* iSubItem = */ 0,
+					};
+
+					lv->set_model(m);
+					lv->add_column(L"iiii", listview::dir_none);
+					lv->adjust_column_widths();
+
+					// ACT
+					nmlv.iItem = 2, nmlv.uOldState = 0, nmlv.uNewState = LVIS_FOCUSED;
+					::SendMessage(hlv, OCM_NOTIFY, 0, reinterpret_cast<LPARAM>(&nmlv));
+
+					// ASSERT
+					Assert::IsTrue(1 == m->tracking_requested.size());
+					Assert::IsTrue(2 == m->tracking_requested[0]);
+
+					// ACT
+					nmlv.iItem = 3, nmlv.uOldState = 0, nmlv.uNewState = LVIS_FOCUSED;
+					::SendMessage(hlv, OCM_NOTIFY, 0, reinterpret_cast<LPARAM>(&nmlv));
+
+					// ASSERT
+					Assert::IsTrue(2 == m->tracking_requested.size());
+					Assert::IsTrue(3 == m->tracking_requested[1]);
+
+					// ACT
+					nmlv.iItem = 5, nmlv.uOldState = LVIS_SELECTED, nmlv.uNewState = LVIS_SELECTED | LVIS_FOCUSED;
+					::SendMessage(hlv, OCM_NOTIFY, 0, reinterpret_cast<LPARAM>(&nmlv));
+					ListView_SetItemState(hlv, 7, LVIS_FOCUSED, LVIS_FOCUSED);
+
+					// ASSERT
+					Assert::IsTrue(4 == m->tracking_requested.size());
+					Assert::IsTrue(5 == m->tracking_requested[2]);
+					Assert::IsTrue(7 == m->tracking_requested[3]);
+				}
+
+
+				[TestMethod]
+				void NotEnteringToFocusedDoesNotLeadToTracking()
+				{
+					// INIT
+					HWND hlv = create_listview();
+					shared_ptr<listview> lv(wrap_listview(hlv));
+					model_ptr m(new mock_model(100, 1));
+					NMLISTVIEW nmlv = {
+						{	0, 0, LVN_ITEMCHANGED	},
+						/* iItem = */ 0, /* iSubItem = */ 0,
+					};
+
+					lv->set_model(m);
+					lv->add_column(L"iiii", listview::dir_none);
+					lv->adjust_column_widths();
+
+					// ACT
+					nmlv.iItem = 2, nmlv.uOldState = LVIS_FOCUSED, nmlv.uNewState = LVIS_FOCUSED;
+					::SendMessage(hlv, OCM_NOTIFY, 0, reinterpret_cast<LPARAM>(&nmlv));
+					nmlv.iItem = 3, nmlv.uOldState = LVIS_FOCUSED, nmlv.uNewState = 0;
+					::SendMessage(hlv, OCM_NOTIFY, 0, reinterpret_cast<LPARAM>(&nmlv));
+					nmlv.iItem = 2, nmlv.uOldState = LVIS_SELECTED | LVIS_FOCUSED, nmlv.uNewState = LVIS_SELECTED | LVIS_FOCUSED;
+					::SendMessage(hlv, OCM_NOTIFY, 0, reinterpret_cast<LPARAM>(&nmlv));
+					nmlv.iItem = 3, nmlv.uOldState = LVIS_ACTIVATING | LVIS_FOCUSED, nmlv.uNewState = LVIS_FOCUSED;
+					::SendMessage(hlv, OCM_NOTIFY, 0, reinterpret_cast<LPARAM>(&nmlv));
+
+					// ASSERT
+					Assert::IsTrue(m->tracking_requested.empty());
+				}
+
+
+				[TestMethod]
+				void TakeOwnershipOverTrackable()
+				{
+					// INIT
+					HWND hlv = create_listview();
+					shared_ptr<listview> lv(wrap_listview(hlv));
+					model_ptr m(new mock_model(100));
+					shared_ptr<const listview::trackable> t(new mock_trackable());
+					weak_ptr<const listview::trackable> wt(t);
+					vector<int> matched;
+
+					lv->set_model(m);
+					swap(m->trackables[5], t);
+
+					// ACT
+					ListView_SetItemState(hlv, 5, LVIS_FOCUSED, LVIS_FOCUSED);
+					m->trackables.clear();
+					t = trackable_ptr();
+
+					// ASSERT
+					Assert::IsFalse(wt.expired());
+				}
+
+
+				[TestMethod]
+				void ReleaseTrackableOnRemoveFocus()
+				{
+					// INIT
+					HWND hlv = create_listview();
+					shared_ptr<listview> lv(wrap_listview(hlv));
+					model_ptr m(new mock_model(100));
+					shared_ptr<const listview::trackable> t(new mock_trackable());
+					weak_ptr<const listview::trackable> wt(t);
+					vector<int> matched;
+
+					lv->set_model(m);
+					swap(m->trackables[5], t);
+					ListView_SetItemState(hlv, 5, LVIS_FOCUSED, LVIS_FOCUSED);
+					m->trackables.clear();
+
+					// ACT
+					ListView_SetItemState(hlv, 5, 0, LVIS_FOCUSED);
+
+					// ASSERT
+					Assert::IsTrue(wt.expired());
+				}
+
+
+				[TestMethod]
+				void ReleaseTrackableOnNewFocus()
+				{
+					// INIT
+					HWND hlv = create_listview();
+					shared_ptr<listview> lv(wrap_listview(hlv));
+					model_ptr m(new mock_model(100));
+					shared_ptr<const listview::trackable> t(new mock_trackable());
+					weak_ptr<const listview::trackable> wt(t);
+					vector<int> matched;
+
+					lv->set_model(m);
+					swap(m->trackables[5], t);
+					ListView_SetItemState(hlv, 5, LVIS_FOCUSED, LVIS_FOCUSED);
+					m->trackables.clear();
+
+					// ACT
+					ListView_SetItemState(hlv, 7, LVIS_FOCUSED, LVIS_FOCUSED);
+
+					// ASSERT
+					Assert::IsTrue(wt.expired());
+				}
+
+
+				[TestMethod]
+				void ResetFocusOnInvalidation()
+				{
+					// INIT
+					HWND hlv = create_listview();
+					shared_ptr<listview> lv(wrap_listview(hlv));
+					model_ptr m(new mock_model(100));
+					trackable_ptr t(new mock_trackable());
+					vector<int> matched;
+
+					lv->set_model(m);
+
+					m->trackables[5] = t;
+					ListView_SetItemState(hlv, 5, LVIS_FOCUSED, LVIS_FOCUSED);
+					m->tracking_requested.clear();
+
+					// ACT
+					t->track_result = 7;
+					m->invalidated(100);
+
+					// ASSERT
+					matched = get_matching_indices(hlv, LVNI_FOCUSED);
+					Assert::IsTrue(1 == matched.size());
+					Assert::IsTrue(7 == matched[0]);
+					Assert::IsTrue(m->tracking_requested.empty());
+
+					// ACT
+					t->track_result = 13;
+					m->invalidated(100);
+
+					// ASSERT
+					matched = get_matching_indices(hlv, LVNI_FOCUSED);
+					Assert::IsTrue(1 == matched.size());
+					Assert::IsTrue(13 == matched[0]);
+					Assert::IsTrue(m->tracking_requested.empty());
 				}
 			};
 		}

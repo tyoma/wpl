@@ -60,7 +60,7 @@ namespace wpl
 			virtual void get_text(index_type row, index_type column, std::wstring &text) const = 0;
 			virtual void set_order(index_type column, bool ascending) = 0;
 			virtual void precache(index_type from, index_type count) const;
-			virtual std::shared_ptr<listview::trackable> track(index_type row) const;
+			virtual std::shared_ptr<const listview::trackable> track(index_type row) const;
 
 			signal<void (index_type /*new_count*/)> invalidated;
 		};
@@ -78,7 +78,7 @@ namespace wpl
 		inline void listview::model::precache(index_type /*from*/, index_type /*count*/) const
 		{	}
 
-		inline std::shared_ptr<listview::trackable> listview::model::track(index_type /*row*/) const
+		inline std::shared_ptr<const listview::trackable> listview::model::track(index_type /*row*/) const
 		{	return std::shared_ptr<listview::trackable>();	}
 	}
 }

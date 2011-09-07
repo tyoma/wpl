@@ -44,6 +44,8 @@ namespace wpl
 				shared_ptr<destructible> _advisory, _invalidated_connection;
 				int _sort_column;
 				bool _sort_ascending;
+				shared_ptr<const trackable> _focused_item;
+				bool _avoid_notifications;
 
 				virtual void set_model(shared_ptr<model> model);
 
@@ -68,7 +70,7 @@ namespace wpl
 
 
 			listview_impl::listview_impl(HWND hwnd)
-				: _listview(window::attach(hwnd)), _sort_column(-1)
+				: _listview(window::attach(hwnd)), _sort_column(-1), _avoid_notifications(false)
 			{
 				_advisory = _listview->advise(bind(&listview_impl::wndproc, this, _1, _2, _3, _4));
 			}
@@ -134,15 +136,24 @@ namespace wpl
 					ListView_SetItemCountEx(_listview->hwnd(), new_count, 0);
 				else
 					::InvalidateRect(_listview->hwnd(), NULL, FALSE);
+				_avoid_notifications = true;
+				if (_focused_item)
+					ListView_SetItemState(_listview->hwnd(), _focused_item->index(), LVIS_FOCUSED, LVIS_FOCUSED);
+				_avoid_notifications = false;
 			}
 
 			LRESULT listview_impl::wndproc(UINT message, WPARAM wparam, LPARAM lparam, const window::original_handler_t &previous)
 			{
-				if (OCM_NOTIFY == message)
+				if (OCM_NOTIFY != message)
+					return previous(message, wparam, lparam);
+				if (_model && !_avoid_notifications)
 				{
 					UINT code = reinterpret_cast<const NMHDR *>(lparam)->code;
 					const NMLISTVIEW *pnmlv = reinterpret_cast<const NMLISTVIEW *>(lparam);
 
+					if (LVN_ITEMCHANGED == code && (pnmlv->uOldState & LVIS_FOCUSED) != (pnmlv->uNewState & LVIS_FOCUSED))
+						_focused_item = pnmlv->uNewState & LVIS_FOCUSED ? _model->track(pnmlv->iItem) : shared_ptr<const trackable>();
+					
 					if (LVN_ITEMCHANGED == code && (pnmlv->uOldState & LVIS_SELECTED) != (pnmlv->uNewState & LVIS_SELECTED))
 						selection_changed(pnmlv->iItem, 0 != (pnmlv->uNewState & LVIS_SELECTED));
 					else if (LVN_ITEMACTIVATE == code)
@@ -185,10 +196,8 @@ namespace wpl
 							::InvalidateRect(_listview->hwnd(), NULL, FALSE);
 						}
 					}
-					return 0;
 				}
-				else
-					return previous(message, wparam, lparam);
+				return 0;
 			}
 
 			void listview_impl::set_column_direction(index_type column, sort_direction dir) throw()
