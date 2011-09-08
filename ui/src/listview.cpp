@@ -138,7 +138,13 @@ namespace wpl
 					::InvalidateRect(_listview->hwnd(), NULL, FALSE);
 				_avoid_notifications = true;
 				if (_focused_item)
-					ListView_SetItemState(_listview->hwnd(), _focused_item->index(), LVIS_FOCUSED, LVIS_FOCUSED);
+				{
+					index_type new_focus = _focused_item->index();
+
+					ListView_SetItemState(_listview->hwnd(), new_focus, npos != new_focus ? LVIS_FOCUSED : 0, LVIS_FOCUSED);
+					if (npos == new_focus)
+						_focused_item.reset();
+				}
 				_avoid_notifications = false;
 			}
 

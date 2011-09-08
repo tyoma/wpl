@@ -1382,6 +1382,33 @@ namespace wpl
 					Assert::IsTrue(13 == matched[0]);
 					Assert::IsTrue(m->tracking_requested.empty());
 				}
+
+
+				[TestMethod]
+				void ReleaseTrackableOnBecameInvalid()
+				{
+					HWND hlv = create_listview();
+					shared_ptr<listview> lv(wrap_listview(hlv));
+					model_ptr m(new mock_model(100));
+					trackable_ptr t(new mock_trackable());
+					weak_ptr<const listview::trackable> wt(t);
+					vector<int> matched;
+
+					lv->set_model(m);
+
+					m->trackables[5] = t;
+					ListView_SetItemState(hlv, 5, LVIS_FOCUSED, LVIS_FOCUSED);
+					m->trackables.clear();
+
+					// ACT
+					t->track_result = listview::npos;
+					t.reset();
+					m->invalidated(100);
+
+					// ASSERT
+					Assert::IsTrue(wt.expired());
+					Assert::IsTrue(get_matching_indices(hlv, LVNI_FOCUSED).empty());
+				}
 			};
 		}
 	}

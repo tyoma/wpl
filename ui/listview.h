@@ -34,6 +34,7 @@ namespace wpl
 			struct model;
 			struct trackable;
 			enum sort_direction	{	dir_none, dir_ascending, dir_descending	};
+			static const index_type npos = static_cast<index_type>(-1);
 
 			virtual void set_model(std::shared_ptr<model> ds) = 0;
 
