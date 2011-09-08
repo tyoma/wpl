@@ -1409,6 +1409,54 @@ namespace wpl
 					Assert::IsTrue(wt.expired());
 					Assert::IsTrue(get_matching_indices(hlv, LVNI_FOCUSED).empty());
 				}
+
+
+				[TestMethod]
+				void ResetSelectionOnInvalidation()
+				{
+					// INIT
+					HWND hlv = create_listview();
+					shared_ptr<listview> lv(wrap_listview(hlv));
+					model_ptr m(new mock_model(100));
+					trackable_ptr t[] = {
+						trackable_ptr(new mock_trackable()), trackable_ptr(new mock_trackable()), trackable_ptr(new mock_trackable()),
+					};
+					vector<int> matched;
+
+					lv->set_model(m);
+
+					m->trackables[5] = t[0];
+					m->trackables[7] = t[1];
+					m->trackables[17] = t[2];
+					ListView_SetItemState(hlv, 5, LVIS_SELECTED, LVIS_SELECTED);
+					ListView_SetItemState(hlv, 7, LVIS_SELECTED, LVIS_SELECTED);
+					ListView_SetItemState(hlv, 17, LVIS_SELECTED, LVIS_SELECTED);
+					m->tracking_requested.clear();
+
+					// ACT
+					t[2]->track_result = 21;
+					m->invalidated(100);
+
+					// ASSERT
+					listview::index_type expected1[] = {	5, 7, 21,	};
+
+					ut::AreEquivalent(expected1, get_matching_indices(hlv, LVNI_SELECTED));
+
+					matched = get_matching_indices(hlv, LVNI_SELECTED);
+					Assert::IsTrue(3 == matched.size());
+					Assert::IsTrue(7 == matched[0]);
+					Assert::IsTrue(m->tracking_requested.empty());
+
+					// ACT
+					t[0]->track_result = 13;
+					m->invalidated(100);
+
+					// ASSERT
+					matched = get_matching_indices(hlv, LVNI_FOCUSED);
+					Assert::IsTrue(1 == matched.size());
+					Assert::IsTrue(13 == matched[0]);
+					Assert::IsTrue(m->tracking_requested.empty());
+				}
 			};
 		}
 	}
