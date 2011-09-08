@@ -1617,6 +1617,39 @@ namespace wpl
 
 
 				[TestMethod]
+				void AbandonTrackingOnDeselectAllItems()
+				{
+					// INIT
+					HWND hlv = create_listview();
+					shared_ptr<listview> lv(wrap_listview(hlv));
+					model_ptr m(new mock_model(100));
+					trackable_ptr t[] = {
+						mock_trackable::add(m->trackables, 5),
+						mock_trackable::add(m->trackables, 7),
+						mock_trackable::add(m->trackables, 17),
+					};
+
+					lv->set_model(m);
+
+					ListView_SetItemState(hlv, 7, LVIS_SELECTED, LVIS_SELECTED);
+					ListView_SetItemState(hlv, 5, LVIS_SELECTED, LVIS_SELECTED);
+					ListView_SetItemState(hlv, 17, LVIS_SELECTED, LVIS_SELECTED);
+					m->tracking_requested.clear();
+
+					// ACT
+					ListView_SetItemState(hlv, -1, 0, LVIS_SELECTED);
+					t[0]->track_result = 3;
+					t[0]->track_result = 4;
+					t[2]->track_result = 21;
+					m->set_count(100);
+
+					// ASSERT
+					Assert::IsTrue(get_matching_indices(hlv, LVNI_SELECTED).empty());
+					Assert::IsTrue(m->tracking_requested.empty());
+				}
+
+
+				[TestMethod]
 				void FocusAndSelectionRequestTrackablesTwice()
 				{
 					// INIT

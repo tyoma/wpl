@@ -152,7 +152,7 @@ namespace wpl
 						if ((pnmlv->uOldState & LVIS_SELECTED) != (pnmlv->uNewState & LVIS_SELECTED))
 							if (pnmlv->uNewState & LVIS_SELECTED)
 								_selected_items.push_back(make_pair(pnmlv->iItem, _model->track(pnmlv->iItem)));
-							else
+							else if (-1 != pnmlv->iItem)
 							{
 								for (selection_trackers::iterator i = _selected_items.begin(); i != _selected_items.end(); ++i)
 									if (static_cast<index_type>(pnmlv->iItem) == i->first)
@@ -161,6 +161,8 @@ namespace wpl
 										break;
 									}
 							}
+							else
+								_selected_items.clear();
 					}
 					
 					if (LVN_ITEMCHANGED == code && (pnmlv->uOldState & LVIS_SELECTED) != (pnmlv->uNewState & LVIS_SELECTED))
