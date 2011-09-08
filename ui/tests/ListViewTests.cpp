@@ -1669,6 +1669,57 @@ namespace wpl
 					Assert::IsTrue(7 == m->tracking_requested[0]);
 					Assert::IsTrue(7 == m->tracking_requested[1]);
 				}
+
+
+				[TestMethod]
+				void IgnoreNullTrackableForSelected()
+				{
+					// INIT
+					HWND hlv = create_listview();
+					shared_ptr<listview> lv(wrap_listview(hlv));
+					model_ptr m(new mock_model(100));
+					
+					lv->set_model(m);
+					ListView_SetItemState(hlv, 7, LVIS_SELECTED, LVIS_SELECTED);
+					ListView_SetItemState(hlv, 8, LVIS_SELECTED, LVIS_SELECTED);
+
+					// ACT / ASSERT (must not throw)
+					m->set_count(100);
+
+					// ASSERT
+					listview::index_type expected[] = {	7, 8,	};
+
+					ut::AreEquivalent(expected, get_matching_indices(hlv, LVNI_SELECTED));
+				}
+
+
+				[TestMethod]
+				void ReleaseTrackablesOnModelChange()
+				{
+					// INIT
+					HWND hlv = create_listview();
+					shared_ptr<listview> lv(wrap_listview(hlv));
+					model_ptr m(new mock_model(100));
+					weak_ptr<const listview::trackable> wt[] = {
+						mock_trackable::add(m->trackables, 4),
+						mock_trackable::add(m->trackables, 8),
+						mock_trackable::add(m->trackables, 16),
+					};
+
+					lv->set_model(m);
+					ListView_SetItemState(hlv, 4, LVIS_SELECTED, LVIS_SELECTED);
+					ListView_SetItemState(hlv, 8, LVIS_SELECTED, LVIS_SELECTED);
+					ListView_SetItemState(hlv, 16, LVIS_FOCUSED, LVIS_FOCUSED);
+					m->trackables.clear();
+
+					// ACT
+					lv->set_model(model_ptr(new mock_model(130)));
+
+					// ASSERT
+					Assert::IsTrue(wt[0].expired());
+					Assert::IsTrue(wt[1].expired());
+					Assert::IsTrue(wt[2].expired());
+				}
 			};
 		}
 	}

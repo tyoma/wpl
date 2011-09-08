@@ -88,6 +88,8 @@ namespace wpl
 				_invalidated_connection = model ?
 					model->invalidated += bind(&listview_impl::invalidate_view, this, _1) : slot_connection();
 				invalidate_view(model ? model->get_count() : 0);
+				_focused_item.reset();
+				_selected_items.clear();
 				_model = model;
 			}
 
@@ -242,7 +244,7 @@ namespace wpl
 				for (int i = -1; i = ListView_GetNextItem(_listview->hwnd(), i, LVNI_ALL | LVNI_SELECTED), i != -1; )
 					selection_before.push_back(i);
 				for (selection_trackers::iterator i = _selected_items.begin(); i != _selected_items.end(); )
-					if ((i->first = i->second->index()) != npos)
+					if (!i->second || (i->first = i->second->index()) != npos)
 						selection_after.push_back(i->first), ++i;
 					else
 						i = _selected_items.erase(i);
