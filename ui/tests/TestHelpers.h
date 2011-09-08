@@ -4,8 +4,9 @@
 
 #include <string>
 #include <vector>
+#include <algorithm>
 #include <memory>
-#include <memory>
+#include <iterator>
 #include <tchar.h>
 
 namespace std
@@ -45,8 +46,19 @@ namespace ut
 	};
 
 	template <typename T, typename Container, size_t n>
-	void AreEquivalent(T (&expected)[n], const Container &actual)
+	inline void AreEquivalent(T (&expected)[n], const Container &actual)
 	{
+		using namespace std;
+
+		if (actual.size() != n)
+			Assert::Fail("Sequence contains {0} elements while {1} was expected!", actual.size(), n);
+		vector<T> expected_(expected, expected + n), actual_(actual.begin(), actual.end());
+		sort(expected_.begin(), expected_.end()), sort(actual_.begin(), actual_.end());
+
+		size_t mismatched = distance(expected_.begin(), mismatch(expected_.begin(), expected_.end(), actual_.begin()).first);
+
+		if (mismatched != n)
+			Assert::Fail("Sequences are different starting from position #{0}!", mismatched);
 	}
 }
 

@@ -30,6 +30,15 @@ namespace wpl
 					{	return track_result;	}
 
 					listview::index_type track_result;
+
+					template <typename Map>
+					static shared_ptr<mock_trackable> add(Map &m, listview::index_type index)
+					{
+						shared_ptr<mock_trackable> t(new mock_trackable());
+
+						m[t->track_result = index] = t;
+						return t;
+					}
 				};
 
 				class mock_model : public listview::model
@@ -1305,12 +1314,10 @@ namespace wpl
 					HWND hlv = create_listview();
 					shared_ptr<listview> lv(wrap_listview(hlv));
 					model_ptr m(new mock_model(100));
-					shared_ptr<const listview::trackable> t(new mock_trackable());
-					weak_ptr<const listview::trackable> wt(t);
+					weak_ptr<const listview::trackable> wt(mock_trackable::add(m->trackables, 5));
 					vector<int> matched;
 
 					lv->set_model(m);
-					swap(m->trackables[5], t);
 					ListView_SetItemState(hlv, 5, LVIS_FOCUSED, LVIS_FOCUSED);
 					m->trackables.clear();
 
@@ -1329,12 +1336,10 @@ namespace wpl
 					HWND hlv = create_listview();
 					shared_ptr<listview> lv(wrap_listview(hlv));
 					model_ptr m(new mock_model(100));
-					shared_ptr<const listview::trackable> t(new mock_trackable());
-					weak_ptr<const listview::trackable> wt(t);
+					weak_ptr<const listview::trackable> wt(mock_trackable::add(m->trackables, 5));
 					vector<int> matched;
 
 					lv->set_model(m);
-					swap(m->trackables[5], t);
 					ListView_SetItemState(hlv, 5, LVIS_FOCUSED, LVIS_FOCUSED);
 					m->trackables.clear();
 
@@ -1353,12 +1358,11 @@ namespace wpl
 					HWND hlv = create_listview();
 					shared_ptr<listview> lv(wrap_listview(hlv));
 					model_ptr m(new mock_model(100));
-					trackable_ptr t(new mock_trackable());
+					trackable_ptr t(mock_trackable::add(m->trackables, 5));
 					vector<int> matched;
 
 					lv->set_model(m);
 
-					m->trackables[5] = t;
 					ListView_SetItemState(hlv, 5, LVIS_FOCUSED, LVIS_FOCUSED);
 					m->tracking_requested.clear();
 
@@ -1390,13 +1394,12 @@ namespace wpl
 					HWND hlv = create_listview();
 					shared_ptr<listview> lv(wrap_listview(hlv));
 					model_ptr m(new mock_model(100));
-					trackable_ptr t(new mock_trackable());
+					trackable_ptr t(mock_trackable::add(m->trackables, 5));
 					weak_ptr<const listview::trackable> wt(t);
 					vector<int> matched;
 
 					lv->set_model(m);
 
-					m->trackables[5] = t;
 					ListView_SetItemState(hlv, 5, LVIS_FOCUSED, LVIS_FOCUSED);
 					m->trackables.clear();
 
@@ -1412,24 +1415,23 @@ namespace wpl
 
 
 				[TestMethod]
-				void ResetSelectionOnInvalidation()
+				void ResetSelectionOnInvalidation1()
 				{
 					// INIT
 					HWND hlv = create_listview();
 					shared_ptr<listview> lv(wrap_listview(hlv));
 					model_ptr m(new mock_model(100));
 					trackable_ptr t[] = {
-						trackable_ptr(new mock_trackable()), trackable_ptr(new mock_trackable()), trackable_ptr(new mock_trackable()),
+						mock_trackable::add(m->trackables, 5),
+						mock_trackable::add(m->trackables, 7),
+						mock_trackable::add(m->trackables, 17),
 					};
 					vector<int> matched;
 
 					lv->set_model(m);
 
-					m->trackables[5] = t[0];
-					m->trackables[7] = t[1];
-					m->trackables[17] = t[2];
-					ListView_SetItemState(hlv, 5, LVIS_SELECTED, LVIS_SELECTED);
 					ListView_SetItemState(hlv, 7, LVIS_SELECTED, LVIS_SELECTED);
+					ListView_SetItemState(hlv, 5, LVIS_SELECTED, LVIS_SELECTED);	// order is disturbed intentionally!
 					ListView_SetItemState(hlv, 17, LVIS_SELECTED, LVIS_SELECTED);
 					m->tracking_requested.clear();
 
@@ -1442,20 +1444,197 @@ namespace wpl
 
 					ut::AreEquivalent(expected1, get_matching_indices(hlv, LVNI_SELECTED));
 
-					matched = get_matching_indices(hlv, LVNI_SELECTED);
-					Assert::IsTrue(3 == matched.size());
-					Assert::IsTrue(7 == matched[0]);
-					Assert::IsTrue(m->tracking_requested.empty());
-
 					// ACT
 					t[0]->track_result = 13;
 					m->invalidated(100);
 
 					// ASSERT
-					matched = get_matching_indices(hlv, LVNI_FOCUSED);
-					Assert::IsTrue(1 == matched.size());
-					Assert::IsTrue(13 == matched[0]);
+					listview::index_type expected2[] = {	13, 7, 21,	};
+
+					ut::AreEquivalent(expected2, get_matching_indices(hlv, LVNI_SELECTED));
+
+					// ACT
+					t[1]->track_result = listview::npos;
+					m->invalidated(100);
+
+					// ASSERT
+					listview::index_type expected3[] = {	13, 21,	};
+
+					ut::AreEquivalent(expected3, get_matching_indices(hlv, LVNI_SELECTED));
 					Assert::IsTrue(m->tracking_requested.empty());
+				}
+
+
+				[TestMethod]
+				void ResetSelectionOnInvalidation2()
+				{
+					// INIT
+					HWND hlv = create_listview();
+					shared_ptr<listview> lv(wrap_listview(hlv));
+					model_ptr m(new mock_model(100));
+					trackable_ptr t[] = {
+						mock_trackable::add(m->trackables, 5),
+						mock_trackable::add(m->trackables, 7),
+						mock_trackable::add(m->trackables, 17),
+						mock_trackable::add(m->trackables, 19),
+						mock_trackable::add(m->trackables, 23),
+					};
+					vector<int> matched;
+
+					lv->set_model(m);
+
+					ListView_SetItemState(hlv, 19, LVIS_SELECTED, LVIS_SELECTED);
+					ListView_SetItemState(hlv, 5, LVIS_SELECTED, LVIS_SELECTED);	// order is disturbed intentionally!
+					ListView_SetItemState(hlv, 17, LVIS_SELECTED, LVIS_SELECTED);
+					ListView_SetItemState(hlv, 7, LVIS_SELECTED, LVIS_SELECTED);
+					ListView_SetItemState(hlv, 23, LVIS_SELECTED, LVIS_SELECTED);
+					m->tracking_requested.clear();
+
+					// ACT
+					t[2]->track_result = 3;
+					t[4]->track_result = 47;
+					m->set_count(100);
+
+					// ASSERT
+					listview::index_type expected1[] = {	5, 7, 3, 19, 47,	};
+
+					ut::AreEquivalent(expected1, get_matching_indices(hlv, LVNI_SELECTED));
+
+					// ACT
+					t[3]->track_result = 1;
+					m->set_count(100);
+
+					// ASSERT
+					listview::index_type expected2[] = {	5, 7, 3, 1, 47,	};
+
+					ut::AreEquivalent(expected2, get_matching_indices(hlv, LVNI_SELECTED));
+					Assert::IsTrue(m->tracking_requested.empty());
+				}
+
+
+				[TestMethod]
+				void ReleaseLostTrackables()
+				{
+					// INIT
+					HWND hlv = create_listview();
+					shared_ptr<listview> lv(wrap_listview(hlv));
+					model_ptr m(new mock_model(100));
+					trackable_ptr t(mock_trackable::add(m->trackables, 4));
+					weak_ptr<const listview::trackable> wt[] = {
+						t,
+						mock_trackable::add(m->trackables, 8),
+						mock_trackable::add(m->trackables, 16),
+					};
+
+					lv->set_model(m);
+					ListView_SetItemState(hlv, 4, LVIS_SELECTED, LVIS_SELECTED);
+					ListView_SetItemState(hlv, 8, LVIS_SELECTED, LVIS_SELECTED);
+					ListView_SetItemState(hlv, 16, LVIS_SELECTED, LVIS_SELECTED);
+					m->trackables.clear();
+
+					// ACT
+					t->track_result = listview::npos;
+					t.reset();
+					m->set_count(99);
+
+					// ASSERT
+					Assert::IsTrue(wt[0].expired());
+					Assert::IsFalse(wt[1].expired());
+					Assert::IsFalse(wt[2].expired());
+				}
+
+
+				[TestMethod]
+				void ReleaseTrackablesForDeselectedItems()
+				{
+					// INIT
+					HWND hlv = create_listview();
+					shared_ptr<listview> lv(wrap_listview(hlv));
+					model_ptr m(new mock_model(100));
+					weak_ptr<const listview::trackable> wt[] = {
+						mock_trackable::add(m->trackables, 4),
+						mock_trackable::add(m->trackables, 8),
+						mock_trackable::add(m->trackables, 16),
+					};
+
+					lv->set_model(m);
+					ListView_SetItemState(hlv, 4, LVIS_SELECTED, LVIS_SELECTED);
+					ListView_SetItemState(hlv, 8, LVIS_SELECTED, LVIS_SELECTED);
+					ListView_SetItemState(hlv, 16, LVIS_SELECTED, LVIS_SELECTED);
+					m->trackables.clear();
+
+					// ACT
+					ListView_SetItemState(hlv, 4, 0, LVIS_SELECTED);
+					ListView_SetItemState(hlv, 16, 0, LVIS_SELECTED);
+
+					// ASSERT
+					Assert::IsTrue(wt[0].expired());
+					Assert::IsFalse(wt[1].expired());
+					Assert::IsTrue(wt[2].expired());
+				}
+
+
+				[TestMethod]
+				void AbandonDeselectedItemTracking()
+				{
+					// INIT
+					HWND hlv = create_listview();
+					shared_ptr<listview> lv(wrap_listview(hlv));
+					model_ptr m(new mock_model(100));
+					trackable_ptr t[] = {
+						mock_trackable::add(m->trackables, 5),
+						mock_trackable::add(m->trackables, 7),
+						mock_trackable::add(m->trackables, 17),
+					};
+
+					lv->set_model(m);
+
+					ListView_SetItemState(hlv, 7, LVIS_SELECTED, LVIS_SELECTED);
+					ListView_SetItemState(hlv, 5, LVIS_SELECTED, LVIS_SELECTED);
+					ListView_SetItemState(hlv, 17, LVIS_SELECTED, LVIS_SELECTED);
+
+					// ACT
+					ListView_SetItemState(hlv, 17, 0, LVIS_SELECTED);
+					t[0]->track_result = 3;
+					t[2]->track_result = 21;
+					m->set_count(100);
+
+					// ASSERT
+					listview::index_type expected1[] = {	3, 7,	};
+
+					ut::AreEquivalent(expected1, get_matching_indices(hlv, LVNI_SELECTED));
+
+					// ACT
+					ListView_SetItemState(hlv, 3, 0, LVIS_SELECTED);
+					t[0]->track_result = 13;
+					m->set_count(100);
+
+					// ASSERT
+					listview::index_type expected2[] = {	7,	};
+
+					ut::AreEquivalent(expected2, get_matching_indices(hlv, LVNI_SELECTED));
+				}
+
+
+				[TestMethod]
+				void FocusAndSelectionRequestTrackablesTwice()
+				{
+					// INIT
+					HWND hlv = create_listview();
+					shared_ptr<listview> lv(wrap_listview(hlv));
+					model_ptr m(new mock_model(100));
+					trackable_ptr t(mock_trackable::add(m->trackables, 7));
+					
+					lv->set_model(m);
+					m->tracking_requested.clear();
+
+					// ACT
+					ListView_SetItemState(hlv, 7, LVIS_SELECTED | LVIS_FOCUSED, LVIS_SELECTED | LVIS_FOCUSED);
+
+					// ASSERT
+					Assert::IsTrue(2 == m->tracking_requested.size());
+					Assert::IsTrue(7 == m->tracking_requested[0]);
+					Assert::IsTrue(7 == m->tracking_requested[1]);
 				}
 			};
 		}

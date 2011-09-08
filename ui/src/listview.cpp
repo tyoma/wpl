@@ -24,6 +24,8 @@
 #include <commctrl.h>
 #include <olectl.h>
 #include <atlstr.h>
+#include <algorithm>
+#include <iterator>
 
 using namespace std;
 using namespace std::tr1;
@@ -37,6 +39,8 @@ namespace wpl
 		{
 			class listview_impl : public listview
 			{
+				typedef vector< pair< index_type, shared_ptr<const trackable> > > selection_trackers;
+
 				wstring _text_buffer;
 				shared_ptr<model> _model;
 				shared_ptr<window> _listview;
@@ -45,6 +49,7 @@ namespace wpl
 				int _sort_column;
 				bool _sort_ascending;
 				shared_ptr<const trackable> _focused_item;
+				selection_trackers _selected_items;
 				bool _avoid_notifications;
 
 				virtual void set_model(shared_ptr<model> model);
@@ -58,10 +63,11 @@ namespace wpl
 				virtual void ensure_visible(index_type item);
 				virtual bool is_visible(index_type item) const;
 
-				void invalidate_view(index_type new_count) throw();
-
 				LRESULT wndproc(UINT message, WPARAM wparam, LPARAM lparam, const window::original_handler_t &previous);
 
+				void invalidate_view(index_type new_count);
+				void update_focus();
+				void update_selection();
 				void set_column_direction(index_type column, sort_direction direction) throw();
 
 			public:
@@ -130,24 +136,6 @@ namespace wpl
 				return !!::IntersectRect(&intersection, &client_rect, &item_rect);
 			}
 
-			void listview_impl::invalidate_view(index_type new_count) throw()
-			{
-				if (new_count != static_cast<index_type>(ListView_GetItemCount(_listview->hwnd())))
-					ListView_SetItemCountEx(_listview->hwnd(), new_count, 0);
-				else
-					::InvalidateRect(_listview->hwnd(), NULL, FALSE);
-				_avoid_notifications = true;
-				if (_focused_item)
-				{
-					index_type new_focus = _focused_item->index();
-
-					ListView_SetItemState(_listview->hwnd(), new_focus, npos != new_focus ? LVIS_FOCUSED : 0, LVIS_FOCUSED);
-					if (npos == new_focus)
-						_focused_item.reset();
-				}
-				_avoid_notifications = false;
-			}
-
 			LRESULT listview_impl::wndproc(UINT message, WPARAM wparam, LPARAM lparam, const window::original_handler_t &previous)
 			{
 				if (OCM_NOTIFY != message)
@@ -157,8 +145,23 @@ namespace wpl
 					UINT code = reinterpret_cast<const NMHDR *>(lparam)->code;
 					const NMLISTVIEW *pnmlv = reinterpret_cast<const NMLISTVIEW *>(lparam);
 
-					if (LVN_ITEMCHANGED == code && (pnmlv->uOldState & LVIS_FOCUSED) != (pnmlv->uNewState & LVIS_FOCUSED))
-						_focused_item = pnmlv->uNewState & LVIS_FOCUSED ? _model->track(pnmlv->iItem) : shared_ptr<const trackable>();
+					if (LVN_ITEMCHANGED == code)
+					{
+						if ((pnmlv->uOldState & LVIS_FOCUSED) != (pnmlv->uNewState & LVIS_FOCUSED))
+							_focused_item = pnmlv->uNewState & LVIS_FOCUSED ? _model->track(pnmlv->iItem) : shared_ptr<const trackable>();
+						if ((pnmlv->uOldState & LVIS_SELECTED) != (pnmlv->uNewState & LVIS_SELECTED))
+							if (pnmlv->uNewState & LVIS_SELECTED)
+								_selected_items.push_back(make_pair(pnmlv->iItem, _model->track(pnmlv->iItem)));
+							else
+							{
+								for (selection_trackers::iterator i = _selected_items.begin(); i != _selected_items.end(); ++i)
+									if (static_cast<index_type>(pnmlv->iItem) == i->first)
+									{
+										_selected_items.erase(i);
+										break;
+									}
+							}
+					}
 					
 					if (LVN_ITEMCHANGED == code && (pnmlv->uOldState & LVIS_SELECTED) != (pnmlv->uNewState & LVIS_SELECTED))
 						selection_changed(pnmlv->iItem, 0 != (pnmlv->uNewState & LVIS_SELECTED));
@@ -204,6 +207,51 @@ namespace wpl
 					}
 				}
 				return 0;
+			}
+
+			void listview_impl::invalidate_view(index_type new_count)
+			{
+				if (new_count != static_cast<index_type>(ListView_GetItemCount(_listview->hwnd())))
+					ListView_SetItemCountEx(_listview->hwnd(), new_count, 0);
+				else
+					::InvalidateRect(_listview->hwnd(), NULL, FALSE);
+				_avoid_notifications = true;
+				update_focus();
+				update_selection();
+				_avoid_notifications = false;
+			}
+
+			void listview_impl::update_focus()
+			{
+				if (_focused_item)
+				{
+					index_type new_focus = _focused_item->index();
+
+					ListView_SetItemState(_listview->hwnd(), new_focus, npos != new_focus ? LVIS_FOCUSED : 0, LVIS_FOCUSED);
+					if (npos == new_focus)
+						_focused_item.reset();
+				}
+			}
+
+			void listview_impl::update_selection()
+			{
+				vector<index_type> selection_before, selection_after, d;
+
+				for (int i = -1; i = ListView_GetNextItem(_listview->hwnd(), i, LVNI_ALL | LVNI_SELECTED), i != -1; )
+					selection_before.push_back(i);
+				for (selection_trackers::iterator i = _selected_items.begin(); i != _selected_items.end(); )
+					if ((i->first = i->second->index()) != npos)
+						selection_after.push_back(i->first), ++i;
+					else
+						i = _selected_items.erase(i);
+				sort(selection_after.begin(), selection_after.end());
+				set_difference(selection_after.begin(), selection_after.end(), selection_before.begin(), selection_before.end(), back_inserter(d));
+				for (vector<index_type>::const_iterator i = d.begin(); i != d.end(); ++i)
+					ListView_SetItemState(_listview->hwnd(), *i, LVIS_SELECTED, LVIS_SELECTED);
+				d.clear();
+				set_difference(selection_before.begin(), selection_before.end(), selection_after.begin(), selection_after.end(), back_inserter(d));
+				for (vector<index_type>::const_iterator i = d.begin(); i != d.end(); ++i)
+					ListView_SetItemState(_listview->hwnd(), *i, 0, LVIS_SELECTED);
 			}
 
 			void listview_impl::set_column_direction(index_type column, sort_direction dir) throw()
