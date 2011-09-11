@@ -39,8 +39,10 @@ namespace wpl
 		{
 			class listview_impl : public listview
 			{
-				typedef vector< pair< index_type, shared_ptr<const trackable> > > selection_trackers;
+				typedef pair< index_type /*last_index*/, shared_ptr<const trackable> > tracked_item;
+				typedef vector<tracked_item> selection_trackers;
 
+				bool _avoid_notifications;
 				wstring _text_buffer;
 				shared_ptr<model> _model;
 				shared_ptr<window> _listview;
@@ -50,7 +52,7 @@ namespace wpl
 				bool _sort_ascending;
 				shared_ptr<const trackable> _focused_item;
 				selection_trackers _selected_items;
-				bool _avoid_notifications;
+				tracked_item _visible_item;
 
 				virtual void set_model(shared_ptr<model> model);
 
@@ -61,13 +63,14 @@ namespace wpl
 				virtual void clear_selection();
 
 				virtual void ensure_visible(index_type item);
-				virtual bool is_visible(index_type item) const;
 
 				LRESULT wndproc(UINT message, WPARAM wparam, LPARAM lparam, const window::original_handler_t &previous);
 
 				void invalidate_view(index_type new_count);
 				void update_focus();
 				void update_selection();
+				void ensure_tracked_visibility();
+				bool is_item_visible(index_type item) const throw();
 				void set_column_direction(index_type column, sort_direction direction) throw();
 
 			public:
@@ -76,7 +79,7 @@ namespace wpl
 
 
 			listview_impl::listview_impl(HWND hwnd)
-				: _listview(window::attach(hwnd)), _sort_column(-1), _avoid_notifications(false)
+				: _avoid_notifications(false), _listview(window::attach(hwnd)), _sort_column(-1)
 			{
 				_advisory = _listview->advise(bind(&listview_impl::wndproc, this, _1, _2, _3, _4));
 			}
@@ -90,6 +93,7 @@ namespace wpl
 				invalidate_view(model ? model->get_count() : 0);
 				_focused_item.reset();
 				_selected_items.clear();
+				_visible_item.second.reset();
 				_model = model;
 			}
 
@@ -127,15 +131,9 @@ namespace wpl
 			{	ListView_SetItemState(_listview->hwnd(), -1, 0, LVIS_SELECTED);	}
 
 			void listview_impl::ensure_visible(index_type item)
-			{	ListView_EnsureVisible(_listview->hwnd(), item, FALSE);	}
-
-			bool listview_impl::is_visible(index_type item) const
 			{
-				RECT item_rect, client_rect, intersection;
-
-				::GetClientRect(_listview->hwnd(), &client_rect);
-				ListView_GetItemRect(_listview->hwnd(), item, &item_rect, LVIR_BOUNDS);
-				return !!::IntersectRect(&intersection, &client_rect, &item_rect);
+				_visible_item = make_pair(item, _model->track(item));
+				ListView_EnsureVisible(_listview->hwnd(), item, FALSE);
 			}
 
 			LRESULT listview_impl::wndproc(UINT message, WPARAM wparam, LPARAM lparam, const window::original_handler_t &previous)
@@ -222,6 +220,7 @@ namespace wpl
 				_avoid_notifications = true;
 				update_focus();
 				update_selection();
+				ensure_tracked_visibility();
 				_avoid_notifications = false;
 			}
 
@@ -256,6 +255,26 @@ namespace wpl
 				set_difference(selection_before.begin(), selection_before.end(), selection_after.begin(), selection_after.end(), back_inserter(d));
 				for (vector<index_type>::const_iterator i = d.begin(); i != d.end(); ++i)
 					ListView_SetItemState(_listview->hwnd(), *i, 0, LVIS_SELECTED);
+			}
+
+			void listview_impl::ensure_tracked_visibility()
+			{
+				if (_visible_item.second)
+				{
+					index_type new_position = _visible_item.second->index();
+					if (is_item_visible(_visible_item.first))
+						ListView_EnsureVisible(_listview->hwnd(), new_position, FALSE);
+					_visible_item.first = new_position;
+				}
+			}
+
+			bool listview_impl::is_item_visible(index_type item) const throw()
+			{
+				RECT rc1, rc2, rc;
+
+				::GetClientRect(_listview->hwnd(), &rc1);
+				ListView_GetItemRect(_listview->hwnd(), item, &rc2, LVIR_BOUNDS);
+				return !!IntersectRect(&rc, &rc1, &rc2);
 			}
 
 			void listview_impl::set_column_direction(index_type column, sort_direction dir) throw()

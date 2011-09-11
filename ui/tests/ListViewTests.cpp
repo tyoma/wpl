@@ -1136,79 +1136,6 @@ namespace wpl
 
 
 				[TestMethod]
-				void EnsureItemVisibility()
-				{
-					// INIT
-					HWND hlv = create_listview();
-					shared_ptr<listview> lv(wrap_listview(hlv));
-
-					lv->set_model(model_ptr(new mock_model(100, 1)));
-					lv->add_column(L"iiii", listview::dir_none);
-					lv->adjust_column_widths();
-
-					// ACT
-					lv->ensure_visible(99);
-
-					// ASSERT
-					Assert::IsTrue(is_item_visible(hlv, 99));
-					Assert::IsFalse(is_item_visible(hlv, 49));
-					Assert::IsFalse(is_item_visible(hlv, 0));
-
-					// ACT
-					lv->ensure_visible(49);
-
-					// ASSERT
-					Assert::IsFalse(is_item_visible(hlv, 99));
-					Assert::IsTrue(is_item_visible(hlv, 49));
-					Assert::IsFalse(is_item_visible(hlv, 0));
-
-					// ACT
-					lv->ensure_visible(0);
-
-					// ASSERT
-					Assert::IsFalse(is_item_visible(hlv, 99));
-					Assert::IsFalse(is_item_visible(hlv, 49));
-					Assert::IsTrue(is_item_visible(hlv, 0));
-				}
-
-
-				[TestMethod]
-				void ItemVisibilityCheck()
-				{
-					// INIT
-					HWND hlv = create_listview();
-					shared_ptr<listview> lv(wrap_listview(hlv));
-
-					lv->set_model(model_ptr(new mock_model(100, 1)));
-					lv->add_column(L"iiii", listview::dir_none);
-					lv->adjust_column_widths();
-
-					lv->ensure_visible(99);
-
-					// ACT / ASSERT
-					Assert::IsTrue(lv->is_visible(99));
-					Assert::IsFalse(lv->is_visible(49));
-					Assert::IsFalse(lv->is_visible(0));
-
-					// INIT
-					lv->ensure_visible(49);
-
-					// ACT / ASSERT
-					Assert::IsFalse(lv->is_visible(99));
-					Assert::IsTrue(lv->is_visible(49));
-					Assert::IsFalse(lv->is_visible(0));
-
-					// INIT
-					lv->ensure_visible(0);
-
-					// ACT / ASSERT
-					Assert::IsFalse(lv->is_visible(99));
-					Assert::IsFalse(lv->is_visible(49));
-					Assert::IsTrue(lv->is_visible(0));
-				}
-
-
-				[TestMethod]
 				void RequestProperTrackableOnFocusChange()
 				{
 					// INIT
@@ -1719,6 +1646,257 @@ namespace wpl
 					Assert::IsTrue(wt[0].expired());
 					Assert::IsTrue(wt[1].expired());
 					Assert::IsTrue(wt[2].expired());
+				}
+
+
+				[TestMethod]
+				void EnsureItemVisibility()
+				{
+					// INIT
+					HWND hlv = create_listview();
+					shared_ptr<listview> lv(wrap_listview(hlv));
+
+					lv->set_model(model_ptr(new mock_model(100, 1)));
+					lv->add_column(L"iiii", listview::dir_none);
+					lv->adjust_column_widths();
+
+					// ACT
+					lv->ensure_visible(99);
+
+					// ASSERT
+					Assert::IsTrue(is_item_visible(hlv, 99));
+					Assert::IsFalse(is_item_visible(hlv, 49));
+					Assert::IsFalse(is_item_visible(hlv, 0));
+
+					// ACT
+					lv->ensure_visible(49);
+
+					// ASSERT
+					Assert::IsFalse(is_item_visible(hlv, 99));
+					Assert::IsTrue(is_item_visible(hlv, 49));
+					Assert::IsFalse(is_item_visible(hlv, 0));
+
+					// ACT
+					lv->ensure_visible(0);
+
+					// ASSERT
+					Assert::IsFalse(is_item_visible(hlv, 99));
+					Assert::IsFalse(is_item_visible(hlv, 49));
+					Assert::IsTrue(is_item_visible(hlv, 0));
+				}
+
+
+				[TestMethod]
+				void CaptureTrackableOnSettingVisibilityTracking()
+				{
+					// INIT
+					HWND hlv = create_listview();
+					shared_ptr<listview> lv(wrap_listview(hlv));
+					model_ptr m(new mock_model(100, 1));
+
+					lv->add_column(L"iiii", listview::dir_none);
+					lv->adjust_column_widths();
+					lv->set_model(m);
+
+					// ACT
+					lv->ensure_visible(0);
+
+					// ASSERT
+					Assert::IsTrue(1 == m->tracking_requested.size());
+					Assert::IsTrue(0 == m->tracking_requested[0]);
+
+					// ACT
+					lv->ensure_visible(1);
+					lv->ensure_visible(7);
+
+					// ASSERT
+					Assert::IsTrue(3 == m->tracking_requested.size());
+					Assert::IsTrue(1 == m->tracking_requested[1]);
+					Assert::IsTrue(7 == m->tracking_requested[2]);
+				}
+
+
+				[TestMethod]
+				void ReleaseTrackableOnChangingVisibilityTracking()
+				{
+					// INIT
+					HWND hlv = create_listview();
+					shared_ptr<listview> lv(wrap_listview(hlv));
+					model_ptr m(new mock_model(100, 1));
+					weak_ptr<const listview::trackable> wt[] = {
+						mock_trackable::add(m->trackables, 4),
+						mock_trackable::add(m->trackables, 7),
+					};
+
+					lv->add_column(L"iiii", listview::dir_none);
+					lv->adjust_column_widths();
+					lv->set_model(m);
+
+					// ACT
+					lv->ensure_visible(4);
+					lv->ensure_visible(7);
+					m->trackables.clear();
+
+					// ASSERT
+					Assert::IsTrue(wt[0].expired());
+					Assert::IsFalse(wt[1].expired());
+				}
+
+
+				[TestMethod]
+				void ReleaseVisibilityTrackableOnChangingModel()
+				{
+					// INIT
+					HWND hlv = create_listview();
+					shared_ptr<listview> lv(wrap_listview(hlv));
+					model_ptr m1(new mock_model(100, 1)), m2(new mock_model(100, 1));
+					weak_ptr<const listview::trackable> wt = mock_trackable::add(m1->trackables, 5);
+
+					lv->add_column(L"iiii", listview::dir_none);
+					lv->adjust_column_widths();
+					lv->set_model(m1);
+					lv->ensure_visible(5);
+					m1->trackables.clear();
+
+					// ACT
+					lv->set_model(m2);
+
+					// ASSERT
+					Assert::IsTrue(wt.expired());
+				}
+
+
+				[TestMethod]
+				void EnsureItemVisibilityInDynamics()
+				{
+					// INIT
+					HWND hlv = create_listview();
+					shared_ptr<listview> lv(wrap_listview(hlv));
+					model_ptr m(new mock_model(100, 1));
+					trackable_ptr t(mock_trackable::add(m->trackables, 0));
+
+					lv->set_model(m);
+					lv->add_column(L"iiii", listview::dir_none);
+					lv->adjust_column_widths();
+					lv->ensure_visible(0);
+
+					// ACT
+					t->track_result = 99;
+					m->set_count(100);
+
+					// ASSERT
+					Assert::IsTrue(is_item_visible(hlv, 99));
+					Assert::IsFalse(is_item_visible(hlv, 49));
+					Assert::IsFalse(is_item_visible(hlv, 0));
+
+					// ACT
+					t->track_result = 49;
+					m->set_count(100);
+
+					// ASSERT
+					Assert::IsFalse(is_item_visible(hlv, 99));
+					Assert::IsTrue(is_item_visible(hlv, 49));
+					Assert::IsFalse(is_item_visible(hlv, 0));
+
+					// ACT
+					t->track_result = 0;
+					m->set_count(100);
+
+					// ASSERT
+					Assert::IsFalse(is_item_visible(hlv, 99));
+					Assert::IsFalse(is_item_visible(hlv, 49));
+					Assert::IsTrue(is_item_visible(hlv, 0));
+				}
+
+
+				[TestMethod]
+				void DontTrackItemIfItWasHidden1()
+				{
+					// INIT
+					HWND hlv = create_listview();
+					shared_ptr<listview> lv(wrap_listview(hlv));
+					model_ptr m(new mock_model(100, 1));
+					trackable_ptr t(mock_trackable::add(m->trackables, 0));
+
+					lv->set_model(m);
+					lv->add_column(L"iiii", listview::dir_none);
+					lv->adjust_column_widths();
+					lv->ensure_visible(0);
+
+					// ACT
+					ListView_EnsureVisible(hlv, 49, FALSE);
+					t->track_result = 99;
+					m->set_count(100);
+
+					// ASSERT
+					Assert::IsFalse(is_item_visible(hlv, 0));
+					Assert::IsTrue(is_item_visible(hlv, 49));
+					Assert::IsFalse(is_item_visible(hlv, 99));
+
+					// ACT
+					ListView_EnsureVisible(hlv, 0, FALSE);
+					t->track_result = 49;
+					m->set_count(100);
+
+					// ASSERT
+					Assert::IsTrue(is_item_visible(hlv, 0));
+					Assert::IsFalse(is_item_visible(hlv, 49));
+					Assert::IsFalse(is_item_visible(hlv, 99));
+				}
+
+
+				[TestMethod]
+				void DontTrackItemIfItWasHidden2()
+				{
+					// INIT
+					HWND hlv = create_listview();
+					shared_ptr<listview> lv(wrap_listview(hlv));
+					model_ptr m(new mock_model(100, 1));
+					trackable_ptr t(mock_trackable::add(m->trackables, 49));
+
+					lv->set_model(m);
+					lv->add_column(L"iiii", listview::dir_none);
+					lv->adjust_column_widths();
+					lv->ensure_visible(49);
+
+					// ACT
+					ListView_EnsureVisible(hlv, 0, FALSE);
+					t->track_result = 99;
+					m->set_count(100);
+
+					// ASSERT
+					Assert::IsTrue(is_item_visible(hlv, 0));
+					Assert::IsFalse(is_item_visible(hlv, 49));
+					Assert::IsFalse(is_item_visible(hlv, 99));
+				}
+
+
+				[TestMethod]
+				void RestoreVisibilityTracking()
+				{
+					// INIT
+					HWND hlv = create_listview();
+					shared_ptr<listview> lv(wrap_listview(hlv));
+					model_ptr m(new mock_model(100, 1));
+					trackable_ptr t(mock_trackable::add(m->trackables, 49));
+
+					lv->set_model(m);
+					lv->add_column(L"iiii", listview::dir_none);
+					lv->adjust_column_widths();
+					lv->ensure_visible(49);
+					ListView_EnsureVisible(hlv, 0, FALSE);
+					t->track_result = 99;
+					m->set_count(100);
+
+					// ACT
+					ListView_EnsureVisible(hlv, 99, FALSE);
+					t->track_result = 49;
+					m->set_count(100);
+
+					// ASSERT
+					Assert::IsFalse(is_item_visible(hlv, 0));
+					Assert::IsTrue(is_item_visible(hlv, 49));
+					Assert::IsFalse(is_item_visible(hlv, 99));
 				}
 			};
 		}

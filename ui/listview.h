@@ -45,9 +45,6 @@ namespace wpl
 			virtual void clear_selection() = 0;
 
 			virtual void ensure_visible(index_type item) = 0;
-			virtual bool is_visible(index_type item) const = 0;
-
-			virtual void set_selection_tracking(bool track);
 
 			signal<void (index_type /*item*/)> item_activate;
 			signal<void (index_type /*item*/, bool /*became selected*/)> selection_changed;
@@ -70,10 +67,6 @@ namespace wpl
 		{
 			virtual listview::index_type index() const = 0;
 		};
-
-
-		inline void listview::set_selection_tracking(bool /*track*/)
-		{	}
 
 
 		inline void listview::model::precache(index_type /*from*/, index_type /*count*/) const
