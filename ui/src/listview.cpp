@@ -262,7 +262,7 @@ namespace wpl
 				if (_visible_item.second)
 				{
 					index_type new_position = _visible_item.second->index();
-					if (is_item_visible(_visible_item.first))
+					if (new_position != _visible_item.first && is_item_visible(_visible_item.first) && !is_item_visible(new_position))
 						ListView_EnsureVisible(_listview->hwnd(), new_position, FALSE);
 					_visible_item.first = new_position;
 				}
