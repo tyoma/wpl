@@ -42,8 +42,17 @@ namespace wpl
 			typedef std::function<LRESULT (UINT, WPARAM, LPARAM)> _original_handler_t;
 			typedef std::function<LRESULT (UINT, WPARAM, LPARAM, const _original_handler_t &)> _user_handler_t;
 
-			HWND _window;
-			WNDPROC _original_wndproc;
+			struct data
+			{
+				data(HWND hwnd, WNDPROC address);
+
+				LRESULT operator ()(UINT message, WPARAM wparam, LPARAM lparam) const;
+
+				HWND hwnd;
+				WNDPROC address;
+			};
+
+			data _data;
 			_user_handler_t _user_handler;
 			std::shared_ptr<window> _this;
 

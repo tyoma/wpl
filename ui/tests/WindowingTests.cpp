@@ -367,7 +367,7 @@ namespace wpl
 					HWND hwnd = (HWND)create_window();
 					shared_ptr<window> w(window::attach(hwnd));
 
-					::SetWindowLongPtr(hwnd, GWLP_WNDPROC, (LONG_PTR)replacement_proc);
+					original = (WNDPROC)::SetWindowLongPtr(hwnd, GWLP_WNDPROC, (LONG_PTR)&replacement_proc);
 
 					// ACT
 					bool detach_result = w->detach();
@@ -385,7 +385,8 @@ namespace wpl
 					HWND hwnd = (HWND)create_window();
 					shared_ptr<window> w(window::attach(hwnd));
 
-					::SetWindowLongPtr(hwnd, GWLP_WNDPROC, (LONG_PTR)replacement_proc);
+					original = (WNDPROC)::SetWindowLongPtr(hwnd, GWLP_WNDPROC, (LONG_PTR)&replacement_proc);
+
 
 					// ACT
 					w->detach();
@@ -403,7 +404,7 @@ namespace wpl
 					shared_ptr<window> w(window::attach(hwnd));
 					weak_ptr<window> w_weak(w);
 
-					::SetWindowLongPtr(hwnd, GWLP_WNDPROC, (LONG_PTR)replacement_proc);
+					original = (WNDPROC)::SetWindowLongPtr(hwnd, GWLP_WNDPROC, (LONG_PTR)&replacement_proc);
 
 					// ACT
 					w->detach();
@@ -411,6 +412,23 @@ namespace wpl
 
 					// ASSERT
 					Assert::IsFalse(w_weak.expired());
+				}
+
+
+				[TestMethod]
+				void WrapperIsReleasedEvenIfOversubclassedOnDestroy()
+				{
+					// INIT
+					HWND hwnd = (HWND)create_window();
+					weak_ptr<window> w_weak(window::attach(hwnd));
+
+					original = (WNDPROC)::SetWindowLongPtr(hwnd, GWLP_WNDPROC, (LONG_PTR)&replacement_proc);
+
+					// ACT
+					::DestroyWindow(hwnd);
+
+					// ASSERT
+					Assert::IsTrue(w_weak.expired());
 				}
 			};
 		}
