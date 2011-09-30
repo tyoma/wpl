@@ -170,10 +170,6 @@
 			AssemblyName="System, Version=2.0.0.0, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL"
 			MinFrameworkVersion="131072"
 		/>
-		<ProjectReference
-			ReferencedProjectIdentifier="{4DB355C8-12F1-4BBD-842C-F8D085B52F8C}"
-			RelativePathToProject=".\mt\src\mt.vcproj"
-		/>
 	</References>
 	<Files>
 		<Filter

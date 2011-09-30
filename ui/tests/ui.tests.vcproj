@@ -133,7 +133,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				IgnoreDefaultLibraryNames="libcpmt.lib"
+				IgnoreDefaultLibraryNames="libcmt.lib;libcpmt.lib"
 				GenerateDebugInformation="true"
 			/>
 			<Tool
