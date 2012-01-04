@@ -1906,10 +1906,11 @@ namespace wpl
 					// INIT
 					HWND hlv = create_listview();
 					shared_ptr<listview> lv(wrap_listview(hlv));
-					model_ptr m(new mock_model(10, 1));
+					model_ptr m(new mock_model(10, 2));
 					trackable_ptr t(mock_trackable::add(m->trackables, 9));
 
 					lv->add_column(L"iiii", listview::dir_none);
+					lv->add_column(L"wwwwwwwwwwwww", listview::dir_none);
 					lv->adjust_column_widths();
 					lv->set_model(m);
 
@@ -1923,6 +1924,24 @@ namespace wpl
 					// ACT
 					lv->ensure_visible(9);
 					int first_visible = ListView_GetTopIndex(hlv);
+
+					// ASSERT
+					Assert::IsFalse(0 == first_visible);
+
+					// ACT
+					t->track_result = 0;
+					m->set_count(10);
+					first_visible = ListView_GetTopIndex(hlv);
+
+					// ASSERT
+					Assert::IsTrue(0 == first_visible);
+
+					// INIT (check that header location mapping is working)
+					::MoveWindow(::GetParent(hlv), 37, 71, LOWORD(dwsize), HIWORD(dwsize), TRUE);
+
+					// ACT
+					lv->ensure_visible(9);
+					first_visible = ListView_GetTopIndex(hlv);
 
 					// ASSERT
 					Assert::IsFalse(0 == first_visible);
