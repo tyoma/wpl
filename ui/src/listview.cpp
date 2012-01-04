@@ -274,7 +274,19 @@ namespace wpl
 
 				::GetClientRect(_listview->hwnd(), &rc1);
 				ListView_GetItemRect(_listview->hwnd(), item, &rc2, LVIR_BOUNDS);
-				return !!IntersectRect(&rc, &rc1, &rc2);
+				if (!::IntersectRect(&rc, &rc1, &rc2))
+					return false;
+				if (HWND hheader = ListView_GetHeader(_listview->hwnd()))
+					if (::IsWindowVisible(hheader))
+					{
+						rc2 = rc;
+						::GetWindowRect(hheader, &rc1);
+						::MapWindowPoints(HWND_DESKTOP, _listview->hwnd(), reinterpret_cast<POINT *>(&rc1), 2);
+						::UnionRect(&rc, &rc1, &rc2);
+						if (::EqualRect(&rc, &rc1))
+							return false;
+					}
+				return true;
 			}
 
 			void listview_impl::set_column_direction(index_type column, sort_direction dir) throw()

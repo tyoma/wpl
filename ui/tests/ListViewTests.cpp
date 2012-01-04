@@ -1898,6 +1898,79 @@ namespace wpl
 					Assert::IsTrue(is_item_visible(hlv, 49));
 					Assert::IsFalse(is_item_visible(hlv, 99));
 				}
+
+
+				[TestMethod]
+				void FirstVisibleItemIsNotObscuredByHeader()
+				{
+					// INIT
+					HWND hlv = create_listview();
+					shared_ptr<listview> lv(wrap_listview(hlv));
+					model_ptr m(new mock_model(10, 1));
+					trackable_ptr t(mock_trackable::add(m->trackables, 9));
+
+					lv->add_column(L"iiii", listview::dir_none);
+					lv->adjust_column_widths();
+					lv->set_model(m);
+
+					::SetWindowLong(hlv, GWL_STYLE, ::GetWindowLong(hlv, GWL_STYLE) | LVS_NOCOLUMNHEADER);
+					DWORD dwsize = ListView_ApproximateViewRect(hlv, -1, -1, -1);
+					::SetWindowLong(hlv, GWL_STYLE, ::GetWindowLong(hlv, GWL_STYLE) & ~LVS_NOCOLUMNHEADER);
+
+					::MoveWindow(::GetParent(hlv), 0, 0, LOWORD(dwsize), HIWORD(dwsize), TRUE);
+					::MoveWindow(hlv, 0, 0, LOWORD(dwsize), HIWORD(dwsize), TRUE);
+
+					// ACT
+					lv->ensure_visible(9);
+					int first_visible = ListView_GetTopIndex(hlv);
+
+					// ASSERT
+					Assert::IsFalse(0 == first_visible);
+
+					// ACT
+					t->track_result = 0;
+					m->set_count(10);
+					first_visible = ListView_GetTopIndex(hlv);
+
+					// ASSERT
+					Assert::IsTrue(0 == first_visible);
+				}
+
+
+				[TestMethod]
+				void ListViewIsNotScrolledIfNoHeaderAndViewRectMatchesNumberOfItems()
+				{
+					// INIT
+					HWND hlv = create_listview();
+					shared_ptr<listview> lv(wrap_listview(hlv));
+					model_ptr m(new mock_model(10, 1));
+					trackable_ptr t(mock_trackable::add(m->trackables, 9));
+
+					lv->add_column(L"iiii", listview::dir_none);
+					lv->adjust_column_widths();
+					lv->set_model(m);
+
+					::SetWindowLong(hlv, GWL_STYLE, ::GetWindowLong(hlv, GWL_STYLE) | LVS_NOCOLUMNHEADER);
+					DWORD dwsize = ListView_ApproximateViewRect(hlv, -1, -1, -1);
+
+					::MoveWindow(::GetParent(hlv), 0, 0, LOWORD(dwsize), HIWORD(dwsize), TRUE);
+					::MoveWindow(hlv, 0, 0, LOWORD(dwsize), HIWORD(dwsize), TRUE);
+
+					// ACT
+					lv->ensure_visible(9);
+					int first_visible = ListView_GetTopIndex(hlv);
+
+					// ASSERT
+					Assert::IsTrue(0 == first_visible);
+
+					// ACT
+					t->track_result = 0;
+					m->set_count(10);
+					first_visible = ListView_GetTopIndex(hlv);
+
+					// ASSERT
+					Assert::IsTrue(0 == first_visible);
+				}
 			};
 		}
 	}
