@@ -11,6 +11,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\hierarchy.h" />
     <ClInclude Include="..\listview.h" />
     <ClInclude Include="..\win32\controls.h" />
     <ClInclude Include="..\win32\window.h" />

@@ -20,24 +20,44 @@
 
 #pragma once
 
-#include "concepts.h"
+#include "../base/signals.h"
+
+#include <memory>
+#include <string>
+
+namespace std
+{
+	using tr1::shared_ptr;
+}
 
 namespace wpl
 {
-	namespace mt
+	namespace ui
 	{
-		class event_flag : waitable
+		struct layout;
+
+		struct widget
 		{
-			void *_handle;
+			virtual ~widget()	{	}
+		};
 
-		public:
-			explicit event_flag(bool raised, bool auto_reset);
-			~event_flag();
+		struct container : widget
+		{
+			virtual void set_layout(std::shared_ptr<layout> l) = 0;
+		};
 
-			void raise();
-			void lower();
+		struct layout
+		{
+			struct glue;
+			
+			virtual ~layout()	{	}
+			virtual void resize(int width, int height) = 0;
+			signal<void (std::shared_ptr<widget> widget, std::shared_ptr<glue> &glue)> glue_widget;
+		};
 
-			virtual wait_status wait(unsigned int timeout = infinite) volatile;
+		struct layout::glue
+		{
+			virtual void move(int top, int left, int width, int height) = 0;
 		};
 	}
 }

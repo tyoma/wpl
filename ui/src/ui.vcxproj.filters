@@ -23,6 +23,9 @@
     <ClInclude Include="..\win32\controls.h">
       <Filter>Library Header Files\win32</Filter>
     </ClInclude>
+    <ClInclude Include="..\hierarchy.h">
+      <Filter>Library Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="window.cpp">
