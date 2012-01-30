@@ -18,8 +18,8 @@
 	<Configurations>
 		<Configuration
 			Name="Debug|Win32"
-			OutputDirectory="$(SolutionDir)/_lib/$(ConfigurationName)"
-			IntermediateDirectory="$(SolutionDir)/_obj/$(ConfigurationName)/$(ProjectName)"
+			OutputDirectory="$(SolutionDir)_lib\$(ConfigurationName)\"
+			IntermediateDirectory="$(SolutionDir)_obj\$(ConfigurationName)\$(ProjectName)\"
 			ConfigurationType="4"
 			CharacterSet="1"
 			>
@@ -80,8 +80,8 @@
 		</Configuration>
 		<Configuration
 			Name="Release|Win32"
-			OutputDirectory="$(SolutionDir)/_lib/$(ConfigurationName)"
-			IntermediateDirectory="$(SolutionDir)/_obj/$(ConfigurationName)/$(ProjectName)"
+			OutputDirectory="$(SolutionDir)_lib\$(ConfigurationName)\"
+			IntermediateDirectory="$(SolutionDir)_obj\$(ConfigurationName)\$(ProjectName)\"
 			ConfigurationType="4"
 			CharacterSet="1"
 			WholeProgramOptimization="1"
@@ -153,6 +153,10 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
+				RelativePath=".\form.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\listview.cpp"
 				>
 			</File>
@@ -167,12 +171,24 @@
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
 			<File
+				RelativePath="..\form.h"
+				>
+			</File>
+			<File
 				RelativePath="..\listview.h"
+				>
+			</File>
+			<File
+				RelativePath="..\widget.h"
 				>
 			</File>
 			<Filter
 				Name="win32"
 				>
+				<File
+					RelativePath="..\win32\containers.h"
+					>
+				</File>
 				<File
 					RelativePath="..\win32\controls.h"
 					>

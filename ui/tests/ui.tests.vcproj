@@ -19,8 +19,8 @@
 	<Configurations>
 		<Configuration
 			Name="Debug|Win32"
-			OutputDirectory="$(SolutionDir)/_bin/$(ConfigurationName)"
-			IntermediateDirectory="$(SolutionDir)/_obj/$(ConfigurationName)/$(ProjectName)"
+			OutputDirectory="$(SolutionDir)_bin\$(ConfigurationName)\"
+			IntermediateDirectory="$(SolutionDir)_obj\$(ConfigurationName)\$(ProjectName)\"
 			ConfigurationType="2"
 			CharacterSet="1"
 			ManagedExtensions="1"
@@ -44,7 +44,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				AdditionalIncludeDirectories="./../../.."
-				PreprocessorDefinitions="WIN32;_DEBUG;_LIB"
+				PreprocessorDefinitions="WIN32;_DEBUG;_LIB;_SCL_SECURE_NO_WARNINGS"
 				MinimalRebuild="false"
 				BasicRuntimeChecks="0"
 				RuntimeLibrary="3"
@@ -90,8 +90,8 @@
 		</Configuration>
 		<Configuration
 			Name="Release|Win32"
-			OutputDirectory="$(SolutionDir)/_bin/$(ConfigurationName)"
-			IntermediateDirectory="$(SolutionDir)/_obj/$(ConfigurationName)/$(ProjectName)"
+			OutputDirectory="$(SolutionDir)_bin\$(ConfigurationName)\"
+			IntermediateDirectory="$(SolutionDir)_obj\$(ConfigurationName)\$(ProjectName)\"
 			ConfigurationType="2"
 			CharacterSet="1"
 			ManagedExtensions="1"
@@ -117,7 +117,7 @@
 				Optimization="2"
 				EnableIntrinsicFunctions="true"
 				AdditionalIncludeDirectories="./../../.."
-				PreprocessorDefinitions="WIN32;NDEBUG;_LIB"
+				PreprocessorDefinitions="WIN32;NDEBUG;_LIB;_SCL_SECURE_NO_WARNINGS"
 				RuntimeLibrary="2"
 				WarningLevel="4"
 				DebugInformationFormat="3"
@@ -172,10 +172,14 @@
 		/>
 		<ProjectReference
 			ReferencedProjectIdentifier="{7F59DBD6-D111-41FE-B246-4D21AC5212CB}"
-			RelativePathToProject=".\libraries\wpl\ui\src\ui.vcproj"
+			RelativePathToProject=".\ui\src\ui.vcproj"
 		/>
 	</References>
 	<Files>
+		<File
+			RelativePath=".\FormTests.cpp"
+			>
+		</File>
 		<File
 			RelativePath=".\ListViewTests.cpp"
 			>

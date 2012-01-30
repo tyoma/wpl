@@ -25,6 +25,14 @@ namespace ut
 			else
 				return previous(message, wparam, lparam);
 		}
+
+		BOOL CALLBACK EnumThreadWndProc(HWND hwnd, LPARAM lParam)
+		{
+			set<void *> &s(*reinterpret_cast<set<void *> *>(lParam));
+
+			s.insert(hwnd);
+			return TRUE;
+		}
 	}
 
 	wstring make_native(String ^managed_string)
@@ -36,6 +44,14 @@ namespace ut
 
 	String ^make_managed(const wstring &native_string)
 	{	return gcnew String(native_string.c_str());	}
+
+	set<void *> enum_thread_windows()
+	{
+		set<void *> result;
+
+		::EnumThreadWindows(::GetCurrentThreadId(), &EnumThreadWndProc, reinterpret_cast<LPARAM>(&result));
+		return result;
+	}
 
 	WindowTestsBase::WindowTestsBase()
 		: _windows(new vector<void *>()), _connections(new vector< shared_ptr<wpl::destructible> >)

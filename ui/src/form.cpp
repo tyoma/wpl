@@ -18,46 +18,49 @@
 //	OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //	THE SOFTWARE.
 
-#pragma once
+#include "../win32/containers.h"
 
-#include "../base/signals.h"
+#include <windows.h>
+#include <tchar.h>
 
-#include <memory>
-#include <string>
-
-namespace std
-{
-	using tr1::shared_ptr;
-}
+using namespace std;
 
 namespace wpl
 {
 	namespace ui
 	{
-		struct layout;
-
-		struct widget
+		namespace
 		{
-			virtual ~widget()	{	}
-		};
+			class form_impl : public form
+			{
+				HWND _hwnd;
 
-		struct container : widget
-		{
-			virtual void set_layout(std::shared_ptr<layout> l) = 0;
-		};
+				virtual shared_ptr<widget_site> add(shared_ptr<widget> widget);
 
-		struct layout
+			public:
+				form_impl();
+				~form_impl();
+			};
+
+
+			form_impl::form_impl()
+				: _hwnd(::CreateWindow(_T("#32770"), 0, WS_POPUP, 0, 0, 0, 0, 0, 0, 0, 0))
+			{	}
+
+			form_impl::~form_impl()
+			{	::DestroyWindow(_hwnd);	}
+
+			shared_ptr<container::widget_site> form_impl::add(shared_ptr<widget> widget)
+			{
+				throw 0;
+			}
+		}
+
+		shared_ptr<form> create_form()
 		{
-			struct glue;
+			shared_ptr<form> f(new form_impl);
 			
-			virtual ~layout()	{	}
-			virtual void resize(int width, int height) = 0;
-			signal<void (std::shared_ptr<widget> widget, std::shared_ptr<glue> &glue)> glue_widget;
-		};
-
-		struct layout::glue
-		{
-			virtual void move(int top, int left, int width, int height) = 0;
-		};
+			return f;
+		}
 	}
 }
