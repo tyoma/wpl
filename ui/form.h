@@ -28,6 +28,7 @@ namespace wpl
 	{
 		struct form : container
 		{
+			virtual void set_visible(bool value) = 0;
 		};
 	}
 }

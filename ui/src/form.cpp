@@ -36,6 +36,7 @@ namespace wpl
 				HWND _hwnd;
 
 				virtual shared_ptr<widget_site> add(shared_ptr<widget> widget);
+				virtual void set_visible(bool value);
 
 			public:
 				form_impl();
@@ -53,6 +54,11 @@ namespace wpl
 			shared_ptr<container::widget_site> form_impl::add(shared_ptr<widget> widget)
 			{
 				throw 0;
+			}
+
+			void form_impl::set_visible(bool value)
+			{
+				::ShowWindow(_hwnd, value ? SW_SHOW : SW_HIDE);
 			}
 		}
 

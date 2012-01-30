@@ -3,6 +3,8 @@
 
 #include "TestHelpers.h"
 
+#include <windows.h>
+
 using namespace Microsoft::VisualStudio::TestTools::UnitTesting;
 using namespace std;
 
@@ -78,6 +80,57 @@ namespace wpl
 					Assert::IsTrue(1 == ut::removed_items(after1, after2));
 					Assert::IsTrue(2 == ut::removed_items(before, after2));
 					Assert::IsTrue(0 == ut::added_items(before, after2));
+				}
+
+
+				[TestMethod]
+				void FormWindowIsHasPopupStyleAndInvisibleAtConstruction()
+				{
+					// INIT
+					shared_ptr<form> f;
+					vector<void *> windows;
+
+					// ACT
+					{
+						ut::windows_tracker t(windows);
+						f = create_form();
+					}
+
+					// ASSERT
+					DWORD style = ::GetWindowLong(reinterpret_cast<HWND>(windows[0]), GWL_STYLE);
+
+					Assert::IsTrue(!!(WS_POPUP & style));
+					Assert::IsTrue(!(WS_VISIBLE & style));
+				}
+
+
+				[TestMethod]
+				void ChangingFormVisibilityAffectsItsWindowVisibility()
+				{
+					// INIT
+					shared_ptr<form> f;
+					vector<void *> windows;
+
+					{
+						ut::windows_tracker t(windows);
+						f = create_form();
+					}
+
+					// ACT
+					f->set_visible(true);
+
+					// ASSERT
+					DWORD style = ::GetWindowLong(reinterpret_cast<HWND>(windows[0]), GWL_STYLE);
+
+					Assert::IsTrue(!!(WS_VISIBLE & style));
+
+					// ACT
+					f->set_visible(false);
+
+					// ASSERT
+					style = ::GetWindowLong(reinterpret_cast<HWND>(windows[0]), GWL_STYLE);
+
+					Assert::IsTrue(!(WS_VISIBLE & style));
 				}
 			};
 		}
