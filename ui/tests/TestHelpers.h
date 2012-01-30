@@ -95,7 +95,7 @@ namespace ut
 	}
 	
 	template <typename C1, typename C2>
-	size_t added_items(const C1 &before, const C2 &after)
+	inline size_t added_items(const C1 &before, const C2 &after)
 	{
 		size_t count = 0;
 
@@ -104,18 +104,8 @@ namespace ut
 	}
 	
 	template <typename C1, typename C2>
-	size_t removed_items(const C1 &before, const C2 &after)
+	inline size_t removed_items(const C1 &before, const C2 &after)
 	{	return added_items(after, before);	}
-
-	class windows_tracker : wpl::noncopyable
-	{
-		std::set<void *> _initial_set;
-		std::vector<void *> &_new_windows;
-
-	public:
-		windows_tracker(std::vector<void *> &new_windows);
-		~windows_tracker();
-	};
 }
 
 #define ASSERT_THROWS(fragment, expected_exception) try { fragment; Assert::Fail("Expected exception was not thrown!"); } catch (const expected_exception &) { } catch (AssertFailedException ^) { throw; } catch (...) { Assert::Fail("Exception of unexpected type was thrown!"); }

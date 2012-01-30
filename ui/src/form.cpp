@@ -19,11 +19,18 @@
 //	THE SOFTWARE.
 
 #include "../win32/containers.h"
+#include "../win32/window.h"
 
 #include <windows.h>
 #include <tchar.h>
 
+namespace std
+{
+	using namespace tr1::placeholders;
+};
+
 using namespace std;
+using namespace std::placeholders;
 
 namespace wpl
 {
@@ -33,10 +40,13 @@ namespace wpl
 		{
 			class form_impl : public form
 			{
-				HWND _hwnd;
+				shared_ptr<window> _window;
+				shared_ptr<destructible> _advisory;
 
 				virtual shared_ptr<widget_site> add(shared_ptr<widget> widget);
 				virtual void set_visible(bool value);
+
+				LRESULT wndproc(UINT message, WPARAM wparam, LPARAM lparam, const window::original_handler_t &previous);
 
 			public:
 				form_impl();
@@ -45,11 +55,15 @@ namespace wpl
 
 
 			form_impl::form_impl()
-				: _hwnd(::CreateWindow(_T("#32770"), 0, WS_POPUP, 0, 0, 0, 0, 0, 0, 0, 0))
-			{	}
+			{
+				HWND hwnd = ::CreateWindow(_T("#32770"), 0, WS_OVERLAPPEDWINDOW | WS_CLIPCHILDREN, 0, 0, 100, 20, 0, 0, 0, 0);
+
+				_window = window::attach(hwnd);
+				_advisory = _window->advise(bind(&form_impl::wndproc, this, _1, _2, _3, _4));
+			}
 
 			form_impl::~form_impl()
-			{	::DestroyWindow(_hwnd);	}
+			{	::DestroyWindow(_window->hwnd());	}
 
 			shared_ptr<container::widget_site> form_impl::add(shared_ptr<widget> widget)
 			{
@@ -58,7 +72,14 @@ namespace wpl
 
 			void form_impl::set_visible(bool value)
 			{
-				::ShowWindow(_hwnd, value ? SW_SHOW : SW_HIDE);
+				::ShowWindow(_window->hwnd(), value ? SW_SHOW : SW_HIDE);
+			}
+
+			LRESULT form_impl::wndproc(UINT message, WPARAM wparam, LPARAM lparam, const window::original_handler_t &previous)
+			{
+				if (WM_SIZE == message)
+					resized(LOWORD(lparam), HIWORD(lparam));
+				return previous(message, wparam, lparam);
 			}
 		}
 

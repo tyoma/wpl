@@ -103,15 +103,4 @@ namespace ut
 
 		::InitCommonControlsEx(&icc);
 	}
-
-	windows_tracker::windows_tracker(vector<void *> &new_windows)
-		: _initial_set(enum_thread_windows()), _new_windows(new_windows)
-	{	}
-
-	windows_tracker::~windows_tracker()
-	{
-		set<void *> final_set(enum_thread_windows());
-
-		set_difference(final_set.begin(), final_set.end(), _initial_set.begin(), _initial_set.end(), back_inserter(_new_windows));
-	}
 }
