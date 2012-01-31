@@ -33,9 +33,19 @@ namespace wpl
 {
 	namespace ui
 	{
+		struct widget;
+		struct native_widget;
+
+		struct widget_visitor
+		{
+			virtual void generic_widget_visited(widget &w) = 0;
+			virtual void native_widget_visited(native_widget &w) = 0;
+		};
+
 		struct widget
 		{
 			virtual ~widget()	{	}
+			virtual void visit(widget_visitor &visitor) {	visitor.generic_widget_visited(*this);	}
 		};
 
 		struct container : widget
