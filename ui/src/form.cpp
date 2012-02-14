@@ -27,7 +27,10 @@
 
 namespace std
 {
-	using namespace tr1::placeholders;
+   namespace placeholders
+   {
+      using namespace std::tr1::placeholders;
+   }
 };
 
 using namespace std;

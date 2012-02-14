@@ -194,6 +194,10 @@
 					>
 				</File>
 				<File
+					RelativePath="..\win32\native_widget.h"
+					>
+				</File>
+				<File
 					RelativePath="..\win32\window.h"
 					>
 				</File>

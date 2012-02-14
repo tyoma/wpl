@@ -7,7 +7,10 @@ namespace std
 {
 	using tr1::bind;
 	using tr1::ref;
-	using namespace tr1::placeholders;
+   namespace placeholders
+   {
+      using namespace std::tr1::placeholders;
+   }
 }
 
 using namespace Microsoft::VisualStudio::TestTools::UnitTesting;
