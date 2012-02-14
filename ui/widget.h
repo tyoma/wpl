@@ -63,7 +63,7 @@ namespace wpl
 		struct container::widget_site
 		{
 			virtual ~widget_site()	{	}
-			virtual void move(int top, int left, int width, int height) = 0;
+			virtual void move(int left, int top, int width, int height) = 0;
 		};
 	}
 }

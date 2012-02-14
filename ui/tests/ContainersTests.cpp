@@ -88,6 +88,30 @@ namespace wpl
 					Assert::IsTrue(widgets[3] == c2[0]);
 					Assert::IsTrue(widgets[4] == c2[1]);
 				}
+
+
+				[TestMethod]
+				void SiteIsReturnedWhenAddingNativeWidgetToForm()
+				{
+					// INIT
+					shared_ptr<container> container(create_form());
+					shared_ptr<widget> widget(new ut::TestNativeWidget());
+
+					// ACT / ASSERT
+					Assert::IsTrue(!!container->add(widget));
+				}
+
+
+				[TestMethod]
+				void SiteIsReturnedWhenAddingGenericWidgetToForm()
+				{
+					// INIT
+					shared_ptr<container> container(create_form());
+					shared_ptr<widget> widget(new ut::TestWidget());
+
+					// ACT / ASSERT
+					Assert::IsTrue(!!container->add(widget));
+				}
 			};
 		}
 	}

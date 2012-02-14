@@ -31,6 +31,15 @@ namespace wpl
 			{
 				void track_resize(vector< pair<unsigned int, unsigned int> > &resizes, unsigned int width, unsigned int height)
 				{	resizes.push_back(make_pair(width, height));	}
+
+				void get_window_rect(HWND hwnd, RECT &rc)
+				{
+					HWND hparent = ::GetParent(hwnd);
+
+					::GetWindowRect(hwnd, &rc);
+					if (hparent)
+						::MapWindowPoints(NULL, hparent, reinterpret_cast<POINT *>(&rc), 2);
+				}
 			}
 
 			[TestClass]
@@ -273,6 +282,37 @@ namespace wpl
 
 					// ACT / ASSERT (must not throw)
 					f.first->add(w);
+				}
+
+
+				[TestMethod, Ignore]
+				void MovingOfNativeWidgetOnForm()
+				{
+					// INIT
+					shared_ptr<container> f(create_form());
+					shared_ptr<ut::TestNativeWidget> w(new ut::TestNativeWidget);
+					shared_ptr<container::widget_site> site(f->add(w));
+					RECT rc;
+
+					// ACT
+					site->move(0, 10, 20, 30);
+
+					// ASSERT
+					get_window_rect(w->hwnd(), rc);
+					Assert::IsTrue(0 == rc.left);
+					Assert::IsTrue(10 == rc.top);
+					Assert::IsTrue(20 == rc.right);
+					Assert::IsTrue(40 == rc.bottom);
+
+					// ACT
+					site->move(13, 17, 29, 47);
+
+					// ASSERT
+					get_window_rect(w->hwnd(), rc);
+					Assert::IsTrue(13 == rc.left);
+					Assert::IsTrue(17 == rc.top);
+					Assert::IsTrue(42 == rc.right);
+					Assert::IsTrue(64 == rc.bottom);
 				}
 			};
 		}

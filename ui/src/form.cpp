@@ -73,7 +73,20 @@ namespace wpl
 
 			shared_ptr<container::widget_site> form_impl::add(shared_ptr<widget> w)
 			{
-				struct set_parent_visitor : public widget_visitor
+				class site_stub : public widget_site
+				{
+					HWND _hwnd;
+
+					virtual void move(int left, int top, int width, int height)
+					{	::MoveWindow(_hwnd, left, top, width, height, TRUE);	}
+
+				public:
+					site_stub(HWND hwnd)
+						: _hwnd(hwnd)
+					{	}
+				};
+
+				class set_parent_visitor : public widget_visitor
 				{
 					HWND _parent;
 
@@ -97,7 +110,7 @@ namespace wpl
 				w->visit(v);
 				_children.push_back(w);
 
-				return shared_ptr<container::widget_site>();
+				return shared_ptr<container::widget_site>(new site_stub(NULL));
 			}
 
 			void form_impl::get_children(children_list &children) const
