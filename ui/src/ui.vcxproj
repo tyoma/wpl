@@ -16,6 +16,7 @@
     <ClInclude Include="..\listview.h" />
     <ClInclude Include="..\win32\containers.h" />
     <ClInclude Include="..\win32\controls.h" />
+    <ClInclude Include="..\win32\native_widget.h" />
     <ClInclude Include="..\win32\window.h" />
   </ItemGroup>
   <ItemGroup>

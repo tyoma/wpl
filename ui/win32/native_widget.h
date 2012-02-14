@@ -20,50 +20,18 @@
 
 #pragma once
 
-#include "../base/signals.h"
+#include "../widget.h"
 
-#include <memory>
-
-namespace std
-{
-	using tr1::shared_ptr;
-}
+typedef struct HWND__ *HWND;
 
 namespace wpl
 {
 	namespace ui
 	{
-		struct widget;
-		struct native_widget;
-
-		struct widget_visitor
+		struct native_widget : widget
 		{
-			virtual void generic_widget_visited(widget &w) = 0;
-			virtual void native_widget_visited(native_widget &w) = 0;
-		};
-
-		struct widget
-		{
-			virtual ~widget()	{	}
-			virtual void visit(widget_visitor &visitor) {	visitor.generic_widget_visited(*this);	}
-		};
-
-		struct container
-		{
-			typedef std::vector< std::shared_ptr<widget> > children_list;
-			struct widget_site;
-
-			virtual ~container()	{	}
-			virtual std::shared_ptr<widget_site> add(std::shared_ptr<widget> widget) = 0;
-			virtual void get_children(children_list &children) const = 0;
-
-			signal<void (unsigned int width, unsigned int height)> resized;
-		};
-		
-		struct container::widget_site
-		{
-			virtual ~widget_site()	{	}
-			virtual void move(int top, int left, int width, int height) = 0;
+			virtual void visit(widget_visitor &visitor) {	visitor.native_widget_visited(*this);	}
+			virtual void set_parent(HWND parent) = 0;
 		};
 	}
 }

@@ -1,7 +1,9 @@
-#include <wpl/ui/win32/containers.h>
 #include <wpl/ui/form.h>
 
+#include <wpl/ui/win32/containers.h>
+
 #include "TestHelpers.h"
+#include "TestWidgets.h"
 
 #include <windows.h>
 
@@ -198,6 +200,76 @@ namespace wpl
 
 					// ASSERT
 					Assert::IsTrue(resize_log.empty());
+				}
+
+
+				[TestMethod]
+				void CreationOfTestWidgetsCreatesWindows()
+				{
+					// INIT
+					shared_ptr<ut::TestNativeWidget> widgets[] = {
+						shared_ptr<ut::TestNativeWidget>(new ut::TestNativeWidget()),
+						shared_ptr<ut::TestNativeWidget>(new ut::TestNativeWidget()),
+					};
+
+					// ACT / ASSERT
+					Assert::IsTrue(!!::IsWindow(widgets[0]->hwnd()));
+					Assert::IsTrue(!!::IsWindow(widgets[1]->hwnd()));
+					Assert::IsTrue(widgets[1]->hwnd() != widgets[0]->hwnd());
+				}
+
+
+				[TestMethod]
+				void AddingNativeWidgetToFormChangesItsParent()
+				{
+					// INIT
+					form_and_handle f[] = {
+						create_form_with_handle(),
+						create_form_with_handle(),
+					};
+					shared_ptr<ut::TestNativeWidget> widgets[] = {
+						shared_ptr<ut::TestNativeWidget>(new ut::TestNativeWidget()),
+						shared_ptr<ut::TestNativeWidget>(new ut::TestNativeWidget()),
+						shared_ptr<ut::TestNativeWidget>(new ut::TestNativeWidget()),
+					};
+
+					// ACT
+					f[0].first->add(widgets[0]);
+					f[1].first->add(widgets[1]);
+
+					// ASSERT
+					Assert::IsTrue(f[0].second == ::GetParent(widgets[0]->hwnd()));
+					Assert::IsTrue(f[1].second == ::GetParent(widgets[1]->hwnd()));
+					Assert::IsTrue(NULL == ::GetParent(widgets[2]->hwnd()));
+
+					// ACT
+					f[1].first->add(widgets[2]);
+
+					// ASSERT
+					Assert::IsTrue(f[1].second == ::GetParent(widgets[2]->hwnd()));
+				}
+
+
+				[TestMethod]
+				void AddingNullWidgetThrowsArgumentInvalid()
+				{
+					// INIT
+					form_and_handle f(create_form_with_handle());
+
+					// ACT / ASSERT
+					ASSERT_THROWS(f.first->add(shared_ptr<widget>()), invalid_argument);
+				}
+
+
+				[TestMethod]
+				void NonNativeWidgetsCanBeAdded()
+				{
+					// INIT
+					form_and_handle f(create_form_with_handle());
+					shared_ptr<ut::TestWidget> w(new ut::TestWidget);
+
+					// ACT / ASSERT (must not throw)
+					f.first->add(w);
 				}
 			};
 		}

@@ -20,6 +20,7 @@
 
 #include "../win32/containers.h"
 #include "../win32/window.h"
+#include "../win32/native_widget.h"
 
 #include <windows.h>
 #include <tchar.h>
@@ -42,8 +43,10 @@ namespace wpl
 			{
 				shared_ptr<window> _window;
 				shared_ptr<destructible> _advisory;
+				children_list _children;
 
 				virtual shared_ptr<widget_site> add(shared_ptr<widget> widget);
+				virtual void get_children(children_list &children) const;
 				virtual void set_visible(bool value);
 
 				LRESULT wndproc(UINT message, WPARAM wparam, LPARAM lparam, const window::original_handler_t &previous);
@@ -65,10 +68,37 @@ namespace wpl
 			form_impl::~form_impl()
 			{	::DestroyWindow(_window->hwnd());	}
 
-			shared_ptr<container::widget_site> form_impl::add(shared_ptr<widget> widget)
+			shared_ptr<container::widget_site> form_impl::add(shared_ptr<widget> w)
 			{
-				throw 0;
+				struct set_parent_visitor : public widget_visitor
+				{
+					HWND _parent;
+
+					virtual void generic_widget_visited(widget &/*w*/)
+					{	}
+
+					virtual void native_widget_visited(native_widget &w)
+					{	w.set_parent(_parent);	}
+
+				public:
+					set_parent_visitor(HWND parent)
+						: _parent(parent)
+					{	}
+				};
+				
+				set_parent_visitor v(_window->hwnd());
+
+				if (!w)
+					throw invalid_argument("Non-null widget must be passed in!");
+				_children.reserve(_children.size() + 1);
+				w->visit(v);
+				_children.push_back(w);
+
+				return shared_ptr<container::widget_site>();
 			}
+
+			void form_impl::get_children(children_list &children) const
+			{	children.assign(_children.begin(), _children.end());	}
 
 			void form_impl::set_visible(bool value)
 			{

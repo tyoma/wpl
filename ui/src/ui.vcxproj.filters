@@ -32,6 +32,9 @@
     <ClInclude Include="..\win32\containers.h">
       <Filter>Library Header Files\win32</Filter>
     </ClInclude>
+    <ClInclude Include="..\win32\native_widget.h">
+      <Filter>Library Header Files\win32</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="window.cpp">
