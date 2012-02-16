@@ -35,6 +35,9 @@
     <ClInclude Include="..\win32\native_widget.h">
       <Filter>Library Header Files\win32</Filter>
     </ClInclude>
+    <ClInclude Include="..\layout.h">
+      <Filter>Library Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="window.cpp">
@@ -44,6 +47,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="form.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="layout.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

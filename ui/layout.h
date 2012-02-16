@@ -20,18 +20,21 @@
 
 #pragma once
 
-#include "../widget.h"
-
-typedef struct HWND__ *HWND;
+#include "widget.h"
 
 namespace wpl
 {
 	namespace ui
 	{
-		struct native_widget : widget
+		class layout_container : public widget, public container
 		{
-			virtual void visit(visitor &visitor) {	visitor.native_widget_visited(*this);	}
-			virtual std::shared_ptr<container::widget_site> set_parent(HWND parent) = 0;
+			children_list _children;
+
+		public:
+			virtual void visit(node::visitor &visitor);
+
+			virtual std::shared_ptr<widget_site> add(std::shared_ptr<widget> widget);
+			virtual void get_children(children_list &children) const;
 		};
 	}
 }

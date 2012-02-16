@@ -33,37 +33,71 @@ namespace wpl
 {
 	namespace ui
 	{
-		struct widget;
+		struct node
+		{
+			struct visitor;
+
+			virtual ~node()	{	}
+			virtual void visit(visitor &visitor) = 0;
+		};
+
+
+		struct widget : node
+		{
+			struct visitor;
+
+			virtual void visit(node::visitor &visitor);
+			virtual void visit(widget::visitor &visitor);
+		};
+
+
 		struct native_widget;
 
-		struct widget_visitor
-		{
-			virtual void generic_widget_visited(widget &w) = 0;
-			virtual void native_widget_visited(native_widget &w) = 0;
-		};
 
-		struct widget
-		{
-			virtual ~widget()	{	}
-			virtual void visit(widget_visitor &visitor) {	visitor.generic_widget_visited(*this);	}
-		};
-
-		struct container
+		struct container : node
 		{
 			typedef std::vector< std::shared_ptr<widget> > children_list;
 			struct widget_site;
 
-			virtual ~container()	{	}
+			virtual void visit(node::visitor &visitor);
 			virtual std::shared_ptr<widget_site> add(std::shared_ptr<widget> widget) = 0;
 			virtual void get_children(children_list &children) const = 0;
 
 			signal<void (unsigned int width, unsigned int height)> resized;
 		};
-		
+
+
+		struct node::visitor
+		{
+			virtual void visited(widget &w) = 0;
+			virtual void visited(container &c) = 0;
+		};
+
+
+		struct widget::visitor
+		{
+			virtual void generic_widget_visited(widget &w) = 0;
+			virtual void native_widget_visited(native_widget &w) = 0;
+		};
+
+
 		struct container::widget_site
 		{
 			virtual ~widget_site()	{	}
 			virtual void move(int left, int top, int width, int height) = 0;
 		};
+
+
+
+		inline void widget::visit(node::visitor &visitor)
+		{	visitor.visited(*this);	}
+
+		inline void widget::visit(widget::visitor &visitor)
+		{	visitor.generic_widget_visited(*this);	}
+
+
+
+		inline void container::visit(node::visitor &visitor)
+		{	visitor.visited(*this);	}
 	}
 }

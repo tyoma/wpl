@@ -9,13 +9,13 @@ namespace std
 	using tr1::ref;
    namespace placeholders
    {
-      using namespace std::tr1::placeholders;
+      using namespace tr1::placeholders;
    }
 }
 
 using namespace Microsoft::VisualStudio::TestTools::UnitTesting;
 using namespace std;
-using namespace std::placeholders;
+using namespace placeholders;
 
 namespace wpl
 {
@@ -25,7 +25,7 @@ namespace wpl
 		{
 			namespace
 			{
-				struct myvisitor : widget_visitor
+				struct mywidgetvisitor : widget::visitor
 				{
 					virtual void generic_widget_visited(widget &w)	{	visitation_log.push_back(make_pair(false, &w));	}
 					virtual void native_widget_visited(native_widget &w)	{	visitation_log.push_back(make_pair(true, &w));	}
@@ -33,8 +33,14 @@ namespace wpl
 					vector< pair<bool, void *> > visitation_log;
 				};
 
-				struct dummy : widget
+				struct dummy_widget : widget
 				{
+				};
+
+				struct dummy_container : container
+				{
+					virtual shared_ptr<widget_site> add(shared_ptr<widget> /*widget*/)	{	throw 0;	}
+					virtual void get_children(children_list &/*children*/) const	{	}
 				};
 			}
 
@@ -43,11 +49,11 @@ namespace wpl
 			{
 			public:
 				[TestMethod]
-				void VisitingDirectChildOfWidgetLeadsToGenericWidget()
+				void WidgetVisitingDirectChildOfWidgetLeadsToGenericWidget()
 				{
 					// INIT
-					myvisitor v1, v2;
-					dummy d1, d2;
+					mywidgetvisitor v1, v2;
+					dummy_widget d1, d2;
 
 					// ACT
 					d1.visit(v1);
@@ -74,10 +80,56 @@ namespace wpl
 
 
 				[TestMethod]
+				void NodeVisitingDirectChildOfWidgetLeadsToWidget()
+				{
+					// INIT
+					ut::NodesVisitationChecker v;
+					dummy_widget d1, d2;
+
+					// ACT
+					d1.visit(v);
+					d2.visit(v);
+					d1.visit(v);
+						
+					// ASSERT
+					Assert::IsTrue(3 == v.visitation_log.size());
+					Assert::IsFalse(v.visitation_log[0].first);
+					Assert::IsTrue(&d1 == v.visitation_log[0].second);
+					Assert::IsFalse(v.visitation_log[1].first);
+					Assert::IsTrue(&d2 == v.visitation_log[1].second);
+					Assert::IsFalse(v.visitation_log[2].first);
+					Assert::IsTrue(&d1 == v.visitation_log[2].second);
+				}
+
+
+				[TestMethod]
+				void NodeVisitingDirectChildOfWidgetLeadsToContainer()
+				{
+					// INIT
+					ut::NodesVisitationChecker v;
+					dummy_container d1, d2;
+
+					// ACT
+					d1.visit(v);
+					d1.visit(v);
+					d2.visit(v);
+						
+					// ASSERT
+					Assert::IsTrue(3 == v.visitation_log.size());
+					Assert::IsTrue(v.visitation_log[0].first);
+					Assert::IsTrue(&d1 == v.visitation_log[0].second);
+					Assert::IsTrue(v.visitation_log[1].first);
+					Assert::IsTrue(&d1 == v.visitation_log[1].second);
+					Assert::IsTrue(v.visitation_log[2].first);
+					Assert::IsTrue(&d2 == v.visitation_log[2].second);
+				}
+
+
+				[TestMethod]
 				void VisitingDirectChildOfNativeWidgetLeadsToNativeWidgetVisitation()
 				{
 					// INIT
-					myvisitor v1, v2;
+					mywidgetvisitor v1, v2;
 					ut::TestNativeWidget d1, d2;
 
 					// ACT

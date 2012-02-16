@@ -1,5 +1,6 @@
 #include <wpl/ui/form.h>
 
+#include <wpl/ui/layout.h>
 #include <wpl/ui/win32/containers.h>
 
 #include "TestHelpers.h"
@@ -263,6 +264,36 @@ namespace wpl
 
 
 				[TestMethod]
+				void AddingContainerWithNativeWidgetsToFormChangesTheirParent()
+				{
+					// INIT
+					form_and_handle f[] = {
+						create_form_with_handle(),
+						create_form_with_handle(),
+					};
+					shared_ptr<layout_container> l[] = {
+						shared_ptr<layout_container>(new layout_container),
+						shared_ptr<layout_container>(new layout_container),
+					};
+					shared_ptr<ut::TestNativeWidget> widgets[] = {
+						shared_ptr<ut::TestNativeWidget>(new ut::TestNativeWidget()),
+						shared_ptr<ut::TestNativeWidget>(new ut::TestNativeWidget()),
+					};
+
+					l[0]->add(widgets[0]);
+					l[1]->add(widgets[1]);
+
+					// ACT
+					f[0].first->add(l[0]);
+					f[1].first->add(l[1]);
+
+					// ASSERT
+					Assert::IsTrue(f[0].second == ::GetParent(widgets[0]->hwnd()));
+					Assert::IsTrue(f[1].second == ::GetParent(widgets[1]->hwnd()));
+				}
+
+
+				[TestMethod]
 				void AddingNullWidgetThrowsArgumentInvalid()
 				{
 					// INIT
@@ -285,7 +316,7 @@ namespace wpl
 				}
 
 
-				[TestMethod, Ignore]
+				[TestMethod]
 				void MovingOfNativeWidgetOnForm()
 				{
 					// INIT
@@ -314,6 +345,72 @@ namespace wpl
 					Assert::IsTrue(42 == rc.right);
 					Assert::IsTrue(64 == rc.bottom);
 				}
+
+
+				[TestMethod]
+				void MovingNativeWidgetWithinLayoutContainerOnFormNoOffset()
+				{
+					// INIT
+					shared_ptr<container> f(create_form());
+					shared_ptr<layout_container> l1(new layout_container()), l2(new layout_container());
+					shared_ptr<ut::TestNativeWidget> w1(new ut::TestNativeWidget), w2(new ut::TestNativeWidget);
+					shared_ptr<container::widget_site> site1_l(f->add(l1)), site1_w(l1->add(w1));
+					shared_ptr<container::widget_site> site2_w(l2->add(w2)), site2_l(f->add(l2));
+					RECT rc;
+
+					// ACT
+					site2_l->move(0, 0, 0, 0);
+					site1_w->move(0, 10, 20, 30);
+					site2_w->move(0, 10, 20, 30);
+
+					// ASSERT
+					get_window_rect(w1->hwnd(), rc);
+					Assert::IsTrue(0 == rc.left);
+					Assert::IsTrue(10 == rc.top);
+					Assert::IsTrue(20 == rc.right);
+					Assert::IsTrue(40 == rc.bottom);
+
+					get_window_rect(w2->hwnd(), rc);
+					Assert::IsTrue(0 == rc.left);
+					Assert::IsTrue(10 == rc.top);
+					Assert::IsTrue(20 == rc.right);
+					Assert::IsTrue(40 == rc.bottom);
+				}
+
+
+				[TestMethod]
+				void MovingNativeWidgetWithinLayoutContainerOnFormWithOffset()
+				{
+					// INIT
+					shared_ptr<container> f(create_form());
+					shared_ptr<layout_container> l(new layout_container());
+					shared_ptr<ut::TestNativeWidget> w(new ut::TestNativeWidget);
+					shared_ptr<container::widget_site> site_w(l->add(w)), site_l(f->add(l));
+					RECT rc;
+
+					// ACT
+					site_l->move(11, 13, 0, 0);
+					site_w->move(2, 3, 20, 30);
+
+					// ASSERT
+					get_window_rect(w->hwnd(), rc);
+					Assert::IsTrue(13 == rc.left);
+					Assert::IsTrue(16 == rc.top);
+					Assert::IsTrue(33 == rc.right);
+					Assert::IsTrue(46 == rc.bottom);
+
+					// ACT
+					site_l->move(29, 47, 0, 0);
+					site_w->move(4, 5, 20, 30);
+
+					// ASSERT
+					get_window_rect(w->hwnd(), rc);
+					Assert::IsTrue(33 == rc.left);
+					Assert::IsTrue(52 == rc.top);
+					Assert::IsTrue(53 == rc.right);
+					Assert::IsTrue(82 == rc.bottom);
+				}
+
 			};
 		}
 	}

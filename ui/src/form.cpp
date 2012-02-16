@@ -29,7 +29,7 @@ namespace std
 {
    namespace placeholders
    {
-      using namespace std::tr1::placeholders;
+      using namespace tr1::placeholders;
    }
 };
 
@@ -60,6 +60,19 @@ namespace wpl
 			};
 
 
+			struct parent_setting_visitor : node::visitor, noncopyable
+			{
+				parent_setting_visitor(HWND parent);
+
+				virtual void visited(widget &w);
+				virtual void visited(container &c);
+
+				const HWND parent;
+				shared_ptr<container::widget_site> site;
+			};
+
+
+
 			form_impl::form_impl()
 			{
 				HWND hwnd = ::CreateWindow(_T("#32770"), 0, WS_OVERLAPPEDWINDOW | WS_CLIPCHILDREN, 0, 0, 100, 20, 0, 0, 0, 0);
@@ -73,36 +86,7 @@ namespace wpl
 
 			shared_ptr<container::widget_site> form_impl::add(shared_ptr<widget> w)
 			{
-				class site_stub : public widget_site
-				{
-					HWND _hwnd;
-
-					virtual void move(int left, int top, int width, int height)
-					{	::MoveWindow(_hwnd, left, top, width, height, TRUE);	}
-
-				public:
-					site_stub(HWND hwnd)
-						: _hwnd(hwnd)
-					{	}
-				};
-
-				class set_parent_visitor : public widget_visitor
-				{
-					HWND _parent;
-
-					virtual void generic_widget_visited(widget &/*w*/)
-					{	}
-
-					virtual void native_widget_visited(native_widget &w)
-					{	w.set_parent(_parent);	}
-
-				public:
-					set_parent_visitor(HWND parent)
-						: _parent(parent)
-					{	}
-				};
-				
-				set_parent_visitor v(_window->hwnd());
+				parent_setting_visitor v(_window->hwnd());
 
 				if (!w)
 					throw invalid_argument("Non-null widget must be passed in!");
@@ -110,7 +94,7 @@ namespace wpl
 				w->visit(v);
 				_children.push_back(w);
 
-				return shared_ptr<container::widget_site>(new site_stub(NULL));
+				return v.site;
 			}
 
 			void form_impl::get_children(children_list &children) const
@@ -126,6 +110,44 @@ namespace wpl
 				if (WM_SIZE == message)
 					resized(LOWORD(lparam), HIWORD(lparam));
 				return previous(message, wparam, lparam);
+			}
+
+
+
+			parent_setting_visitor::parent_setting_visitor(HWND parent_)
+				: parent(parent_)
+			{	}
+
+			void parent_setting_visitor::visited(widget &w)
+			{
+				class parent_setting_widget_visitor : public widget::visitor, noncopyable
+				{
+					parent_setting_visitor &_visitation_data;
+
+					virtual void generic_widget_visited(widget &/*w*/)
+					{	}
+
+					virtual void native_widget_visited(native_widget &w)
+					{	_visitation_data.site = w.set_parent(_visitation_data.parent);	}
+
+				public:
+					parent_setting_widget_visitor(parent_setting_visitor &visitation_data)
+						: _visitation_data(visitation_data)
+					{	}
+				};
+
+				parent_setting_widget_visitor v(*this);
+
+				w.visit(v);
+			}
+
+			void parent_setting_visitor::visited(container &c)
+			{
+				container::children_list children;
+				
+				c.get_children(children);
+				for (container::children_list::const_iterator i = children.begin(); i != children.end(); ++i)
+					(*i)->visit(*this);
 			}
 		}
 

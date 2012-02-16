@@ -18,20 +18,26 @@
 //	OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //	THE SOFTWARE.
 
-#pragma once
+#include "../layout.h"
 
-#include "../widget.h"
-
-typedef struct HWND__ *HWND;
+using namespace std;
 
 namespace wpl
 {
 	namespace ui
 	{
-		struct native_widget : widget
+		void layout_container::visit(node::visitor &visitor)
+		{	visitor.visited((container &)*this);	}
+
+		shared_ptr<container::widget_site> layout_container::add(shared_ptr<widget> widget)
 		{
-			virtual void visit(visitor &visitor) {	visitor.native_widget_visited(*this);	}
-			virtual std::shared_ptr<container::widget_site> set_parent(HWND parent) = 0;
-		};
+			_children.push_back(widget);
+			return shared_ptr<widget_site>();
+		}
+
+		void layout_container::get_children(children_list &children) const
+		{
+			children.assign(_children.begin(), _children.end());
+		}
 	}
 }
