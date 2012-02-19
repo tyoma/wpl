@@ -127,7 +127,7 @@ namespace wpl
 
 
 
-			void hierarchy_reparenter::visited(widget &w)
+			void hierarchy_reparenter::visited(widget &/*w*/)
 			{	}
 
 			void hierarchy_reparenter::visited(container &c)

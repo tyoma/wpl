@@ -13,7 +13,6 @@
   <ItemGroup>
     <ClInclude Include="..\form.h" />
     <ClInclude Include="..\geometry.h" />
-    <ClInclude Include="..\layout.h" />
     <ClInclude Include="..\widget.h" />
     <ClInclude Include="..\listview.h" />
     <ClInclude Include="..\win32\containers.h" />
@@ -23,7 +22,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="form.cpp" />
-    <ClCompile Include="layout.cpp" />
     <ClCompile Include="listview.cpp" />
     <ClCompile Include="widget.cpp" />
     <ClCompile Include="window.cpp" />

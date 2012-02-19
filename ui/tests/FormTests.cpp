@@ -1,6 +1,5 @@
 #include <wpl/ui/form.h>
 
-#include <wpl/ui/layout.h>
 #include <wpl/ui/win32/containers.h>
 
 #include "TestHelpers.h"
@@ -345,9 +344,9 @@ namespace wpl
 						create_form_with_handle(),
 						create_form_with_handle(),
 					};
-					shared_ptr<layout_container> l[] = {
-						shared_ptr<layout_container>(new layout_container),
-						shared_ptr<layout_container>(new layout_container),
+					shared_ptr<composition> l[] = {
+						shared_ptr<composition>(new composition),
+						shared_ptr<composition>(new composition),
 					};
 					shared_ptr<ut::TestNativeWidget> widgets[] = {
 						shared_ptr<ut::TestNativeWidget>(new ut::TestNativeWidget()),
@@ -417,7 +416,7 @@ namespace wpl
 				{
 					// INIT
 					shared_ptr<container> f(create_form());
-					shared_ptr<layout_container> l1(new layout_container()), l2(new layout_container());
+					shared_ptr<composition> l1(new composition()), l2(new composition());
 					shared_ptr<ut::TestNativeWidget> w1(new ut::TestNativeWidget), w2(new ut::TestNativeWidget);
 					shared_ptr<view> site1_w(l1->add(w1)), site1_l(f->add(l1));
 					shared_ptr<view> site2_w(l2->add(w2)), site2_l(f->add(l2));
@@ -450,7 +449,7 @@ namespace wpl
 				{
 					// INIT
 					shared_ptr<container> f(create_form());
-					shared_ptr<layout_container> l(new layout_container());
+					shared_ptr<composition> l(new composition());
 					shared_ptr<ut::TestNativeWidget> w(new ut::TestNativeWidget);
 					shared_ptr<view> site_w(l->add(w)), site_l(f->add(l));
 					RECT rc;

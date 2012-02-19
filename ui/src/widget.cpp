@@ -38,8 +38,7 @@ namespace wpl
 
 		view::view(shared_ptr<wpl::ui::widget> widget_)
 			: _transform(new wpl::ui::transform), widget(widget_)
-		{
-		}
+		{	}
 
 		view::~view()
 		{	}
@@ -73,8 +72,11 @@ namespace wpl
 		}
 
 		void container::get_children(children_list &children) const
-		{
-			children.assign(_children.begin(), _children.end());
-		}
+		{	children.assign(_children.begin(), _children.end());	}
+
+
+
+		void composition::visit(node::visitor &visitor)
+		{	visitor.visited((container &)*this);	}
 	}
 }

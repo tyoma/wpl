@@ -112,7 +112,6 @@
     <ClCompile Include="ContainersTests.cpp" />
     <ClCompile Include="FormTests.cpp" />
     <ClCompile Include="GeometryBasicsTests.cpp" />
-    <ClCompile Include="LayoutContainerTests.cpp" />
     <ClCompile Include="ListViewTests.cpp" />
     <ClCompile Include="TestHelpers.cpp" />
     <ClCompile Include="TestWidgets.cpp" />

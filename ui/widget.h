@@ -33,9 +33,11 @@ namespace wpl
 {
 	namespace ui
 	{
-		class view;
+		class container;
 		struct native_view;
 		class transform;
+		class view;
+		struct widget;
 
 		struct node
 		{
@@ -44,13 +46,19 @@ namespace wpl
 			virtual void visit(visitor &visitor) = 0;
 
 		protected:
-			~node()	{	}	// holding a node via ptr to 'node' is prohibited
+			virtual ~node()	{	}	// holding a node via ptr to 'node' is prohibited
+		};
+
+
+		struct node::visitor
+		{
+			virtual void visited(widget &w) = 0;
+			virtual void visited(container &c) = 0;
 		};
 
 
 		struct widget : node
 		{
-			virtual ~widget()	{	}
 			virtual void visit(visitor &visitor);
 			virtual std::shared_ptr<view> create_custom_view();
 		};
@@ -77,6 +85,13 @@ namespace wpl
 		};
 
 
+		struct view::visitor
+		{
+			virtual void generic_view_visited(view &v) = 0;
+			virtual void native_view_visited(native_view &v) = 0;
+		};
+
+
 		class container : public node
 		{
 			typedef std::vector< std::shared_ptr<view> > children_list_;
@@ -87,7 +102,6 @@ namespace wpl
 			typedef children_list_ children_list;
 
 		public:
-			virtual ~container()	{	}
 			virtual void visit(node::visitor &visitor);
 			virtual std::shared_ptr<view> add(std::shared_ptr<widget> widget);
 			virtual void get_children(children_list &children) const;
@@ -96,17 +110,9 @@ namespace wpl
 		};
 
 
-		struct node::visitor
+		struct composition : widget, container
 		{
-			virtual void visited(widget &w) = 0;
-			virtual void visited(container &c) = 0;
-		};
-
-
-		struct view::visitor
-		{
-			virtual void generic_view_visited(view &v) = 0;
-			virtual void native_view_visited(native_view &v) = 0;
+			virtual void visit(node::visitor &visitor);
 		};
 	}
 }

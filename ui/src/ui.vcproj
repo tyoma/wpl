@@ -157,10 +157,6 @@
 				>
 			</File>
 			<File
-				RelativePath=".\layout.cpp"
-				>
-			</File>
-			<File
 				RelativePath=".\listview.cpp"
 				>
 			</File>
@@ -184,10 +180,6 @@
 			</File>
 			<File
 				RelativePath="..\geometry.h"
-				>
-			</File>
-			<File
-				RelativePath="..\layout.h"
 				>
 			</File>
 			<File

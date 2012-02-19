@@ -189,10 +189,6 @@
 			>
 		</File>
 		<File
-			RelativePath=".\LayoutContainerTests.cpp"
-			>
-		</File>
-		<File
 			RelativePath=".\ListViewTests.cpp"
 			>
 		</File>
