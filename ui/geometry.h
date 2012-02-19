@@ -20,18 +20,36 @@
 
 #pragma once
 
-#include "../widget.h"
-
-typedef struct HWND__ *HWND;
-
 namespace wpl
 {
 	namespace ui
 	{
-		struct native_widget : widget
+		class transform
 		{
-			virtual void visit(visitor &visitor) {	visitor.native_widget_visited(*this);	}
-			virtual std::shared_ptr<container::widget_site> set_parent(HWND parent) = 0;
+			int _dx, _dy;
+
+		public:
+			transform();
+
+			void set_origin(int x, int y);
+
+			void map(int &x, int &y) const;
+			void unmap(int &x, int &y) const;
 		};
+
+
+
+		inline transform::transform()
+			: _dx(), _dy()
+		{	}
+
+		inline void transform::set_origin(int x, int y)
+		{	_dx = x, _dy = y;	}
+
+		inline void transform::map(int &x, int &y) const
+		{	x -= _dx, y -= _dy;	}
+
+		inline void transform::unmap(int &x, int &y) const
+		{	x += _dx, y += _dy;	}
 	}
 }

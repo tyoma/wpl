@@ -12,18 +12,20 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\form.h" />
+    <ClInclude Include="..\geometry.h" />
     <ClInclude Include="..\layout.h" />
     <ClInclude Include="..\widget.h" />
     <ClInclude Include="..\listview.h" />
     <ClInclude Include="..\win32\containers.h" />
     <ClInclude Include="..\win32\controls.h" />
-    <ClInclude Include="..\win32\native_widget.h" />
+    <ClInclude Include="..\win32\native_view.h" />
     <ClInclude Include="..\win32\window.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="form.cpp" />
     <ClCompile Include="layout.cpp" />
     <ClCompile Include="listview.cpp" />
+    <ClCompile Include="widget.cpp" />
     <ClCompile Include="window.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
@@ -74,6 +76,7 @@
       <FunctionLevelLinking>false</FunctionLevelLinking>
       <BufferSecurityCheck>false</BufferSecurityCheck>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <RuntimeTypeInfo>false</RuntimeTypeInfo>
     </ClCompile>
     <Lib>
       <AdditionalDependencies>user32.lib;comctl32.lib</AdditionalDependencies>
@@ -98,6 +101,7 @@
       <FunctionLevelLinking>false</FunctionLevelLinking>
       <BufferSecurityCheck>false</BufferSecurityCheck>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <RuntimeTypeInfo>false</RuntimeTypeInfo>
     </ClCompile>
     <Lib>
       <AdditionalDependencies>user32.lib;comctl32.lib</AdditionalDependencies>

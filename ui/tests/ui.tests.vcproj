@@ -185,6 +185,14 @@
 			>
 		</File>
 		<File
+			RelativePath=".\GeometryBasicsTests.cpp"
+			>
+		</File>
+		<File
+			RelativePath=".\LayoutContainerTests.cpp"
+			>
+		</File>
+		<File
 			RelativePath=".\ListViewTests.cpp"
 			>
 		</File>
@@ -202,6 +210,10 @@
 		</File>
 		<File
 			RelativePath=".\TestWidgets.h"
+			>
+		</File>
+		<File
+			RelativePath=".\TestWidgetTests.cpp"
 			>
 		</File>
 		<File

@@ -1,5 +1,5 @@
 #include <wpl/ui/widget.h>
-#include <wpl/ui/win32/native_widget.h>
+#include <wpl/ui/geometry.h>
 
 #include "TestWidgets.h"
 
@@ -25,21 +25,13 @@ namespace wpl
 		{
 			namespace
 			{
-				struct mywidgetvisitor : widget::visitor
-				{
-					virtual void generic_widget_visited(widget &w)	{	visitation_log.push_back(make_pair(false, &w));	}
-					virtual void native_widget_visited(native_widget &w)	{	visitation_log.push_back(make_pair(true, &w));	}
-
-					vector< pair<bool, void *> > visitation_log;
-				};
-
 				struct dummy_widget : widget
 				{
 				};
 
 				struct dummy_container : container
 				{
-					virtual shared_ptr<widget_site> add(shared_ptr<widget> /*widget*/)	{	throw 0;	}
+					virtual shared_ptr<view> add(shared_ptr<widget> /*widget*/)	{	throw 0;	}
 					virtual void get_children(children_list &/*children*/) const	{	}
 				};
 			}
@@ -49,33 +41,34 @@ namespace wpl
 			{
 			public:
 				[TestMethod]
-				void WidgetVisitingDirectChildOfWidgetLeadsToGenericWidget()
+				void VisitingGenericViewLeadsToGenericView()
 				{
 					// INIT
-					mywidgetvisitor v1, v2;
-					dummy_widget d1, d2;
+					ut::ViewVisitationChecker v1, v2;
+					shared_ptr<widget> w(new ut::TestWidget);
+					view view1(w), view2(w);
 
 					// ACT
-					d1.visit(v1);
-					d2.visit(v2);
-					d1.visit(v2);
-					d2.visit(v1);
-					d2.visit(v2);
+					view1.visit(v1);
+					view2.visit(v2);
+					view1.visit(v2);
+					view2.visit(v1);
+					view2.visit(v2);
 						
 					// ASSERT
 					Assert::IsTrue(2 == v1.visitation_log.size());
 					Assert::IsFalse(v1.visitation_log[0].first);
-					Assert::IsTrue(&d1 == v1.visitation_log[0].second);
+					Assert::IsTrue(&view1 == v1.visitation_log[0].second);
 					Assert::IsFalse(v1.visitation_log[1].first);
-					Assert::IsTrue(&d2 == v1.visitation_log[1].second);
+					Assert::IsTrue(&view2 == v1.visitation_log[1].second);
 
 					Assert::IsTrue(3 == v2.visitation_log.size());
 					Assert::IsFalse(v2.visitation_log[0].first);
-					Assert::IsTrue(&d2 == v2.visitation_log[0].second);
+					Assert::IsTrue(&view2 == v2.visitation_log[0].second);
 					Assert::IsFalse(v2.visitation_log[1].first);
-					Assert::IsTrue(&d1 == v2.visitation_log[1].second);
+					Assert::IsTrue(&view1 == v2.visitation_log[1].second);
 					Assert::IsFalse(v2.visitation_log[2].first);
-					Assert::IsTrue(&d2 == v2.visitation_log[2].second);
+					Assert::IsTrue(&view2 == v2.visitation_log[2].second);
 				}
 
 
@@ -103,7 +96,7 @@ namespace wpl
 
 
 				[TestMethod]
-				void NodeVisitingDirectChildOfWidgetLeadsToContainer()
+				void NodeVisitingDirectChildOfContainerLeadsToContainer()
 				{
 					// INIT
 					ut::NodesVisitationChecker v;
@@ -126,33 +119,98 @@ namespace wpl
 
 
 				[TestMethod]
-				void VisitingDirectChildOfNativeWidgetLeadsToNativeWidgetVisitation()
+				void VisitingViewOfATestNativeWidgetLeadsToNativeViewVisitation()
 				{
 					// INIT
-					mywidgetvisitor v1, v2;
-					ut::TestNativeWidget d1, d2;
+					ut::ViewVisitationChecker v1, v2;
+					shared_ptr<widget> nw1(new ut::TestNativeWidget), nw2(new ut::TestNativeWidget);
+					shared_ptr<view> view1(nw1->create_custom_view()), view2(nw2->create_custom_view());
 
 					// ACT
-					d1.visit(v1);
-					d2.visit(v2);
-					d1.visit(v2);
-					d2.visit(v1);
-					d2.visit(v2);
+					view1->visit(v1);
+					view2->visit(v2);
+					view1->visit(v2);
+					view2->visit(v1);
+					view2->visit(v2);
 						
 					// ASSERT
 					Assert::IsTrue(2 == v1.visitation_log.size());
 					Assert::IsTrue(v1.visitation_log[0].first);
-					Assert::IsTrue(&d1 == v1.visitation_log[0].second);
+					Assert::IsTrue(&*view1 == v1.visitation_log[0].second);
 					Assert::IsTrue(v1.visitation_log[1].first);
-					Assert::IsTrue(&d2 == v1.visitation_log[1].second);
+					Assert::IsTrue(&*view2 == v1.visitation_log[1].second);
 
 					Assert::IsTrue(3 == v2.visitation_log.size());
 					Assert::IsTrue(v2.visitation_log[0].first);
-					Assert::IsTrue(&d2 == v2.visitation_log[0].second);
+					Assert::IsTrue(&*view2 == v2.visitation_log[0].second);
 					Assert::IsTrue(v2.visitation_log[1].first);
-					Assert::IsTrue(&d1 == v2.visitation_log[1].second);
+					Assert::IsTrue(&*view1 == v2.visitation_log[1].second);
 					Assert::IsTrue(v2.visitation_log[2].first);
-					Assert::IsTrue(&d2 == v2.visitation_log[2].second);
+					Assert::IsTrue(&*view2 == v2.visitation_log[2].second);
+				}
+
+
+				[TestMethod]
+				void CreatedJunctionProvideAccessToItsWidget()
+				{
+					// INIT
+					shared_ptr<widget> w1(new ut::TestWidget), w2(new ut::TestWidget);
+
+					// ACT
+					view j1(w1), j2(w2);
+
+					// ASSERT
+					Assert::IsTrue(w1 == j1.widget);
+					Assert::IsTrue(w2 == j2.widget);
+				}
+
+
+				[TestMethod]
+				void CreatedViewContainsNonNullTransform()
+				{
+					// INIT
+					view v(shared_ptr<widget>(new ut::TestWidget));
+
+					// ACT / ASSERT
+					Assert::IsTrue(!!v.transform());
+					Assert::IsTrue(v.transform() == v.transform());
+				}
+
+
+				[TestMethod]
+				void MovingAViewChangesItsTransformOrigin()
+				{
+					// INIT
+					shared_ptr<widget> w(new ut::TestWidget);
+					view v(w);
+					int x = 13, y = 17;
+
+					// ACT
+					v.move(10, 11, 0, 0);
+					v.transform()->map(x, y);
+
+					// ASSERT
+					Assert::IsTrue(3 == x);
+					Assert::IsTrue(6 == y);
+
+					// ACT
+					v.move(3, 6, 1000, 1110);
+					v.transform()->map(x, y);
+
+					// ASSERT
+					Assert::IsTrue(0 == x);
+					Assert::IsTrue(0 == y);
+				}
+
+
+				[TestMethod]
+				void GenericWidgetDoesNotCreateACustomView()
+				{
+					// INIT
+					shared_ptr<widget> w(new widget);
+
+					// ACT / ASSERT
+					Assert::IsFalse(!!w->create_custom_view());
 				}
 			};
 		}

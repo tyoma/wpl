@@ -28,16 +28,5 @@ namespace wpl
 	{
 		void layout_container::visit(node::visitor &visitor)
 		{	visitor.visited((container &)*this);	}
-
-		shared_ptr<container::widget_site> layout_container::add(shared_ptr<widget> widget)
-		{
-			_children.push_back(widget);
-			return shared_ptr<widget_site>();
-		}
-
-		void layout_container::get_children(children_list &children) const
-		{
-			children.assign(_children.begin(), _children.end());
-		}
 	}
 }

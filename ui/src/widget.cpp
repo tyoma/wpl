@@ -18,17 +18,63 @@
 //	OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //	THE SOFTWARE.
 
-#pragma once
+#include "../widget.h"
 
-#include "widget.h"
+#include "../geometry.h"
+
+using namespace std;
 
 namespace wpl
 {
 	namespace ui
 	{
-		struct layout_container : widget, container
+		void widget::visit(node::visitor &visitor)
+		{	visitor.visited(*this);	}
+
+		shared_ptr<view> widget::create_custom_view()
+		{	return shared_ptr<view>();	}
+
+
+
+		view::view(shared_ptr<wpl::ui::widget> widget_)
+			: _transform(new wpl::ui::transform), widget(widget_)
 		{
-			virtual void visit(node::visitor &visitor);
-		};
+		}
+
+		view::~view()
+		{	}
+
+		shared_ptr<const transform> view::transform() const
+		{	return _transform;	}
+
+		void view::move(int left, int top, int /*width*/, int /*height*/)
+		{	_transform->set_origin(left, top);	}
+
+		void view::visit(visitor &visitor)
+		{	visitor.generic_view_visited(*this);	}
+
+
+
+		void container::visit(node::visitor &visitor)
+		{	visitor.visited(*this);	}
+
+		shared_ptr<view> container::add(shared_ptr<widget> widget)
+		{
+			if (widget)
+			{
+				shared_ptr<view> v(widget->create_custom_view());
+
+				if (!v)
+					v = shared_ptr<view>(new view(widget));
+				_children.push_back(v);
+				return v;
+			}
+			throw invalid_argument("Non-null widget must be passed in!");
+		}
+
+		void container::get_children(children_list &children) const
+		{
+			children.assign(_children.begin(), _children.end());
+		}
 	}
 }

@@ -1,6 +1,13 @@
 #pragma once
 
-#include <wpl/ui/win32/native_widget.h>
+#include <wpl/ui/widget.h>
+
+namespace std
+{
+	using tr1::enable_shared_from_this;
+}
+
+typedef struct HWND__ *HWND;
 
 namespace ut
 {
@@ -13,15 +20,25 @@ namespace ut
 	};
 
 
-	class TestNativeWidget : public wpl::ui::native_widget, wpl::noncopyable
+	struct ViewVisitationChecker : wpl::ui::view::visitor
+	{
+		virtual void generic_view_visited(wpl::ui::view &v)	{	visitation_log.push_back(std::make_pair(false, &v));	}
+		virtual void native_view_visited(wpl::ui::native_view &v)	{	visitation_log.push_back(std::make_pair(true, &v));	}
+
+		std::vector< std::pair<bool, void *> > visitation_log;
+	};
+
+
+	class TestNativeWidget
+		: public wpl::ui::widget, wpl::noncopyable, public std::enable_shared_from_this<TestNativeWidget>
 	{
 		HWND _hwnd;
-
-		virtual std::shared_ptr<wpl::ui::container::widget_site> set_parent(HWND parent);
 
 	public:
 		TestNativeWidget();
 		~TestNativeWidget();
+
+		virtual std::shared_ptr<wpl::ui::view> create_custom_view();
 
 		HWND hwnd() const;
 	};

@@ -15,26 +15,31 @@ namespace std
 	using tr1::shared_ptr;
 }
 
+typedef struct HWND__ *HWND;	// stolen from windows.h
+typedef struct tagRECT RECT;
+
 namespace ut
 {
 	std::wstring make_native(System::String ^managed_string);
 	System::String ^make_managed(const std::wstring &native_string);
-	std::set<void *> enum_thread_windows();
+	std::set<HWND> enum_thread_windows();
+	RECT get_window_rect(HWND hwnd);
+
 
 	[Microsoft::VisualStudio::TestTools::UnitTesting::TestClass]
 	public ref class WindowTestsBase
 	{
-		std::vector<void *> *_windows;
+		std::vector<HWND> *_windows;
 		std::vector< std::shared_ptr<wpl::destructible> > *_connections;
 
 	protected:
-		void *create_window();
-		void *create_visible_window();
-		void *create_window(const TCHAR *class_name);
-		void *create_window(const TCHAR *class_name, void *parent, unsigned int style, unsigned int stylex);
-		void enable_reflection(void *hwnd);
+		HWND create_window();
+		HWND create_visible_window();
+		HWND create_window(const TCHAR *class_name);
+		HWND create_window(const TCHAR *class_name, HWND parent, unsigned int style, unsigned int stylex);
+		void enable_reflection(HWND hwnd);
 
-		void destroy_window(void *hwnd);
+		void destroy_window(HWND hwnd);
 
 	public:
 		WindowTestsBase();

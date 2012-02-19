@@ -72,7 +72,7 @@ namespace wpl
 				void WrapWindowAndReturnWrapper()
 				{
 					// INIT
-					HWND hwnd = (HWND)create_window();
+					HWND hwnd = create_window();
 
 					// ACT (must not throw)
 					shared_ptr<window> w(window::attach(hwnd));
@@ -86,7 +86,7 @@ namespace wpl
 				void WrappersForDifferentWindowsAreDifferent()
 				{
 					// INIT
-					HWND hwnd1 = (HWND)create_window(), hwnd2 = (HWND)create_window();
+					HWND hwnd1 = create_window(), hwnd2 = create_window();
 
 					// ACT
 					shared_ptr<window> w1(window::attach(hwnd1));
@@ -101,7 +101,7 @@ namespace wpl
 				void WrapperHoldsHWND()
 				{
 					// INIT
-					HWND hwnd1 = (HWND)create_window(), hwnd2 = (HWND)create_window();
+					HWND hwnd1 = create_window(), hwnd2 = create_window();
 					shared_ptr<window> w1(window::attach(hwnd1));
 					shared_ptr<window> w2(window::attach(hwnd2));
 
@@ -115,7 +115,7 @@ namespace wpl
 				void WrapperForTheSameWindowIsTheSame()
 				{
 					// INIT
-					HWND hwnd = (HWND)create_window();
+					HWND hwnd = create_window();
 
 					// ACT
 					shared_ptr<window> w1(window::attach(hwnd));
@@ -130,7 +130,7 @@ namespace wpl
 				void SameWrapperForTheSameWindowIsReclaimed()
 				{
 					// INIT
-					HWND hwnd = (HWND)create_window();
+					HWND hwnd = create_window();
 
 					// ACT
 					window * w1(window::attach(hwnd).get());	// do not hold reference
@@ -145,7 +145,7 @@ namespace wpl
 				void WrapperDestroyedOnDestroyWindow()
 				{
 					// INIT
-					HWND hwnd = (HWND)create_window();
+					HWND hwnd = create_window();
 
 					// ACT
 					weak_ptr<window> w(window::attach(hwnd));
@@ -165,7 +165,7 @@ namespace wpl
 				void MessagesAreDelegatedToOriginalWndProcIfNotIntercepted()
 				{
 					// INIT
-					HWND hwnd = (HWND)create_window();
+					HWND hwnd = create_window();
 					TCHAR buffer[256] = { 0 };
 
 					window::attach(hwnd);
@@ -190,7 +190,7 @@ namespace wpl
 				void MessagesAreDelegatedToUserCBIfIntercepted()
 				{
 					// INIT
-					HWND hwnd = (HWND)create_window();
+					HWND hwnd = create_window();
 					handler h;
 					shared_ptr<window> w(window::attach(hwnd));
 					LPCTSTR s1 = _T("Text #1");
@@ -221,7 +221,7 @@ namespace wpl
 				void ResultIsProvidedFromInterceptor()
 				{
 					// INIT
-					HWND hwnd = (HWND)create_window();
+					HWND hwnd = create_window();
 					handler h;
 					shared_ptr<window> w(window::attach(hwnd));
 
@@ -243,7 +243,7 @@ namespace wpl
 				void MessageIsNotPassedToPreviousHandlerIfUserHandlerDoesNotCallIt()
 				{
 					// INIT
-					HWND hwnd = (HWND)create_window();
+					HWND hwnd = create_window();
 					handler h;
 					shared_ptr<window> w(window::attach(hwnd));
 
@@ -267,7 +267,7 @@ namespace wpl
 				void InterceptionStopsIfConnectionDestroyed()
 				{
 					// INIT
-					HWND hwnd = (HWND)create_window();
+					HWND hwnd = create_window();
 					handler h;
 					shared_ptr<window> w(window::attach(hwnd));
 					shared_ptr<destructible> c(w->advise(bind(&handler::on_message, &h, _1, _2, _3, _4)));
@@ -295,7 +295,7 @@ namespace wpl
 				void WrapperPtrPropertyIsRemovedInNCDestroy()
 				{
 					// INIT
-					HWND hwnd = (HWND)create_window();
+					HWND hwnd = create_window();
 					bool property_exists = true;
 					shared_ptr<window> w(window::attach(hwnd));
 					shared_ptr<destructible> c(w->advise(bind(&checker_handler, hwnd, &property_exists)));
@@ -315,7 +315,7 @@ namespace wpl
 				void DetachRestoresOriginalWindowProc()
 				{
 					// INIT
-					HWND hwnd = (HWND)create_window();
+					HWND hwnd = create_window();
 					shared_ptr<window> w(window::attach(hwnd));
 					WNDPROC replacement_wndproc = (WNDPROC)::GetWindowLongPtr(hwnd, GWLP_WNDPROC);
 
@@ -332,7 +332,7 @@ namespace wpl
 				void PropIsRemovedOnDetachment()
 				{
 					// INIT
-					HWND hwnd = (HWND)create_window();
+					HWND hwnd = create_window();
 					shared_ptr<window> w(window::attach(hwnd));
 
 					// ACT
@@ -347,7 +347,7 @@ namespace wpl
 				void DetachReleasesWrapperFromWindow()
 				{
 					// INIT
-					HWND hwnd = (HWND)create_window();
+					HWND hwnd = create_window();
 					shared_ptr<window> w(window::attach(hwnd));
 					weak_ptr<window> w_weak(w);
 
@@ -364,7 +364,7 @@ namespace wpl
 				void DetachFailsIfSubclassedAfterAttachment()
 				{
 					// INIT
-					HWND hwnd = (HWND)create_window();
+					HWND hwnd = create_window();
 					shared_ptr<window> w(window::attach(hwnd));
 
 					original = (WNDPROC)::SetWindowLongPtr(hwnd, GWLP_WNDPROC, (LONG_PTR)&replacement_proc);
@@ -382,7 +382,7 @@ namespace wpl
 				void PropIsNotRemovedIfSubclassedAfterAttachment()
 				{
 					// INIT
-					HWND hwnd = (HWND)create_window();
+					HWND hwnd = create_window();
 					shared_ptr<window> w(window::attach(hwnd));
 
 					original = (WNDPROC)::SetWindowLongPtr(hwnd, GWLP_WNDPROC, (LONG_PTR)&replacement_proc);
@@ -400,7 +400,7 @@ namespace wpl
 				void DetachDoesNotReleasesWrapperFromOversubclassedWindow()
 				{
 					// INIT
-					HWND hwnd = (HWND)create_window();
+					HWND hwnd = create_window();
 					shared_ptr<window> w(window::attach(hwnd));
 					weak_ptr<window> w_weak(w);
 
@@ -419,7 +419,7 @@ namespace wpl
 				void WrapperIsReleasedEvenIfOversubclassedOnDestroy()
 				{
 					// INIT
-					HWND hwnd = (HWND)create_window();
+					HWND hwnd = create_window();
 					weak_ptr<window> w_weak(window::attach(hwnd));
 
 					original = (WNDPROC)::SetWindowLongPtr(hwnd, GWLP_WNDPROC, (LONG_PTR)&replacement_proc);

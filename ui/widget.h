@@ -33,35 +33,64 @@ namespace wpl
 {
 	namespace ui
 	{
+		class view;
+		struct native_view;
+		class transform;
+
 		struct node
 		{
 			struct visitor;
 
-			virtual ~node()	{	}
 			virtual void visit(visitor &visitor) = 0;
+
+		protected:
+			~node()	{	}	// holding a node via ptr to 'node' is prohibited
 		};
 
 
 		struct widget : node
 		{
-			struct visitor;
-
-			virtual void visit(node::visitor &visitor);
-			virtual void visit(widget::visitor &visitor);
+			virtual ~widget()	{	}
+			virtual void visit(visitor &visitor);
+			virtual std::shared_ptr<view> create_custom_view();
 		};
 
 
-		struct native_widget;
-
-
-		struct container : node
+		class view
 		{
-			typedef std::vector< std::shared_ptr<widget> > children_list;
-			struct widget_site;
+			std::shared_ptr<wpl::ui::transform> _transform;
 
+			const view &operator =(const view &rhs);
+
+		public:
+			struct visitor;
+
+		public:
+			explicit view(std::shared_ptr<widget> widget);
+			virtual ~view();
+
+			std::shared_ptr<const wpl::ui::transform> transform() const;
+			virtual void move(int left, int top, int width, int height);
+			virtual void visit(visitor &visitor);
+			
+			const std::shared_ptr<widget> widget;
+		};
+
+
+		class container : public node
+		{
+			typedef std::vector< std::shared_ptr<view> > children_list_;
+
+			children_list_ _children;
+
+		public:
+			typedef children_list_ children_list;
+
+		public:
+			virtual ~container()	{	}
 			virtual void visit(node::visitor &visitor);
-			virtual std::shared_ptr<widget_site> add(std::shared_ptr<widget> widget) = 0;
-			virtual void get_children(children_list &children) const = 0;
+			virtual std::shared_ptr<view> add(std::shared_ptr<widget> widget);
+			virtual void get_children(children_list &children) const;
 
 			signal<void (unsigned int width, unsigned int height)> resized;
 		};
@@ -74,30 +103,10 @@ namespace wpl
 		};
 
 
-		struct widget::visitor
+		struct view::visitor
 		{
-			virtual void generic_widget_visited(widget &w) = 0;
-			virtual void native_widget_visited(native_widget &w) = 0;
+			virtual void generic_view_visited(view &v) = 0;
+			virtual void native_view_visited(native_view &v) = 0;
 		};
-
-
-		struct container::widget_site
-		{
-			virtual ~widget_site()	{	}
-			virtual void move(int left, int top, int width, int height) = 0;
-		};
-
-
-
-		inline void widget::visit(node::visitor &visitor)
-		{	visitor.visited(*this);	}
-
-		inline void widget::visit(widget::visitor &visitor)
-		{	visitor.generic_widget_visited(*this);	}
-
-
-
-		inline void container::visit(node::visitor &visitor)
-		{	visitor.visited(*this);	}
 	}
 }

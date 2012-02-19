@@ -20,15 +20,32 @@
 
 #pragma once
 
-#include "widget.h"
+#include "../widget.h"
+
+typedef struct HWND__ *HWND;
 
 namespace wpl
 {
 	namespace ui
 	{
-		struct layout_container : widget, container
+		struct native_view : view
 		{
-			virtual void visit(node::visitor &visitor);
+			typedef std::vector< std::shared_ptr<const wpl::ui::transform> > transform_chain;
+
+			native_view(std::shared_ptr<wpl::ui::widget> widget);
+
+			virtual void visit(visitor &v);
+
+			virtual void set_parent(const transform_chain &tc, HWND parent) = 0;
 		};
+
+
+
+		inline native_view::native_view(std::shared_ptr<wpl::ui::widget> widget)
+			: view(widget)
+		{	}
+
+		inline void native_view::visit(visitor &v)
+		{	v.native_view_visited(*this);	}
 	}
 }

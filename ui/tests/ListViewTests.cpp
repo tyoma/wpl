@@ -88,10 +88,10 @@ namespace wpl
 				void push_back(vector<T> &v, const T &value)
 				{	v.push_back(value);	}
 
-				listview::sort_direction get_column_direction(void *hlv, listview::index_type column)
+				listview::sort_direction get_column_direction(HWND hlv, listview::index_type column)
 				{
 					HDITEM item = { 0 };
-					HWND hheader = ListView_GetHeader(reinterpret_cast<HWND>(hlv));
+					HWND hheader = ListView_GetHeader(hlv);
 					
 					item.mask = HDI_FORMAT;
 					Header_GetItem(hheader, column, &item);
@@ -99,11 +99,11 @@ namespace wpl
 						listview::dir_descending : listview::dir_none;
 				}
 
-				CString get_column_text(void *hlv, listview::index_type column)
+				CString get_column_text(HWND hlv, listview::index_type column)
 				{
 					CString buffer;
 					HDITEM item = { 0 };
-					HWND hheader = ListView_GetHeader(reinterpret_cast<HWND>(hlv));
+					HWND hheader = ListView_GetHeader(hlv);
 					
 					item.mask = HDI_TEXT;
 					item.pszText = buffer.GetBuffer(item.cchTextMax = 100);
@@ -112,33 +112,33 @@ namespace wpl
 					return buffer;
 				}
 
-				int get_column_width(void *hlv, listview::index_type column)
+				int get_column_width(HWND hlv, listview::index_type column)
 				{
 					HDITEM item = { 0 };
-					HWND hheader = ListView_GetHeader(reinterpret_cast<HWND>(hlv));
+					HWND hheader = ListView_GetHeader(hlv);
 					
 					item.mask = HDI_WIDTH;
 					Header_GetItem(hheader, column, &item);
 					return item.cxy;
 				}
 
-				vector<int> get_matching_indices(void *hlv, unsigned int mask)
+				vector<int> get_matching_indices(HWND hlv, unsigned int mask)
 				{
 					int i = -1;
 					vector<int> result;
 
 					mask &= LVNI_STATEMASK;
-					while (i = ListView_GetNextItem(reinterpret_cast<HWND>(hlv), i, LVNI_ALL | mask), i != -1)
+					while (i = ListView_GetNextItem(hlv, i, LVNI_ALL | mask), i != -1)
 						result.push_back(i);
 					return result;
 				}
 
-				bool is_item_visible(void *hlv, int item)
+				bool is_item_visible(HWND hlv, int item)
 				{
 					RECT rc1, rc2, rc;
 
-					::GetClientRect(reinterpret_cast<HWND>(hlv), &rc1);
-					ListView_GetItemRect(reinterpret_cast<HWND>(hlv), item, &rc2, LVIR_BOUNDS);
+					::GetClientRect(hlv, &rc1);
+					ListView_GetItemRect(hlv, item, &rc2, LVIR_BOUNDS);
 					return !!IntersectRect(&rc, &rc1, &rc2);
 				}
 			}
@@ -148,11 +148,10 @@ namespace wpl
 			{
 				HWND create_listview()
 				{
-					void *hparent = create_visible_window();
+					HWND hparent = create_visible_window();
 
 					enable_reflection(hparent);
-					return reinterpret_cast<HWND>(create_window(_T("SysListView32"), hparent,
-						WS_CHILD | WS_VISIBLE | LVS_REPORT | LVS_OWNERDATA, 0));
+					return create_window(_T("SysListView32"), hparent, WS_CHILD | WS_VISIBLE | LVS_REPORT | LVS_OWNERDATA, 0);
 				}
 
 			public:
@@ -160,8 +159,8 @@ namespace wpl
 				void WrongWrappingLeadsToException()
 				{
 					// INIT
-					void *wrong_hwnd1 = (void *)0x12345678;
-					void *wrong_hwnd2 = create_window();
+					HWND wrong_hwnd1 = (HWND)0x12345678;
+					HWND wrong_hwnd2 = create_window();
 
 					destroy_window(wrong_hwnd2);
 

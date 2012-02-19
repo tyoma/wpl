@@ -32,11 +32,14 @@
     <ClInclude Include="..\win32\containers.h">
       <Filter>Library Header Files\win32</Filter>
     </ClInclude>
-    <ClInclude Include="..\win32\native_widget.h">
-      <Filter>Library Header Files\win32</Filter>
-    </ClInclude>
     <ClInclude Include="..\layout.h">
       <Filter>Library Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\geometry.h">
+      <Filter>Library Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\win32\native_view.h">
+      <Filter>Library Header Files\win32</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -50,6 +53,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="layout.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="widget.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

@@ -20,7 +20,7 @@
 
 #include "../win32/containers.h"
 #include "../win32/window.h"
-#include "../win32/native_widget.h"
+#include "../win32/native_view.h"
 
 #include <windows.h>
 #include <tchar.h>
@@ -46,10 +46,8 @@ namespace wpl
 			{
 				shared_ptr<window> _window;
 				shared_ptr<destructible> _advisory;
-				children_list _children;
 
-				virtual shared_ptr<widget_site> add(shared_ptr<widget> widget);
-				virtual void get_children(children_list &children) const;
+				virtual shared_ptr<view> add(shared_ptr<widget> widget);
 				virtual void set_visible(bool value);
 
 				LRESULT wndproc(UINT message, WPARAM wparam, LPARAM lparam, const window::original_handler_t &previous);
@@ -60,15 +58,34 @@ namespace wpl
 			};
 
 
-			struct parent_setting_visitor : node::visitor, noncopyable
+			struct hierarchy_reparenter : node::visitor, noncopyable
 			{
-				parent_setting_visitor(HWND parent);
+				hierarchy_reparenter(HWND parent_, shared_ptr<const transform> root_transform)
+					: parent(parent_), transforms(1, root_transform)
+				{	}
 
 				virtual void visited(widget &w);
 				virtual void visited(container &c);
 
 				const HWND parent;
-				shared_ptr<container::widget_site> site;
+				native_view::transform_chain transforms;
+			};
+
+
+			struct view_reparenter : public view::visitor, noncopyable
+			{
+				view_reparenter(HWND parent_, const native_view::transform_chain &transforms_)
+					: parent(parent_), transforms(transforms_)
+				{	}
+
+				virtual void generic_view_visited(view &/*view*/)
+				{	}
+
+				virtual void native_view_visited(native_view &view)
+				{	view.set_parent(transforms, parent);	}
+
+				const HWND parent;
+				const native_view::transform_chain &transforms;
 			};
 
 
@@ -84,21 +101,17 @@ namespace wpl
 			form_impl::~form_impl()
 			{	::DestroyWindow(_window->hwnd());	}
 
-			shared_ptr<container::widget_site> form_impl::add(shared_ptr<widget> w)
+			shared_ptr<view> form_impl::add(shared_ptr<widget> w)
 			{
-				parent_setting_visitor v(_window->hwnd());
+				native_view::transform_chain tc;
+				view_reparenter vreparenter(_window->hwnd(), tc);
+				shared_ptr<view> v(container::add(w));
+				hierarchy_reparenter reparenter(_window->hwnd(), v->transform());
 
-				if (!w)
-					throw invalid_argument("Non-null widget must be passed in!");
-				_children.reserve(_children.size() + 1);
-				w->visit(v);
-				_children.push_back(w);
-
-				return v.site;
+				v->visit(vreparenter);
+				w->visit(reparenter);
+				return v;
 			}
-
-			void form_impl::get_children(children_list &children) const
-			{	children.assign(_children.begin(), _children.end());	}
 
 			void form_impl::set_visible(bool value)
 			{
@@ -114,40 +127,23 @@ namespace wpl
 
 
 
-			parent_setting_visitor::parent_setting_visitor(HWND parent_)
-				: parent(parent_)
+			void hierarchy_reparenter::visited(widget &w)
 			{	}
 
-			void parent_setting_visitor::visited(widget &w)
-			{
-				class parent_setting_widget_visitor : public widget::visitor, noncopyable
-				{
-					parent_setting_visitor &_visitation_data;
-
-					virtual void generic_widget_visited(widget &/*w*/)
-					{	}
-
-					virtual void native_widget_visited(native_widget &w)
-					{	_visitation_data.site = w.set_parent(_visitation_data.parent);	}
-
-				public:
-					parent_setting_widget_visitor(parent_setting_visitor &visitation_data)
-						: _visitation_data(visitation_data)
-					{	}
-				};
-
-				parent_setting_widget_visitor v(*this);
-
-				w.visit(v);
-			}
-
-			void parent_setting_visitor::visited(container &c)
+			void hierarchy_reparenter::visited(container &c)
 			{
 				container::children_list children;
 				
 				c.get_children(children);
 				for (container::children_list::const_iterator i = children.begin(); i != children.end(); ++i)
-					(*i)->visit(*this);
+				{
+					view_reparenter reparenter(parent, transforms);
+
+					transforms.push_back((*i)->transform());
+					(*i)->visit(reparenter);
+					(*i)->widget->visit(*this);
+					transforms.pop_back();
+				}
 			}
 		}
 

@@ -157,7 +157,15 @@
 				>
 			</File>
 			<File
+				RelativePath=".\layout.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\listview.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\widget.cpp"
 				>
 			</File>
 			<File
@@ -172,6 +180,14 @@
 			>
 			<File
 				RelativePath="..\form.h"
+				>
+			</File>
+			<File
+				RelativePath="..\geometry.h"
+				>
+			</File>
+			<File
+				RelativePath="..\layout.h"
 				>
 			</File>
 			<File
@@ -194,7 +210,7 @@
 					>
 				</File>
 				<File
-					RelativePath="..\win32\native_widget.h"
+					RelativePath="..\win32\native_view.h"
 					>
 				</File>
 				<File

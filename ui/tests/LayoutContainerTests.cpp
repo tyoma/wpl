@@ -74,9 +74,9 @@ namespace wpl
 					Assert::IsTrue(0 == c[3].size());
 					Assert::IsTrue(1 == c[4].size());
 
-					Assert::IsTrue(containers[1] == c[0][0]);
-					Assert::IsTrue(containers[2] == c[0][1]);
-					Assert::IsTrue(containers[0] == c[4][0]);
+					Assert::IsTrue(containers[1] == c[0][0]->widget);
+					Assert::IsTrue(containers[2] == c[0][1]->widget);
+					Assert::IsTrue(containers[0] == c[4][0]->widget);
 				}
 
 
