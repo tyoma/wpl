@@ -1,7 +1,8 @@
+#include <wpl/ui/win32/native_view.h>
+
 #include "TestWidgets.h"
 
 #include <wpl/ui/geometry.h>
-#include <wpl/ui/win32/native_view.h>
 
 #include "TestHelpers.h"
 
@@ -22,7 +23,7 @@ namespace wpl
 		namespace tests
 		{
 			[TestClass]
-			public ref class TestWidgetTests : ut::WindowTestsBase
+			public ref class NativeViewTests : ut::WindowTestsBase
 			{
 			public:
 				[TestMethod]

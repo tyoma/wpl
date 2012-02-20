@@ -22,8 +22,6 @@
 
 #include "../base/signals.h"
 
-#include <memory>
-
 namespace std
 {
 	using tr1::shared_ptr;
@@ -34,7 +32,7 @@ namespace wpl
 	namespace ui
 	{
 		class container;
-		struct native_view;
+		class native_view;
 		class transform;
 		class view;
 		struct widget;
@@ -64,6 +62,24 @@ namespace wpl
 		};
 
 
+		class container : public node
+		{
+			typedef std::vector< std::shared_ptr<view> > children_list_;
+
+			children_list_ _children;
+
+		public:
+			typedef children_list_ children_list;
+
+		public:
+			virtual void visit(node::visitor &visitor);
+			virtual std::shared_ptr<view> add(std::shared_ptr<widget> widget);
+			virtual void get_children(children_list &children) const;
+
+			signal<void (unsigned int width, unsigned int height)> resized;
+		};
+
+
 		class view
 		{
 			std::shared_ptr<wpl::ui::transform> _transform;
@@ -89,24 +105,6 @@ namespace wpl
 		{
 			virtual void generic_view_visited(view &v) = 0;
 			virtual void native_view_visited(native_view &v) = 0;
-		};
-
-
-		class container : public node
-		{
-			typedef std::vector< std::shared_ptr<view> > children_list_;
-
-			children_list_ _children;
-
-		public:
-			typedef children_list_ children_list;
-
-		public:
-			virtual void visit(node::visitor &visitor);
-			virtual std::shared_ptr<view> add(std::shared_ptr<widget> widget);
-			virtual void get_children(children_list &children) const;
-
-			signal<void (unsigned int width, unsigned int height)> resized;
 		};
 
 

@@ -115,7 +115,7 @@
     <ClCompile Include="ListViewTests.cpp" />
     <ClCompile Include="TestHelpers.cpp" />
     <ClCompile Include="TestWidgets.cpp" />
-    <ClCompile Include="TestWidgetTests.cpp" />
+    <ClCompile Include="NativeViewTests.cpp" />
     <ClCompile Include="WidgetTests.cpp" />
     <ClCompile Include="WindowingTests.cpp" />
   </ItemGroup>

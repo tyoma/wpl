@@ -28,24 +28,24 @@ namespace wpl
 {
 	namespace ui
 	{
-		struct native_view : view
+		class native_view : public view
 		{
-			typedef std::vector< std::shared_ptr<const wpl::ui::transform> > transform_chain;
+			typedef std::vector< std::shared_ptr<const wpl::ui::transform> > transform_chain_;
 
-			native_view(std::shared_ptr<wpl::ui::widget> widget);
+			HWND _view_hwnd;
+			transform_chain_ _transforms;
 
+		public:
+			typedef transform_chain_ transform_chain;
+
+		public:
+			native_view(std::shared_ptr<wpl::ui::widget> widget, HWND view_hwnd);
+			~native_view();
+
+			virtual void move(int left, int top, int width, int height);
 			virtual void visit(visitor &v);
 
-			virtual void set_parent(const transform_chain &tc, HWND parent) = 0;
+			virtual void set_parent(const transform_chain &tc, HWND parent);
 		};
-
-
-
-		inline native_view::native_view(std::shared_ptr<wpl::ui::widget> widget)
-			: view(widget)
-		{	}
-
-		inline void native_view::visit(visitor &v)
-		{	v.native_view_visited(*this);	}
 	}
 }

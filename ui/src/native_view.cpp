@@ -18,65 +18,38 @@
 //	OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //	THE SOFTWARE.
 
-#include "../widget.h"
+#include "../win32/native_view.h"
 
 #include "../geometry.h"
-
-using namespace std;
+#include <windows.h>
 
 namespace wpl
 {
 	namespace ui
 	{
-		void widget::visit(node::visitor &visitor)
-		{	visitor.visited(*this);	}
+		native_view::native_view(std::shared_ptr<wpl::ui::widget> widget, HWND view_hwnd)
+			: view(widget), _view_hwnd(view_hwnd)
+		{	}
 
-		shared_ptr<view> widget::create_custom_view()
-		{	return shared_ptr<view>();	}
+		native_view::~native_view()
+		{	}
 
 
-
-		void container::visit(node::visitor &visitor)
-		{	visitor.visited(*this);	}
-
-		shared_ptr<view> container::add(shared_ptr<widget> widget)
+		void native_view::move(int left, int top, int width, int height)
 		{
-			if (widget)
-			{
-				shared_ptr<view> v(widget->create_custom_view());
-
-				if (!v)
-					v = shared_ptr<view>(new view(widget));
-				_children.push_back(v);
-				return v;
-			}
-			throw invalid_argument("Non-null widget must be passed in!");
+			for (transform_chain::const_iterator i = _transforms.begin(); i != _transforms.end(); ++i)
+				(*i)->unmap(left, top);
+			::MoveWindow(_view_hwnd, left, top, width, height, TRUE);
 		}
 
-		void container::get_children(children_list &children) const
-		{	children.assign(_children.begin(), _children.end());	}
+		void native_view::visit(visitor &v)
+		{	v.native_view_visited(*this);	}
 
-
-
-		view::view(shared_ptr<wpl::ui::widget> widget_)
-			: _transform(new wpl::ui::transform), widget(widget_)
-		{	}
-
-		view::~view()
-		{	}
-
-		shared_ptr<const transform> view::transform() const
-		{	return _transform;	}
-
-		void view::move(int left, int top, int /*width*/, int /*height*/)
-		{	_transform->set_origin(left, top);	}
-
-		void view::visit(visitor &visitor)
-		{	visitor.generic_view_visited(*this);	}
-
-
-
-		void composition::visit(node::visitor &visitor)
-		{	visitor.visited((container &)*this);	}
+		void native_view::set_parent(const transform_chain &tc, HWND parent)
+		{
+			_transforms = tc;
+			::SetParent(_view_hwnd, parent);
+			::SetWindowLong(_view_hwnd, GWL_STYLE, (::GetWindowLong(_view_hwnd, GWL_STYLE) & ~WS_CHILD) | (parent ? WS_CHILD : 0));
+		}
 	}
 }

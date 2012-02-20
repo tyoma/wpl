@@ -23,6 +23,7 @@
   <ItemGroup>
     <ClCompile Include="form.cpp" />
     <ClCompile Include="listview.cpp" />
+    <ClCompile Include="native_view.cpp" />
     <ClCompile Include="widget.cpp" />
     <ClCompile Include="window.cpp" />
   </ItemGroup>

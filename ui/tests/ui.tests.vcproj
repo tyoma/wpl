@@ -193,6 +193,10 @@
 			>
 		</File>
 		<File
+			RelativePath=".\NativeViewTests.cpp"
+			>
+		</File>
+		<File
 			RelativePath=".\TestHelpers.cpp"
 			>
 		</File>
@@ -206,10 +210,6 @@
 		</File>
 		<File
 			RelativePath=".\TestWidgets.h"
-			>
-		</File>
-		<File
-			RelativePath=".\TestWidgetTests.cpp"
 			>
 		</File>
 		<File
