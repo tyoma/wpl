@@ -173,17 +173,6 @@ namespace wpl
 				}
 
 
-				[TestMethod]
-				void AddingNullWidgetThrowsArgumentInvalid()
-				{
-					// INIT
-					shared_ptr<container> container(new container);
-
-					// ACT / ASSERT
-					ASSERT_THROWS(container->add(shared_ptr<widget>()), invalid_argument);
-				}
-
-
 				[TestMethod, Ignore]
 				void CompositionIsWidget()
 				{

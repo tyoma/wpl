@@ -124,7 +124,7 @@ namespace wpl
 					// INIT
 					ut::ViewVisitationChecker v1, v2;
 					shared_ptr<widget> nw1(new ut::TestNativeWidget), nw2(new ut::TestNativeWidget);
-					shared_ptr<view> view1(nw1->create_custom_view()), view2(nw2->create_custom_view());
+					shared_ptr<view> view1(nw1->create_view()), view2(nw2->create_view());
 
 					// ACT
 					view1->visit(v1);
@@ -204,13 +204,29 @@ namespace wpl
 
 
 				[TestMethod]
-				void GenericWidgetDoesNotCreateACustomView()
+				void GenericWidgetCreatesAView()
 				{
 					// INIT
 					shared_ptr<widget> w(new widget);
 
 					// ACT / ASSERT
-					Assert::IsFalse(!!w->create_custom_view());
+					Assert::IsTrue(!!w->create_view());
+				}
+
+
+				[TestMethod]
+				void GenericWidgetCreatesGenericView()
+				{
+					// INIT
+					shared_ptr<widget> w(new widget);
+					ut::ViewVisitationChecker v;
+					
+					// ACT
+					w->create_view()->visit(v);
+
+					// ASSERT
+					Assert::IsTrue(1 == v.visitation_log.size());
+					Assert::IsFalse(v.visitation_log[0].first);
 				}
 			};
 		}

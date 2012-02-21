@@ -53,16 +53,18 @@ namespace wpl
 
 
 				[TestMethod]
-				void WidgetProvidesCustomView()
+				void TestWidgetProvidesNativeView()
 				{
 					// INIT
 					shared_ptr<widget> w(new ut::TestNativeWidget);
+					ut::ViewVisitationChecker v;
 
 					// ACT
-					shared_ptr<view> v(w->create_custom_view());
+					w->create_view()->visit(v);
 
 					// ASSERT
-					Assert::IsTrue(!!v);
+					Assert::IsTrue(1 == v.visitation_log.size());
+					Assert::IsTrue(v.visitation_log[0].first);
 				}
 
 
@@ -72,7 +74,7 @@ namespace wpl
 					// INIT
 					HWND hparent1 = create_window(), hparent2 = create_window();
 					shared_ptr<ut::TestNativeWidget> w(new ut::TestNativeWidget);
-					shared_ptr<view> v(w->create_custom_view());
+					shared_ptr<view> v(w->create_view());
 
 					// ACT
 					((native_view &)*v).set_parent(native_view::transform_chain(), hparent1);
@@ -94,7 +96,7 @@ namespace wpl
 					// INIT
 					shared_ptr<widget> w_strong(new ut::TestNativeWidget);
 					weak_ptr<widget> w_weak(w_strong);
-					shared_ptr<view> v(w_strong->create_custom_view());
+					shared_ptr<view> v(w_strong->create_view());
 
 					// ACT
 					w_strong = shared_ptr<widget>();
@@ -110,7 +112,7 @@ namespace wpl
 					// INIT
 					shared_ptr<widget> w_strong(new ut::TestNativeWidget);
 					weak_ptr<widget> w_weak(w_strong);
-					shared_ptr<view> v(w_strong->create_custom_view());
+					shared_ptr<view> v(w_strong->create_view());
 
 					// ACT
 					w_strong = shared_ptr<widget>();
@@ -127,7 +129,7 @@ namespace wpl
 					// INIT
 					HWND hparent = create_window();
 					shared_ptr<ut::TestNativeWidget> w(new ut::TestNativeWidget);
-					shared_ptr<view> v(w->create_custom_view());
+					shared_ptr<view> v(w->create_view());
 					RECT rc;
 
 					// ACT
@@ -162,7 +164,7 @@ namespace wpl
 					HWND hparent = create_window();
 					shared_ptr<ut::TestNativeWidget> w(new ut::TestNativeWidget);
 					native_view::transform_chain tc(1, shared_ptr<transform>(new transform));
-					shared_ptr<view> v(w->create_custom_view());
+					shared_ptr<view> v(w->create_view());
 
 					// ACT
 					((native_view &)*v).set_parent(tc, hparent);
@@ -186,7 +188,7 @@ namespace wpl
 					shared_ptr<transform> t(new transform);
 					native_view::transform_chain tc(1, t);
 					shared_ptr<ut::TestNativeWidget> w(new ut::TestNativeWidget);
-					shared_ptr<view> v(w->create_custom_view());
+					shared_ptr<view> v(w->create_view());
 					RECT rc;
 
 					// ACT
@@ -229,7 +231,7 @@ namespace wpl
 					};
 					native_view::transform_chain tc(t, t + 3);
 					shared_ptr<ut::TestNativeWidget> w(new ut::TestNativeWidget);
-					shared_ptr<view> v(w->create_custom_view());
+					shared_ptr<view> v(w->create_view());
 
 					// ACT
 					((native_view &)*v).set_parent(tc, hparent);

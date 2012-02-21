@@ -31,8 +31,8 @@ namespace wpl
 		void widget::visit(node::visitor &visitor)
 		{	visitor.visited(*this);	}
 
-		shared_ptr<view> widget::create_custom_view()
-		{	return shared_ptr<view>();	}
+		shared_ptr<view> widget::create_view()
+		{	return shared_ptr<view>(new view(shared_from_this()));	}
 
 
 
@@ -41,16 +41,10 @@ namespace wpl
 
 		shared_ptr<view> container::add(shared_ptr<widget> widget)
 		{
-			if (widget)
-			{
-				shared_ptr<view> v(widget->create_custom_view());
+			shared_ptr<view> v(widget->create_view());
 
-				if (!v)
-					v = shared_ptr<view>(new view(widget));
-				_children.push_back(v);
-				return v;
-			}
-			throw invalid_argument("Non-null widget must be passed in!");
+			_children.push_back(v);
+			return v;
 		}
 
 		void container::get_children(children_list &children) const

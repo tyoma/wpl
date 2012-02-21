@@ -25,6 +25,7 @@
 namespace std
 {
 	using tr1::shared_ptr;
+	using tr1::enable_shared_from_this;
 }
 
 namespace wpl
@@ -55,10 +56,10 @@ namespace wpl
 		};
 
 
-		struct widget : node
+		struct widget : node, std::enable_shared_from_this<widget>
 		{
 			virtual void visit(visitor &visitor);
-			virtual std::shared_ptr<view> create_custom_view();
+			virtual std::shared_ptr<view> create_view();
 		};
 
 

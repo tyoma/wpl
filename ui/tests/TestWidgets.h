@@ -2,11 +2,6 @@
 
 #include <wpl/ui/widget.h>
 
-namespace std
-{
-	using tr1::enable_shared_from_this;
-}
-
 typedef struct HWND__ *HWND;
 
 namespace ut
@@ -30,7 +25,7 @@ namespace ut
 
 
 	class TestNativeWidget
-		: public wpl::ui::widget, wpl::noncopyable, public std::enable_shared_from_this<TestNativeWidget>
+		: public wpl::ui::widget, wpl::noncopyable
 	{
 		HWND _hwnd;
 
@@ -38,7 +33,7 @@ namespace ut
 		TestNativeWidget();
 		~TestNativeWidget();
 
-		virtual std::shared_ptr<wpl::ui::view> create_custom_view();
+		virtual std::shared_ptr<wpl::ui::view> create_view();
 
 		HWND hwnd() const;
 	};
