@@ -1,16 +1,22 @@
 #include <wpl/ui/listview.h>
 #include <wpl/ui/win32/controls.h>
+#include <wpl/ui/win32/native_view.h>
 
 #include "TestHelpers.h"
+#include "TestWidgets.h"
 #include <windows.h>
 #include <commctrl.h>
 #include <olectl.h>
 #include <atlstr.h>
 #include <map>
 
+namespace std
+{
+	using tr1::static_pointer_cast;
+	using namespace tr1::placeholders;
+}
+
 using namespace std;
-using namespace tr1;
-using namespace tr1::placeholders;
 using namespace Microsoft::VisualStudio::TestTools::UnitTesting;
 
 namespace wpl
@@ -1988,6 +1994,54 @@ namespace wpl
 
 					// ASSERT
 					Assert::IsTrue(0 == first_visible);
+				}
+
+
+				[TestMethod, Ignore]
+				void ListViewIsWidget()
+				{
+					// INIT
+					shared_ptr<listview> lv;
+
+					// ACT / ASSERT (must compile)
+					shared_ptr<widget> lv_widget(lv);
+				}
+
+
+				[TestMethod]
+				void ListViewWidgetProvidesNativeView()
+				{
+					// INIT
+					HWND hlv = create_listview();
+					shared_ptr<listview> lvw(wrap_listview(hlv));
+					ut::ViewVisitationChecker v;
+
+					// ACT
+					shared_ptr<view> view(lvw->create_view());
+
+					view->visit(v);
+
+					// ASSERT
+					Assert::IsTrue(lvw == view->widget);
+					Assert::IsTrue(1 == v.visitation_log.size());
+					Assert::IsTrue(v.visitation_log[0].first);
+				}
+
+
+				[TestMethod]
+				void ListViewViewHoldsWrappedWindow()
+				{
+					// INIT
+					HWND hparent = create_window();
+					HWND hlv = create_listview();
+					shared_ptr<listview> lvw(wrap_listview(hlv));
+					shared_ptr<native_view> v(static_pointer_cast<native_view>(lvw->create_view()));
+
+					// ACT
+					v->set_parent(native_view::transform_chain(), hparent);
+
+					// ASSERT
+					Assert::IsTrue(hparent == ::GetParent(hlv));
 				}
 			};
 		}

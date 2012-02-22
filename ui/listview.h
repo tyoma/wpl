@@ -20,7 +20,7 @@
 
 #pragma once
 
-#include "../base/signals.h"
+#include "widget.h"
 
 #include <string>
 
@@ -28,7 +28,7 @@ namespace wpl
 {
 	namespace ui
 	{
-		struct listview : destructible
+		struct listview : widget
 		{
 			typedef unsigned int index_type;
 			struct model;
