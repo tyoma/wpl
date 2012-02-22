@@ -113,6 +113,10 @@
     <ClCompile Include="FormTests.cpp" />
     <ClCompile Include="GeometryBasicsTests.cpp" />
     <ClCompile Include="ListViewTests.cpp" />
+    <ClCompile Include="main.cpp">
+      <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</CompileAsManaged>
+      <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</CompileAsManaged>
+    </ClCompile>
     <ClCompile Include="TestHelpers.cpp" />
     <ClCompile Include="TestWidgets.cpp" />
     <ClCompile Include="NativeViewTests.cpp" />

@@ -12,7 +12,9 @@
 
 namespace std
 {
+	using tr1::ref;
 	using tr1::static_pointer_cast;
+	using tr1::weak_ptr;
 	using namespace tr1::placeholders;
 }
 

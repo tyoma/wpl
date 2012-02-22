@@ -193,6 +193,26 @@
 			>
 		</File>
 		<File
+			RelativePath=".\main.cpp"
+			>
+			<FileConfiguration
+				Name="Debug|Win32"
+				>
+				<Tool
+					Name="VCCLCompilerTool"
+					CompileAsManaged="0"
+				/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="Release|Win32"
+				>
+				<Tool
+					Name="VCCLCompilerTool"
+					CompileAsManaged="0"
+				/>
+			</FileConfiguration>
+		</File>
+		<File
 			RelativePath=".\NativeViewTests.cpp"
 			>
 		</File>
