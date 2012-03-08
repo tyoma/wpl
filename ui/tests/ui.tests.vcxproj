@@ -112,6 +112,7 @@
     <ClCompile Include="ContainersTests.cpp" />
     <ClCompile Include="FormTests.cpp" />
     <ClCompile Include="GeometryBasicsTests.cpp" />
+    <ClCompile Include="LayoutTests.cpp" />
     <ClCompile Include="ListViewTests.cpp" />
     <ClCompile Include="main.cpp">
       <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</CompileAsManaged>

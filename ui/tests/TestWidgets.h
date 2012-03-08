@@ -41,6 +41,8 @@ namespace ut
 
 	class TestWidget : public wpl::ui::widget
 	{
+	public:
+		std::vector< std::weak_ptr<wpl::ui::view> > views_created;
 	};
 
 
