@@ -23,6 +23,12 @@ namespace ut
 		std::vector< std::pair<bool, void *> > visitation_log;
 	};
 
+	struct position
+	{
+		int left, top;
+		int width, height;
+	};
+
 
 	class TestNativeWidget
 		: public wpl::ui::widget, wpl::noncopyable
@@ -42,7 +48,10 @@ namespace ut
 	class TestWidget : public wpl::ui::widget
 	{
 	public:
+		virtual std::shared_ptr<wpl::ui::view> create_view();
+
 		std::vector< std::weak_ptr<wpl::ui::view> > views_created;
+		std::vector<position> reposition_log;
 	};
 
 

@@ -28,10 +28,45 @@ namespace wpl
 	{
 		class vstack : public widget
 		{
+			class vstack_view;
+			struct size_;
+			typedef std::pair<std::shared_ptr<widget>, size_> entry;
+			typedef std::vector<entry> widgets_container_;
+
+			widgets_container_ _contents;
+
+		public:
+			typedef size_ size;
+			typedef widgets_container_ widgets_container;
+
 		public:
 			void add(std::shared_ptr<widget> widget, unsigned int height);
 			void add_proportional(std::shared_ptr<widget> widget, double height_part);
-			void add(std::shared_ptr<widget> widget);
+
+			virtual std::shared_ptr<view> create_view();
 		};
+
+		struct vstack::size_
+		{
+			explicit size_(unsigned int absolute);
+			explicit size_(double relative);
+
+			union variant
+			{
+				unsigned int absolute;
+				double relative;
+			} value;
+			bool is_relative;
+		};
+
+
+
+		inline vstack::size_::size_(unsigned int absolute)
+			: is_relative(false)
+		{	value.absolute = absolute;	}
+
+		inline vstack::size_::size_(double relative)
+			: is_relative(true)
+		{	value.relative = relative;	}
 	}
 }
