@@ -20,6 +20,8 @@
 
 #include "../layout.h"
 
+#include <numeric>
+
 using namespace std;
 
 namespace wpl
@@ -47,7 +49,15 @@ namespace wpl
 
 		void vstack::vstack_view::move(int left, int top, int width, int height)
 		{
+			struct subtract_remaining
+			{
+				int operator ()(int acc, const views_container::value_type &entry)
+				{	return !entry.second.is_relative ? acc - entry.second.value.absolute : acc; }
+			};
+
 			int y = top;
+			
+			height = accumulate(_views.begin(), _views.end(), height, subtract_remaining());
 	
 			for (views_container::const_iterator i = _views.begin(); i != _views.end(); ++i)
 				if (!i->second.is_relative)
@@ -57,7 +67,10 @@ namespace wpl
 				}
 				else
 				{
-					i->first->move(left, top, width, height);
+					int h = static_cast<int>(i->second.value.relative * height);
+
+					i->first->move(left, y, width, h);
+					y += h;
 				}
 		}
 

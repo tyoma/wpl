@@ -290,6 +290,116 @@ namespace wpl
 					Assert::IsTrue(24 == w[2]->reposition_log[0].width);
 					Assert::IsTrue(47 == w[2]->reposition_log[0].height);
 				}
+
+
+				[TestMethod]
+				void ProportionalResizeTwoRelativeChildren()
+				{
+					// INIT
+					shared_ptr<vstack> s(new vstack);
+					shared_ptr<ut::TestWidget> w[] = {
+						shared_ptr<ut::TestWidget>(new ut::TestWidget),
+						shared_ptr<ut::TestWidget>(new ut::TestWidget),
+					};
+
+					s->add_proportional(w[0], 0.2);
+					s->add_proportional(w[1], 0.65);
+
+					shared_ptr<view> v(s->create_view());
+
+					// ACT
+					v->move(11, 18, 25, 132);
+
+					// ASSERT
+					Assert::IsTrue(1 == w[0]->reposition_log.size());
+					Assert::IsTrue(1 == w[1]->reposition_log.size());
+
+					Assert::IsTrue(11 == w[0]->reposition_log[0].left);
+					Assert::IsTrue(18 == w[0]->reposition_log[0].top);
+					Assert::IsTrue(25 == w[0]->reposition_log[0].width);
+					Assert::IsTrue(26 == w[0]->reposition_log[0].height);
+
+					Assert::IsTrue(11 == w[1]->reposition_log[0].left);
+					Assert::IsTrue(44 == w[1]->reposition_log[0].top);
+					Assert::IsTrue(25 == w[1]->reposition_log[0].width);
+					Assert::IsTrue(85 == w[1]->reposition_log[0].height);
+				}
+
+
+				[TestMethod]
+				void ProportionalResizeThreeRelativeChildren()
+				{
+					// INIT
+					shared_ptr<vstack> s(new vstack);
+					shared_ptr<ut::TestWidget> w[] = {
+						shared_ptr<ut::TestWidget>(new ut::TestWidget),
+						shared_ptr<ut::TestWidget>(new ut::TestWidget),
+						shared_ptr<ut::TestWidget>(new ut::TestWidget),
+					};
+
+					s->add_proportional(w[0], 0.2);
+					s->add_proportional(w[1], 0.65);
+					s->add_proportional(w[2], 0.1);
+
+					shared_ptr<view> v(s->create_view());
+
+					// ACT
+					v->move(11, 18, 25, 100);
+
+					// ASSERT
+					Assert::IsTrue(1 == w[0]->reposition_log.size());
+					Assert::IsTrue(1 == w[1]->reposition_log.size());
+					Assert::IsTrue(1 == w[2]->reposition_log.size());
+
+					Assert::IsTrue(11 == w[0]->reposition_log[0].left);
+					Assert::IsTrue(18 == w[0]->reposition_log[0].top);
+					Assert::IsTrue(25 == w[0]->reposition_log[0].width);
+					Assert::IsTrue(20 == w[0]->reposition_log[0].height);
+
+					Assert::IsTrue(11 == w[1]->reposition_log[0].left);
+					Assert::IsTrue(38 == w[1]->reposition_log[0].top);
+					Assert::IsTrue(25 == w[1]->reposition_log[0].width);
+					Assert::IsTrue(65 == w[1]->reposition_log[0].height);
+
+					Assert::IsTrue(11 == w[2]->reposition_log[0].left);
+					Assert::IsTrue(103 == w[2]->reposition_log[0].top);
+					Assert::IsTrue(25 == w[2]->reposition_log[0].width);
+					Assert::IsTrue(10 == w[2]->reposition_log[0].height);
+				}
+
+
+				[TestMethod]
+				void ProportionallySizedChildrenUseRemainingSpace()
+				{
+					shared_ptr<vstack> s(new vstack);
+					shared_ptr<ut::TestWidget> w[] = {
+						shared_ptr<ut::TestWidget>(new ut::TestWidget),
+						shared_ptr<ut::TestWidget>(new ut::TestWidget),
+						shared_ptr<ut::TestWidget>(new ut::TestWidget),
+					};
+
+					s->add(w[0], 47);
+					s->add_proportional(w[1], 0.33);
+
+					shared_ptr<view> v(s->create_view());
+
+					// ACT
+					v->move(27, 29, 13, 120);
+
+					// ASSERT
+					Assert::IsTrue(1 == w[0]->reposition_log.size());
+					Assert::IsTrue(1 == w[1]->reposition_log.size());
+
+					Assert::IsTrue(27 == w[0]->reposition_log[0].left);
+					Assert::IsTrue(29 == w[0]->reposition_log[0].top);
+					Assert::IsTrue(13 == w[0]->reposition_log[0].width);
+					Assert::IsTrue(47 == w[0]->reposition_log[0].height);
+
+					Assert::IsTrue(27 == w[1]->reposition_log[0].left);
+					Assert::IsTrue(76 == w[1]->reposition_log[0].top);
+					Assert::IsTrue(13 == w[1]->reposition_log[0].width);
+					Assert::IsTrue(24 == w[1]->reposition_log[0].height);
+				}
 			};
 		}
 	}
