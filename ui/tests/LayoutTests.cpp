@@ -214,6 +214,82 @@ namespace wpl
 					Assert::IsTrue(2732 == w->reposition_log[1].width);
 					Assert::IsTrue(47 == w->reposition_log[1].height);
 				}
+
+
+				[TestMethod]
+				void ResizeWithTwoAbsoluteChildren()
+				{
+					// INIT
+					shared_ptr<vstack> s(new vstack);
+					shared_ptr<ut::TestWidget> w[] = {
+						shared_ptr<ut::TestWidget>(new ut::TestWidget),
+						shared_ptr<ut::TestWidget>(new ut::TestWidget),
+					};
+
+					s->add(w[0], 17);
+					s->add(w[1], 29);
+
+					shared_ptr<view> v(s->create_view());
+
+					// ACT
+					v->move(6, 13, 15, 170);
+
+					// ASSERT
+					Assert::IsTrue(1 == w[0]->reposition_log.size());
+					Assert::IsTrue(1 == w[1]->reposition_log.size());
+
+					Assert::IsTrue(6 == w[0]->reposition_log[0].left);
+					Assert::IsTrue(13 == w[0]->reposition_log[0].top);
+					Assert::IsTrue(15 == w[0]->reposition_log[0].width);
+					Assert::IsTrue(17 == w[0]->reposition_log[0].height);
+
+					Assert::IsTrue(6 == w[1]->reposition_log[0].left);
+					Assert::IsTrue(30 == w[1]->reposition_log[0].top);
+					Assert::IsTrue(15 == w[1]->reposition_log[0].width);
+					Assert::IsTrue(29 == w[1]->reposition_log[0].height);
+				}
+
+
+				[TestMethod]
+				void ResizeWithThreeAbsoluteChildren()
+				{
+					// INIT
+					shared_ptr<vstack> s(new vstack);
+					shared_ptr<ut::TestWidget> w[] = {
+						shared_ptr<ut::TestWidget>(new ut::TestWidget),
+						shared_ptr<ut::TestWidget>(new ut::TestWidget),
+						shared_ptr<ut::TestWidget>(new ut::TestWidget),
+					};
+
+					s->add(w[0], 19);
+					s->add(w[1], 31);
+					s->add(w[2], 47);
+
+					shared_ptr<view> v(s->create_view());
+
+					// ACT
+					v->move(8, 16, 24, 130);
+
+					// ASSERT
+					Assert::IsTrue(1 == w[0]->reposition_log.size());
+					Assert::IsTrue(1 == w[1]->reposition_log.size());
+					Assert::IsTrue(1 == w[2]->reposition_log.size());
+					
+					Assert::IsTrue(8 == w[0]->reposition_log[0].left);
+					Assert::IsTrue(16 == w[0]->reposition_log[0].top);
+					Assert::IsTrue(24 == w[0]->reposition_log[0].width);
+					Assert::IsTrue(19 == w[0]->reposition_log[0].height);
+					
+					Assert::IsTrue(8 == w[1]->reposition_log[0].left);
+					Assert::IsTrue(35 == w[1]->reposition_log[0].top);
+					Assert::IsTrue(24 == w[1]->reposition_log[0].width);
+					Assert::IsTrue(31 == w[1]->reposition_log[0].height);
+					
+					Assert::IsTrue(8 == w[2]->reposition_log[0].left);
+					Assert::IsTrue(66 == w[2]->reposition_log[0].top);
+					Assert::IsTrue(24 == w[2]->reposition_log[0].width);
+					Assert::IsTrue(47 == w[2]->reposition_log[0].height);
+				}
 			};
 		}
 	}

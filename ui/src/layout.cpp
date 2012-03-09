@@ -47,10 +47,18 @@ namespace wpl
 
 		void vstack::vstack_view::move(int left, int top, int width, int height)
 		{
-			if (_views[0].second.is_relative)
-				_views[0].first->move(left, top, width, height);
-			else
-				_views[0].first->move(left, top, width, _views[0].second.value.absolute);
+			int y = top;
+	
+			for (views_container::const_iterator i = _views.begin(); i != _views.end(); ++i)
+				if (!i->second.is_relative)
+				{
+					i->first->move(left, y, width, i->second.value.absolute);
+					y += i->second.value.absolute;
+				}
+				else
+				{
+					i->first->move(left, top, width, height);
+				}
 		}
 
 		void vstack::add(shared_ptr<widget> widget, unsigned int height)
