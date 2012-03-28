@@ -28,27 +28,8 @@ namespace wpl
 {
 	namespace ui
 	{
-		void widget::visit(node::visitor &visitor)
-		{	visitor.visited(*this);	}
-
-		shared_ptr<view> widget::create_view()
+		shared_ptr<view> widget::create_view(const native_root &r)
 		{	return shared_ptr<view>(new view(shared_from_this()));	}
-
-
-
-		void container::visit(node::visitor &visitor)
-		{	visitor.visited(*this);	}
-
-		shared_ptr<view> container::add(shared_ptr<widget> widget)
-		{
-			shared_ptr<view> v(widget->create_view());
-
-			_children.push_back(v);
-			return v;
-		}
-
-		void container::get_children(children_list &children) const
-		{	children.assign(_children.begin(), _children.end());	}
 
 
 
@@ -64,13 +45,5 @@ namespace wpl
 
 		void view::move(int left, int top, int /*width*/, int /*height*/)
 		{	_transform->set_origin(left, top);	}
-
-		void view::visit(visitor &visitor)
-		{	visitor.generic_view_visited(*this);	}
-
-
-
-		void composition::visit(node::visitor &visitor)
-		{	visitor.visited((container &)*this);	}
 	}
 }

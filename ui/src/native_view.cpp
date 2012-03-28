@@ -27,9 +27,12 @@ namespace wpl
 {
 	namespace ui
 	{
-		native_view::native_view(std::shared_ptr<wpl::ui::widget> widget, HWND view_hwnd)
+		native_view::native_view(std::shared_ptr<wpl::ui::widget> widget, HWND view_hwnd, const native_root &r)
 			: view(widget), _view_hwnd(view_hwnd)
-		{	}
+		{
+			::SetParent(_view_hwnd, r.handle);
+			::SetWindowLong(_view_hwnd, GWL_STYLE, (::GetWindowLong(_view_hwnd, GWL_STYLE) & ~WS_CHILD) | (r.handle ? WS_CHILD : 0));
+		}
 
 		native_view::~native_view()
 		{	}
@@ -42,14 +45,11 @@ namespace wpl
 			::MoveWindow(_view_hwnd, left, top, width, height, TRUE);
 		}
 
-		void native_view::visit(visitor &v)
-		{	v.native_view_visited(*this);	}
-
-		void native_view::set_parent(const transform_chain &tc, HWND parent)
-		{
-			_transforms = tc;
-			::SetParent(_view_hwnd, parent);
-			::SetWindowLong(_view_hwnd, GWL_STYLE, (::GetWindowLong(_view_hwnd, GWL_STYLE) & ~WS_CHILD) | (parent ? WS_CHILD : 0));
-		}
+		//void native_view::set_parent(const transform_chain &tc, HWND parent)
+		//{
+		//	_transforms = tc;
+		//	::SetParent(_view_hwnd, parent);
+		//	::SetWindowLong(_view_hwnd, GWL_STYLE, (::GetWindowLong(_view_hwnd, GWL_STYLE) & ~WS_CHILD) | (parent ? WS_CHILD : 0));
+		//}
 	}
 }

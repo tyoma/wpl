@@ -28,9 +28,13 @@ namespace ut
 
 		BOOL CALLBACK EnumThreadWndProc(HWND hwnd, LPARAM lParam)
 		{
+			TCHAR classname[100] = { 0 };
 			set<HWND> &s(*reinterpret_cast<set<HWND> *>(lParam));
 
-			s.insert(hwnd);
+			::GetClassName(hwnd, classname, sizeof(classname) / sizeof(classname[0]));
+
+			if (gcnew String("MSCTFIME UI") != gcnew String(classname))
+				s.insert(hwnd);
 			return TRUE;
 		}
 	}

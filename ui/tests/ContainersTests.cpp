@@ -104,18 +104,6 @@ namespace wpl
 
 
 				[TestMethod]
-				void SiteIsReturnedWhenAddingGenericWidgetToForm()
-				{
-					// INIT
-					shared_ptr<container> container(create_form());
-					shared_ptr<widget> widget(new ut::TestWidget());
-
-					// ACT / ASSERT
-					Assert::IsTrue(!!container->add(widget));
-				}
-
-
-				[TestMethod]
 				void ViewsOfWidgetsAddedToContainerAreSameToTheChildrenViews()
 				{
 					// INIT

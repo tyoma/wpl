@@ -1,5 +1,7 @@
 #include <wpl/ui/layout.h>
 
+#include <wpl/ui/win32/native_view.h>
+
 #include "TestWidgets.h"
 
 using namespace std;
@@ -9,30 +11,6 @@ namespace wpl
 {
 	namespace ui
 	{
-/*
-		struct root
-		{
-		};
-
-		struct view
-		{
-			struct visitor;
-		};
-
-		struct native_view : view
-		{
-		};
-
-		struct widget
-		{
-			virtual shared_ptr<view> create_view(shared_ptr<root> root) = 0;
-		};
-
-		struct vlayout : widget
-		{
-			virtual shared_ptr<view> create_view(shared_ptr<root> root);
-		};
-		*/
 		namespace tests
 		{
 			[TestClass]
@@ -79,7 +57,7 @@ namespace wpl
 					// ACT
 					s->add(w[0], 117);
 
-					s->create_view();
+					s->create_view(native_root(0));
 
 					// ASSERT
 					Assert::IsTrue(1 == w[0]->views_created.size());
@@ -88,7 +66,7 @@ namespace wpl
 					// ACT
 					s->add_proportional(w[1], 0.45);
 
-					s->create_view();
+					s->create_view(native_root(0));
 
 					// ASSERT
 					Assert::IsTrue(2 == w[0]->views_created.size());
@@ -109,7 +87,7 @@ namespace wpl
 					s->add(w[0], 117);
 
 					// ACT
-					shared_ptr<view> v1(s->create_view());
+					shared_ptr<view> v1(s->create_view(native_root(0)));
 
 					// ASSERT
 					Assert::IsTrue(1 == w[0]->views_created.size());
@@ -120,7 +98,7 @@ namespace wpl
 					s->add_proportional(w[1], 0.45);
 
 					// ACT
-					shared_ptr<view> v2(s->create_view());
+					shared_ptr<view> v2(s->create_view(native_root(0)));
 
 					// ASSERT
 					Assert::IsTrue(2 == w[0]->views_created.size());
@@ -141,8 +119,8 @@ namespace wpl
 					s->add(w, 117);
 
 					// ACT
-					s->create_view();
-					shared_ptr<view> v(s->create_view());
+					s->create_view(native_root(0));
+					shared_ptr<view> v(s->create_view(native_root(0)));
 
 					// ASSERT
 					Assert::IsTrue(w->views_created[0].expired());
@@ -159,7 +137,7 @@ namespace wpl
 
 					s->add_proportional(w, 1);
 
-					shared_ptr<view> v(s->create_view());
+					shared_ptr<view> v(s->create_view(native_root(0)));
 
 					// ACT
 					v->move(2, 3, 5, 7);
@@ -192,7 +170,7 @@ namespace wpl
 
 					s->add(w, 47);
 
-					shared_ptr<view> v(s->create_view());
+					shared_ptr<view> v(s->create_view(native_root(0)));
 
 					// ACT
 					v->move(2, 3, 5, 170);
@@ -229,7 +207,7 @@ namespace wpl
 					s->add(w[0], 17);
 					s->add(w[1], 29);
 
-					shared_ptr<view> v(s->create_view());
+					shared_ptr<view> v(s->create_view(native_root(0)));
 
 					// ACT
 					v->move(6, 13, 15, 170);
@@ -265,7 +243,7 @@ namespace wpl
 					s->add(w[1], 31);
 					s->add(w[2], 47);
 
-					shared_ptr<view> v(s->create_view());
+					shared_ptr<view> v(s->create_view(native_root(0)));
 
 					// ACT
 					v->move(8, 16, 24, 130);
@@ -305,7 +283,7 @@ namespace wpl
 					s->add_proportional(w[0], 0.2);
 					s->add_proportional(w[1], 0.65);
 
-					shared_ptr<view> v(s->create_view());
+					shared_ptr<view> v(s->create_view(native_root(0)));
 
 					// ACT
 					v->move(11, 18, 25, 132);
@@ -341,7 +319,7 @@ namespace wpl
 					s->add_proportional(w[1], 0.65);
 					s->add_proportional(w[2], 0.1);
 
-					shared_ptr<view> v(s->create_view());
+					shared_ptr<view> v(s->create_view(native_root(0)));
 
 					// ACT
 					v->move(11, 18, 25, 100);
@@ -381,7 +359,7 @@ namespace wpl
 					s->add(w[0], 47);
 					s->add_proportional(w[1], 0.33);
 
-					shared_ptr<view> v(s->create_view());
+					shared_ptr<view> v(s->create_view(native_root(0)));
 
 					// ACT
 					v->move(27, 29, 13, 120);

@@ -6,23 +6,6 @@ typedef struct HWND__ *HWND;
 
 namespace ut
 {
-	struct NodesVisitationChecker : wpl::ui::node::visitor
-	{
-		virtual void visited(wpl::ui::widget &w)	{	visitation_log.push_back(std::make_pair(false, &w));	}
-		virtual void visited(wpl::ui::container &c)	{	visitation_log.push_back(std::make_pair(true, &c));	}
-
-		std::vector< std::pair<bool, void *> > visitation_log;
-	};
-
-
-	struct ViewVisitationChecker : wpl::ui::view::visitor
-	{
-		virtual void generic_view_visited(wpl::ui::view &v)	{	visitation_log.push_back(std::make_pair(false, &v));	}
-		virtual void native_view_visited(wpl::ui::native_view &v)	{	visitation_log.push_back(std::make_pair(true, &v));	}
-
-		std::vector< std::pair<bool, void *> > visitation_log;
-	};
-
 	struct position
 	{
 		int left, top;
@@ -39,16 +22,18 @@ namespace ut
 		TestNativeWidget();
 		~TestNativeWidget();
 
-		virtual std::shared_ptr<wpl::ui::view> create_view();
+		virtual std::shared_ptr<wpl::ui::view> create_view(const wpl::ui::native_root &r);
 
 		HWND hwnd() const;
+
+		std::vector< std::weak_ptr<wpl::ui::view> > views_created;
 	};
 
 
 	class TestWidget : public wpl::ui::widget
 	{
 	public:
-		virtual std::shared_ptr<wpl::ui::view> create_view();
+		virtual std::shared_ptr<wpl::ui::view> create_view(const wpl::ui::native_root &r);
 
 		std::vector< std::weak_ptr<wpl::ui::view> > views_created;
 		std::vector<position> reposition_log;

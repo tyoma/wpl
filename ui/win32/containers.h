@@ -21,11 +21,12 @@
 #pragma once
 
 #include "../form.h"
+#include "../widget.h"
 
 namespace wpl
 {
 	namespace ui
 	{
-		std::shared_ptr<form> create_form();
+		std::shared_ptr<form> create_form(std::shared_ptr<widget> widget);
 	}
 }

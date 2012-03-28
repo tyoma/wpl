@@ -36,10 +36,15 @@ namespace ut
 	TestNativeWidget::~TestNativeWidget()
 	{	::DestroyWindow(_hwnd);	}
 
-	shared_ptr<wpl::ui::view> TestNativeWidget::create_view()
-	{	return shared_ptr<wpl::ui::view>(new wpl::ui::native_view(shared_from_this(), _hwnd));	}
+	shared_ptr<wpl::ui::view> TestNativeWidget::create_view(const wpl::ui::native_root &r)
+	{
+		shared_ptr<wpl::ui::view> v(new wpl::ui::native_view(shared_from_this(), _hwnd, r));
 
-	shared_ptr<wpl::ui::view> TestWidget::create_view()
+		views_created.push_back(v);
+		return v;
+	}
+
+	shared_ptr<wpl::ui::view> TestWidget::create_view(const wpl::ui::native_root &/*r*/)
 	{
 		shared_ptr<wpl::ui::view> v(new TestView(shared_from_this(), *this));
 

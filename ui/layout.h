@@ -43,7 +43,7 @@ namespace wpl
 			void add(std::shared_ptr<widget> widget, unsigned int height);
 			void add_proportional(std::shared_ptr<widget> widget, double height_part);
 
-			virtual std::shared_ptr<view> create_view();
+			virtual std::shared_ptr<view> create_view(const native_root &r);
 		};
 
 		struct vstack::size_
@@ -60,7 +60,7 @@ namespace wpl
 		};
 
 
-
+		
 		inline vstack::size_::size_(unsigned int absolute)
 			: is_relative(false)
 		{	value.absolute = absolute;	}

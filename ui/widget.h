@@ -32,54 +32,16 @@ namespace wpl
 {
 	namespace ui
 	{
-		class container;
-		class native_view;
+		class native_root;
 		class transform;
 		class view;
 		struct widget;
 
-		struct node
+		struct widget : std::enable_shared_from_this<widget>
 		{
-			struct visitor;
-
-			virtual void visit(visitor &visitor) = 0;
-
-		protected:
-			virtual ~node()	{	}	// holding a node via ptr to 'node' is prohibited
+			virtual ~widget()	{	}
+			virtual std::shared_ptr<view> create_view(const native_root &r);
 		};
-
-
-		struct node::visitor
-		{
-			virtual void visited(widget &w) = 0;
-			virtual void visited(container &c) = 0;
-		};
-
-
-		struct widget : node, std::enable_shared_from_this<widget>
-		{
-			virtual void visit(visitor &visitor);
-			virtual std::shared_ptr<view> create_view();
-		};
-
-
-		class container : public node
-		{
-			typedef std::vector< std::shared_ptr<view> > children_list_;
-
-			children_list_ _children;
-
-		public:
-			typedef children_list_ children_list;
-
-		public:
-			virtual void visit(node::visitor &visitor);
-			virtual std::shared_ptr<view> add(std::shared_ptr<widget> widget);
-			virtual void get_children(children_list &children) const;
-
-			signal<void (unsigned int width, unsigned int height)> resized;
-		};
-
 
 		class view
 		{
@@ -96,22 +58,8 @@ namespace wpl
 
 			std::shared_ptr<const wpl::ui::transform> transform() const;
 			virtual void move(int left, int top, int width, int height);
-			virtual void visit(visitor &visitor);
 			
 			const std::shared_ptr<widget> widget;
-		};
-
-
-		struct view::visitor
-		{
-			virtual void generic_view_visited(view &v) = 0;
-			virtual void native_view_visited(native_view &v) = 0;
-		};
-
-
-		struct composition : widget, container
-		{
-			virtual void visit(node::visitor &visitor);
 		};
 	}
 }

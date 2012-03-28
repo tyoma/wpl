@@ -2011,36 +2011,15 @@ namespace wpl
 
 
 				[TestMethod]
-				void ListViewWidgetProvidesNativeView()
-				{
-					// INIT
-					HWND hlv = create_listview();
-					shared_ptr<listview> lvw(wrap_listview(hlv));
-					ut::ViewVisitationChecker v;
-
-					// ACT
-					shared_ptr<view> view(lvw->create_view());
-
-					view->visit(v);
-
-					// ASSERT
-					Assert::IsTrue(lvw == view->widget);
-					Assert::IsTrue(1 == v.visitation_log.size());
-					Assert::IsTrue(v.visitation_log[0].first);
-				}
-
-
-				[TestMethod]
 				void ListViewViewHoldsWrappedWindow()
 				{
 					// INIT
 					HWND hparent = create_window();
 					HWND hlv = create_listview();
 					shared_ptr<listview> lvw(wrap_listview(hlv));
-					shared_ptr<native_view> v(static_pointer_cast<native_view>(lvw->create_view()));
 
 					// ACT
-					v->set_parent(native_view::transform_chain(), hparent);
+					lvw->create_view(native_root(hparent));
 
 					// ASSERT
 					Assert::IsTrue(hparent == ::GetParent(hlv));

@@ -46,72 +46,31 @@ namespace wpl
 			{
 				shared_ptr<window> _window;
 				shared_ptr<destructible> _advisory;
+				shared_ptr<view> _content;
 
-				virtual shared_ptr<view> add(shared_ptr<widget> widget);
+//				virtual shared_ptr<view> add(shared_ptr<widget> widget);
 				virtual void set_visible(bool value);
 
 				LRESULT wndproc(UINT message, WPARAM wparam, LPARAM lparam, const window::original_handler_t &previous);
 
 			public:
-				form_impl();
+				form_impl(std::shared_ptr<widget> widget);
 				~form_impl();
 			};
 
 
-			struct hierarchy_reparenter : node::visitor, noncopyable
-			{
-				hierarchy_reparenter(HWND parent_, shared_ptr<const transform> root_transform)
-					: parent(parent_), transforms(1, root_transform)
-				{	}
 
-				virtual void visited(widget &w);
-				virtual void visited(container &c);
-
-				const HWND parent;
-				native_view::transform_chain transforms;
-			};
-
-
-			struct view_reparenter : public view::visitor, noncopyable
-			{
-				view_reparenter(HWND parent_, const native_view::transform_chain &transforms_)
-					: parent(parent_), transforms(transforms_)
-				{	}
-
-				virtual void generic_view_visited(view &/*view*/)
-				{	}
-
-				virtual void native_view_visited(native_view &view)
-				{	view.set_parent(transforms, parent);	}
-
-				const HWND parent;
-				const native_view::transform_chain &transforms;
-			};
-
-
-
-			form_impl::form_impl()
+			form_impl::form_impl(std::shared_ptr<widget> widget)
 			{
 				HWND hwnd = ::CreateWindow(_T("#32770"), 0, WS_OVERLAPPEDWINDOW | WS_CLIPCHILDREN, 0, 0, 100, 20, 0, 0, 0, 0);
 
 				_window = window::attach(hwnd);
 				_advisory = _window->advise(bind(&form_impl::wndproc, this, _1, _2, _3, _4));
+				_content = widget->create_view(native_root(_window->hwnd()));
 			}
 
 			form_impl::~form_impl()
 			{	::DestroyWindow(_window->hwnd());	}
-
-			shared_ptr<view> form_impl::add(shared_ptr<widget> w)
-			{
-				native_view::transform_chain tc;
-				view_reparenter vreparenter(_window->hwnd(), tc);
-				shared_ptr<view> v(container::add(w));
-				hierarchy_reparenter reparenter(_window->hwnd(), v->transform());
-
-				v->visit(vreparenter);
-				w->visit(reparenter);
-				return v;
-			}
 
 			void form_impl::set_visible(bool value)
 			{
@@ -121,35 +80,14 @@ namespace wpl
 			LRESULT form_impl::wndproc(UINT message, WPARAM wparam, LPARAM lparam, const window::original_handler_t &previous)
 			{
 				if (WM_SIZE == message)
-					resized(LOWORD(lparam), HIWORD(lparam));
+					_content->move(0, 0, LOWORD(lparam), HIWORD(lparam));
 				return previous(message, wparam, lparam);
-			}
-
-
-
-			void hierarchy_reparenter::visited(widget &/*w*/)
-			{	}
-
-			void hierarchy_reparenter::visited(container &c)
-			{
-				container::children_list children;
-				
-				c.get_children(children);
-				for (container::children_list::const_iterator i = children.begin(); i != children.end(); ++i)
-				{
-					view_reparenter reparenter(parent, transforms);
-
-					transforms.push_back((*i)->transform());
-					(*i)->visit(reparenter);
-					(*i)->widget->visit(*this);
-					transforms.pop_back();
-				}
 			}
 		}
 
-		shared_ptr<form> create_form()
+		shared_ptr<form> create_form(std::shared_ptr<widget> widget)
 		{
-			shared_ptr<form> f(new form_impl);
+			shared_ptr<form> f(new form_impl(widget));
 			
 			return f;
 		}

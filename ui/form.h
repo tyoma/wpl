@@ -20,14 +20,13 @@
 
 #pragma once
 
-#include "widget.h"
-
 namespace wpl
 {
 	namespace ui
 	{
-		struct form : container
+		struct form
 		{
+			virtual ~form() {	}
 			virtual void set_visible(bool value) = 0;
 		};
 	}

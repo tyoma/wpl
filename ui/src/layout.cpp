@@ -35,16 +35,16 @@ namespace wpl
 			views_container _views;
 
 		public:
-			explicit vstack_view(shared_ptr<wpl::ui::widget> widget, const vstack::widgets_container &contents);
+			explicit vstack_view(const native_root &r, shared_ptr<wpl::ui::widget> widget, const vstack::widgets_container &contents);
 
 			virtual void move(int left, int top, int width, int height);
 		};
 
-		vstack::vstack_view::vstack_view(shared_ptr<wpl::ui::widget> widget, const vstack::widgets_container &contents)
+		vstack::vstack_view::vstack_view(const native_root &r, shared_ptr<wpl::ui::widget> widget, const vstack::widgets_container &contents)
 			: view(widget)
 		{
 			for (vstack::widgets_container::const_iterator i = contents.begin(); i != contents.end(); ++i)
-				_views.push_back(make_pair(i->first->create_view(), i->second));
+				_views.push_back(make_pair(i->first->create_view(r), i->second));
 		}
 
 		void vstack::vstack_view::move(int left, int top, int width, int height)
@@ -84,9 +84,9 @@ namespace wpl
 			_contents.push_back(make_pair(widget, size(height_part)));
 		}
 
-		shared_ptr<view> vstack::create_view()
+		shared_ptr<view> vstack::create_view(const native_root &r)
 		{
-			return shared_ptr<view>(new vstack_view(shared_from_this(), _contents));
+			return shared_ptr<view>(new vstack_view(r, shared_from_this(), _contents));
 		}
 	}
 }
