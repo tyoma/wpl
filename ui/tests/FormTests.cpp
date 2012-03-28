@@ -28,12 +28,6 @@ namespace wpl
 	{
 		namespace tests
 		{
-			namespace
-			{
-				void track_resize(vector< pair<unsigned int, unsigned int> > &resizes, unsigned int width, unsigned int height)
-				{	resizes.push_back(make_pair(width, height));	}
-			}
-
 			[TestClass]
 			public ref class FormTests : ut::WindowTestsBase
 			{
@@ -267,76 +261,6 @@ namespace wpl
 					// ASSERT
 					Assert::IsTrue(f2.second == ::GetParent(widgets[1]->hwnd()));
 				}
-
-/*
-				[TestMethod]
-				void MovingNativeWidgetWithinLayoutContainerOnFormNoOffset()
-				{
-					// INIT
-					shared_ptr<container> f(create_form());
-					shared_ptr<composition> l1(new composition()), l2(new composition());
-					shared_ptr<ut::TestNativeWidget> w1(new ut::TestNativeWidget), w2(new ut::TestNativeWidget);
-					shared_ptr<view> site1_w(l1->add(w1)), site1_l(f->add(l1));
-					shared_ptr<view> site2_w(l2->add(w2)), site2_l(f->add(l2));
-					RECT rc;
-
-					// ACT
-					site2_l->move(0, 0, 0, 0);
-					site1_w->move(0, 10, 20, 30);
-					site2_w->move(31, 41, 50, 60);
-
-					// ASSERT
-					rc = ut::get_window_rect(w1->hwnd());
-
-					Assert::IsTrue(0 == rc.left);
-					Assert::IsTrue(10 == rc.top);
-					Assert::IsTrue(20 == rc.right);
-					Assert::IsTrue(40 == rc.bottom);
-
-					rc = ut::get_window_rect(w2->hwnd());
-
-					Assert::IsTrue(31 == rc.left);
-					Assert::IsTrue(41 == rc.top);
-					Assert::IsTrue(81 == rc.right);
-					Assert::IsTrue(101 == rc.bottom);
-				}
-
-
-				[TestMethod]
-				void MovingNativeWidgetWithinLayoutContainerOnFormWithOffset()
-				{
-					// INIT
-					shared_ptr<container> f(create_form());
-					shared_ptr<composition> l(new composition());
-					shared_ptr<ut::TestNativeWidget> w(new ut::TestNativeWidget);
-					shared_ptr<view> site_w(l->add(w)), site_l(f->add(l));
-					RECT rc;
-
-					// ACT
-					site_l->move(11, 13, 0, 0);
-					site_w->move(2, 3, 20, 30);
-
-					// ASSERT
-					rc = ut::get_window_rect(w->hwnd());
-
-					Assert::IsTrue(13 == rc.left);
-					Assert::IsTrue(16 == rc.top);
-					Assert::IsTrue(33 == rc.right);
-					Assert::IsTrue(46 == rc.bottom);
-
-					// ACT
-					site_l->move(29, 47, 0, 0);
-					site_w->move(4, 5, 20, 30);
-
-					// ASSERT
-					rc = ut::get_window_rect(w->hwnd());
-
-					Assert::IsTrue(33 == rc.left);
-					Assert::IsTrue(52 == rc.top);
-					Assert::IsTrue(53 == rc.right);
-					Assert::IsTrue(82 == rc.bottom);
-				}
-				*/
 
 
 				[TestMethod]

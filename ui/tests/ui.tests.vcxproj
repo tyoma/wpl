@@ -109,10 +109,6 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="ContainersTests.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
-    </ClCompile>
     <ClCompile Include="FormTests.cpp" />
     <ClCompile Include="GeometryBasicsTests.cpp" />
     <ClCompile Include="LayoutTests.cpp" />
