@@ -2,6 +2,11 @@
 
 #include <wpl/ui/widget.h>
 
+namespace std
+{
+   using tr1::weak_ptr;
+}
+
 typedef struct HWND__ *HWND;
 
 namespace ut
