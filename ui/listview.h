@@ -30,7 +30,7 @@ namespace wpl
 	{
 		struct listview : widget
 		{
-			typedef unsigned int index_type;
+			typedef size_t index_type;
 			struct model;
 			struct trackable;
 			enum sort_direction	{	dir_none, dir_ascending, dir_descending	};

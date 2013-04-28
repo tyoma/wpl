@@ -28,7 +28,7 @@ namespace wpl
 {
 	namespace ui
 	{
-		shared_ptr<view> widget::create_view(const native_root &r)
+		shared_ptr<view> widget::create_view(const native_root &/*r*/)
 		{	return shared_ptr<view>(new view(shared_from_this()));	}
 
 

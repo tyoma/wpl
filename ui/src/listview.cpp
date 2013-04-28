@@ -105,7 +105,7 @@ namespace wpl
 
 			void listview_impl::add_column(const wstring &caption, sort_direction default_sort_direction)
 			{
-				int index = _default_sorts.size();
+				int index = static_cast<int>(_default_sorts.size());
 				CString tchar_buffer(caption.c_str());
 				LVCOLUMN column = {
 					/* mask = */ LVCF_SUBITEM | LVCF_TEXT,
