@@ -31,15 +31,15 @@ namespace wpl
 		{	}
 
 		event_flag::~event_flag()
-		{	::CloseHandle(reinterpret_cast<HANDLE>(_handle));	}
+		{	::CloseHandle(static_cast<HANDLE>(_handle));	}
 
 		void event_flag::raise()
-		{	::SetEvent(reinterpret_cast<HANDLE>(_handle));	}
+		{	::SetEvent(static_cast<HANDLE>(_handle));	}
 
 		void event_flag::lower()
-		{	::ResetEvent(reinterpret_cast<HANDLE>(_handle));	}
+		{	::ResetEvent(static_cast<HANDLE>(_handle));	}
 
 		event_flag::wait_status event_flag::wait(unsigned int to) volatile
-		{	return WAIT_OBJECT_0 == ::WaitForSingleObject(reinterpret_cast<HANDLE>(_handle), to) ? satisfied : timeout;	}
+		{	return WAIT_OBJECT_0 == ::WaitForSingleObject(static_cast<HANDLE>(_handle), to) ? satisfied : timeout;	}
 	}
 }

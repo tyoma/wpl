@@ -308,7 +308,7 @@ namespace wpl
 
 		shared_ptr<listview> wrap_listview(void *hwnd)
 		{
-			return shared_ptr<listview>(new listview_impl(reinterpret_cast<HWND>(hwnd)));
+			return shared_ptr<listview>(new listview_impl(static_cast<HWND>(hwnd)));
 		}
 	}
 }

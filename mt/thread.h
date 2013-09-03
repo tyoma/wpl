@@ -81,7 +81,7 @@ namespace wpl
 		// tls<T> - inline definitions
 		template <typename T>
 		inline T *tls<T>::get() const
-		{	return reinterpret_cast<T *>(tls_base::get());	}
+		{	return static_cast<T *>(tls_base::get());	}
 
 		template <typename T>
 		inline void tls<T>::set(T *value)

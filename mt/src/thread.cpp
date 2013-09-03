@@ -38,7 +38,7 @@ namespace wpl
 
 			unsigned int __stdcall thread_proxy(void *f_)
 			{
-				auto_ptr<thread::action> f(reinterpret_cast<thread::action *>(f_));
+				auto_ptr<thread::action> f(static_cast<thread::action *>(f_));
 
 				(*f)();
 				return 0;
@@ -59,8 +59,8 @@ namespace wpl
 
 		thread::~thread() throw()
 		{
-			::WaitForSingleObject(reinterpret_cast<HANDLE>(_thread), INFINITE);
-			::CloseHandle(reinterpret_cast<HANDLE>(_thread));
+			::WaitForSingleObject(static_cast<HANDLE>(_thread), INFINITE);
+			::CloseHandle(static_cast<HANDLE>(_thread));
 		}
 
 		auto_ptr<thread> thread::run(const action &initializer, const action &job)

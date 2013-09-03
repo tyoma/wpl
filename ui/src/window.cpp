@@ -64,7 +64,7 @@ namespace wpl
 			: _data(hwnd, reinterpret_cast<WNDPROC>(::SetWindowLongPtr(hwnd, GWLP_WNDPROC,
 				reinterpret_cast<LONG_PTR>(&window::windowproc_proxy))))
 		{
-			::SetProp(hwnd, c_wrapper_ptr_name, reinterpret_cast<HANDLE>(this));
+			::SetProp(hwnd, c_wrapper_ptr_name, static_cast<HANDLE>(this));
 		}
 
 		LRESULT CALLBACK window::windowproc_proxy(HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam)
