@@ -34,11 +34,9 @@ namespace wpl
 	{
 		class thread
 		{
-			unsigned int _id;
-			void *_thread;
-
 		public:
 			typedef std::function<void()> action;
+			typedef unsigned int id;
 
 		public:
 			explicit thread(const action &job);
@@ -46,7 +44,11 @@ namespace wpl
 
 			static std::auto_ptr<thread> run(const action &initializer, const action &job);
 
-			unsigned int id() const throw();
+			id get_id() const throw();
+
+		public:
+			id _id;
+			void *_thread;
 		};
 
 
@@ -74,7 +76,7 @@ namespace wpl
 
 
 		// thread - inline definitions
-		inline unsigned int thread::id() const throw()
+		inline thread::id thread::get_id() const throw()
 		{	return _id;	}
 
 

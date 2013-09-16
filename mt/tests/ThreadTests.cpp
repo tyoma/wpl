@@ -84,7 +84,7 @@ namespace wpl
 					thread t(&do_nothing);
 
 					// ACT / ASSERT
-					Assert::IsTrue(0 != t.id());
+					Assert::IsTrue(0 != t.get_id());
 				}
 
 
@@ -95,7 +95,7 @@ namespace wpl
 					unsigned int new_thread_id = ::GetCurrentThreadId();
 
 					// ACT
-					unsigned int id = thread(bind(&threadid_capture, &new_thread_id, 0)).id();
+					unsigned int id = thread(bind(&threadid_capture, &new_thread_id, 0)).get_id();
 
 					// ASSERT
 					Assert::IsTrue(new_thread_id == id);
@@ -109,9 +109,9 @@ namespace wpl
 					thread t1(&do_nothing), t2(&do_nothing), t3(&do_nothing);
 
 					// ACT / ASSERT
-					Assert::IsTrue(t1.id() != t2.id());
-					Assert::IsTrue(t2.id() != t3.id());
-					Assert::IsTrue(t3.id() != t1.id());
+					Assert::IsTrue(t1.get_id() != t2.get_id());
+					Assert::IsTrue(t2.get_id() != t3.get_id());
+					Assert::IsTrue(t3.get_id() != t1.get_id());
 				}
 
 
@@ -125,7 +125,7 @@ namespace wpl
 					// ASSERT
 					Assert::IsTrue(t1.get() != 0);
 					Assert::IsTrue(t2.get() != 0);
-					Assert::IsTrue(t2->id() != t1->id());
+					Assert::IsTrue(t2->get_id() != t1->get_id());
 				}
 
 
@@ -142,10 +142,10 @@ namespace wpl
 					::Sleep(100);
 
 					// ASSERT
-					Assert::IsTrue(t1->id() == id_initializer1);
-					Assert::IsTrue(t1->id() == id_job1);
-					Assert::IsTrue(t2->id() == id_initializer2);
-					Assert::IsTrue(t2->id() == id_job2);
+					Assert::IsTrue(t1->get_id() == id_initializer1);
+					Assert::IsTrue(t1->get_id() == id_job1);
+					Assert::IsTrue(t2->get_id() == id_initializer2);
+					Assert::IsTrue(t2->get_id() == id_job2);
 				}
 
 
@@ -160,8 +160,8 @@ namespace wpl
 					auto_ptr<thread> t2(thread::run(bind(&threadid_capture, &id_initializer2, 100), &do_nothing));
 
 					// ASSERT
-					Assert::IsTrue(t1->id() == id_initializer1);
-					Assert::IsTrue(t2->id() == id_initializer2);
+					Assert::IsTrue(t1->get_id() == id_initializer1);
+					Assert::IsTrue(t2->get_id() == id_initializer2);
 				}
 
 
