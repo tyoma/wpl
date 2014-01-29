@@ -26,6 +26,7 @@
 namespace std
 {
 	using tr1::function;
+	using tr1::shared_ptr;
 }
 
 namespace wpl
@@ -42,13 +43,16 @@ namespace wpl
 			explicit thread(const action &job);
 			virtual ~thread() throw();
 
+			void join();
+			void detach();
+
 			static std::auto_ptr<thread> run(const action &initializer, const action &job);
 
 			id get_id() const throw();
 
-		public:
+		private:
 			id _id;
-			void *_thread;
+			std::shared_ptr<void> _thread;
 		};
 
 

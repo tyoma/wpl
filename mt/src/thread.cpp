@@ -32,26 +32,26 @@ namespace wpl
 {
 	namespace mt
 	{
-		namespace
+		thread::thread(const action &job)
 		{
 			void * const invalid_handle_value = reinterpret_cast<void *>(-1);
 
-			unsigned int __stdcall thread_proxy(void *f_)
+			struct thread_proxy
 			{
-				auto_ptr<thread::action> f(static_cast<thread::action *>(f_));
+				static unsigned int __stdcall thread_function(void *f_)
+				{
+					auto_ptr<thread::action> f(static_cast<thread::action *>(f_));
 
-				(*f)();
-				return 0;
-			}
-		}
+					(*f)();
+					return 0;
+				}
+			};
 
-
-		thread::thread(const action &job)
-		{
 			auto_ptr<action> f(new action(job));
 
-			_thread = reinterpret_cast<void *>(_beginthreadex(0, 0, &thread_proxy, f.get(), 0, &_id));
-			if (invalid_handle_value != _thread)
+			_thread.reset(reinterpret_cast<HANDLE>(_beginthreadex(0, 0, &thread_proxy::thread_function, f.get(), 0, &_id)),
+				::CloseHandle);
+			if (invalid_handle_value != _thread.get())
 				f.release();
 			else
 				throw runtime_error("New thread cannot be started!");
@@ -59,9 +59,15 @@ namespace wpl
 
 		thread::~thread() throw()
 		{
-			::WaitForSingleObject(static_cast<HANDLE>(_thread), INFINITE);
-			::CloseHandle(static_cast<HANDLE>(_thread));
+			if (_thread)
+				join();
 		}
+
+		void thread::join()
+		{	::WaitForSingleObject(static_cast<HANDLE>(_thread.get()), INFINITE);	}
+
+		void thread::detach()
+		{	_thread.reset();	}
 
 		auto_ptr<thread> thread::run(const action &initializer, const action &job)
 		{

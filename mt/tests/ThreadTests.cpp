@@ -31,6 +31,9 @@ namespace wpl
 					*thread_id = ::GetCurrentThreadId();
 				}
 
+				void wait(void *event)
+				{	::WaitForSingleObject(event, INFINITE);	}
+
 				template <typename T>
 				void get_from_tls(const tls<T> *ptls, T **result)
 				{	*result = ptls->get();	}
@@ -126,6 +129,57 @@ namespace wpl
 					Assert::IsTrue(t1.get() != 0);
 					Assert::IsTrue(t2.get() != 0);
 					Assert::IsTrue(t2->get_id() != t1->get_id());
+				}
+
+
+				[TestMethod]
+				void DetachedThreadContinuesExecution()
+				{
+					// INIT
+					shared_ptr<void> e(::CreateEvent(NULL, TRUE, FALSE, NULL), &::CloseHandle);
+					auto_ptr<thread> t(new thread(bind(&wait, e.get())));
+					unsigned int thread_id = t->get_id();
+					DWORD exit_code = 0;
+					shared_ptr<void> hthread(::OpenThread(THREAD_QUERY_INFORMATION | SYNCHRONIZE, FALSE, thread_id),
+						&::CloseHandle);
+
+					// ACT
+					t->detach();
+					t.reset();
+
+					// ASSERT
+					::GetExitCodeThread(hthread.get(), &exit_code);
+					
+					Assert::IsTrue(STILL_ACTIVE == exit_code);
+
+					// ACT
+					::SetEvent(e.get());
+					wait(hthread.get());
+
+					// ASSERT
+					::GetExitCodeThread(hthread.get(), &exit_code);
+					
+					Assert::IsTrue(0 == exit_code);
+				}
+
+
+				[TestMethod]
+				void JoinThreadGuaranteesItsCompletion()
+				{
+					// INIT
+					auto_ptr<thread> t(new thread(&do_nothing));
+					unsigned int thread_id = t->get_id();
+					DWORD exit_code = STILL_ACTIVE;
+					shared_ptr<void> hthread(::OpenThread(THREAD_QUERY_INFORMATION | SYNCHRONIZE, FALSE, thread_id),
+						&::CloseHandle);
+
+					// ACT
+					t->join();
+
+					// ASSERT
+					::GetExitCodeThread(hthread.get(), &exit_code);
+					
+					Assert::IsTrue(0 == exit_code);
 				}
 
 

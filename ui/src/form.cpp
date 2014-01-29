@@ -54,13 +54,13 @@ namespace wpl
 				LRESULT wndproc(UINT message, WPARAM wparam, LPARAM lparam, const window::original_handler_t &previous);
 
 			public:
-				form_impl(std::shared_ptr<widget> widget);
+				form_impl(shared_ptr<widget> widget);
 				~form_impl();
 			};
 
 
 
-			form_impl::form_impl(std::shared_ptr<widget> widget)
+			form_impl::form_impl(shared_ptr<widget> widget)
 			{
 				HWND hwnd = ::CreateWindow(_T("#32770"), 0, WS_OVERLAPPEDWINDOW | WS_CLIPCHILDREN, 0, 0, 100, 20, 0, 0, 0, 0);
 
@@ -85,7 +85,7 @@ namespace wpl
 			}
 		}
 
-		shared_ptr<form> create_form(std::shared_ptr<widget> widget)
+		shared_ptr<form> create_form(shared_ptr<widget> widget)
 		{
 			shared_ptr<form> f(new form_impl(widget));
 			
