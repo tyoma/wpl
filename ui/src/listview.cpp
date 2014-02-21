@@ -59,9 +59,9 @@ namespace wpl
 				virtual shared_ptr<view> create_view(const native_root &r);
 
 				// listview interface
+				virtual void set_columns_model(shared_ptr<columns_model> cm);
 				virtual void set_model(shared_ptr<model> model);
 
-				virtual void add_column(const wstring &caption, sort_direction default_sort_direction);
 				virtual void adjust_column_widths();
 
 				virtual void select(index_type item, bool reset_previous);
@@ -71,6 +71,7 @@ namespace wpl
 
 				LRESULT wndproc(UINT message, WPARAM wparam, LPARAM lparam, const window::original_handler_t &previous);
 
+				void add_column(const wstring &caption, sort_direction default_sort_direction);
 				void invalidate_view(index_type new_count);
 				void update_focus();
 				void update_selection();
@@ -90,6 +91,18 @@ namespace wpl
 			shared_ptr<view> listview_impl::create_view(const native_root &r)
 			{	return shared_ptr<view>(new native_view(shared_from_this(), _listview->hwnd(), r));	}
 
+			void listview_impl::set_columns_model(shared_ptr<columns_model> cm)
+			{
+				columns_model::column c;
+				for (int i = Header_GetItemCount(ListView_GetHeader(_listview->hwnd())) - 1; i >= 0; --i)
+					ListView_DeleteColumn(_listview->hwnd(), i);
+				for (index_type i = 0, count = cm->get_count(); i != count; ++i)
+				{
+					cm->get_column(i, c);
+					add_column(c.first, c.second);
+				}
+			}
+
 			void listview_impl::set_model(shared_ptr<model> model)
 			{
 				if (model && _sort_column != -1)
@@ -101,23 +114,6 @@ namespace wpl
 				_selected_items.clear();
 				_visible_item.second.reset();
 				_model = model;
-			}
-
-			void listview_impl::add_column(const wstring &caption, sort_direction default_sort_direction)
-			{
-				int index = static_cast<int>(_default_sorts.size());
-				CString tchar_buffer(caption.c_str());
-				LVCOLUMN column = {
-					/* mask = */ LVCF_SUBITEM | LVCF_TEXT,
-					/* fmt = */ 0,
-					/* cx = */ 0,
-					(LPTSTR)(LPCTSTR)tchar_buffer,
-					/* cchTextMax = */ 0,
-					/* iSubItem = */ index,
-				};
-
-				ListView_InsertColumn(_listview->hwnd(), index, &column);
-				_default_sorts.push_back(default_sort_direction);
 			}
 
 			void listview_impl::adjust_column_widths()
@@ -215,6 +211,23 @@ namespace wpl
 					}
 				}
 				return 0;
+			}
+
+			void listview_impl::add_column(const wstring &caption, sort_direction default_sort_direction)
+			{
+				int index = static_cast<int>(_default_sorts.size());
+				CString tchar_buffer(caption.c_str());
+				LVCOLUMN column = {
+					/* mask = */ LVCF_SUBITEM | LVCF_TEXT,
+					/* fmt = */ 0,
+					/* cx = */ 0,
+					(LPTSTR)(LPCTSTR)tchar_buffer,
+					/* cchTextMax = */ 0,
+					/* iSubItem = */ index,
+				};
+
+				ListView_InsertColumn(_listview->hwnd(), index, &column);
+				_default_sorts.push_back(default_sort_direction);
 			}
 
 			void listview_impl::invalidate_view(index_type new_count)

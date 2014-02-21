@@ -31,14 +31,15 @@ namespace wpl
 		struct listview : widget
 		{
 			typedef size_t index_type;
+			struct columns_model;
 			struct model;
 			struct trackable;
 			enum sort_direction	{	dir_none, dir_ascending, dir_descending	};
 			static const index_type npos = static_cast<index_type>(-1);
 
+			virtual void set_columns_model(std::shared_ptr<columns_model> cm) = 0;
 			virtual void set_model(std::shared_ptr<model> ds) = 0;
 
-			virtual void add_column(const std::wstring &caption, sort_direction default_sort_direction) = 0;
 			virtual void adjust_column_widths() = 0;
 
 			virtual void select(index_type item, bool reset_previous) = 0;
@@ -48,6 +49,16 @@ namespace wpl
 
 			signal<void (index_type /*item*/)> item_activate;
 			signal<void (index_type /*item*/, bool /*became selected*/)> selection_changed;
+		};
+
+		struct listview::columns_model : destructible
+		{
+			typedef std::pair<std::wstring, sort_direction> column;
+			typedef listview::index_type index_type;
+			typedef listview::sort_direction sort_direction;
+
+			virtual index_type get_count() const throw() = 0;
+			virtual void get_column(index_type index, column &column) const = 0;
 		};
 
 		struct listview::model : destructible
