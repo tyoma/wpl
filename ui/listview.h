@@ -53,12 +53,19 @@ namespace wpl
 
 		struct listview::columns_model : destructible
 		{
-			typedef std::pair<std::wstring, sort_direction> column;
-			typedef listview::index_type index_type;
 			typedef listview::sort_direction sort_direction;
+			typedef listview::index_type index_type;
+			typedef std::pair<std::wstring, sort_direction> column;
+
+			static const index_type npos = listview::npos;
 
 			virtual index_type get_count() const throw() = 0;
 			virtual void get_column(index_type index, column &column) const = 0;
+//			virtual void update_column(index_type index, ...) = 0;
+			virtual std::pair<index_type, bool> get_sort_order() const throw() = 0;
+			virtual void activate_column(index_type column) = 0;
+
+			signal<void (index_type /*new_ordering_column*/, bool /*ascending*/)> sort_order_changed;
 		};
 
 		struct listview::model : destructible

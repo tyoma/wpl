@@ -45,12 +45,11 @@ namespace wpl
 
 				bool _avoid_notifications;
 				wstring _text_buffer;
+				shared_ptr<columns_model> _columns_model;
 				shared_ptr<model> _model;
 				shared_ptr<window> _listview;
-				vector<sort_direction> _default_sorts;
-				shared_ptr<destructible> _advisory, _invalidated_connection;
+				shared_ptr<destructible> _advisory, _invalidated_connection, _sort_order_changed_connection;
 				int _sort_column;
-				bool _sort_ascending;
 				shared_ptr<const trackable> _focused_item;
 				selection_trackers _selected_items;
 				tracked_item _visible_item;
@@ -71,7 +70,7 @@ namespace wpl
 
 				LRESULT wndproc(UINT message, WPARAM wparam, LPARAM lparam, const window::original_handler_t &previous);
 
-				void add_column(const wstring &caption, sort_direction default_sort_direction);
+				void update_sort_order(index_type new_ordering_column, bool ascending);
 				void invalidate_view(index_type new_count);
 				void update_focus();
 				void update_selection();
@@ -85,7 +84,7 @@ namespace wpl
 
 
 			listview_impl::listview_impl(HWND hwnd)
-				: _avoid_notifications(false), _listview(window::attach(hwnd)), _sort_column(-1)
+				: _avoid_notifications(false), _listview(window::attach(hwnd)), _sort_column(columns_model::npos)
 			{	_advisory = _listview->advise(bind(&listview_impl::wndproc, this, _1, _2, _3, _4));	}
 
 			shared_ptr<view> listview_impl::create_view(const native_root &r)
@@ -93,20 +92,46 @@ namespace wpl
 
 			void listview_impl::set_columns_model(shared_ptr<columns_model> cm)
 			{
+				CString caption;
+				LVCOLUMN lvcolumn = { 0 };
 				columns_model::column c;
+
 				for (int i = Header_GetItemCount(ListView_GetHeader(_listview->hwnd())) - 1; i >= 0; --i)
 					ListView_DeleteColumn(_listview->hwnd(), i);
 				for (index_type i = 0, count = cm->get_count(); i != count; ++i)
 				{
 					cm->get_column(i, c);
-					add_column(c.first, c.second);
+					caption = c.first.c_str();
+					lvcolumn.mask = LVCF_SUBITEM | LVCF_TEXT;
+					lvcolumn.pszText = (LPTSTR)(LPCTSTR)caption;
+					lvcolumn.iSubItem = i;
+					ListView_InsertColumn(_listview->hwnd(), i, &lvcolumn);
 				}
+
+				pair<index_type, bool> sort_order = cm->get_sort_order();
+
+				if (columns_model::npos != sort_order.first)
+				{
+					if (_model)
+						_model->set_order(sort_order.first, sort_order.second);
+					set_column_direction(sort_order.first, sort_order.second ? dir_ascending : dir_descending);
+				}
+				_sort_column = sort_order.first;
+
+				_sort_order_changed_connection =
+					cm->sort_order_changed += bind(&listview_impl::update_sort_order, this, _1, _2);
+				_columns_model = cm;
 			}
 
 			void listview_impl::set_model(shared_ptr<model> model)
 			{
-				if (model && _sort_column != -1)
-					model->set_order(_sort_column, _sort_ascending);
+				if (_columns_model && model)
+				{
+					pair<columns_model::index_type, bool> sort_order = _columns_model->get_sort_order();
+
+					if (columns_model::npos != sort_order.first)
+						model->set_order(sort_order.first, sort_order.second);
+				}
 				_invalidated_connection = model ?
 					model->invalidated += bind(&listview_impl::invalidate_view, this, _1) : slot_connection();
 				invalidate_view(model ? model->get_count() : 0);
@@ -118,7 +143,7 @@ namespace wpl
 
 			void listview_impl::adjust_column_widths()
 			{
-				for (int i = 0; i != static_cast<int>(_default_sorts.size()); ++i)
+				for (int i = 0, count = Header_GetItemCount(ListView_GetHeader(_listview->hwnd())); i < count; ++i)
 					ListView_SetColumnWidth(_listview->hwnd(), i, LVSCW_AUTOSIZE_USEHEADER);
 			}
 
@@ -192,42 +217,20 @@ namespace wpl
 						}
 					}
 					else if (LVN_COLUMNCLICK == code)
-					{
-						int column = pnmlv->iSubItem;
-						sort_direction default_sort = _default_sorts[column];
-
-						if (default_sort != dir_none)
-						{
-							bool sort_ascending = _sort_column != column ? default_sort == dir_ascending : !_sort_ascending;
-							
-							if (_sort_column != column)
-								set_column_direction(_sort_column, dir_none);
-							_model->set_order(column, sort_ascending);
-							set_column_direction(column, sort_ascending ? dir_ascending : dir_descending);
-							_sort_column = column;
-							_sort_ascending = sort_ascending;
-							::InvalidateRect(_listview->hwnd(), NULL, FALSE);
-						}
-					}
+						_columns_model->activate_column(reinterpret_cast<const NMLISTVIEW *>(lparam)->iSubItem);
 				}
 				return 0;
 			}
 
-			void listview_impl::add_column(const wstring &caption, sort_direction default_sort_direction)
+			void listview_impl::update_sort_order(index_type new_ordering_column, bool ascending)
 			{
-				int index = static_cast<int>(_default_sorts.size());
-				CString tchar_buffer(caption.c_str());
-				LVCOLUMN column = {
-					/* mask = */ LVCF_SUBITEM | LVCF_TEXT,
-					/* fmt = */ 0,
-					/* cx = */ 0,
-					(LPTSTR)(LPCTSTR)tchar_buffer,
-					/* cchTextMax = */ 0,
-					/* iSubItem = */ index,
-				};
-
-				ListView_InsertColumn(_listview->hwnd(), index, &column);
-				_default_sorts.push_back(default_sort_direction);
+				if (_model)
+					_model->set_order(new_ordering_column, ascending);
+				if (columns_model::npos != _sort_column)
+					set_column_direction(_sort_column, dir_none);
+				set_column_direction(new_ordering_column, ascending ? dir_ascending : dir_descending);
+				_sort_column = new_ordering_column;
+				::InvalidateRect(_listview->hwnd(), NULL, FALSE);
 			}
 
 			void listview_impl::invalidate_view(index_type new_count)
