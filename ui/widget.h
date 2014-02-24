@@ -53,7 +53,7 @@ namespace wpl
 			struct visitor;
 
 		public:
-			explicit view(std::shared_ptr<widget> widget);
+			explicit view(std::shared_ptr<widget> w);
 			virtual ~view();
 
 			std::shared_ptr<const wpl::ui::transform> transform() const;

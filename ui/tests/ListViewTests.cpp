@@ -29,6 +29,8 @@ namespace wpl
 		{
 			namespace
 			{
+				enum sort_direction	{	dir_none, dir_ascending, dir_descending	};
+
 				struct mock_trackable : public listview::trackable
 				{
 					~mock_trackable()
@@ -97,7 +99,7 @@ namespace wpl
 					{	}
 
 					virtual index_type get_count() const throw()
-					{	return columns.size();	}
+					{	return static_cast<index_type>(columns.size());	}
 
 					virtual void get_column(index_type index, column &column) const
 					{	column = columns[index];	}
@@ -114,10 +116,9 @@ namespace wpl
 						bool ascending)
 					{	return shared_ptr<mock_columns_model>(new mock_columns_model(columns, sort_column, ascending));	}
 
-					static shared_ptr<mock_columns_model> create(const wstring &caption,
-						listview::sort_direction default_sort_direction)
+					static shared_ptr<mock_columns_model> create(const wstring &caption)
 					{
-						column columns[] = { column(caption, default_sort_direction), };
+						column columns[] = { column(caption), };
 
 						return create(columns, npos, false);
 					}
@@ -146,15 +147,14 @@ namespace wpl
 				size_t get_columns_count(HWND hlv)
 				{	return Header_GetItemCount(ListView_GetHeader(hlv));	}
 
-				listview::sort_direction get_column_direction(HWND hlv, listview::index_type column)
+				sort_direction get_column_direction(HWND hlv, listview::index_type column)
 				{
 					HDITEM item = { 0 };
 					HWND hheader = ListView_GetHeader(hlv);
 					
 					item.mask = HDI_FORMAT;
 					Header_GetItem(hheader, column, &item);
-					return (item.fmt & HDF_SORTUP) ? listview::dir_ascending : (item.fmt & HDF_SORTDOWN) ?
-						listview::dir_descending : listview::dir_none;
+					return (item.fmt & HDF_SORTUP) ? dir_ascending : (item.fmt & HDF_SORTDOWN) ? dir_descending : dir_none;
 				}
 
 				CString get_column_text(HWND hlv, listview::index_type column)
@@ -267,9 +267,9 @@ namespace wpl
 					HWND hlv = create_listview();
 					shared_ptr<listview> lv(wrap_listview(hlv));
 					listview::columns_model::column columns[] = {
-						listview::columns_model::column(L"Contract", listview::dir_none),
-						listview::columns_model::column(L"Price", listview::dir_none),
-						listview::columns_model::column(L"Volume", listview::dir_none),
+						listview::columns_model::column(L"Contract"),
+						listview::columns_model::column(L"Price"),
+						listview::columns_model::column(L"Volume"),
 					};
 					
 					// ACT
@@ -290,13 +290,13 @@ namespace wpl
 					HWND hlv = create_listview();
 					shared_ptr<listview> lv(wrap_listview(hlv));
 					listview::columns_model::column columns[] = {
-						listview::columns_model::column(L"Contract", listview::dir_none),
-						listview::columns_model::column(L"Price", listview::dir_none),
+						listview::columns_model::column(L"Contract"),
+						listview::columns_model::column(L"Price"),
 					};
 					
 					// ACT
 					lv->set_columns_model(mock_columns_model::create(columns, listview::columns_model::npos, false));
-					lv->set_columns_model(mock_columns_model::create(L"Team", listview::dir_none));
+					lv->set_columns_model(mock_columns_model::create(L"Team"));
 
 					// ASSERT
 					Assert::IsTrue(1 == get_columns_count(hlv));
@@ -312,7 +312,7 @@ namespace wpl
 					shared_ptr<listview> lv(wrap_listview(hlv));
 					model_ptr m(new mock_model(11, 1));
 
-					lv->set_columns_model(mock_columns_model::create(L"test", listview::dir_none));
+					lv->set_columns_model(mock_columns_model::create(L"test"));
 					lv->set_model(m);
 
 					// ACT
@@ -604,9 +604,9 @@ namespace wpl
 					HWND hlv = create_listview();
 					shared_ptr<listview> lv(wrap_listview(hlv));
 					listview::columns_model::column columns[] = {
-						listview::columns_model::column(L"", listview::dir_ascending),
-						listview::columns_model::column(L"", listview::dir_ascending),
-						listview::columns_model::column(L"", listview::dir_ascending),
+						listview::columns_model::column(L"", dir_ascending),
+						listview::columns_model::column(L"", dir_ascending),
+						listview::columns_model::column(L"", dir_ascending),
 					};
 					model_ptr m(new mock_model(0));
 
@@ -640,8 +640,8 @@ namespace wpl
 					HWND hlv = create_listview();
 					shared_ptr<listview> lv(wrap_listview(hlv));
 					listview::columns_model::column columns[] = {
-						listview::columns_model::column(L"", listview::dir_ascending),
-						listview::columns_model::column(L"", listview::dir_ascending),
+						listview::columns_model::column(L"", dir_ascending),
+						listview::columns_model::column(L"", dir_ascending),
 					};
 					model_ptr m(new mock_model(0));
 
@@ -662,9 +662,9 @@ namespace wpl
 					HWND hlv = create_listview();
 					shared_ptr<listview> lv(wrap_listview(hlv));
 					listview::columns_model::column columns[] = {
-						listview::columns_model::column(L"", listview::dir_ascending),
-						listview::columns_model::column(L"", listview::dir_ascending),
-						listview::columns_model::column(L"", listview::dir_ascending),
+						listview::columns_model::column(L"", dir_ascending),
+						listview::columns_model::column(L"", dir_ascending),
+						listview::columns_model::column(L"", dir_ascending),
 					};
 					model_ptr m(new mock_model(0));
 					columns_model_ptr cm(mock_columns_model::create(columns, listview::columns_model::npos, false));
@@ -700,9 +700,9 @@ namespace wpl
 					HWND hlv = create_listview();
 					shared_ptr<listview> lv(wrap_listview(hlv));
 					listview::columns_model::column columns[] = {
-						listview::columns_model::column(L"", listview::dir_descending),
-						listview::columns_model::column(L"", listview::dir_descending),
-						listview::columns_model::column(L"", listview::dir_descending),
+						listview::columns_model::column(L"", dir_descending),
+						listview::columns_model::column(L"", dir_descending),
+						listview::columns_model::column(L"", dir_descending),
 					};
 					columns_model_ptr cm(mock_columns_model::create(columns, listview::columns_model::npos, false));
 					model_ptr m(new mock_model(0));
@@ -735,70 +735,6 @@ namespace wpl
 				}
 
 
-				//[TestMethod]
-				//void InitialOrderingIsDoneAccordinglyToModel()
-				//{
-				//	// INIT
-				//	HWND hlv1 = create_listview(), hlv2 = create_listview(), hlv3 = create_listview();
-				//	shared_ptr<listview> lv1(wrap_listview(hlv1)), lv2(wrap_listview(hlv2)), lv3(wrap_listview(hlv3));
-				//	listview::columns_model::column columns2[] = {
-				//		listview::columns_model::column(L"", listview::dir_ascending),
-				//		listview::columns_model::column(L"", listview::dir_ascending),
-				//	};
-				//	listview::columns_model::column columns3[] = {
-				//		listview::columns_model::column(L"", listview::dir_descending),
-				//		listview::columns_model::column(L"", listview::dir_descending),
-				//		listview::columns_model::column(L"", listview::dir_descending),
-				//	};
-				//	model_ptr m(new mock_model(0));
-				//	NMLISTVIEW nmlvdi = {
-				//		{	0, 0, LVN_COLUMNCLICK	},
-				//		/* iItem = */ LVIF_TEXT /* see if wndproc differentiates notifications */, /* iSubItem = */ 0,
-				//	};
-
-				//	lv1->set_model(m);
-				//	lv2->set_model(m);
-				//	lv3->set_model(m);
-				//	lv1->set_columns_model(mock_columns_model::create(L"", listview::dir_none));
-				//	lv2->set_columns_model(mock_columns_model::create(columns2, listview::columns_model::npos, false));
-				//	lv3->set_columns_model(mock_columns_model::create(columns3, listview::columns_model::npos, false));
-
-				//	// ACT
-				//	nmlvdi.iSubItem = 0;
-				//	::SendMessage(hlv1, OCM_NOTIFY, 0, reinterpret_cast<LPARAM>(&nmlvdi));
-
-				//	// ASSERT
-				//	Assert::IsTrue(0 == m->ordering.size());
-
-				//	// ACT
-				//	nmlvdi.iSubItem = 0;
-				//	::SendMessage(hlv2, OCM_NOTIFY, 0, reinterpret_cast<LPARAM>(&nmlvdi));
-
-				//	// ASSERT
-				//	Assert::IsTrue(1 == m->ordering.size());
-				//	Assert::IsTrue(0 == m->ordering[0].first);
-				//	Assert::IsTrue(true == m->ordering[0].second);
-
-				//	// ACT
-				//	nmlvdi.iSubItem = 1;
-				//	::SendMessage(hlv2, OCM_NOTIFY, 0, reinterpret_cast<LPARAM>(&nmlvdi));
-
-				//	// ASSERT
-				//	Assert::IsTrue(2 == m->ordering.size());
-				//	Assert::IsTrue(1 == m->ordering[1].first);
-				//	Assert::IsTrue(true == m->ordering[1].second);
-
-				//	// ACT
-				//	nmlvdi.iSubItem = 2;
-				//	::SendMessage(hlv3, OCM_NOTIFY, 0, reinterpret_cast<LPARAM>(&nmlvdi));
-
-				//	// ASSERT
-				//	Assert::IsTrue(3 == m->ordering.size());
-				//	Assert::IsTrue(2 == m->ordering[2].first);
-				//	Assert::IsTrue(false == m->ordering[2].second);
-				//}
-
-
 				[TestMethod]
 				void PreorderingOnChangingModel()
 				{
@@ -806,8 +742,8 @@ namespace wpl
 					HWND hlv = create_listview();
 					shared_ptr<listview> lv(wrap_listview(hlv));
 					listview::columns_model::column columns[] = {
-						listview::columns_model::column(L"", listview::dir_ascending),
-						listview::columns_model::column(L"", listview::dir_descending),
+						listview::columns_model::column(L"", dir_ascending),
+						listview::columns_model::column(L"", dir_descending),
 					};
 					model_ptr m1(new mock_model(0)), m2(new mock_model(0));
 					columns_model_ptr cm(mock_columns_model::create(columns, 0, true));
@@ -844,8 +780,8 @@ namespace wpl
 					HWND hlv = create_listview();
 					shared_ptr<listview> lv(wrap_listview(hlv));
 					listview::columns_model::column columns[] = {
-						listview::columns_model::column(L"", listview::dir_ascending),
-						listview::columns_model::column(L"", listview::dir_descending),
+						listview::columns_model::column(L"", dir_ascending),
+						listview::columns_model::column(L"", dir_descending),
 					};
 					model_ptr m(new mock_model(0));
 
@@ -857,126 +793,6 @@ namespace wpl
 				}
 
 
-				//[TestMethod]
-				//void OrderReversing()
-				//{
-				//	// INIT
-				//	HWND hlv1 = create_listview(), hlv2 = create_listview();
-				//	shared_ptr<listview> lv1(wrap_listview(hlv1)), lv2(wrap_listview(hlv2));
-				//	listview::columns_model::column columns2[] = {
-				//		listview::columns_model::column(L"", listview::dir_ascending),
-				//		listview::columns_model::column(L"", listview::dir_descending),
-				//	};
-				//	listview::columns_model::column columns3[] = {
-				//		listview::columns_model::column(L"", listview::dir_ascending),
-				//		listview::columns_model::column(L"", listview::dir_descending),
-				//		listview::columns_model::column(L"", listview::dir_descending),
-				//	};
-				//	model_ptr m(new mock_model(0));
-				//	NMLISTVIEW nmlvdi = {
-				//		{	0, 0, LVN_COLUMNCLICK	},
-				//		/* iItem = */ 0, /* iSubItem = */ 0,
-				//	};
-
-				//	lv1->set_model(m);
-				//	lv2->set_model(m);
-				//	lv1->set_columns_model(mock_columns_model::create(columns2, listview::columns_model::npos, false));
-				//	lv2->set_columns_model(mock_columns_model::create(columns3, listview::columns_model::npos, false));
-				//	nmlvdi.iSubItem = 0;
-				//	::SendMessage(hlv1, OCM_NOTIFY, 0, reinterpret_cast<LPARAM>(&nmlvdi));
-				//	nmlvdi.iSubItem = 2;
-				//	::SendMessage(hlv2, OCM_NOTIFY, 0, reinterpret_cast<LPARAM>(&nmlvdi));
-
-				//	m->ordering.clear();
-
-				//	// ACT
-				//	nmlvdi.iSubItem = 0;
-				//	::SendMessage(hlv1, OCM_NOTIFY, 0, reinterpret_cast<LPARAM>(&nmlvdi));
-
-				//	// ASSERT
-				//	Assert::IsTrue(1 == m->ordering.size());
-				//	Assert::IsTrue(0 == m->ordering[0].first);
-				//	Assert::IsTrue(false == m->ordering[0].second);
-
-				//	// ACT
-				//	nmlvdi.iSubItem = 2;
-				//	::SendMessage(hlv2, OCM_NOTIFY, 0, reinterpret_cast<LPARAM>(&nmlvdi));
-				//	nmlvdi.iSubItem = 2;
-				//	::SendMessage(hlv2, OCM_NOTIFY, 0, reinterpret_cast<LPARAM>(&nmlvdi));
-
-				//	// ASSERT
-				//	Assert::IsTrue(3 == m->ordering.size());
-				//	Assert::IsTrue(2 == m->ordering[1].first);
-				//	Assert::IsTrue(true == m->ordering[1].second);
-				//	Assert::IsTrue(2 == m->ordering[2].first);
-				//	Assert::IsTrue(false == m->ordering[2].second);
-				//}
-
-
-				//[TestMethod]
-				//void OrderDefaultingAfterSwitchigSortColumn()
-				//{
-				//	// INIT
-				//	HWND hlv1 = create_listview(), hlv2 = create_listview();
-				//	shared_ptr<listview> lv1(wrap_listview(hlv1)), lv2(wrap_listview(hlv2));
-				//	listview::columns_model::column columns2[] = {
-				//		listview::columns_model::column(L"", listview::dir_ascending),
-				//		listview::columns_model::column(L"", listview::dir_ascending),
-				//	};
-				//	listview::columns_model::column columns4[] = {
-				//		listview::columns_model::column(L"", listview::dir_descending),
-				//		listview::columns_model::column(L"", listview::dir_ascending),
-				//		listview::columns_model::column(L"", listview::dir_descending),
-				//		listview::columns_model::column(L"", listview::dir_none),
-				//	};
-				//	model_ptr m(new mock_model(0));
-				//	NMLISTVIEW nmlvdi = {
-				//		{	0, 0, LVN_COLUMNCLICK	},
-				//		/* iItem = */ 0, /* iSubItem = */ 0,
-				//	};
-
-				//	lv1->set_model(m);
-				//	lv2->set_model(m);
-				//	lv1->set_columns_model(mock_columns_model::create(columns2, listview::columns_model::npos, false));
-				//	lv2->set_columns_model(mock_columns_model::create(columns4, listview::columns_model::npos, false));
-				//	nmlvdi.iSubItem = 0;
-				//	::SendMessage(hlv1, OCM_NOTIFY, 0, reinterpret_cast<LPARAM>(&nmlvdi));
-				//	nmlvdi.iSubItem = 0;
-				//	::SendMessage(hlv2, OCM_NOTIFY, 0, reinterpret_cast<LPARAM>(&nmlvdi));
-
-				//	m->ordering.clear();
-
-				//	// ACT
-				//	nmlvdi.iSubItem = 1;
-				//	::SendMessage(hlv1, OCM_NOTIFY, 0, reinterpret_cast<LPARAM>(&nmlvdi));
-
-				//	// ASSERT
-				//	Assert::IsTrue(1 == m->ordering.size());
-				//	Assert::IsTrue(1 == m->ordering[0].first);
-				//	Assert::IsTrue(true == m->ordering[0].second);
-
-				//	// ACT
-				//	nmlvdi.iSubItem = 1;
-				//	::SendMessage(hlv2, OCM_NOTIFY, 0, reinterpret_cast<LPARAM>(&nmlvdi));
-				//	nmlvdi.iSubItem = 2;
-				//	::SendMessage(hlv2, OCM_NOTIFY, 0, reinterpret_cast<LPARAM>(&nmlvdi));
-
-				//	// ASSERT
-				//	Assert::IsTrue(3 == m->ordering.size());
-				//	Assert::IsTrue(1 == m->ordering[1].first);
-				//	Assert::IsTrue(true == m->ordering[1].second);
-				//	Assert::IsTrue(2 == m->ordering[2].first);
-				//	Assert::IsTrue(false == m->ordering[2].second);
-
-				//	// ACT
-				//	nmlvdi.iSubItem = 3;
-				//	::SendMessage(hlv2, OCM_NOTIFY, 0, reinterpret_cast<LPARAM>(&nmlvdi));
-
-				//	// ASSERT
-				//	Assert::IsTrue(3 == m->ordering.size());	// clicking non-sorting column changes nothing
-				//}
-
-
 				[TestMethod]
 				void SettingColumnsModelWhithOrderingWhenModelIsMissingIsOkay()
 				{
@@ -984,8 +800,8 @@ namespace wpl
 					HWND hlv = create_listview();
 					shared_ptr<listview> lv(wrap_listview(hlv));
 					listview::columns_model::column columns[] = {
-						listview::columns_model::column(L"", listview::dir_descending),
-						listview::columns_model::column(L"", listview::dir_ascending),
+						listview::columns_model::column(L"", dir_descending),
+						listview::columns_model::column(L"", dir_ascending),
 					};
 					columns_model_ptr cm(mock_columns_model::create(columns, 1, true));
 
@@ -1001,8 +817,8 @@ namespace wpl
 					HWND hlv = create_listview();
 					shared_ptr<listview> lv(wrap_listview(hlv));
 					listview::columns_model::column columns[] = {
-						listview::columns_model::column(L"", listview::dir_descending),
-						listview::columns_model::column(L"", listview::dir_ascending),
+						listview::columns_model::column(L"", dir_descending),
+						listview::columns_model::column(L"", dir_ascending),
 					};
 					columns_model_ptr cm1(mock_columns_model::create(columns, listview::columns_model::npos, false));
 					columns_model_ptr cm2(mock_columns_model::create(columns, 0, false));
@@ -1012,22 +828,22 @@ namespace wpl
 					lv->set_columns_model(cm1);
 
 					// ASSERT
-					Assert::IsTrue(listview::dir_none == get_column_direction(hlv, 0));
-					Assert::IsTrue(listview::dir_none == get_column_direction(hlv, 1));
+					Assert::IsTrue(dir_none == get_column_direction(hlv, 0));
+					Assert::IsTrue(dir_none == get_column_direction(hlv, 1));
 
 					// ACT
 					lv->set_columns_model(cm2);
 
 					// ASSERT
-					Assert::IsTrue(listview::dir_descending == get_column_direction(hlv, 0));
-					Assert::IsTrue(listview::dir_none == get_column_direction(hlv, 1));
+					Assert::IsTrue(dir_descending == get_column_direction(hlv, 0));
+					Assert::IsTrue(dir_none == get_column_direction(hlv, 1));
 
 					// ACT
 					lv->set_columns_model(cm3);
 
 					// ASSERT
-					Assert::IsTrue(listview::dir_none == get_column_direction(hlv, 0));
-					Assert::IsTrue(listview::dir_ascending == get_column_direction(hlv, 1));
+					Assert::IsTrue(dir_none == get_column_direction(hlv, 0));
+					Assert::IsTrue(dir_ascending == get_column_direction(hlv, 1));
 				}
 
 
@@ -1038,8 +854,8 @@ namespace wpl
 					HWND hlv = create_listview();
 					shared_ptr<listview> lv(wrap_listview(hlv));
 					listview::columns_model::column columns[] = {
-						listview::columns_model::column(L"", listview::dir_descending),
-						listview::columns_model::column(L"", listview::dir_ascending),
+						listview::columns_model::column(L"", dir_descending),
+						listview::columns_model::column(L"", dir_ascending),
 					};
 					columns_model_ptr cm(mock_columns_model::create(columns, listview::columns_model::npos, false));
 					model_ptr m(new mock_model(0));
@@ -1051,22 +867,22 @@ namespace wpl
 					cm->set_sort_order(0, true);
 
 					// ASSERT
-					Assert::IsTrue(listview::dir_ascending == get_column_direction(hlv, 0));
-					Assert::IsTrue(listview::dir_none == get_column_direction(hlv, 1));
+					Assert::IsTrue(dir_ascending == get_column_direction(hlv, 0));
+					Assert::IsTrue(dir_none == get_column_direction(hlv, 1));
 
 					// ACT
 					cm->set_sort_order(1, false);
 
 					// ASSERT
-					Assert::IsTrue(listview::dir_none == get_column_direction(hlv, 0));
-					Assert::IsTrue(listview::dir_descending == get_column_direction(hlv, 1));
+					Assert::IsTrue(dir_none == get_column_direction(hlv, 0));
+					Assert::IsTrue(dir_descending == get_column_direction(hlv, 1));
 
 					// ACT
 					cm->set_sort_order(1, true);
 
 					// ASSERT
-					Assert::IsTrue(listview::dir_none == get_column_direction(hlv, 0));
-					Assert::IsTrue(listview::dir_ascending == get_column_direction(hlv, 1));
+					Assert::IsTrue(dir_none == get_column_direction(hlv, 0));
+					Assert::IsTrue(dir_ascending == get_column_direction(hlv, 1));
 				}
 
 
@@ -1077,8 +893,8 @@ namespace wpl
 					HWND hlv = create_listview();
 					shared_ptr<listview> lv(wrap_listview(hlv));
 					listview::columns_model::column columns[] = {
-						listview::columns_model::column(L"", listview::dir_descending),
-						listview::columns_model::column(L"", listview::dir_ascending),
+						listview::columns_model::column(L"", dir_descending),
+						listview::columns_model::column(L"", dir_ascending),
 					};
 					columns_model_ptr cm(mock_columns_model::create(columns, 1, false));
 
@@ -1088,8 +904,8 @@ namespace wpl
 					cm->set_sort_order(0, true);
 
 					// ASSERT
-					Assert::IsTrue(listview::dir_ascending == get_column_direction(hlv, 0));
-					Assert::IsTrue(listview::dir_none == get_column_direction(hlv, 1));
+					Assert::IsTrue(dir_ascending == get_column_direction(hlv, 0));
+					Assert::IsTrue(dir_none == get_column_direction(hlv, 1));
 				}				
 
 
@@ -1100,8 +916,8 @@ namespace wpl
 					HWND hlv = create_listview();
 					shared_ptr<listview> lv(wrap_listview(hlv));
 					listview::columns_model::column columns[] = {
-						listview::columns_model::column(L"", listview::dir_descending),
-						listview::columns_model::column(L"", listview::dir_ascending),
+						listview::columns_model::column(L"", dir_descending),
+						listview::columns_model::column(L"", dir_ascending),
 					};
 					columns_model_ptr cm(mock_columns_model::create(columns, listview::columns_model::npos, false));
 					model_ptr m(new mock_model(0));
@@ -1245,13 +1061,13 @@ namespace wpl
 					HWND hlv1 = create_listview(), hlv2 = create_listview();
 					shared_ptr<listview> lv1(wrap_listview(hlv1)), lv2(wrap_listview(hlv2));
 					listview::columns_model::column columns3[] = {
-						listview::columns_model::column(L"ww", listview::dir_none),
-						listview::columns_model::column(L"wwwwww", listview::dir_none),
-						listview::columns_model::column(L"WW", listview::dir_none),
+						listview::columns_model::column(L"ww"),
+						listview::columns_model::column(L"wwwwww"),
+						listview::columns_model::column(L"WW"),
 					};
 					listview::columns_model::column columns2[] = {
-						listview::columns_model::column(L"ii", listview::dir_none),
-						listview::columns_model::column(L"iiii", listview::dir_none),
+						listview::columns_model::column(L"ii"),
+						listview::columns_model::column(L"iiii"),
 					};
 
 					lv1->set_columns_model(mock_columns_model::create(columns3, listview::columns_model::npos, false));
@@ -1412,7 +1228,7 @@ namespace wpl
 					};
 
 					lv->set_model(m);
-					lv->set_columns_model(mock_columns_model::create(L"iiii", listview::dir_none));
+					lv->set_columns_model(mock_columns_model::create(L"iiii"));
 					lv->adjust_column_widths();
 
 					// ACT
@@ -1456,7 +1272,7 @@ namespace wpl
 					};
 
 					lv->set_model(m);
-					lv->set_columns_model(mock_columns_model::create(L"iiii", listview::dir_none));
+					lv->set_columns_model(mock_columns_model::create(L"iiii"));
 					lv->adjust_column_widths();
 
 					// ACT
@@ -1921,7 +1737,7 @@ namespace wpl
 					shared_ptr<listview> lv(wrap_listview(hlv));
 
 					lv->set_model(model_ptr(new mock_model(100, 1)));
-					lv->set_columns_model(mock_columns_model::create(L"iiii", listview::dir_none));
+					lv->set_columns_model(mock_columns_model::create(L"iiii"));
 					lv->adjust_column_widths();
 
 					// ACT
@@ -1958,7 +1774,7 @@ namespace wpl
 					shared_ptr<listview> lv(wrap_listview(hlv));
 					model_ptr m(new mock_model(100, 1));
 
-					lv->set_columns_model(mock_columns_model::create(L"iiii", listview::dir_none));
+					lv->set_columns_model(mock_columns_model::create(L"iiii"));
 					lv->adjust_column_widths();
 					lv->set_model(m);
 
@@ -1992,7 +1808,7 @@ namespace wpl
 						mock_trackable::add(m->trackables, 7),
 					};
 
-					lv->set_columns_model(mock_columns_model::create(L"iiii", listview::dir_none));
+					lv->set_columns_model(mock_columns_model::create(L"iiii"));
 					lv->adjust_column_widths();
 					lv->set_model(m);
 
@@ -2016,7 +1832,7 @@ namespace wpl
 					model_ptr m1(new mock_model(100, 1)), m2(new mock_model(100, 1));
 					weak_ptr<const listview::trackable> wt = mock_trackable::add(m1->trackables, 5);
 
-					lv->set_columns_model(mock_columns_model::create(L"iiii", listview::dir_none));
+					lv->set_columns_model(mock_columns_model::create(L"iiii"));
 					lv->adjust_column_widths();
 					lv->set_model(m1);
 					lv->ensure_visible(5);
@@ -2040,7 +1856,7 @@ namespace wpl
 					trackable_ptr t(mock_trackable::add(m->trackables, 0));
 
 					lv->set_model(m);
-					lv->set_columns_model(mock_columns_model::create(L"iiii", listview::dir_none));
+					lv->set_columns_model(mock_columns_model::create(L"iiii"));
 					lv->adjust_column_widths();
 					lv->ensure_visible(0);
 
@@ -2083,7 +1899,7 @@ namespace wpl
 					trackable_ptr t(mock_trackable::add(m->trackables, 0));
 
 					lv->set_model(m);
-					lv->set_columns_model(mock_columns_model::create(L"iiii", listview::dir_none));
+					lv->set_columns_model(mock_columns_model::create(L"iiii"));
 					lv->adjust_column_widths();
 					lv->ensure_visible(0);
 
@@ -2119,7 +1935,7 @@ namespace wpl
 					trackable_ptr t(mock_trackable::add(m->trackables, 49));
 
 					lv->set_model(m);
-					lv->set_columns_model(mock_columns_model::create(L"iiii", listview::dir_none));
+					lv->set_columns_model(mock_columns_model::create(L"iiii"));
 					lv->adjust_column_widths();
 					lv->ensure_visible(49);
 
@@ -2145,7 +1961,7 @@ namespace wpl
 					trackable_ptr t(mock_trackable::add(m->trackables, 49));
 
 					lv->set_model(m);
-					lv->set_columns_model(mock_columns_model::create(L"iiii", listview::dir_none));
+					lv->set_columns_model(mock_columns_model::create(L"iiii"));
 					lv->adjust_column_widths();
 					lv->ensure_visible(49);
 					ListView_EnsureVisible(hlv, 0, FALSE);
@@ -2173,8 +1989,8 @@ namespace wpl
 					model_ptr m(new mock_model(10, 2));
 					trackable_ptr t(mock_trackable::add(m->trackables, 9));
 					listview::columns_model::column columns[] = {
-						listview::columns_model::column(L"iiii", listview::dir_none),
-						listview::columns_model::column(L"wwwwwwwwwwwww", listview::dir_none),
+						listview::columns_model::column(L"iiii"),
+						listview::columns_model::column(L"wwwwwwwwwwwww"),
 					};
 
 					lv->set_columns_model(mock_columns_model::create(columns, listview::columns_model::npos, false));
@@ -2232,7 +2048,7 @@ namespace wpl
 					model_ptr m(new mock_model(10, 1));
 					trackable_ptr t(mock_trackable::add(m->trackables, 9));
 
-					lv->set_columns_model(mock_columns_model::create(L"iiii", listview::dir_none));
+					lv->set_columns_model(mock_columns_model::create(L"iiii"));
 					lv->adjust_column_widths();
 					lv->set_model(m);
 

@@ -34,7 +34,6 @@ namespace wpl
 			struct columns_model;
 			struct model;
 			struct trackable;
-			enum sort_direction	{	dir_none, dir_ascending, dir_descending	};
 			static const index_type npos = static_cast<index_type>(-1);
 
 			virtual void set_columns_model(std::shared_ptr<columns_model> cm) = 0;
@@ -53,11 +52,10 @@ namespace wpl
 
 		struct listview::columns_model : destructible
 		{
-			typedef listview::sort_direction sort_direction;
-			typedef listview::index_type index_type;
-			typedef std::pair<std::wstring, sort_direction> column;
+			typedef short int index_type;
+			typedef std::wstring column;
 
-			static const index_type npos = listview::npos;
+			static const short int npos = -1;
 
 			virtual index_type get_count() const throw() = 0;
 			virtual void get_column(index_type index, column &column) const = 0;

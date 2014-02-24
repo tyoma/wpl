@@ -40,6 +40,7 @@ namespace wpl
 		{
 			class listview_impl : public listview
 			{
+				enum sort_direction	{	dir_none, dir_ascending, dir_descending	};
 				typedef pair< index_type /*last_index*/, shared_ptr<const trackable> > tracked_item;
 				typedef vector<tracked_item> selection_trackers;
 
@@ -49,7 +50,7 @@ namespace wpl
 				shared_ptr<model> _model;
 				shared_ptr<window> _listview;
 				shared_ptr<destructible> _advisory, _invalidated_connection, _sort_order_changed_connection;
-				int _sort_column;
+				columns_model::index_type _sort_column;
 				shared_ptr<const trackable> _focused_item;
 				selection_trackers _selected_items;
 				tracked_item _visible_item;
@@ -70,7 +71,7 @@ namespace wpl
 
 				LRESULT wndproc(UINT message, WPARAM wparam, LPARAM lparam, const window::original_handler_t &previous);
 
-				void update_sort_order(index_type new_ordering_column, bool ascending);
+				void update_sort_order(columns_model::index_type new_ordering_column, bool ascending);
 				void invalidate_view(index_type new_count);
 				void update_focus();
 				void update_selection();
@@ -98,17 +99,17 @@ namespace wpl
 
 				for (int i = Header_GetItemCount(ListView_GetHeader(_listview->hwnd())) - 1; i >= 0; --i)
 					ListView_DeleteColumn(_listview->hwnd(), i);
-				for (index_type i = 0, count = cm->get_count(); i != count; ++i)
+				for (columns_model::index_type i = 0, count = cm->get_count(); i != count; ++i)
 				{
 					cm->get_column(i, c);
-					caption = c.first.c_str();
+					caption = c.c_str();
 					lvcolumn.mask = LVCF_SUBITEM | LVCF_TEXT;
 					lvcolumn.pszText = (LPTSTR)(LPCTSTR)caption;
 					lvcolumn.iSubItem = i;
 					ListView_InsertColumn(_listview->hwnd(), i, &lvcolumn);
 				}
 
-				pair<index_type, bool> sort_order = cm->get_sort_order();
+				pair<columns_model::index_type, bool> sort_order = cm->get_sort_order();
 
 				if (columns_model::npos != sort_order.first)
 				{
@@ -217,12 +218,12 @@ namespace wpl
 						}
 					}
 					else if (LVN_COLUMNCLICK == code)
-						_columns_model->activate_column(reinterpret_cast<const NMLISTVIEW *>(lparam)->iSubItem);
+						_columns_model->activate_column( static_cast<columns_model::index_type>(reinterpret_cast<const NMLISTVIEW *>(lparam)->iSubItem));
 				}
 				return 0;
 			}
 
-			void listview_impl::update_sort_order(index_type new_ordering_column, bool ascending)
+			void listview_impl::update_sort_order(columns_model::index_type new_ordering_column, bool ascending)
 			{
 				if (_model)
 					_model->set_order(new_ordering_column, ascending);

@@ -60,36 +60,42 @@ namespace wpl
 	template <typename R>
 	struct signal<R ()> : signal< std::function<void ()> >
 	{
+		typedef signal this_type;
 		void operator ()() const;
 	};
 
 	template <typename R, typename T1>
 	struct signal<R (T1)> : signal< std::function<void (T1)> >
 	{
+		typedef signal this_type;
 		void operator ()(T1 arg1) const;
 	};
 
 	template <typename R, typename T1, typename T2>
 	struct signal<R (T1, T2)> : signal< std::function<void (T1, T2)> >
 	{
+		typedef signal this_type;
 		void operator ()(T1 arg1, T2 arg2) const;
 	};
 
 	template <typename R, typename T1, typename T2, typename T3>
 	struct signal<R (T1, T2, T3)> : signal< std::function<void (T1, T2, T3)> >
 	{
+		typedef signal this_type;
 		void operator ()(T1 arg1, T2 arg2, T3 arg3) const;
 	};
 
 	template <typename R, typename T1, typename T2, typename T3, typename T4>
 	struct signal<R (T1, T2, T3, T4)> : signal< std::function<void (T1, T2, T3, T4)> >
 	{
+		typedef signal this_type;
 		void operator ()(T1 arg1, T2 arg2, T3 arg3, T4 arg4) const;
 	};
 
 	template <typename R, typename T1, typename T2, typename T3, typename T4, typename T5>
 	struct signal<R (T1, T2, T3, T4, T5)> : signal< std::function<void (T1, T2, T3, T4, T5)> >
 	{
+		typedef signal this_type;
 		void operator ()(T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5) const;
 	};
 
@@ -144,9 +150,9 @@ namespace wpl
 	template <typename R>
 	inline void signal<R ()>::operator ()() const
 	{
-		_slots_ptr_t slots(_slots);
+		this_type::_slots_ptr_t slots(this->_slots);
 
-		for (_slots_iterator_t i = slots->begin(); i != slots->end(); ++i)
+		for (this_type::_slots_iterator_t i = slots->begin(); i != slots->end(); ++i)
 			if (*i)
 				(*i)();
 	}
@@ -154,9 +160,9 @@ namespace wpl
 	template <typename R, typename T1>
 	inline void signal<R (T1)>::operator ()(T1 arg1) const
 	{
-		_slots_ptr_t slots(_slots);
+		this_type::_slots_ptr_t slots(this->_slots);
 
-		for (_slots_iterator_t i = slots->begin(); i != slots->end(); ++i)
+		for (this_type::_slots_iterator_t i = slots->begin(); i != slots->end(); ++i)
 			if (*i)
 				(*i)(arg1);
 	}
@@ -164,9 +170,9 @@ namespace wpl
 	template <typename R, typename T1, typename T2>
 	inline void signal<R (T1, T2)>::operator ()(T1 arg1, T2 arg2) const
 	{
-		_slots_ptr_t slots(_slots);
+		this_type::_slots_ptr_t slots(this->_slots);
 
-		for (_slots_iterator_t i = slots->begin(); i != slots->end(); ++i)
+		for (this_type::_slots_iterator_t i = slots->begin(); i != slots->end(); ++i)
 			if (*i)
 				(*i)(arg1, arg2);
 	}
@@ -174,9 +180,9 @@ namespace wpl
 	template <typename R, typename T1, typename T2, typename T3>
 	inline void signal<R (T1, T2, T3)>::operator ()(T1 arg1, T2 arg2, T3 arg3) const
 	{
-		_slots_ptr_t slots(_slots);
+		this_type::_slots_ptr_t slots(this->_slots);
 
-		for (_slots_iterator_t i = slots->begin(); i != slots->end(); ++i)
+		for (this_type::_slots_iterator_t i = slots->begin(); i != slots->end(); ++i)
 			if (*i)
 				(*i)(arg1, arg2, arg3);
 	}
@@ -184,9 +190,9 @@ namespace wpl
 	template <typename R, typename T1, typename T2, typename T3, typename T4>
 	inline void signal<R (T1, T2, T3, T4)>::operator ()(T1 arg1, T2 arg2, T3 arg3, T4 arg4) const
 	{
-		_slots_ptr_t slots(_slots);
+		this_type::_slots_ptr_t slots(this->_slots);
 
-		for (_slots_iterator_t i = slots->begin(); i != slots->end(); ++i)
+		for (this_type::_slots_iterator_t i = slots->begin(); i != slots->end(); ++i)
 			if (*i)
 				(*i)(arg1, arg2, arg3, arg4);
 	}
@@ -194,9 +200,9 @@ namespace wpl
 	template <typename R, typename T1, typename T2, typename T3, typename T4, typename T5>
 	inline void signal<R (T1, T2, T3, T4, T5)>::operator ()(T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5) const
 	{
-		_slots_ptr_t slots(_slots);
+		this_type::_slots_ptr_t slots(this->_slots);
 
-		for (_slots_iterator_t i = slots->begin(); i != slots->end(); ++i)
+		for (this_type::_slots_iterator_t i = slots->begin(); i != slots->end(); ++i)
 			if (*i)
 				(*i)(arg1, arg2, arg3, arg4, arg5);
 	}
