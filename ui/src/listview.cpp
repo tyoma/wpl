@@ -102,10 +102,11 @@ namespace wpl
 				for (columns_model::index_type i = 0, count = cm->get_count(); i != count; ++i)
 				{
 					cm->get_column(i, c);
-					caption = c.c_str();
-					lvcolumn.mask = LVCF_SUBITEM | LVCF_TEXT;
+					caption = c.caption.c_str();
+					lvcolumn.mask = LVCF_SUBITEM | LVCF_TEXT | LVCF_WIDTH;
 					lvcolumn.pszText = (LPTSTR)(LPCTSTR)caption;
 					lvcolumn.iSubItem = i;
+					lvcolumn.cx = c.width;
 					ListView_InsertColumn(_listview->hwnd(), i, &lvcolumn);
 				}
 
@@ -166,8 +167,20 @@ namespace wpl
 
 			LRESULT listview_impl::wndproc(UINT message, WPARAM wparam, LPARAM lparam, const window::original_handler_t &previous)
 			{
-				if (OCM_NOTIFY != message)
+				if (OCM_NOTIFY != message && WM_NOTIFY != message)
 					return previous(message, wparam, lparam);
+				if (WM_NOTIFY == message)
+				{
+					const NMHEADER *pnmhd = reinterpret_cast<const NMHEADER *>(lparam);
+
+					if (_columns_model)
+						if (HDN_ITEMCHANGED == pnmhd->hdr.code && 0 != (HDI_WIDTH & pnmhd->pitem->mask))
+						{
+							_columns_model->update_column(static_cast<columns_model::index_type>(pnmhd->iItem),
+								static_cast<short>(pnmhd->pitem->cxy));
+						}
+					return previous(message, wparam, lparam);
+				}
 				if (_model && !_avoid_notifications)
 				{
 					UINT code = reinterpret_cast<const NMHDR *>(lparam)->code;
@@ -323,9 +336,9 @@ namespace wpl
 			}
 		}
 
-		shared_ptr<listview> wrap_listview(void *hwnd)
+		shared_ptr<listview> wrap_listview(HWND hwnd)
 		{
-			return shared_ptr<listview>(new listview_impl(static_cast<HWND>(hwnd)));
+			return shared_ptr<listview>(new listview_impl(hwnd));
 		}
 	}
 }

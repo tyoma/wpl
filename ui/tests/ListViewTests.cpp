@@ -104,6 +104,9 @@ namespace wpl
 					virtual void get_column(index_type index, column &column) const
 					{	column = columns[index];	}
 
+					virtual void update_column(index_type index, short int width)
+					{	columns[index].width = width;	}
+
 					virtual pair<index_type, bool> get_sort_order() const throw()
 					{	return make_pair(sort_column, sort_ascending);	}
 
@@ -232,7 +235,7 @@ namespace wpl
 				void WrapListViewGetNonNullPtr()
 				{
 					// INIT
-					void *hlv = create_window(_T("SysListView32"));
+					HWND hlv = create_window(_T("SysListView32"));
 
 					// ACT / ASSERT
 					Assert::IsTrue(wrap_listview(hlv) != 0);
@@ -1090,6 +1093,114 @@ namespace wpl
 
 					Assert::IsTrue(w20 < w10);
 					Assert::IsTrue(w20 < w21);
+				}
+
+
+				[TestMethod]
+				void ColumnWidthIsSetInPixelsIfSpecifiedInColumn()
+				{
+					// INIT
+					HWND hlv1 = create_listview(), hlv2 = create_listview();
+					shared_ptr<listview> lv1(wrap_listview(hlv1)), lv2(wrap_listview(hlv2));
+					listview::columns_model::column columns3[] = {
+						listview::columns_model::column(L"one", 13),
+						listview::columns_model::column(L"two", 17),
+						listview::columns_model::column(L"three", 19),
+					};
+					listview::columns_model::column columns2[] = {
+						listview::columns_model::column(L"Pears", 23),
+						listview::columns_model::column(L"Apples", 29),
+					};
+
+					lv1->set_columns_model(mock_columns_model::create(columns3, listview::columns_model::npos, false));
+					lv2->set_columns_model(mock_columns_model::create(columns2, listview::columns_model::npos, false));
+
+					// ACT
+					int w10 = get_column_width(hlv1, 0);
+					int w11 = get_column_width(hlv1, 1);
+					int w12 = get_column_width(hlv1, 2);
+					int w20 = get_column_width(hlv2, 0);
+					int w21 = get_column_width(hlv2, 1);
+
+					// ASSERT
+					Assert::IsTrue(13 == w10);
+					Assert::IsTrue(17 == w11);
+					Assert::IsTrue(19 == w12);
+
+					Assert::IsTrue(23 == w20);
+					Assert::IsTrue(29 == w21);
+				}
+
+
+				[TestMethod]
+				void ChangingColumnWidthUpdatesColumnsModel()
+				{
+					// INIT
+					HWND hlv = create_listview();
+					shared_ptr<listview> lv(wrap_listview(hlv));
+					listview::columns_model::column columns[] = {
+						listview::columns_model::column(L"one", 13),
+						listview::columns_model::column(L"two", 17),
+						listview::columns_model::column(L"three", 19),
+					};
+					columns_model_ptr cm = mock_columns_model::create(columns, listview::columns_model::npos, false);
+					HDITEM item = {
+						HDI_WIDTH,
+					};
+					NMHEADER nmheader = {
+						{ ListView_GetHeader(hlv), ::GetDlgCtrlID(ListView_GetHeader(hlv)), HDN_ITEMCHANGED },
+						0,
+						0,
+						&item
+					};
+
+					lv->set_columns_model(cm);
+
+					// ACT
+					nmheader.iItem = 0;
+					item.cxy = 111;
+					::SendMessage(hlv, WM_NOTIFY, 0, reinterpret_cast<LPARAM>(&nmheader));
+
+					// ASSERT
+					Assert::IsTrue(111 == cm->columns[0].width);
+
+					// ACT
+					nmheader.iItem = 2;
+					item.cxy = 313;
+					::SendMessage(hlv, WM_NOTIFY, 0, reinterpret_cast<LPARAM>(&nmheader));
+
+					// ASSERT
+					Assert::IsTrue(313 == cm->columns[2].width);
+				}
+
+
+				[TestMethod]
+				void NonColumnWidthChangeDoesNotAffectColumnsModel()
+				{
+					// INIT
+					HWND hlv = create_listview();
+					shared_ptr<listview> lv(wrap_listview(hlv));
+					listview::columns_model::column columns[] = { listview::columns_model::column(L"one", 13),	};
+					columns_model_ptr cm = mock_columns_model::create(columns, listview::columns_model::npos, false);
+					HDITEM item = {
+						HDI_TEXT,
+					};
+					NMHEADER nmheader = {
+						{ ListView_GetHeader(hlv), ::GetDlgCtrlID(ListView_GetHeader(hlv)), HDN_ITEMCHANGED },
+						0,
+						0,
+						&item
+					};
+
+					lv->set_columns_model(cm);
+
+					// ACT
+					nmheader.iItem = 0;
+					item.cxy = 111;
+					::SendMessage(hlv, WM_NOTIFY, 0, reinterpret_cast<LPARAM>(&nmheader));
+
+					// ASSERT
+					Assert::IsTrue(13 == cm->columns[0].width);
 				}
 
 

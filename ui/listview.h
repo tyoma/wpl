@@ -53,17 +53,27 @@ namespace wpl
 		struct listview::columns_model : destructible
 		{
 			typedef short int index_type;
-			typedef std::wstring column;
+
+			struct column;
 
 			static const short int npos = -1;
 
 			virtual index_type get_count() const throw() = 0;
 			virtual void get_column(index_type index, column &column) const = 0;
-//			virtual void update_column(index_type index, ...) = 0;
+			virtual void update_column(index_type index, short int width) = 0;
 			virtual std::pair<index_type, bool> get_sort_order() const throw() = 0;
 			virtual void activate_column(index_type column) = 0;
 
 			signal<void (index_type /*new_ordering_column*/, bool /*ascending*/)> sort_order_changed;
+		};
+
+		struct listview::columns_model::column
+		{
+			column();
+			explicit column(const std::wstring &caption, short int width = 0);
+
+			std::wstring caption;
+			short int width;
 		};
 
 		struct listview::model : destructible
@@ -85,10 +95,19 @@ namespace wpl
 		};
 
 
+
 		inline void listview::model::precache(index_type /*from*/, index_type /*count*/) const
 		{	}
 
 		inline std::shared_ptr<const listview::trackable> listview::model::track(index_type /*row*/) const
 		{	return std::shared_ptr<listview::trackable>();	}
+
+
+		inline listview::columns_model::column::column()
+		{	}
+
+		inline listview::columns_model::column::column(const std::wstring &caption_, short int width_)
+			: caption(caption_), width(width_)
+		{	}
 	}
 }

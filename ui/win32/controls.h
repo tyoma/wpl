@@ -22,10 +22,12 @@
 
 #include "../listview.h"
 
+typedef struct HWND__ *HWND;
+
 namespace wpl
 {
 	namespace ui
 	{
-		std::shared_ptr<listview> wrap_listview(void *hwnd);
+		std::shared_ptr<listview> wrap_listview(HWND hwnd);
 	}
 }
