@@ -18,50 +18,26 @@
 //	OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //	THE SOFTWARE.
 
-#pragma once
+#include "factory.h"
 
-#include "../base/signals.h"
+#include "../listview.h"
 
-namespace std
-{
-	using tr1::shared_ptr;
-	using tr1::enable_shared_from_this;
-}
+#include <tchar.h>
+#include <windows.h>
+
+using namespace std;
 
 namespace wpl
 {
 	namespace ui
 	{
-		class native_root;
-		class transform;
-		class view;
-		struct widget;
+		shared_ptr<listview> wrap_listview(HWND hwnd);
 
-		typedef std::shared_ptr<widget> widget_ptr;
-
-		struct widget : std::enable_shared_from_this<widget>
+		widget_native create(HWND parent, const std::wstring &/*type*/, const std::wstring &/*id*/)
 		{
-			virtual ~widget()	{	}
-			virtual std::shared_ptr<view> create_view(const native_root &r);
-		};
+			HWND hlv = ::CreateWindow(_T("SysListView32"), NULL, WS_CHILD | WS_VISIBLE, 0, 0, 10, 10, parent, NULL, NULL, NULL);
 
-		class view
-		{
-			std::shared_ptr<wpl::ui::transform> _transform;
-
-			const view &operator =(const view &rhs);
-
-		public:
-			struct visitor;
-
-		public:
-			explicit view(std::shared_ptr<widget> w);
-			virtual ~view();
-
-			std::shared_ptr<const wpl::ui::transform> transform() const;
-			virtual void move(int left, int top, int width, int height);
-			
-			const std::shared_ptr<widget> widget;
-		};
+			return make_pair(wrap_listview(hlv), hlv);
+		}
 	}
 }

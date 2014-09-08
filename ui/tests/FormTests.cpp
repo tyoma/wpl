@@ -1,7 +1,6 @@
 #include <wpl/ui/form.h>
-#include <wpl/ui/layout.h>
 
-#include <wpl/ui/win32/containers.h>
+#include <wpl/ui/layout.h>
 
 #include "TestHelpers.h"
 #include "TestWidgets.h"
@@ -28,16 +27,31 @@ namespace wpl
 	{
 		namespace tests
 		{
+			namespace
+			{
+				class logging_layout_manager : public layout_manager
+				{
+				public:
+					mutable vector< pair<size_t, size_t> > reposition_log;
+
+				private:
+					virtual void layout(size_t width, size_t height, widget_position * /*widgets*/, size_t /*count*/) const
+					{
+						reposition_log.push_back(make_pair(width, height));
+					}
+				};
+			}
+
 			[TestClass]
 			public ref class FormTests : ut::WindowTestsBase
 			{
 				typedef pair<shared_ptr<form>, HWND> form_and_handle;
 				
-				form_and_handle create_form_with_handle(shared_ptr<widget> widget)
+				form_and_handle create_form_with_handle()
 				{
 					vector<HWND> new_windows;
 					set<HWND> before(ut::enum_thread_windows());
-					shared_ptr<form> f(create_form(widget));
+					shared_ptr<form> f(form::create());
 					set<HWND> after(ut::enum_thread_windows());
 
 					set_difference(after.begin(), after.end(), before.begin(), before.end(), back_inserter(new_windows));
@@ -45,9 +59,6 @@ namespace wpl
 						throw runtime_error("Unexpected amount of windows created!");
 					return make_pair(f, new_windows[0]);
 				}
-
-				form_and_handle create_form_with_handle()
-				{	return create_form_with_handle(shared_ptr<widget>(new ut::TestWidget));	}
 
 			public:
 				[TestInitialize]
@@ -64,7 +75,7 @@ namespace wpl
 					set<HWND> before(ut::enum_thread_windows());
 
 					// ACT
-					shared_ptr<form> f1 = create_form(shared_ptr<widget>(new ut::TestWidget));
+					shared_ptr<form> f1 = form::create();
 
 					// ASSERT
 					set<HWND> after(ut::enum_thread_windows());
@@ -73,8 +84,8 @@ namespace wpl
 					Assert::IsTrue(0 == ut::removed_items(before, after));
 
 					// ACT
-					shared_ptr<form> f2 = create_form(shared_ptr<widget>(new ut::TestWidget));
-					shared_ptr<form> f3 = create_form(shared_ptr<widget>(new ut::TestWidget));
+					shared_ptr<form> f2 = form::create();
+					shared_ptr<form> f3 = form::create();
 
 					// ASSERT
 					set<HWND> after2(ut::enum_thread_windows());
@@ -89,7 +100,7 @@ namespace wpl
 				void FormConstructionReturnsNonNullObject()
 				{
 					// INIT / ACT / ASSERT
-					Assert::IsTrue(!!create_form(shared_ptr<widget>(new ut::TestWidget)));
+					Assert::IsTrue(!!form::create());
 				}
 
 
@@ -97,8 +108,8 @@ namespace wpl
 				void FormDestructionDestroysItsWindow()
 				{
 					// INIT
-					shared_ptr<form> f1 = create_form(shared_ptr<widget>(new ut::TestWidget));
-					shared_ptr<form> f2 = create_form(shared_ptr<widget>(new ut::TestWidget));
+					shared_ptr<form> f1 = form::create();
+					shared_ptr<form> f2 = form::create();
 					set<HWND> before(ut::enum_thread_windows());
 
 					// ACT
@@ -152,23 +163,13 @@ namespace wpl
 
 
 				[TestMethod]
-				void CreatingFormFromWidgetAcquiresItView()
+				void FormProvidesAValidContainer()
 				{
 					// INIT
-					shared_ptr<ut::TestWidget> w(new ut::TestWidget);
-					
-					// ACT
-					shared_ptr<form> f1(create_form(w));
+					shared_ptr<form> f = form::create();
 
-					// ASSERT
-					Assert::IsTrue(w->views_created.size() == 1);
-					Assert::IsFalse(w->views_created[0].expired());
-
-					// ACT
-					shared_ptr<form> f2(create_form(w));
-
-					// ASSERT
-					Assert::IsTrue(w->views_created.size() == 2);
+					// ACT / ASSERT
+					Assert::IsTrue(!!f->get_root_container());
 				}
 
 
@@ -176,9 +177,11 @@ namespace wpl
 				void ResizingFormWindowLeadsToContentResize()
 				{
 					// INIT
-					shared_ptr<ut::TestWidget> w(new ut::TestWidget);
-					form_and_handle f(create_form_with_handle(w));
+					shared_ptr<logging_layout_manager> lm(new logging_layout_manager);
+					form_and_handle f(create_form_with_handle());
 					RECT rc;
+
+					f.first->get_root_container()->layout = lm;
 
 					// ACT
 					::MoveWindow(f.second, 0, 0, 117, 213, TRUE);
@@ -186,9 +189,9 @@ namespace wpl
 					// ASSERT
 					::GetClientRect(f.second, &rc);
 
-					Assert::IsTrue(1 == w->reposition_log.size());
-					Assert::IsTrue(rc.right == (int)w->reposition_log[0].width);
-					Assert::IsTrue(rc.bottom == (int)w->reposition_log[0].height);
+					Assert::IsTrue(1 == lm->reposition_log.size());
+					Assert::IsTrue(rc.right == (int)lm->reposition_log[0].first);
+					Assert::IsTrue(rc.bottom == (int)lm->reposition_log[0].second);
 
 					// ACT
 					::MoveWindow(f.second, 27, 190, 531, 97, TRUE);
@@ -196,9 +199,9 @@ namespace wpl
 					// ASSERT
 					::GetClientRect(f.second, &rc);
 
-					Assert::IsTrue(2 == w->reposition_log.size());
-					Assert::IsTrue(rc.right == (int)w->reposition_log[1].width);
-					Assert::IsTrue(rc.bottom == (int)w->reposition_log[1].height);
+					Assert::IsTrue(2 == lm->reposition_log.size());
+					Assert::IsTrue(rc.right == (int)lm->reposition_log[1].first);
+					Assert::IsTrue(rc.bottom == (int)lm->reposition_log[1].second);
 				}
 
 
@@ -206,11 +209,13 @@ namespace wpl
 				void MovingFormDoesNotRaiseResizeSignal()
 				{
 					// INIT
-					shared_ptr<ut::TestWidget> w(new ut::TestWidget);
-					form_and_handle f(create_form_with_handle(w));
+					shared_ptr<logging_layout_manager> lm(new logging_layout_manager);
+					form_and_handle f(create_form_with_handle());
+
+					f.first->get_root_container()->layout = lm;
 
 					::MoveWindow(f.second, 0, 0, 117, 213, TRUE);
-					w->reposition_log.clear();
+					lm->reposition_log.clear();
 
 					// ACT
 					::MoveWindow(f.second, 23, 91, 117, 213, TRUE);
@@ -219,76 +224,129 @@ namespace wpl
 					::MoveWindow(f.second, 23, 100, 117, 213, TRUE);
 
 					// ASSERT
-					Assert::IsTrue(w->reposition_log.empty());
+					Assert::IsTrue(lm->reposition_log.empty());
 				}
 
 
 				[TestMethod]
-				void CreationOfTestWidgetsCreatesWindows()
+				void ChildrenAreCreatedViaContainer()
 				{
 					// INIT
-					shared_ptr<ut::TestNativeWidget> widgets[] = {
-						shared_ptr<ut::TestNativeWidget>(new ut::TestNativeWidget()),
-						shared_ptr<ut::TestNativeWidget>(new ut::TestNativeWidget()),
-					};
+					form_and_handle f(create_form_with_handle());
+					shared_ptr<container> c = f.first->get_root_container();
+					vector<HWND> w1, w2;
 
-					// ACT / ASSERT
-					Assert::IsTrue(!!::IsWindow(widgets[0]->hwnd()));
-					Assert::IsTrue(!!::IsWindow(widgets[1]->hwnd()));
-					Assert::IsTrue(widgets[1]->hwnd() != widgets[0]->hwnd());
+					// ACT
+					set<HWND> p1(ut::enum_thread_windows(_T("SysListView32")));
+					shared_ptr<widget> lv1 = c->create_widget(L"listview", L"1");
+					set<HWND> p2(ut::enum_thread_windows(_T("SysListView32")));
+					shared_ptr<widget> lv2 = c->create_widget(L"listview", L"2");
+					set<HWND> p3(ut::enum_thread_windows(_T("SysListView32")));
+					
+					// ASSERT
+					set_difference(p2.begin(), p2.end(), p1.begin(), p1.end(), back_inserter(w1));
+					set_difference(p3.begin(), p3.end(), p2.begin(), p2.end(), back_inserter(w2));
+
+					Assert::IsTrue(!!lv1);
+					Assert::IsTrue(!!lv2);
+					Assert::IsTrue(lv1 != lv2);
+
+					Assert::IsTrue(1u == w1.size());
+					Assert::IsTrue(1u == w2.size());
+
+					Assert::IsTrue(f.second == ::GetParent(w1[0]));
+					Assert::IsTrue(f.second == ::GetParent(w2[0]));
 				}
 
 
 				[TestMethod]
-				void WrappingNativeWidgetToFormChangesItsParent()
+				void ChildrenAreHeldByForm()
 				{
 					// INIT
-					shared_ptr<ut::TestNativeWidget> widgets[] = {
-						shared_ptr<ut::TestNativeWidget>(new ut::TestNativeWidget()),
-						shared_ptr<ut::TestNativeWidget>(new ut::TestNativeWidget()),
-					};
-
+					form_and_handle f(create_form_with_handle());
+					shared_ptr<container> c = f.first->get_root_container();
+					vector<HWND> w;
+					shared_ptr<widget> lv1 = c->create_widget(L"listview", L"1");
+					shared_ptr<widget> lv2 = c->create_widget(L"listview", L"2");
+					set<HWND> p1(ut::enum_thread_windows(_T("SysListView32")));
+					weak_ptr<widget> lv1_weak = lv1;
+					weak_ptr<widget> lv2_weak = lv2;
+					
 					// ACT
-					form_and_handle f1(create_form_with_handle(widgets[0]));
+					lv1 = shared_ptr<widget>();
 
 					// ASSERT
-					Assert::IsTrue(f1.second == ::GetParent(widgets[0]->hwnd()));
-					Assert::IsTrue(NULL == ::GetParent(widgets[1]->hwnd()));
-
+					Assert::IsFalse(lv1_weak.expired());
+					
 					// ACT
-					form_and_handle f2(create_form_with_handle(widgets[1]));
+					lv2 = shared_ptr<widget>();
 
 					// ASSERT
-					Assert::IsTrue(f2.second == ::GetParent(widgets[1]->hwnd()));
+					set<HWND> p2(ut::enum_thread_windows(_T("SysListView32")));
+
+					set_difference(p2.begin(), p2.end(), p1.begin(), p1.end(), back_inserter(w));
+
+					Assert::IsTrue(w.empty());
+					Assert::IsFalse(lv2_weak.expired());
 				}
 
 
 				[TestMethod]
-				void AddingContainerWithNativeWidgetsToFormChangesTheirParent()
+				void ChildrenDestroyedOnFormDestruction()
 				{
 					// INIT
-					shared_ptr<vstack> l[] = {
-						shared_ptr<vstack>(new vstack),
-						shared_ptr<vstack>(new vstack),
-					};
-					shared_ptr<ut::TestNativeWidget> widgets[] = {
-						shared_ptr<ut::TestNativeWidget>(new ut::TestNativeWidget()),
-						shared_ptr<ut::TestNativeWidget>(new ut::TestNativeWidget()),
-					};
+					form_and_handle f(create_form_with_handle());
+					shared_ptr<widget> lv = f.first->get_root_container()->create_widget(L"listview", L"1");
+					weak_ptr<widget> lv_weak = lv;
 
-					l[0]->add(widgets[0], 10);
-					l[1]->add_proportional(widgets[1], 0.2);
+					lv = shared_ptr<widget>();
 
 					// ACT
-					form_and_handle f[] = {
-						create_form_with_handle(l[0]),
-						create_form_with_handle(l[1]),
-					};
+					f.first = shared_ptr<form>();
 
 					// ASSERT
-					Assert::IsTrue(f[0].second == ::GetParent(widgets[0]->hwnd()));
-					Assert::IsTrue(f[1].second == ::GetParent(widgets[1]->hwnd()));
+					Assert::IsTrue(lv_weak.expired());
 				}
+
+
+				//[TestMethod]
+				//void CreationOfTestWidgetsCreatesWindows()
+				//{
+				//	// INIT
+				//	shared_ptr<ut::TestNativeWidget> widgets[] = {
+				//		shared_ptr<ut::TestNativeWidget>(new ut::TestNativeWidget()),
+				//		shared_ptr<ut::TestNativeWidget>(new ut::TestNativeWidget()),
+				//	};
+
+				//	// ACT / ASSERT
+				//	Assert::IsTrue(!!::IsWindow(widgets[0]->hwnd()));
+				//	Assert::IsTrue(!!::IsWindow(widgets[1]->hwnd()));
+				//	Assert::IsTrue(widgets[1]->hwnd() != widgets[0]->hwnd());
+				//}
+
+
+				//[TestMethod]
+				//void WrappingNativeWidgetToFormChangesItsParent()
+				//{
+				//	// INIT
+				//	shared_ptr<ut::TestNativeWidget> widgets[] = {
+				//		shared_ptr<ut::TestNativeWidget>(new ut::TestNativeWidget()),
+				//		shared_ptr<ut::TestNativeWidget>(new ut::TestNativeWidget()),
+				//	};
+
+				//	// ACT
+				//	form_and_handle f1(create_form_with_handle(widgets[0]));
+
+				//	// ASSERT
+				//	Assert::IsTrue(f1.second == ::GetParent(widgets[0]->hwnd()));
+				//	Assert::IsTrue(NULL == ::GetParent(widgets[1]->hwnd()));
+
+				//	// ACT
+				//	form_and_handle f2(create_form_with_handle(widgets[1]));
+
+				//	// ASSERT
+				//	Assert::IsTrue(f2.second == ::GetParent(widgets[1]->hwnd()));
+				//}
 			};
 		}
 	}

@@ -26,47 +26,19 @@ namespace wpl
 {
 	namespace ui
 	{
-		class vstack : public widget
+		struct layout_manager
 		{
-			class vstack_view;
-			struct size_;
-			typedef std::pair<std::shared_ptr<widget>, size_> entry;
-			typedef std::vector<entry> widgets_container_;
+			struct position;
+			
+			typedef std::pair<std::shared_ptr<const widget>, position> widget_position;
 
-			widgets_container_ _contents;
+			virtual ~layout_manager() throw()	{	}
 
-		public:
-			typedef size_ size;
-			typedef widgets_container_ widgets_container;
-
-		public:
-			void add(std::shared_ptr<widget> widget, unsigned int height);
-			void add_proportional(std::shared_ptr<widget> widget, double height_part);
-
-			virtual std::shared_ptr<view> create_view(const native_root &r);
+			virtual void layout(size_t width, size_t height, widget_position *widgets, size_t count) const = 0;
 		};
 
-		struct vstack::size_
+		struct layout_manager::position
 		{
-			explicit size_(unsigned int absolute);
-			explicit size_(double relative);
-
-			union variant
-			{
-				unsigned int absolute;
-				double relative;
-			} value;
-			bool is_relative;
 		};
-
-
-		
-		inline vstack::size_::size_(unsigned int absolute)
-			: is_relative(false)
-		{	value.absolute = absolute;	}
-
-		inline vstack::size_::size_(double relative)
-			: is_relative(true)
-		{	value.relative = relative;	}
 	}
 }

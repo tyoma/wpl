@@ -20,48 +20,22 @@
 
 #pragma once
 
-#include "../base/signals.h"
+#include "widget.h"
 
-namespace std
-{
-	using tr1::shared_ptr;
-	using tr1::enable_shared_from_this;
-}
+#include <string>
 
 namespace wpl
 {
 	namespace ui
 	{
-		class native_root;
-		class transform;
-		class view;
-		struct widget;
+		struct layout_manager;
 
-		typedef std::shared_ptr<widget> widget_ptr;
-
-		struct widget : std::enable_shared_from_this<widget>
+		class container : public widget
 		{
-			virtual ~widget()	{	}
-			virtual std::shared_ptr<view> create_view(const native_root &r);
-		};
-
-		class view
-		{
-			std::shared_ptr<wpl::ui::transform> _transform;
-
-			const view &operator =(const view &rhs);
-
 		public:
-			struct visitor;
-
-		public:
-			explicit view(std::shared_ptr<widget> w);
-			virtual ~view();
-
-			std::shared_ptr<const wpl::ui::transform> transform() const;
-			virtual void move(int left, int top, int width, int height);
+			virtual std::shared_ptr<widget> create_widget(const std::wstring &type, const std::wstring &id) = 0;
 			
-			const std::shared_ptr<widget> widget;
+			std::shared_ptr<const layout_manager> layout;
 		};
 	}
 }

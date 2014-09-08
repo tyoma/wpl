@@ -19,6 +19,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\container.h" />
     <ClInclude Include="..\form.h" />
     <ClInclude Include="..\geometry.h" />
     <ClInclude Include="..\layout.h" />
@@ -28,8 +29,10 @@
     <ClInclude Include="..\win32\controls.h" />
     <ClInclude Include="..\win32\native_view.h" />
     <ClInclude Include="..\win32\window.h" />
+    <ClInclude Include="factory.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="factory.cpp" />
     <ClCompile Include="form.cpp" />
     <ClCompile Include="layout.cpp" />
     <ClCompile Include="listview.cpp" />

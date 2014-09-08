@@ -20,6 +20,8 @@
 
 #pragma once
 
+#include "container.h"
+
 namespace wpl
 {
 	namespace ui
@@ -27,7 +29,11 @@ namespace wpl
 		struct form
 		{
 			virtual ~form() {	}
+
+			virtual std::shared_ptr<container> get_root_container() = 0;
 			virtual void set_visible(bool value) = 0;
+
+			static std::shared_ptr<form> create();
 		};
 	}
 }

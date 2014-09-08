@@ -18,6 +18,12 @@ namespace ut
 {
 	namespace
 	{
+		struct WindowEnumData
+		{
+			basic_string<TCHAR> class_match;
+			set<HWND> windows;
+		};
+
 		LRESULT reflection_wndproc(UINT message, WPARAM wparam, LPARAM lparam, const wpl::ui::window::original_handler_t &previous)
 		{
 			if (WM_NOTIFY == message)
@@ -26,15 +32,29 @@ namespace ut
 				return previous(message, wparam, lparam);
 		}
 
+		BOOL CALLBACK EnumChildWndProc(HWND hwnd, LPARAM lParam)
+		{
+			TCHAR classname[100] = { 0 };
+			WindowEnumData &data = *reinterpret_cast<WindowEnumData *>(lParam);
+
+			::GetClassName(hwnd, classname, sizeof(classname) / sizeof(classname[0]));
+			if (data.class_match.empty() || 0 == _tcsicmp(data.class_match.c_str(), classname))
+				data.windows.insert(hwnd);
+			return TRUE;
+		}
+
 		BOOL CALLBACK EnumThreadWndProc(HWND hwnd, LPARAM lParam)
 		{
 			TCHAR classname[100] = { 0 };
-			set<HWND> &s(*reinterpret_cast<set<HWND> *>(lParam));
+			WindowEnumData &data = *reinterpret_cast<WindowEnumData *>(lParam);
 
 			::GetClassName(hwnd, classname, sizeof(classname) / sizeof(classname[0]));
-
-			if (gcnew String("MSCTFIME UI") != gcnew String(classname))
-				s.insert(hwnd);
+			if (0 != _tcsicmp(_T("MSCTFIME UI"), classname))
+			{
+				if (data.class_match.empty() || 0 == _tcsicmp(data.class_match.c_str(), classname))
+					data.windows.insert(hwnd);
+				::EnumChildWindows(hwnd, &EnumChildWndProc, lParam);
+			}
 			return TRUE;
 		}
 	}
@@ -49,12 +69,12 @@ namespace ut
 	String ^make_managed(const wstring &native_string)
 	{	return gcnew String(native_string.c_str());	}
 
-	set<HWND> enum_thread_windows()
+	set<HWND> enum_thread_windows(const TCHAR *class_match)
 	{
-		set<HWND> result;
+		WindowEnumData data = { class_match, };
 
-		::EnumThreadWindows(::GetCurrentThreadId(), &EnumThreadWndProc, reinterpret_cast<LPARAM>(&result));
-		return result;
+		::EnumThreadWindows(::GetCurrentThreadId(), &EnumThreadWndProc, reinterpret_cast<LPARAM>(&data));
+		return data.windows;
 	}
 
 	RECT get_window_rect(HWND hwnd)

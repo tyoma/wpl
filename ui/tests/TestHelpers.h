@@ -22,7 +22,7 @@ namespace ut
 {
 	std::wstring make_native(System::String ^managed_string);
 	System::String ^make_managed(const std::wstring &native_string);
-	std::set<HWND> enum_thread_windows();
+	std::set<HWND> enum_thread_windows(const TCHAR *class_match = _T(""));
 	RECT get_window_rect(HWND hwnd);
 
 
