@@ -25,8 +25,10 @@
 #include "../win32/window.h"
 #include "../win32/native_view.h"
 
-#include <windows.h>
+#include <algorithm>
+#include <iterator>
 #include <tchar.h>
+#include <windows.h>
 
 namespace std
 {
@@ -47,9 +49,11 @@ namespace wpl
 		{
 			class form_impl : public form, public container
 			{
+				typedef vector<widget_native> native_widgets_container;
+
 				shared_ptr<window> _window;
 				shared_ptr<destructible> _advisory;
-				vector<widget_native> _children;
+				native_widgets_container _children;
 
 				virtual shared_ptr<container> get_root_container();
 				virtual void set_visible(bool value);
@@ -95,7 +99,27 @@ namespace wpl
 			LRESULT form_impl::wndproc(UINT message, WPARAM wparam, LPARAM lparam, const window::original_handler_t &previous)
 			{
 				if (WM_SIZE == message)
-					layout->layout(LOWORD(lparam), HIWORD(lparam), 0, 0);
+				{
+					struct widget_native_to_widget_position
+					{
+						layout_manager::widget_position operator ()(const widget_native &/*from*/) const
+						{	return make_pair(widget_ptr(), layout_manager::position());	}
+					};
+
+					vector<layout_manager::widget_position> widgets;
+
+					std::transform(_children.begin(), _children.end(), back_inserter(widgets), widget_native_to_widget_position());
+
+					layout->layout(LOWORD(lparam), HIWORD(lparam), widgets.empty() ? 0 : &widgets[0], widgets.size());
+
+					vector<layout_manager::widget_position>::const_iterator i;
+					native_widgets_container::const_iterator j;
+					shared_ptr<void> hdwp(::BeginDeferWindowPos(widgets.size()), &::EndDeferWindowPos);
+
+					for (i = widgets.begin(), j = _children.begin(); i != widgets.end() && j != _children.end(); ++i, ++j)
+						::DeferWindowPos(static_cast<HDWP>(hdwp.get()), j->second, NULL, i->second.left, i->second.top,
+							i->second.width, i->second.height, SWP_NOZORDER);
+				}
 				return previous(message, wparam, lparam);
 			}
 

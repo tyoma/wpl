@@ -8,7 +8,6 @@
 #include <algorithm>
 #include <memory>
 #include <iterator>
-#include <tchar.h>
 
 namespace std
 {
@@ -22,8 +21,8 @@ namespace ut
 {
 	std::wstring make_native(System::String ^managed_string);
 	System::String ^make_managed(const std::wstring &native_string);
-	std::set<HWND> enum_thread_windows(const TCHAR *class_match = _T(""));
 	RECT get_window_rect(HWND hwnd);
+	RECT rect(int left, int top, int width, int height);
 
 
 	[Microsoft::VisualStudio::TestTools::UnitTesting::TestClass]
@@ -35,8 +34,8 @@ namespace ut
 	protected:
 		HWND create_window();
 		HWND create_visible_window();
-		HWND create_window(const TCHAR *class_name);
-		HWND create_window(const TCHAR *class_name, HWND parent, unsigned int style, unsigned int stylex);
+		HWND create_window(const std::wstring &class_name);
+		HWND create_window(const std::wstring &class_name, HWND parent, unsigned int style, unsigned int stylex);
 		void enable_reflection(HWND hwnd);
 
 		void destroy_window(HWND hwnd);
@@ -52,35 +51,18 @@ namespace ut
 		static void init_commctrl(Microsoft::VisualStudio::TestTools::UnitTesting::TestContext ^context);
 	};
 
-	class null_output_iterator : public std::iterator<std::output_iterator_tag, null_output_iterator>
+	class window_tracker
 	{
-		size_t *_count;
+		std::set<HWND> _windows;
+		std::wstring _allow, _prohibit;
 
 	public:
-		null_output_iterator(size_t &count)
-			: _count(&count)
-		{	}
+		window_tracker(const std::wstring &allow = L"", const std::wstring &prohibit = L"MSCTFIME UI");
 
-		template <typename T>
-		void operator =(T const &)
-		{	}
+		void checkpoint();
 
-		null_output_iterator &operator++()
-		{
-			++*_count;
-			return *this;
-		}
-
-		null_output_iterator operator++(int)
-		{
-			null_output_iterator it(*this);
-
-			++*this;
-			return it;
-		}
-
-		null_output_iterator &operator *()
-		{	return *this;	}
+		std::vector<HWND> created;
+		std::vector<HWND> destroyed;
 	};
 
 	template <typename T, typename Container, size_t n>
@@ -102,9 +84,39 @@ namespace ut
 	template <typename C1, typename C2>
 	inline size_t added_items(const C1 &before, const C2 &after)
 	{
+		class counting_iterator : public std::iterator<std::output_iterator_tag, counting_iterator>
+		{
+			size_t *_count;
+
+		public:
+			counting_iterator(size_t &count)
+				: _count(&count)
+			{	}
+
+			void operator =(typename C2::value_type const &)
+			{	}
+
+			counting_iterator &operator++()
+			{
+				++*_count;
+				return *this;
+			}
+
+			counting_iterator operator++(int)
+			{
+				counting_iterator it(*this);
+
+				++*this;
+				return it;
+			}
+
+			counting_iterator &operator *()
+			{	return *this;	}
+		};
+
 		size_t count = 0;
 
-		std::set_difference(after.begin(), after.end(), before.begin(), before.end(), null_output_iterator(count));
+		std::set_difference(after.begin(), after.end(), before.begin(), before.end(), counting_iterator(count));
 		return count;
 	}
 	
@@ -112,5 +124,7 @@ namespace ut
 	inline size_t removed_items(const C1 &before, const C2 &after)
 	{	return added_items(after, before);	}
 }
+
+bool operator ==(const RECT &lhs, const RECT &rhs);
 
 #define ASSERT_THROWS(fragment, expected_exception) try { fragment; Assert::Fail("Expected exception was not thrown!"); } catch (const expected_exception &) { } catch (AssertFailedException ^) { throw; } catch (...) { Assert::Fail("Exception of unexpected type was thrown!"); }

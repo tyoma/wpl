@@ -39,6 +39,7 @@ namespace wpl
 
 		struct layout_manager::position
 		{
+			int left, top, width, height;
 		};
 	}
 }

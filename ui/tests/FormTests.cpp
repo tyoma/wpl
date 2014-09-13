@@ -33,11 +33,16 @@ namespace wpl
 				{
 				public:
 					mutable vector< pair<size_t, size_t> > reposition_log;
+					vector<position> positions;
 
 				private:
-					virtual void layout(size_t width, size_t height, widget_position * /*widgets*/, size_t /*count*/) const
+					virtual void layout(size_t width, size_t height, widget_position *widgets, size_t count) const
 					{
 						reposition_log.push_back(make_pair(width, height));
+
+						for (vector<position>::const_iterator i = positions.begin(); count && i != positions.end();
+								--count, ++widgets, ++i)
+							widgets->second = *i;
 					}
 				};
 			}
@@ -49,15 +54,14 @@ namespace wpl
 				
 				form_and_handle create_form_with_handle()
 				{
-					vector<HWND> new_windows;
-					set<HWND> before(ut::enum_thread_windows());
+					ut::window_tracker wt(L"#32770");
 					shared_ptr<form> f(form::create());
-					set<HWND> after(ut::enum_thread_windows());
 
-					set_difference(after.begin(), after.end(), before.begin(), before.end(), back_inserter(new_windows));
-					if (new_windows.size() != 1)
+					wt.checkpoint();
+
+					if (wt.created.size() != 1)
 						throw runtime_error("Unexpected amount of windows created!");
-					return make_pair(f, new_windows[0]);
+					return make_pair(f, wt.created[0]);
 				}
 
 			public:
@@ -72,27 +76,26 @@ namespace wpl
 				void FormWindowIsCreatedAtFormConstruction()
 				{
 					// INIT
-					set<HWND> before(ut::enum_thread_windows());
+					ut::window_tracker wt(L"#32770");
 
 					// ACT
 					shared_ptr<form> f1 = form::create();
 
 					// ASSERT
-					set<HWND> after(ut::enum_thread_windows());
+					wt.checkpoint();
 
-					Assert::IsTrue(1 == ut::added_items(before, after));
-					Assert::IsTrue(0 == ut::removed_items(before, after));
+					Assert::IsTrue(1 == wt.created.size());
+					Assert::IsTrue(0 == wt.destroyed.size());
 
 					// ACT
 					shared_ptr<form> f2 = form::create();
 					shared_ptr<form> f3 = form::create();
 
 					// ASSERT
-					set<HWND> after2(ut::enum_thread_windows());
+					wt.checkpoint();
 
-					Assert::IsTrue(2 == ut::added_items(after, after2));
-					Assert::IsTrue(3 == ut::added_items(before, after2));
-					Assert::IsTrue(0 == ut::removed_items(before, after2));
+					Assert::IsTrue(3 == wt.created.size());
+					Assert::IsTrue(0 == wt.destroyed.size());
 				}
 
 
@@ -110,19 +113,25 @@ namespace wpl
 					// INIT
 					shared_ptr<form> f1 = form::create();
 					shared_ptr<form> f2 = form::create();
-					set<HWND> before(ut::enum_thread_windows());
+					ut::window_tracker wt(L"#32770");
 
 					// ACT
 					f1 = shared_ptr<form>();
-					set<HWND> after1(ut::enum_thread_windows());
-					f2 = shared_ptr<form>();
-					set<HWND> after2(ut::enum_thread_windows());
 
 					// ASSERT
-					Assert::IsTrue(1 == ut::removed_items(before, after1));
-					Assert::IsTrue(1 == ut::removed_items(after1, after2));
-					Assert::IsTrue(2 == ut::removed_items(before, after2));
-					Assert::IsTrue(0 == ut::added_items(before, after2));
+					wt.checkpoint();
+
+					Assert::IsTrue(0 == wt.created.size());
+					Assert::IsTrue(1 == wt.destroyed.size());
+
+					// ACT
+					f2 = shared_ptr<form>();
+
+					// ASSERT
+					wt.checkpoint();
+
+					Assert::IsTrue(0 == wt.created.size());
+					Assert::IsTrue(2 == wt.destroyed.size());
 				}
 
 
@@ -234,28 +243,23 @@ namespace wpl
 					// INIT
 					form_and_handle f(create_form_with_handle());
 					shared_ptr<container> c = f.first->get_root_container();
-					vector<HWND> w1, w2;
+					ut::window_tracker wt(L"SysListView32");
 
 					// ACT
-					set<HWND> p1(ut::enum_thread_windows(_T("SysListView32")));
 					shared_ptr<widget> lv1 = c->create_widget(L"listview", L"1");
-					set<HWND> p2(ut::enum_thread_windows(_T("SysListView32")));
 					shared_ptr<widget> lv2 = c->create_widget(L"listview", L"2");
-					set<HWND> p3(ut::enum_thread_windows(_T("SysListView32")));
+					wt.checkpoint();
 					
 					// ASSERT
-					set_difference(p2.begin(), p2.end(), p1.begin(), p1.end(), back_inserter(w1));
-					set_difference(p3.begin(), p3.end(), p2.begin(), p2.end(), back_inserter(w2));
-
 					Assert::IsTrue(!!lv1);
 					Assert::IsTrue(!!lv2);
 					Assert::IsTrue(lv1 != lv2);
 
-					Assert::IsTrue(1u == w1.size());
-					Assert::IsTrue(1u == w2.size());
+					Assert::IsTrue(2u == wt.created.size());
+					Assert::IsTrue(0u == wt.destroyed.size());
 
-					Assert::IsTrue(f.second == ::GetParent(w1[0]));
-					Assert::IsTrue(f.second == ::GetParent(w2[0]));
+					Assert::IsTrue(f.second == ::GetParent(wt.created[0]));
+					Assert::IsTrue(f.second == ::GetParent(wt.created[1]));
 				}
 
 
@@ -268,7 +272,7 @@ namespace wpl
 					vector<HWND> w;
 					shared_ptr<widget> lv1 = c->create_widget(L"listview", L"1");
 					shared_ptr<widget> lv2 = c->create_widget(L"listview", L"2");
-					set<HWND> p1(ut::enum_thread_windows(_T("SysListView32")));
+					ut::window_tracker wt;
 					weak_ptr<widget> lv1_weak = lv1;
 					weak_ptr<widget> lv2_weak = lv2;
 					
@@ -280,13 +284,10 @@ namespace wpl
 					
 					// ACT
 					lv2 = shared_ptr<widget>();
+					wt.checkpoint();
 
 					// ASSERT
-					set<HWND> p2(ut::enum_thread_windows(_T("SysListView32")));
-
-					set_difference(p2.begin(), p2.end(), p1.begin(), p1.end(), back_inserter(w));
-
-					Assert::IsTrue(w.empty());
+					Assert::IsTrue(wt.destroyed.empty());
 					Assert::IsFalse(lv2_weak.expired());
 				}
 
@@ -306,6 +307,78 @@ namespace wpl
 
 					// ASSERT
 					Assert::IsTrue(lv_weak.expired());
+				}
+
+
+				[TestMethod]
+				void TwoChildWidgetsAreRepositionedAccordinglyToTheLayout()
+				{
+					// INIT
+					form_and_handle f(create_form_with_handle());
+					shared_ptr<container> c = f.first->get_root_container();
+					shared_ptr<logging_layout_manager> lm(new logging_layout_manager);
+					ut::window_tracker wt(L"SysListView32");
+					shared_ptr<widget> lv1 = c->create_widget(L"listview", L"1");
+					wt.checkpoint();
+					shared_ptr<widget> lv2 = c->create_widget(L"listview", L"2");
+					wt.checkpoint();
+					f.first->get_root_container()->layout = lm;
+
+					// ACT
+					layout_manager::position positions1[] = {
+						{ 10, 21, 33, 15 },
+						{ 17, 121, 133, 175 },
+					};
+					lm->positions.assign(positions1, positions1 + _countof(positions1));
+					::MoveWindow(f.second, 23, 91, 167, 213, TRUE);
+
+					// ASSERT
+					Assert::IsTrue(ut::rect(10, 21, 33, 15) == ut::get_window_rect(wt.created[0]));
+					Assert::IsTrue(ut::rect(17, 121, 133, 175) == ut::get_window_rect(wt.created[1]));
+
+					// ACT
+					layout_manager::position positions2[] = {
+						{ 13, 121, 43, 31 },
+						{ 71, 21, 113, 105 },
+					};
+					lm->positions.assign(positions2, positions2 + _countof(positions2));
+					::MoveWindow(f.second, 23, 91, 117, 213, TRUE);
+
+					// ASSERT
+					Assert::IsTrue(ut::rect(13, 121, 43, 31) == ut::get_window_rect(wt.created[0]));
+					Assert::IsTrue(ut::rect(71, 21, 113, 105) == ut::get_window_rect(wt.created[1]));
+				}
+
+
+				[TestMethod]
+				void ThreeChildWidgetsAreRepositionedAccordinglyToTheLayout()
+				{
+					// INIT
+					form_and_handle f(create_form_with_handle());
+					shared_ptr<container> c = f.first->get_root_container();
+					shared_ptr<logging_layout_manager> lm(new logging_layout_manager);
+					ut::window_tracker wt(L"SysListView32");
+					shared_ptr<widget> lv1 = c->create_widget(L"listview", L"1");
+					wt.checkpoint();
+					shared_ptr<widget> lv2 = c->create_widget(L"listview", L"2");
+					wt.checkpoint();
+					shared_ptr<widget> lv3 = c->create_widget(L"listview", L"3");
+					wt.checkpoint();
+					f.first->get_root_container()->layout = lm;
+
+					// ACT
+					layout_manager::position positions[] = {
+						{ 10, 21, 33, 115 },
+						{ 11, 191, 133, 175 },
+						{ 16, 131, 103, 185 },
+					};
+					lm->positions.assign(positions, positions + _countof(positions));
+					::MoveWindow(f.second, 23, 91, 117, 213, TRUE);
+
+					// ASSERT
+					Assert::IsTrue(ut::rect(10, 21, 33, 115) == ut::get_window_rect(wt.created[0]));
+					Assert::IsTrue(ut::rect(11, 191, 133, 175) == ut::get_window_rect(wt.created[1]));
+					Assert::IsTrue(ut::rect(16, 131, 103, 185) == ut::get_window_rect(wt.created[2]));
 				}
 
 

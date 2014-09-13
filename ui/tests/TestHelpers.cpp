@@ -2,11 +2,12 @@
 
 #include <wpl/ui/win32/window.h>
 
-#include <windows.h>
+#include <algorithm>
 #include <commctrl.h>
 #include <olectl.h>
+#include <tchar.h>
 #include <vcclr.h>
-#include <algorithm>
+#include <windows.h>
 
 using namespace std;
 using namespace System;
@@ -18,44 +19,24 @@ namespace ut
 {
 	namespace
 	{
-		struct WindowEnumData
+#ifdef UNICODE
+		wstring w2t(const wstring &text)
+		{	return text;	}
+#else 
+		string w2t(const wstring &text)
 		{
-			basic_string<TCHAR> class_match;
-			set<HWND> windows;
-		};
+			vector<char> mbtext(wcstombs(NULL, text.c_str(), text.size()) + 1);
+
+			wcstombs(&mbtext[0], text.c_str(), text.size());
+			return string(mbtext.begin(), mbtext.end());
+		}
+#endif
 
 		LRESULT reflection_wndproc(UINT message, WPARAM wparam, LPARAM lparam, const wpl::ui::window::original_handler_t &previous)
 		{
-			if (WM_NOTIFY == message)
-				return ::SendMessage(reinterpret_cast<NMHDR *>(lparam)->hwndFrom, OCM_NOTIFY, wparam, lparam);
-			else
-				return previous(message, wparam, lparam);
-		}
-
-		BOOL CALLBACK EnumChildWndProc(HWND hwnd, LPARAM lParam)
-		{
-			TCHAR classname[100] = { 0 };
-			WindowEnumData &data = *reinterpret_cast<WindowEnumData *>(lParam);
-
-			::GetClassName(hwnd, classname, sizeof(classname) / sizeof(classname[0]));
-			if (data.class_match.empty() || 0 == _tcsicmp(data.class_match.c_str(), classname))
-				data.windows.insert(hwnd);
-			return TRUE;
-		}
-
-		BOOL CALLBACK EnumThreadWndProc(HWND hwnd, LPARAM lParam)
-		{
-			TCHAR classname[100] = { 0 };
-			WindowEnumData &data = *reinterpret_cast<WindowEnumData *>(lParam);
-
-			::GetClassName(hwnd, classname, sizeof(classname) / sizeof(classname[0]));
-			if (0 != _tcsicmp(_T("MSCTFIME UI"), classname))
-			{
-				if (data.class_match.empty() || 0 == _tcsicmp(data.class_match.c_str(), classname))
-					data.windows.insert(hwnd);
-				::EnumChildWindows(hwnd, &EnumChildWndProc, lParam);
-			}
-			return TRUE;
+			return WM_NOTIFY == message ?
+				::SendMessage(reinterpret_cast<NMHDR *>(lparam)->hwndFrom, OCM_NOTIFY, wparam, lparam)
+				: previous(message, wparam, lparam);
 		}
 	}
 
@@ -69,14 +50,6 @@ namespace ut
 	String ^make_managed(const wstring &native_string)
 	{	return gcnew String(native_string.c_str());	}
 
-	set<HWND> enum_thread_windows(const TCHAR *class_match)
-	{
-		WindowEnumData data = { class_match, };
-
-		::EnumThreadWindows(::GetCurrentThreadId(), &EnumThreadWndProc, reinterpret_cast<LPARAM>(&data));
-		return data.windows;
-	}
-
 	RECT get_window_rect(HWND hwnd)
 	{
 		RECT rc = { 0 };
@@ -85,6 +58,13 @@ namespace ut
 		::GetWindowRect(hwnd, &rc);
 		if (hparent)
 			::MapWindowPoints(NULL, hparent, reinterpret_cast<POINT *>(&rc), 2);
+		return rc;
+	}
+
+	RECT rect(int left, int top, int width, int height)
+	{
+		RECT rc = { left, top, left + width, top + height };
+
 		return rc;
 	}
 
@@ -106,12 +86,12 @@ namespace ut
 	HWND WindowTestsBase::create_visible_window()
 	{	return create_window(_T("static"), 0, WS_POPUP | WS_VISIBLE, 0);	}
 
-	HWND WindowTestsBase::create_window(const TCHAR *class_name)
+	HWND WindowTestsBase::create_window(const wstring &class_name)
 	{	return create_window(class_name, 0, WS_POPUP, 0);	}
 
-	HWND WindowTestsBase::create_window(const TCHAR *class_name, HWND parent, unsigned int style, unsigned int exstyle)
+	HWND WindowTestsBase::create_window(const wstring &class_name, HWND parent, unsigned int style, unsigned int exstyle)
 	{
-		HWND hwnd = ::CreateWindowEx(exstyle, class_name, NULL, style, 0, 0, 50, 50, parent, NULL, NULL, NULL);
+		HWND hwnd = ::CreateWindowEx(exstyle, w2t(class_name).c_str(), NULL, style, 0, 0, 50, 50, parent, NULL, NULL, NULL);
 
 		_windows->push_back(hwnd);
 		return hwnd;
@@ -140,4 +120,44 @@ namespace ut
 
 		::InitCommonControlsEx(&icc);
 	}
+
+
+	window_tracker::window_tracker(const wstring &allow, const wstring &prohibit)
+		: _allow(allow), _prohibit(prohibit)
+	{
+		checkpoint();
+		created.clear();
+	}
+
+	void window_tracker::checkpoint()
+	{
+		struct WindowEnumData
+		{
+			basic_string<TCHAR> allowed, prohibited;
+			set<HWND> windows;
+
+			static BOOL CALLBACK enum_windows_callback(HWND hwnd, LPARAM lParam)
+			{
+				TCHAR classname[100] = { 0 };
+				WindowEnumData &data = *reinterpret_cast<WindowEnumData *>(lParam);
+
+				::GetClassName(hwnd, classname, _countof(classname));
+				if ((data.allowed.empty() || 0 == _tcsicmp(data.allowed.c_str(), classname))
+						&& (data.prohibited.empty() || 0 != _tcsicmp(data.prohibited.c_str(), classname)))
+					data.windows.insert(hwnd);
+				::EnumChildWindows(hwnd, &enum_windows_callback, lParam);
+				return TRUE;
+			}
+		} data = { w2t(_allow), w2t(_prohibit) };
+
+		::EnumThreadWindows(::GetCurrentThreadId(), &WindowEnumData::enum_windows_callback, reinterpret_cast<LPARAM>(&data));
+		set_difference(data.windows.begin(), data.windows.end(), _windows.begin(), _windows.end(), back_inserter(created));
+		set_difference(_windows.begin(), _windows.end(), data.windows.begin(), data.windows.end(), back_inserter(destroyed));
+		_windows = data.windows;
+	}
+}
+
+bool operator ==(const RECT &lhs, const RECT &rhs)
+{
+	return lhs.left == rhs.left && lhs.top == rhs.top && lhs.right == rhs.right && lhs.bottom == rhs.bottom;
 }
