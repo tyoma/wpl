@@ -29,6 +29,7 @@
     <ClInclude Include="..\win32\controls.h" />
     <ClInclude Include="..\win32\native_view.h" />
     <ClInclude Include="..\win32\window.h" />
+    <ClInclude Include="native_container.h" />
     <ClInclude Include="factory.h" />
   </ItemGroup>
   <ItemGroup>
@@ -36,6 +37,7 @@
     <ClCompile Include="form.cpp" />
     <ClCompile Include="layout.cpp" />
     <ClCompile Include="listview.cpp" />
+    <ClCompile Include="native_container.cpp" />
     <ClCompile Include="native_view.cpp" />
     <ClCompile Include="widget.cpp" />
     <ClCompile Include="window.cpp" />

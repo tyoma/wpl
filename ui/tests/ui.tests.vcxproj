@@ -168,6 +168,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="ContainerTests.cpp" />
     <ClCompile Include="FormTests.cpp" />
     <ClCompile Include="GeometryBasicsTests.cpp" />
     <ClCompile Include="LayoutTests.cpp" />
@@ -179,14 +180,14 @@
       <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</CompileAsManaged>
     </ClCompile>
     <ClCompile Include="TestHelpers.cpp" />
-    <ClCompile Include="TestWidgets.cpp" />
+    <ClCompile Include="Mockups.cpp" />
     <ClCompile Include="NativeViewTests.cpp" />
     <ClCompile Include="WidgetTests.cpp" />
     <ClCompile Include="WindowingTests.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="TestHelpers.h" />
-    <ClInclude Include="TestWidgets.h" />
+    <ClInclude Include="Mockups.h" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\src\ui.vcxproj">

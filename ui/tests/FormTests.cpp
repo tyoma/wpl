@@ -2,8 +2,8 @@
 
 #include <wpl/ui/layout.h>
 
+#include "Mockups.h"
 #include "TestHelpers.h"
-#include "TestWidgets.h"
 
 #include <windows.h>
 
@@ -27,43 +27,23 @@ namespace wpl
 	{
 		namespace tests
 		{
-			namespace
+			typedef pair<shared_ptr<form>, HWND> form_and_handle;
+
+			form_and_handle create_form_with_handle()
 			{
-				class logging_layout_manager : public layout_manager
-				{
-				public:
-					mutable vector< pair<size_t, size_t> > reposition_log;
-					vector<position> positions;
+				ut::window_tracker wt(L"#32770");
+				shared_ptr<form> f(form::create());
 
-				private:
-					virtual void layout(size_t width, size_t height, widget_position *widgets, size_t count) const
-					{
-						reposition_log.push_back(make_pair(width, height));
+				wt.checkpoint();
 
-						for (vector<position>::const_iterator i = positions.begin(); count && i != positions.end();
-								--count, ++widgets, ++i)
-							widgets->second = *i;
-					}
-				};
+				if (wt.created.size() != 1)
+					throw runtime_error("Unexpected amount of windows created!");
+				return make_pair(f, wt.created[0]);
 			}
 
 			[TestClass]
 			public ref class FormTests : ut::WindowTestsBase
 			{
-				typedef pair<shared_ptr<form>, HWND> form_and_handle;
-				
-				form_and_handle create_form_with_handle()
-				{
-					ut::window_tracker wt(L"#32770");
-					shared_ptr<form> f(form::create());
-
-					wt.checkpoint();
-
-					if (wt.created.size() != 1)
-						throw runtime_error("Unexpected amount of windows created!");
-					return make_pair(f, wt.created[0]);
-				}
-
 			public:
 				[TestInitialize]
 				void create_dummy_window()
@@ -186,7 +166,7 @@ namespace wpl
 				void ResizingFormWindowLeadsToContentResize()
 				{
 					// INIT
-					shared_ptr<logging_layout_manager> lm(new logging_layout_manager);
+					shared_ptr<ut::logging_layout_manager> lm(new ut::logging_layout_manager);
 					form_and_handle f(create_form_with_handle());
 					RECT rc;
 
@@ -218,7 +198,7 @@ namespace wpl
 				void MovingFormDoesNotRaiseResizeSignal()
 				{
 					// INIT
-					shared_ptr<logging_layout_manager> lm(new logging_layout_manager);
+					shared_ptr<ut::logging_layout_manager> lm(new ut::logging_layout_manager);
 					form_and_handle f(create_form_with_handle());
 
 					f.first->get_root_container()->layout = lm;
@@ -316,7 +296,7 @@ namespace wpl
 					// INIT
 					form_and_handle f(create_form_with_handle());
 					shared_ptr<container> c = f.first->get_root_container();
-					shared_ptr<logging_layout_manager> lm(new logging_layout_manager);
+					shared_ptr<ut::logging_layout_manager> lm(new ut::logging_layout_manager);
 					ut::window_tracker wt(L"SysListView32");
 					shared_ptr<widget> lv1 = c->create_widget(L"listview", L"1");
 					wt.checkpoint();
@@ -356,7 +336,7 @@ namespace wpl
 					// INIT
 					form_and_handle f(create_form_with_handle());
 					shared_ptr<container> c = f.first->get_root_container();
-					shared_ptr<logging_layout_manager> lm(new logging_layout_manager);
+					shared_ptr<ut::logging_layout_manager> lm(new ut::logging_layout_manager);
 					ut::window_tracker wt(L"SysListView32");
 					shared_ptr<widget> lv1 = c->create_widget(L"listview", L"1");
 					wt.checkpoint();

@@ -2,12 +2,12 @@
 
 #include <wpl/base/concepts.h>
 
-#include <string>
-#include <set>
-#include <vector>
 #include <algorithm>
-#include <memory>
 #include <iterator>
+#include <memory>
+#include <set>
+#include <string>
+#include <vector>
 
 namespace std
 {
@@ -65,64 +65,58 @@ namespace ut
 		std::vector<HWND> destroyed;
 	};
 
-	template <typename T, typename Container, size_t n>
-	inline void AreEquivalent(T (&expected)[n], const Container &actual)
+	template <typename T, size_t n>
+	inline T *begin(T (&container)[n])
+	{	return container;	}
+
+	template <typename Container>
+	inline typename Container::iterator begin(Container &container)
+	{	return container.begin();	}
+
+	template <typename T, size_t n>
+	inline T *end(T (&container)[n])
+	{	return container + n;	}
+
+	template <typename Container>
+	inline typename Container::iterator end(Container &container)
+	{	return container.end();	}
+
+	template <typename T, typename Container>
+	inline void AreEquivalent(T &expected, const Container &actual)
 	{
 		using namespace std;
 
+		const size_t n = distance(begin(expected), end(expected));
+
 		if (actual.size() != n)
 			Assert::Fail("Sequence contains {0} elements while {1} was expected!", actual.size(), n);
-		vector<T> expected_(expected, expected + n), actual_(actual.begin(), actual.end());
+
+		vector<typename Container::value_type> expected_(begin(expected), end(expected));
+		vector<typename Container::value_type> actual_(actual.begin(), actual.end());
+		
 		sort(expected_.begin(), expected_.end()), sort(actual_.begin(), actual_.end());
 
-		size_t mismatched = distance(expected_.begin(), mismatch(expected_.begin(), expected_.end(), actual_.begin()).first);
+		const size_t mismatched = distance(expected_.begin(), mismatch(expected_.begin(), expected_.end(), actual_.begin()).first);
 
 		if (mismatched != n)
 			Assert::Fail("Sequences are different starting from position #{0}!", mismatched);
 	}
-	
-	template <typename C1, typename C2>
-	inline size_t added_items(const C1 &before, const C2 &after)
+
+	template <typename T, typename Container>
+	inline void AreEqual(T &expected, const Container &actual)
 	{
-		class counting_iterator : public std::iterator<std::output_iterator_tag, counting_iterator>
-		{
-			size_t *_count;
+		using namespace std;
 
-		public:
-			counting_iterator(size_t &count)
-				: _count(&count)
-			{	}
+		const size_t n = distance(begin(expected), end(expected));
 
-			void operator =(typename C2::value_type const &)
-			{	}
+		if (actual.size() != n)
+			Assert::Fail("Sequence contains {0} elements while {1} was expected!", actual.size(), n);
 
-			counting_iterator &operator++()
-			{
-				++*_count;
-				return *this;
-			}
+		const size_t mismatched = distance(begin(expected), mismatch(begin(expected), end(expected), begin(actual)).first);
 
-			counting_iterator operator++(int)
-			{
-				counting_iterator it(*this);
-
-				++*this;
-				return it;
-			}
-
-			counting_iterator &operator *()
-			{	return *this;	}
-		};
-
-		size_t count = 0;
-
-		std::set_difference(after.begin(), after.end(), before.begin(), before.end(), counting_iterator(count));
-		return count;
+		if (mismatched != n)
+			Assert::Fail("Sequences are different starting from position #{0}!", mismatched);
 	}
-	
-	template <typename C1, typename C2>
-	inline size_t removed_items(const C1 &before, const C2 &after)
-	{	return added_items(after, before);	}
 }
 
 bool operator ==(const RECT &lhs, const RECT &rhs);

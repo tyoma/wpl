@@ -18,25 +18,48 @@
 //	OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //	THE SOFTWARE.
 
-#pragma once
+#include "../container.h"
+#include "../layout.h"
 
-#include "widget.h"
-
-#include <string>
+typedef struct HWND__ *HWND;
 
 namespace wpl
 {
 	namespace ui
 	{
-		struct layout_manager;
+		typedef std::pair<widget_ptr, HWND> widget_native;
 
-		class container : public widget
+		class native_container : public container, noncopyable
 		{
 		public:
-			virtual std::shared_ptr<widget> create_widget(const std::wstring &type, const std::wstring &id) = 0;
-			virtual std::shared_ptr<container> create_container(const std::wstring &id) = 0;
-			
-			std::shared_ptr<const layout_manager> layout;
+			native_container(HWND parent);
+
+			void reposition(void *&hdwp, const layout_manager::position &new_position);
+
+		private:
+			struct child;
+			typedef std::vector<child> children_container;
+
+		private:
+			virtual std::shared_ptr<widget> create_widget(const std::wstring &type, const std::wstring &id);
+			virtual std::shared_ptr<container> create_container(const std::wstring &id);
+
+		private:
+			const HWND _parent;
+			children_container _children;
 		};
+
+		struct native_container::child
+		{
+			widget_ptr widget;
+			HWND hwnd;
+			std::shared_ptr<native_container> container;
+		};
+
+
+
+		inline native_container::native_container(HWND parent)
+			: _parent(parent)
+		{	}
 	}
 }

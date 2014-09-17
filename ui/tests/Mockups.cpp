@@ -1,4 +1,4 @@
-#include "TestWidgets.h"
+#include "Mockups.h"
 
 #include <wpl/ui/win32/native_view.h>
 
@@ -22,12 +22,24 @@ namespace ut
 
 			virtual void move(int left, int top, int width, int height)
 			{
-				position p = {	left, top, width, height	};
+				wpl::ui::layout_manager::position p = {	left, top, width, height	};
 
 				_test_widget.reposition_log.push_back(p);
 			}
 		};
 	}
+
+
+	void logging_layout_manager::layout(size_t width, size_t height, widget_position *widgets, size_t count) const
+	{
+		reposition_log.push_back(make_pair(width, height));
+		last_widgets.assign(widgets, widgets + count);
+
+		for (vector<position>::const_iterator i = positions.begin(); count && i != positions.end();
+			--count, ++widgets, ++i)
+			widgets->second = *i;
+	}
+
 
 	TestNativeWidget::TestNativeWidget()
 		: _hwnd(::CreateWindow(_T("static"), NULL, NULL, 0, 0, 50, 50, NULL, NULL, NULL, NULL))

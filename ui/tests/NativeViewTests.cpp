@@ -1,6 +1,6 @@
 #include <wpl/ui/win32/native_view.h>
 
-#include "TestWidgets.h"
+#include "Mockups.h"
 
 #include <wpl/ui/geometry.h>
 

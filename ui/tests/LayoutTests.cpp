@@ -2,7 +2,7 @@
 
 #include <wpl/ui/win32/native_view.h>
 
-#include "TestWidgets.h"
+#include "Mockups.h"
 
 using namespace std;
 using namespace Microsoft::VisualStudio::TestTools::UnitTesting;

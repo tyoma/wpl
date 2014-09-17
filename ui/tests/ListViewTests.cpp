@@ -2,8 +2,8 @@
 #include <wpl/ui/win32/controls.h>
 #include <wpl/ui/win32/native_view.h>
 
+#include "Mockups.h"
 #include "TestHelpers.h"
-#include "TestWidgets.h"
 #include <windows.h>
 #include <commctrl.h>
 #include <olectl.h>
