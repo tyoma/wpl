@@ -23,6 +23,7 @@ namespace ut
 	System::String ^make_managed(const std::wstring &native_string);
 	RECT get_window_rect(HWND hwnd);
 	RECT rect(int left, int top, int width, int height);
+	std::wstring get_window_text(HWND hwnd);
 
 
 	[Microsoft::VisualStudio::TestTools::UnitTesting::TestClass]

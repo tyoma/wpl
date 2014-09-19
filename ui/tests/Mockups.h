@@ -23,6 +23,14 @@ namespace ut
 		virtual void layout(size_t width, size_t height, widget_position *widgets, size_t count) const;
 	};
 
+
+	class fill_layout : public wpl::ui::layout_manager
+	{
+	private:
+		virtual void layout(size_t width, size_t height, widget_position *widgets, size_t count) const;
+	};
+
+
 	class TestNativeWidget
 		: public wpl::ui::widget, wpl::noncopyable
 	{
@@ -37,16 +45,6 @@ namespace ut
 		HWND hwnd() const;
 
 		std::vector< std::weak_ptr<wpl::ui::view> > views_created;
-	};
-
-
-	class TestWidget : public wpl::ui::widget
-	{
-	public:
-		virtual std::shared_ptr<wpl::ui::view> create_view(const wpl::ui::native_root &r);
-
-		std::vector< std::weak_ptr<wpl::ui::view> > views_created;
-		std::vector<wpl::ui::layout_manager::position> reposition_log;
 	};
 
 

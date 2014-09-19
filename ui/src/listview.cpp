@@ -23,7 +23,6 @@
 #include "../win32/native_view.h"
 
 #include <commctrl.h>
-#include <olectl.h>
 #include <atlstr.h>
 #include <algorithm>
 #include <iterator>

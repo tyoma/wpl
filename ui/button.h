@@ -20,13 +20,17 @@
 
 #pragma once
 
-#include "../form.h"
-#include "../widget.h"
+#include "widget.h"
 
 namespace wpl
 {
 	namespace ui
 	{
-		std::shared_ptr<form> create_form(std::shared_ptr<widget> widget);
+		struct button : widget
+		{
+			virtual void set_text(const std::wstring &text) = 0;
+
+			signal<void()> clicked;
+		};
 	}
 }

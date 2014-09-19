@@ -362,44 +362,24 @@ namespace wpl
 				}
 
 
-				//[TestMethod]
-				//void CreationOfTestWidgetsCreatesWindows()
-				//{
-				//	// INIT
-				//	shared_ptr<ut::TestNativeWidget> widgets[] = {
-				//		shared_ptr<ut::TestNativeWidget>(new ut::TestNativeWidget()),
-				//		shared_ptr<ut::TestNativeWidget>(new ut::TestNativeWidget()),
-				//	};
+				[TestMethod]
+				void SettingCaptionUpdatesWindowText()
+				{
+					// INIT
+					form_and_handle f(create_form_with_handle());
 
-				//	// ACT / ASSERT
-				//	Assert::IsTrue(!!::IsWindow(widgets[0]->hwnd()));
-				//	Assert::IsTrue(!!::IsWindow(widgets[1]->hwnd()));
-				//	Assert::IsTrue(widgets[1]->hwnd() != widgets[0]->hwnd());
-				//}
+					// ACT
+					f.first->set_caption(L"Dialog #1...");
 
+					// ASSERT
+					Assert::IsTrue(L"Dialog #1..." == ut::get_window_text(f.second));
 
-				//[TestMethod]
-				//void WrappingNativeWidgetToFormChangesItsParent()
-				//{
-				//	// INIT
-				//	shared_ptr<ut::TestNativeWidget> widgets[] = {
-				//		shared_ptr<ut::TestNativeWidget>(new ut::TestNativeWidget()),
-				//		shared_ptr<ut::TestNativeWidget>(new ut::TestNativeWidget()),
-				//	};
+					// ACT
+					f.first->set_caption(L"Are you sure?");
 
-				//	// ACT
-				//	form_and_handle f1(create_form_with_handle(widgets[0]));
-
-				//	// ASSERT
-				//	Assert::IsTrue(f1.second == ::GetParent(widgets[0]->hwnd()));
-				//	Assert::IsTrue(NULL == ::GetParent(widgets[1]->hwnd()));
-
-				//	// ACT
-				//	form_and_handle f2(create_form_with_handle(widgets[1]));
-
-				//	// ASSERT
-				//	Assert::IsTrue(f2.second == ::GetParent(widgets[1]->hwnd()));
-				//}
+					// ASSERT
+					Assert::IsTrue(L"Are you sure?" == ut::get_window_text(f.second));
+				}
 			};
 		}
 	}

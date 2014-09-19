@@ -19,20 +19,22 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\button.h" />
     <ClInclude Include="..\container.h" />
     <ClInclude Include="..\form.h" />
     <ClInclude Include="..\geometry.h" />
     <ClInclude Include="..\layout.h" />
     <ClInclude Include="..\widget.h" />
     <ClInclude Include="..\listview.h" />
-    <ClInclude Include="..\win32\containers.h" />
     <ClInclude Include="..\win32\controls.h" />
     <ClInclude Include="..\win32\native_view.h" />
     <ClInclude Include="..\win32\window.h" />
     <ClInclude Include="native_container.h" />
     <ClInclude Include="factory.h" />
+    <ClInclude Include="native_widgets.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="native_widgets.cpp" />
     <ClCompile Include="factory.cpp" />
     <ClCompile Include="form.cpp" />
     <ClCompile Include="layout.cpp" />

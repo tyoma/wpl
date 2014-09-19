@@ -18,39 +18,29 @@
 //	OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //	THE SOFTWARE.
 
-#include "factory.h"
+#pragma once
 
-#include "../listview.h"
-#include "native_widgets.h"
+#include "../button.h"
 
-#include <tchar.h>
-#include <windows.h>
-
-using namespace std;
+#include "../win32/window.h"
 
 namespace wpl
 {
 	namespace ui
 	{
-		shared_ptr<listview> wrap_listview(HWND hwnd);
-
-		widget_native create(HWND parent, const std::wstring &type, const std::wstring &/*id*/)
+		class native_button : public button
 		{
-			HWND h = NULL;
-			shared_ptr<widget> w;
+		public:
+			native_button(HWND hwnd);
 
-			if (L"listview" == type)
-			{
-				h = ::CreateWindow(_T("SysListView32"), NULL, WS_CHILD | WS_VISIBLE, 0, 0, 10, 10, parent, NULL, NULL, NULL);
-				w = wrap_listview(h);
-			}
-			else if (L"button" == type)
-			{
-				h = ::CreateWindow(_T("button"), NULL, WS_CHILD | WS_VISIBLE, 0, 0, 10, 10, parent, NULL, NULL, NULL);
-				w.reset(new native_button(h));
-			}
+			virtual void set_text(const std::wstring &text);
 
-			return make_pair(w, h);
-		}
+		private:
+			LRESULT wndproc(UINT message, WPARAM wparam, LPARAM lparam, const window::original_handler_t &previous);
+
+		private:
+			std::shared_ptr<window> _window;
+			std::shared_ptr<destructible> _advisory;
+		};
 	}
 }

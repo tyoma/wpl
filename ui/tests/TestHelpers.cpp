@@ -19,10 +19,22 @@ namespace ut
 {
 	namespace
 	{
+		typedef basic_string<TCHAR> tstring;
 #ifdef UNICODE
+		wstring t2w(const wstring &text)
+		{	return text;	}
+
 		wstring w2t(const wstring &text)
 		{	return text;	}
 #else 
+		wstring t2w(const string &text);
+		{
+			vector<wchar_t> wtext(mbstowcs(NULL, text.c_str(), text.size()) + 1);
+
+			mbstowcs(&wtext[0], text.c_str(), text.size());
+			return &wtext[0];
+		}
+
 		string w2t(const wstring &text)
 		{
 			vector<char> mbtext(wcstombs(NULL, text.c_str(), text.size()) + 1);
@@ -66,6 +78,14 @@ namespace ut
 		RECT rc = { left, top, left + width, top + height };
 
 		return rc;
+	}
+
+	wstring get_window_text(HWND hwnd)
+	{
+		vector<TCHAR> text(::GetWindowTextLength(hwnd) + 1);
+
+		::GetWindowText(hwnd, &text[0], text.size());
+		return t2w(tstring(&text[0]));
 	}
 
 

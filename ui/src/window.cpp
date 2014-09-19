@@ -83,7 +83,7 @@ namespace wpl
 
 		shared_ptr<window> window::extract(HWND hwnd)
 		{
-			window *attached = reinterpret_cast<window *>(::GetProp(hwnd, c_wrapper_ptr_name));
+			window *attached = static_cast<window *>(::GetProp(hwnd, c_wrapper_ptr_name));
 
 			return attached ? attached->shared_from_this() : shared_ptr<window>();
 		}

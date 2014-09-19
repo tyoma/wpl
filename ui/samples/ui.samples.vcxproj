@@ -19,32 +19,26 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectTypes>{3AC096D0-A1C2-E12C-1390-A8335801FDAB};{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}</ProjectTypes>
-    <ProjectGuid>{685F6A5E-B74A-4ACF-873F-A5A6FB6AC8C9}</ProjectGuid>
-    <RootNamespace>ui.tests</RootNamespace>
+    <RootNamespace>ui.samples</RootNamespace>
     <Keyword>Win32Proj</Keyword>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
-    <ConfigurationType>DynamicLibrary</ConfigurationType>
-    <CLRSupport>true</CLRSupport>
+    <ConfigurationType>Application</ConfigurationType>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
-    <ConfigurationType>DynamicLibrary</ConfigurationType>
-    <CLRSupport>true</CLRSupport>
+    <ConfigurationType>Application</ConfigurationType>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
-    <ConfigurationType>DynamicLibrary</ConfigurationType>
-    <CLRSupport>true</CLRSupport>
+    <ConfigurationType>Application</ConfigurationType>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
-    <ConfigurationType>DynamicLibrary</ConfigurationType>
-    <CLRSupport>true</CLRSupport>
+    <ConfigurationType>Application</ConfigurationType>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
@@ -78,7 +72,7 @@
       <AdditionalIncludeDirectories>./../../..</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <BasicRuntimeChecks>Default</BasicRuntimeChecks>
-      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <PrecompiledHeaderFile>
       </PrecompiledHeaderFile>
@@ -86,9 +80,12 @@
       </PrecompiledHeaderOutputFile>
       <FunctionLevelLinking>false</FunctionLevelLinking>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <DisableLanguageExtensions>true</DisableLanguageExtensions>
+      <RuntimeTypeInfo>false</RuntimeTypeInfo>
     </ClCompile>
     <Link>
-      <IgnoreSpecificDefaultLibraries>libcmtd.lib;libcpmtd.lib</IgnoreSpecificDefaultLibraries>
+      <IgnoreSpecificDefaultLibraries>
+      </IgnoreSpecificDefaultLibraries>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AssemblyDebug>true</AssemblyDebug>
       <AdditionalDependencies>
@@ -101,7 +98,7 @@
       <AdditionalIncludeDirectories>./../../..</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <BasicRuntimeChecks>Default</BasicRuntimeChecks>
-      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <PrecompiledHeaderFile>
       </PrecompiledHeaderFile>
@@ -109,9 +106,12 @@
       </PrecompiledHeaderOutputFile>
       <FunctionLevelLinking>false</FunctionLevelLinking>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <DisableLanguageExtensions>true</DisableLanguageExtensions>
+      <RuntimeTypeInfo>false</RuntimeTypeInfo>
     </ClCompile>
     <Link>
-      <IgnoreSpecificDefaultLibraries>libcmtd.lib;libcpmtd.lib</IgnoreSpecificDefaultLibraries>
+      <IgnoreSpecificDefaultLibraries>
+      </IgnoreSpecificDefaultLibraries>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AssemblyDebug>true</AssemblyDebug>
       <AdditionalDependencies>
@@ -122,15 +122,21 @@
     <ClCompile>
       <AdditionalIncludeDirectories>./../../..</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <PrecompiledHeaderFile>
       </PrecompiledHeaderFile>
       <PrecompiledHeaderOutputFile>
       </PrecompiledHeaderOutputFile>
       <FunctionLevelLinking>false</FunctionLevelLinking>
+      <DisableLanguageExtensions>true</DisableLanguageExtensions>
+      <RuntimeTypeInfo>false</RuntimeTypeInfo>
+      <Optimization>MinSpace</Optimization>
+      <InlineFunctionExpansion>Default</InlineFunctionExpansion>
+      <FavorSizeOrSpeed>Size</FavorSizeOrSpeed>
     </ClCompile>
     <Link>
-      <IgnoreSpecificDefaultLibraries>libcmt.lib;libcpmt.lib</IgnoreSpecificDefaultLibraries>
+      <IgnoreSpecificDefaultLibraries>
+      </IgnoreSpecificDefaultLibraries>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalDependencies>
       </AdditionalDependencies>
@@ -140,7 +146,7 @@
     <ClCompile>
       <AdditionalIncludeDirectories>./../../..</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <PrecompiledHeaderFile>
       </PrecompiledHeaderFile>
@@ -148,9 +154,15 @@
       </PrecompiledHeaderOutputFile>
       <FunctionLevelLinking>false</FunctionLevelLinking>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <DisableLanguageExtensions>true</DisableLanguageExtensions>
+      <RuntimeTypeInfo>false</RuntimeTypeInfo>
+      <Optimization>MinSpace</Optimization>
+      <InlineFunctionExpansion>Default</InlineFunctionExpansion>
+      <FavorSizeOrSpeed>Size</FavorSizeOrSpeed>
     </ClCompile>
     <Link>
-      <IgnoreSpecificDefaultLibraries>libcmt.lib;libcpmt.lib</IgnoreSpecificDefaultLibraries>
+      <IgnoreSpecificDefaultLibraries>
+      </IgnoreSpecificDefaultLibraries>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalDependencies>
       </AdditionalDependencies>
@@ -168,31 +180,18 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="ButtonTests.cpp" />
-    <ClCompile Include="ContainerTests.cpp" />
-    <ClCompile Include="FormTests.cpp" />
-    <ClCompile Include="GeometryBasicsTests.cpp" />
-    <ClCompile Include="LayoutTests.cpp" />
-    <ClCompile Include="ListViewTests.cpp" />
-    <ClCompile Include="main.cpp">
-      <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</CompileAsManaged>
-      <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</CompileAsManaged>
-      <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</CompileAsManaged>
-      <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</CompileAsManaged>
-    </ClCompile>
-    <ClCompile Include="TestHelpers.cpp" />
-    <ClCompile Include="Mockups.cpp" />
-    <ClCompile Include="NativeViewTests.cpp" />
-    <ClCompile Include="WindowingTests.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="TestHelpers.h" />
-    <ClInclude Include="Mockups.h" />
-  </ItemGroup>
-  <ItemGroup>
     <ProjectReference Include="..\src\ui.vcxproj">
       <Project>{2423f23a-b689-f3f7-a864-a1729ec337c9}</Project>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="main.cpp" />
+    <ClCompile Include="platform.cpp">
+      <DisableLanguageExtensions Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</DisableLanguageExtensions>
+      <DisableLanguageExtensions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</DisableLanguageExtensions>
+      <DisableLanguageExtensions Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</DisableLanguageExtensions>
+      <DisableLanguageExtensions Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</DisableLanguageExtensions>
+    </ClCompile>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -30,6 +30,7 @@
 #include <algorithm>
 #include <iterator>
 #include <tchar.h>
+#include <olectl.h>
 #include <windows.h>
 
 namespace std
@@ -57,6 +58,7 @@ namespace wpl
 
 				virtual shared_ptr<container> get_root_container();
 				virtual void set_visible(bool value);
+				virtual void set_caption(const std::wstring &caption);
 
 				LRESULT wndproc(UINT message, WPARAM wparam, LPARAM lparam, const window::original_handler_t &previous);
 
@@ -83,20 +85,29 @@ namespace wpl
 			{	return _container;	}
 
 			void form_impl::set_visible(bool value)
-			{
-				::ShowWindow(_window->hwnd(), value ? SW_SHOW : SW_HIDE);
-			}
+			{	::ShowWindow(_window->hwnd(), value ? SW_SHOW : SW_HIDE);	}
+
+			void form_impl::set_caption(const std::wstring &caption)
+			{	::SetWindowTextW(_window->hwnd(), caption.c_str());	}
 
 			LRESULT form_impl::wndproc(UINT message, WPARAM wparam, LPARAM lparam, const window::original_handler_t &previous)
 			{
-				if (WM_SIZE == message)
+				switch (message)
 				{
-					void *hdwp = ::BeginDeferWindowPos(100);
-					layout_manager::position new_position = { 0, 0, LOWORD(lparam), HIWORD(lparam) };
+					case WM_SIZE:
+					{
+						void *hdwp = ::BeginDeferWindowPos(100);
+						layout_manager::position new_position = { 0, 0, LOWORD(lparam), HIWORD(lparam) };
 
-					_container->reposition(hdwp, new_position);
-					::EndDeferWindowPos(hdwp);
-				}
+						_container->reposition(hdwp, new_position);
+						::EndDeferWindowPos(hdwp);
+						break;
+					}
+
+					case WM_COMMAND:
+						::SendMessage(reinterpret_cast<HWND>(lparam), OCM_COMMAND, wparam, lparam);
+						return 0;
+				};
 				return previous(message, wparam, lparam);
 			}
 		}

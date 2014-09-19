@@ -32,6 +32,7 @@ namespace wpl
 
 			virtual std::shared_ptr<container> get_root_container() = 0;
 			virtual void set_visible(bool value) = 0;
+			virtual void set_caption(const std::wstring &caption) = 0;
 
 			static std::shared_ptr<form> create();
 		};

@@ -29,9 +29,6 @@
     <ClInclude Include="..\form.h">
       <Filter>Library Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\win32\containers.h">
-      <Filter>Library Header Files\win32</Filter>
-    </ClInclude>
     <ClInclude Include="..\geometry.h">
       <Filter>Library Header Files</Filter>
     </ClInclude>
@@ -48,6 +45,12 @@
       <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="native_container.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\button.h">
+      <Filter>Library Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="native_widgets.h">
       <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -74,6 +77,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="native_container.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="native_widgets.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
