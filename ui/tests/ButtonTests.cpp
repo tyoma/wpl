@@ -7,6 +7,12 @@
 
 #include <windows.h>
 
+namespace std
+{
+	using tr1::static_pointer_cast;
+	using tr1::bind;
+}
+
 using namespace Microsoft::VisualStudio::TestTools::UnitTesting;
 using namespace std;
 

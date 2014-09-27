@@ -27,6 +27,12 @@ namespace wpl
 	{
 		namespace tests
 		{
+			namespace
+			{
+				void increment(int *counter)
+				{	++*counter;	}
+			}
+
 			typedef pair<shared_ptr<form>, HWND> form_and_handle;
 
 			form_and_handle create_form_with_handle()
@@ -379,6 +385,28 @@ namespace wpl
 
 					// ASSERT
 					Assert::IsTrue(L"Are you sure?" == ut::get_window_text(f.second));
+				}
+
+
+				[TestMethod]
+				void ClosingWindowRaisesCloseSignal()
+				{
+					// INIT
+					form_and_handle f(create_form_with_handle());
+					int close_count = 0;
+					slot_connection c = f.first->close += bind(&increment, &close_count);
+
+					// ACT
+					::SendMessage(f.second, WM_CLOSE, 0, 0);
+
+					// ASSERT
+					Assert::IsTrue(1 == close_count);
+
+					// ACT (the form still exists)
+					::SendMessage(f.second, WM_CLOSE, 0, 0);
+
+					// ASSERT
+					Assert::IsTrue(2 == close_count);
 				}
 			};
 		}

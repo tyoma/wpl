@@ -104,6 +104,10 @@ namespace wpl
 						break;
 					}
 
+					case WM_CLOSE:
+						close();
+						return 0;
+
 					case WM_COMMAND:
 						::SendMessage(reinterpret_cast<HWND>(lparam), OCM_COMMAND, wparam, lparam);
 						return 0;

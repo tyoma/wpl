@@ -19,8 +19,6 @@ typedef struct tagRECT RECT;
 
 namespace ut
 {
-	std::wstring make_native(System::String ^managed_string);
-	System::String ^make_managed(const std::wstring &native_string);
 	RECT get_window_rect(HWND hwnd);
 	RECT rect(int left, int top, int width, int height);
 	std::wstring get_window_text(HWND hwnd);

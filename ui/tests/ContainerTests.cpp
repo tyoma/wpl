@@ -9,7 +9,7 @@
 
 using namespace Microsoft::VisualStudio::TestTools::UnitTesting;
 using namespace std;
-using namespace std::placeholders;
+using namespace std::tr1::placeholders;
 
 namespace wpl
 {

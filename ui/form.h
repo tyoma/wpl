@@ -34,6 +34,8 @@ namespace wpl
 			virtual void set_visible(bool value) = 0;
 			virtual void set_caption(const std::wstring &caption) = 0;
 
+			signal<void()> close;
+
 			static std::shared_ptr<form> create();
 		};
 	}

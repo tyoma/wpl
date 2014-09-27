@@ -26,5 +26,29 @@ namespace wpl
 {
 	namespace ui
 	{
+		template <int layout_manager::position::*SharedPosition, int layout_manager::position::*SharedSize,
+			int layout_manager::position::*CommonPosition, int layout_manager::position::*CommonSize>
+		inline void stack<SharedPosition, SharedSize, CommonPosition, CommonSize>::layout(size_t /*shared_size*/,
+			size_t common_size, layout_manager::widget_position *widgets, size_t count) const
+		{
+			vector<int>::const_iterator i;
+			int location;
+
+			for (i = _sizes.begin(), location = 0; count; location += *i + _spacing, ++widgets, ++i, --count)
+			{
+				widgets->second.*SharedPosition = location;
+				widgets->second.*CommonPosition = 0;
+				widgets->second.*SharedSize = *i;
+				widgets->second.*CommonSize = common_size;
+			}
+		}
+
+
+		void hstack::layout(size_t width, size_t height, widget_position *widgets, size_t count) const
+		{	base::layout(width, height, widgets, count);	}
+
+
+		void vstack::layout(size_t width, size_t height, widget_position *widgets, size_t count) const
+		{	base::layout(height, width, widgets, count);	}
 	}
 }

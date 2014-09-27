@@ -52,16 +52,6 @@ namespace ut
 		}
 	}
 
-	wstring make_native(String ^managed_string)
-	{
-		pin_ptr<const wchar_t> buffer(PtrToStringChars(managed_string));
-
-		return wstring(buffer);
-	}
-
-	String ^make_managed(const wstring &native_string)
-	{	return gcnew String(native_string.c_str());	}
-
 	RECT get_window_rect(HWND hwnd)
 	{
 		RECT rc = { 0 };
