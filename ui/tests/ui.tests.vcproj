@@ -325,6 +325,14 @@
 	</References>
 	<Files>
 		<File
+			RelativePath=".\ButtonTests.cpp"
+			>
+		</File>
+		<File
+			RelativePath=".\ContainerTests.cpp"
+			>
+		</File>
+		<File
 			RelativePath=".\FormTests.cpp"
 			>
 		</File>
@@ -377,6 +385,14 @@
 			</FileConfiguration>
 		</File>
 		<File
+			RelativePath=".\Mockups.cpp"
+			>
+		</File>
+		<File
+			RelativePath=".\Mockups.h"
+			>
+		</File>
+		<File
 			RelativePath=".\NativeViewTests.cpp"
 			>
 		</File>
@@ -386,18 +402,6 @@
 		</File>
 		<File
 			RelativePath=".\TestHelpers.h"
-			>
-		</File>
-		<File
-			RelativePath=".\TestWidgets.cpp"
-			>
-		</File>
-		<File
-			RelativePath=".\TestWidgets.h"
-			>
-		</File>
-		<File
-			RelativePath=".\WidgetTests.cpp"
 			>
 		</File>
 		<File

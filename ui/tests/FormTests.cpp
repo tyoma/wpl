@@ -142,6 +142,8 @@ namespace wpl
 				{
 					// INIT
 					form_and_handle f(create_form_with_handle());
+					
+					f.first->get_root_container()->layout.reset(new ut::logging_layout_manager);
 
 					// ACT
 					f.first->set_visible(true);

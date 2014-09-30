@@ -2,7 +2,8 @@
 <VisualStudioProject
 	ProjectType="Visual C++"
 	Version="9.00"
-	Name="ui.tests"
+	Name="ui.samples"
+	ProjectGUID="{7A226918-AFBA-42CC-9E12-D8647D046C1F}"
 	RootNamespace="ui.samples"
 	Keyword="Win32Proj"
 	TargetFrameworkVersion="196613"
@@ -22,9 +23,9 @@
 			Name="Debug|Win32"
 			OutputDirectory="$(SolutionDir)_bin\$(ConfigurationName)_$(PlatformName)\"
 			IntermediateDirectory="$(SolutionDir)_obj\$(ConfigurationName)_$(PlatformName)\$(ProjectName)\"
-			ConfigurationType="2"
+			ConfigurationType="1"
 			CharacterSet="1"
-			ManagedExtensions="1"
+			ManagedExtensions="0"
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
@@ -48,7 +49,9 @@
 				PreprocessorDefinitions="WIN32;_DEBUG;_LIB;_SCL_SECURE_NO_WARNINGS"
 				MinimalRebuild="false"
 				BasicRuntimeChecks="0"
-				RuntimeLibrary="3"
+				RuntimeLibrary="1"
+				DisableLanguageExtensions="true"
+				RuntimeTypeInfo="false"
 				WarningLevel="4"
 				DebugInformationFormat="3"
 			/>
@@ -63,7 +66,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				IgnoreDefaultLibraryNames="libcmtd.lib;libcpmtd.lib"
+				IgnoreDefaultLibraryNames=""
 				GenerateDebugInformation="true"
 				AssemblyDebug="1"
 			/>
@@ -93,9 +96,9 @@
 			Name="Debug|x64"
 			OutputDirectory="$(SolutionDir)_bin\$(ConfigurationName)_$(PlatformName)\"
 			IntermediateDirectory="$(SolutionDir)_obj\$(ConfigurationName)_$(PlatformName)\$(ProjectName)\"
-			ConfigurationType="2"
+			ConfigurationType="1"
 			CharacterSet="1"
-			ManagedExtensions="1"
+			ManagedExtensions="0"
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
@@ -120,7 +123,9 @@
 				PreprocessorDefinitions="WIN32;_DEBUG;_LIB;_SCL_SECURE_NO_WARNINGS"
 				MinimalRebuild="false"
 				BasicRuntimeChecks="0"
-				RuntimeLibrary="3"
+				RuntimeLibrary="1"
+				DisableLanguageExtensions="true"
+				RuntimeTypeInfo="false"
 				WarningLevel="4"
 				DebugInformationFormat="3"
 			/>
@@ -135,7 +140,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				IgnoreDefaultLibraryNames="libcmtd.lib;libcpmtd.lib"
+				IgnoreDefaultLibraryNames=""
 				GenerateDebugInformation="true"
 				AssemblyDebug="1"
 				TargetMachine="17"
@@ -166,9 +171,9 @@
 			Name="Release|Win32"
 			OutputDirectory="$(SolutionDir)_bin\$(ConfigurationName)_$(PlatformName)\"
 			IntermediateDirectory="$(SolutionDir)_obj\$(ConfigurationName)_$(PlatformName)\$(ProjectName)\"
-			ConfigurationType="2"
+			ConfigurationType="1"
 			CharacterSet="1"
-			ManagedExtensions="1"
+			ManagedExtensions="0"
 			WholeProgramOptimization="1"
 			>
 			<Tool
@@ -188,11 +193,15 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				Optimization="2"
+				Optimization="1"
 				EnableIntrinsicFunctions="true"
+				FavorSizeOrSpeed="2"
+				OmitFramePointers="true"
 				AdditionalIncludeDirectories="./../../.."
 				PreprocessorDefinitions="WIN32;NDEBUG;_LIB;_SCL_SECURE_NO_WARNINGS"
-				RuntimeLibrary="2"
+				RuntimeLibrary="0"
+				DisableLanguageExtensions="true"
+				RuntimeTypeInfo="false"
 				WarningLevel="4"
 				DebugInformationFormat="3"
 			/>
@@ -207,8 +216,10 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				IgnoreDefaultLibraryNames="libcmt.lib;libcpmt.lib"
+				IgnoreDefaultLibraryNames=""
 				GenerateDebugInformation="true"
+				OptimizeReferences="2"
+				EnableCOMDATFolding="2"
 			/>
 			<Tool
 				Name="VCALinkTool"
@@ -236,9 +247,9 @@
 			Name="Release|x64"
 			OutputDirectory="$(SolutionDir)_bin\$(ConfigurationName)_$(PlatformName)\"
 			IntermediateDirectory="$(SolutionDir)_obj\$(ConfigurationName)_$(PlatformName)\$(ProjectName)\"
-			ConfigurationType="2"
+			ConfigurationType="1"
 			CharacterSet="1"
-			ManagedExtensions="1"
+			ManagedExtensions="0"
 			WholeProgramOptimization="1"
 			>
 			<Tool
@@ -259,11 +270,15 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				Optimization="2"
+				Optimization="1"
 				EnableIntrinsicFunctions="true"
+				FavorSizeOrSpeed="2"
+				OmitFramePointers="true"
 				AdditionalIncludeDirectories="./../../.."
 				PreprocessorDefinitions="WIN32;NDEBUG;_LIB;_SCL_SECURE_NO_WARNINGS"
-				RuntimeLibrary="2"
+				RuntimeLibrary="0"
+				DisableLanguageExtensions="true"
+				RuntimeTypeInfo="false"
 				WarningLevel="4"
 				DebugInformationFormat="3"
 			/>
@@ -278,8 +293,10 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				IgnoreDefaultLibraryNames="libcmt.lib;libcpmt.lib"
+				IgnoreDefaultLibraryNames=""
 				GenerateDebugInformation="true"
+				OptimizeReferences="2"
+				EnableCOMDATFolding="2"
 				TargetMachine="17"
 			/>
 			<Tool
@@ -323,30 +340,18 @@
 	</References>
 	<Files>
 		<File
-			RelativePath=".\FormTests.cpp"
-			>
-		</File>
-		<File
-			RelativePath=".\GeometryBasicsTests.cpp"
-			>
-		</File>
-		<File
-			RelativePath=".\LayoutTests.cpp"
-			>
-		</File>
-		<File
-			RelativePath=".\ListViewTests.cpp"
-			>
-		</File>
-		<File
 			RelativePath=".\main.cpp"
+			>
+		</File>
+		<File
+			RelativePath=".\platform.cpp"
 			>
 			<FileConfiguration
 				Name="Debug|Win32"
 				>
 				<Tool
 					Name="VCCLCompilerTool"
-					CompileAsManaged="0"
+					DisableLanguageExtensions="false"
 				/>
 			</FileConfiguration>
 			<FileConfiguration
@@ -354,7 +359,7 @@
 				>
 				<Tool
 					Name="VCCLCompilerTool"
-					CompileAsManaged="0"
+					DisableLanguageExtensions="false"
 				/>
 			</FileConfiguration>
 			<FileConfiguration
@@ -362,7 +367,7 @@
 				>
 				<Tool
 					Name="VCCLCompilerTool"
-					CompileAsManaged="0"
+					DisableLanguageExtensions="false"
 				/>
 			</FileConfiguration>
 			<FileConfiguration
@@ -370,37 +375,9 @@
 				>
 				<Tool
 					Name="VCCLCompilerTool"
-					CompileAsManaged="0"
+					DisableLanguageExtensions="false"
 				/>
 			</FileConfiguration>
-		</File>
-		<File
-			RelativePath=".\NativeViewTests.cpp"
-			>
-		</File>
-		<File
-			RelativePath=".\TestHelpers.cpp"
-			>
-		</File>
-		<File
-			RelativePath=".\TestHelpers.h"
-			>
-		</File>
-		<File
-			RelativePath=".\TestWidgets.cpp"
-			>
-		</File>
-		<File
-			RelativePath=".\TestWidgets.h"
-			>
-		</File>
-		<File
-			RelativePath=".\WidgetTests.cpp"
-			>
-		</File>
-		<File
-			RelativePath=".\WindowingTests.cpp"
-			>
 		</File>
 	</Files>
 	<Globals>
