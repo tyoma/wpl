@@ -14,12 +14,15 @@ using namespace std;
 using namespace wpl;
 using namespace wpl::ui;
 
+void init_platform();
 void run_message_loop();
 void exit_message_loop();
 
 int main()
 {
 	_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
+
+	init_platform();
 
 	shared_ptr<form> f = form::create();
 	shared_ptr<container> root = f->get_root_container();

@@ -173,6 +173,32 @@ namespace wpl
 					Assert::IsTrue(reference1[2] == p[2].second);
 					Assert::IsTrue(reference1[3] == p[3].second);
 				}
+
+
+				[TestMethod]
+				void LayoutHSingleWidgetRelativelySpaced()
+				{
+					// INIT
+					int sizes1[] = { -10000 /* 100% */ };
+					int sizes2[] = { -5750 /* 57.5% */ };
+					layout_manager::widget_position p1[_countof(sizes1)];
+					layout_manager::widget_position p2[_countof(sizes2)];
+					hstack s1(ut::begin(sizes1), ut::end(sizes1), 0);
+					hstack s2(ut::begin(sizes2), ut::end(sizes2), 0);
+
+					// ACT
+					s1.layout(11, 15, p1, _countof(p1));
+					s2.layout(1103, 315, p2, _countof(p2));
+
+					// ASSERT
+					layout_manager::position reference[] = {
+						{ 0, 0, 11, 15 },
+						{ 0, 0, 634, 315 },
+					};
+
+					Assert::IsTrue(reference[0] == p1[0].second);
+					Assert::IsTrue(reference[1] == p2[0].second);
+				}
 			};
 		}
 	}
