@@ -179,8 +179,8 @@ namespace wpl
 				void LayoutHSingleWidgetRelativelySpaced()
 				{
 					// INIT
-					int sizes1[] = { -10000 /* 100% */ };
-					int sizes2[] = { -5750 /* 57.5% */ };
+					int sizes1[] = { -10000 /* 10000 / 10000 */ };
+					int sizes2[] = { -5750 /* 5750 / 5750 */ };
 					layout_manager::widget_position p1[_countof(sizes1)];
 					layout_manager::widget_position p2[_countof(sizes2)];
 					hstack s1(ut::begin(sizes1), ut::end(sizes1), 0);
@@ -193,12 +193,83 @@ namespace wpl
 					// ASSERT
 					layout_manager::position reference[] = {
 						{ 0, 0, 11, 15 },
-						{ 0, 0, 634, 315 },
+						{ 0, 0, 1103, 315 },
 					};
 
 					Assert::IsTrue(reference[0] == p1[0].second);
 					Assert::IsTrue(reference[1] == p2[0].second);
 				}
+
+
+				[TestMethod]
+				void LayoutVSeveralWidgetsRelativelySpaced()
+				{
+					// INIT
+					int sizes1[] = { -10000 /* 10000 / 35500 */, -20500 /* 20000 / 35500 */, -5000 /* 5000 / 35500 */, };
+					int sizes2[] = { -5750 /* 5750 / 11500 */, -5750 /* 5750 / 11500 */, };
+					layout_manager::widget_position p1[_countof(sizes1)];
+					layout_manager::widget_position p2[_countof(sizes2)];
+					vstack s1(ut::begin(sizes1), ut::end(sizes1), 0);
+					vstack s2(ut::begin(sizes2), ut::end(sizes2), 0);
+
+					// ACT
+					s1.layout(19, 1315, p1, _countof(p1));
+					s2.layout(31, 316, p2, _countof(p2));
+
+					// ASSERT
+					layout_manager::position reference1[] = {
+						{ 0, 0, 19, 370 },
+						{ 0, 370, 19, 759 },
+						{ 0, 1129, 19, 185 },
+					};
+					layout_manager::position reference2[] = {
+						{ 0, 0, 31, 158 },
+						{ 0, 158, 31, 158 },
+					};
+
+					Assert::IsTrue(reference1[0] == p1[0].second);
+					Assert::IsTrue(reference1[1] == p1[1].second);
+					Assert::IsTrue(reference1[2] == p1[2].second);
+
+					Assert::IsTrue(reference2[0] == p2[0].second);
+					Assert::IsTrue(reference2[1] == p2[1].second);
+				}
+
+
+				[TestMethod]
+				void LayoutVSeveralWidgetsRelativelyAndAbsolutelySpacedWithInnerSpacing()
+				{
+					// INIT
+					int sizes1[] = { -10000 /* 10000 / 15200 */, 100, -5200 /* 5200 / 15200 */, };
+					int sizes2[] = { -5750 /* 5750 / 5750 */, 107, };
+					layout_manager::widget_position p1[_countof(sizes1)];
+					layout_manager::widget_position p2[_countof(sizes2)];
+					vstack s1(ut::begin(sizes1), ut::end(sizes1), 3);
+					vstack s2(ut::begin(sizes2), ut::end(sizes2), 7);
+
+					// ACT
+					s1.layout(19, 1315, p1, _countof(p1));
+					s2.layout(31, 316, p2, _countof(p2));
+
+					// ASSERT
+					layout_manager::position reference1[] = {
+						{ 0, 0, 19, 795 },
+						{ 0, 798, 19, 100 },
+						{ 0, 901, 19, 413 },
+					};
+					layout_manager::position reference2[] = {
+						{ 0, 0, 31, 202 },
+						{ 0, 209, 31, 107 },
+					};
+
+					Assert::IsTrue(reference1[0] == p1[0].second);
+					Assert::IsTrue(reference1[1] == p1[1].second);
+					Assert::IsTrue(reference1[2] == p1[2].second);
+
+					Assert::IsTrue(reference2[0] == p2[0].second);
+					Assert::IsTrue(reference2[1] == p2[1].second);
+				}
+
 			};
 		}
 	}

@@ -28,17 +28,17 @@ int main()
 	shared_ptr<container> root = f->get_root_container();
 	slot_connection c = f->close += &exit_message_loop;
 
-	int vsizes[] = { 150, 300, 150, 25, };
+	int vsizes[] = { 150, -100, 150, 25, };
 	int button_sizes[] = { 100, 100, };
 
-	root->layout.reset(new vstack(vsizes, vsizes + _countof(vsizes), 5));
+	root->layout.reset(new vstack(vsizes, vsizes + _countof(vsizes), 3));
 
 	shared_ptr<listview> lv_parents = static_pointer_cast<listview>(root->create_widget(L"listview", L"parents"));
 	shared_ptr<listview> lv_main = static_pointer_cast<listview>(root->create_widget(L"listview", L"main"));
 	shared_ptr<listview> lv_children = static_pointer_cast<listview>(root->create_widget(L"listview", L"children"));
 	shared_ptr<container> buttons = root->create_container(L"buttons");
 
-	buttons->layout.reset(new hstack(button_sizes, button_sizes + _countof(button_sizes), 5));
+	buttons->layout.reset(new hstack(button_sizes, button_sizes + _countof(button_sizes), 3));
 
 	buttons->create_widget(L"button", L"1");
 	buttons->create_widget(L"button", L"2");

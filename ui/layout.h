@@ -34,7 +34,7 @@ namespace wpl
 
 			virtual ~layout_manager() {	}
 
-			virtual void layout(size_t width, size_t height, widget_position *widgets, size_t count) const = 0;
+			virtual void layout(unsigned width, unsigned height, widget_position *widgets, size_t count) const = 0;
 		};
 
 		struct layout_manager::position
@@ -49,16 +49,17 @@ namespace wpl
 		{
 		public:
 			template <typename InputIterator>
-			stack(InputIterator begin, InputIterator end, size_t spacing);
+			stack(InputIterator begin, InputIterator end, unsigned spacing);
 
-			void layout(size_t shared_size, size_t common_size, layout_manager::widget_position *widgets, size_t count) const;
+			void layout(unsigned shared_size, unsigned common_size, layout_manager::widget_position * const widgets,
+				const size_t count) const;
 
 		protected:
 			typedef stack base;
 
 		private:
 			const std::vector<int> _sizes;
-			const size_t _spacing;
+			const unsigned _spacing;
 		};
 
 
@@ -67,9 +68,9 @@ namespace wpl
 		{
 		public:
 			template <typename InputIterator>
-			hstack(InputIterator begin, InputIterator end, size_t spacing);
+			hstack(InputIterator begin, InputIterator end, unsigned spacing);
 
-			virtual void layout(size_t width, size_t height, widget_position *widgets, size_t count) const;
+			virtual void layout(unsigned width, unsigned height, widget_position *widgets, size_t count) const;
 		};
 
 
@@ -78,9 +79,9 @@ namespace wpl
 		{
 		public:
 			template <typename InputIterator>
-			vstack(InputIterator begin, InputIterator end, size_t spacing);
+			vstack(InputIterator begin, InputIterator end, unsigned spacing);
 
-			virtual void layout(size_t width, size_t height, widget_position *widgets, size_t count) const;
+			virtual void layout(unsigned width, unsigned height, widget_position *widgets, size_t count) const;
 		};
 
 
@@ -89,19 +90,19 @@ namespace wpl
 			int layout_manager::position::*CommonPosition, int layout_manager::position::*CommonSize>
 		template <typename InputIterator>
 		inline stack<SharedPosition, SharedSize, CommonPosition, CommonSize>::stack(InputIterator begin, InputIterator end,
-				size_t spacing)
+				unsigned spacing)
 			: _sizes(begin, end), _spacing(spacing)
 		{	}
 
 
 		template <typename InputIterator>
-		inline hstack::hstack(InputIterator begin, InputIterator end, size_t spacing)
+		inline hstack::hstack(InputIterator begin, InputIterator end, unsigned spacing)
 			: base(begin, end, spacing)
 		{	}
 
 
 		template <typename InputIterator>
-		inline vstack::vstack(InputIterator begin, InputIterator end, size_t spacing)
+		inline vstack::vstack(InputIterator begin, InputIterator end, unsigned spacing)
 			: base(begin, end, spacing)
 		{	}
 	}

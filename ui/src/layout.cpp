@@ -28,27 +28,42 @@ namespace wpl
 	{
 		template <int layout_manager::position::*SharedPosition, int layout_manager::position::*SharedSize,
 			int layout_manager::position::*CommonPosition, int layout_manager::position::*CommonSize>
-		inline void stack<SharedPosition, SharedSize, CommonPosition, CommonSize>::layout(size_t /*shared_size*/,
-			size_t common_size, layout_manager::widget_position *widgets, size_t count) const
+		inline void stack<SharedPosition, SharedSize, CommonPosition, CommonSize>::layout(unsigned shared_size,
+			unsigned common_size, layout_manager::widget_position * const widgets, const size_t count) const
 		{
 			vector<int>::const_iterator i;
+			int remainder = shared_size, relative_base;
 			int location;
+			layout_manager::widget_position *w;
+			size_t c;
 
-			for (i = _sizes.begin(), location = 0; count; location += *i + _spacing, ++widgets, ++i, --count)
+			for (i = _sizes.begin(), relative_base = 0; count && i != _sizes.end(); ++i)
 			{
-				widgets->second.*SharedPosition = location;
-				widgets->second.*CommonPosition = 0;
-				widgets->second.*SharedSize = *i;
-				widgets->second.*CommonSize = common_size;
+				remainder -= *i > 0 ? *i : 0;
+				relative_base += *i < 0 ? *i : 0;
+			}
+
+			remainder -= (static_cast<unsigned>(_sizes.size()) - 1) * _spacing;
+
+			for (i = _sizes.begin(), location = 0, w = widgets, c = count; c; ++w, ++i, --c)
+			{
+				int size = *i > 0 ? *i : *i * remainder / relative_base;
+
+				w->second.*SharedPosition = location;
+				w->second.*CommonPosition = 0;
+				w->second.*SharedSize = size;
+				w->second.*CommonSize = common_size;
+
+				location += size + _spacing;
 			}
 		}
 
 
-		void hstack::layout(size_t width, size_t height, widget_position *widgets, size_t count) const
+		void hstack::layout(unsigned width, unsigned height, widget_position *widgets, size_t count) const
 		{	base::layout(width, height, widgets, count);	}
 
 
-		void vstack::layout(size_t width, size_t height, widget_position *widgets, size_t count) const
+		void vstack::layout(unsigned width, unsigned height, widget_position *widgets, size_t count) const
 		{	base::layout(height, width, widgets, count);	}
 	}
 }
