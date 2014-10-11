@@ -17,17 +17,6 @@ namespace wpl
 	{
 		namespace tests
 		{
-			namespace
-			{
-				widget_ptr create_widget(ut::window_tracker &wt, container &c, const wstring &type, const wstring &id)
-				{
-					widget_ptr w = c.create_widget(type, id);
-
-					wt.checkpoint();
-					return w;
-				}
-			}
-
 			typedef pair<shared_ptr<form>, HWND> form_and_handle;
 
 			form_and_handle create_form_with_handle();

@@ -20,14 +20,14 @@ namespace ut
 		std::vector<position> positions;
 
 	private:
-		virtual void layout(size_t width, size_t height, widget_position *widgets, size_t count) const;
+		virtual void layout(unsigned width, unsigned height, widget_position *widgets, size_t count) const;
 	};
 
 
 	class fill_layout : public wpl::ui::layout_manager
 	{
 	private:
-		virtual void layout(size_t width, size_t height, widget_position *widgets, size_t count) const;
+		virtual void layout(unsigned width, unsigned height, widget_position *widgets, size_t count) const;
 	};
 
 

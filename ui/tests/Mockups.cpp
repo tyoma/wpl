@@ -9,7 +9,7 @@ using namespace std;
 
 namespace ut
 {
-	void logging_layout_manager::layout(size_t width, size_t height, widget_position *widgets, size_t count) const
+	void logging_layout_manager::layout(unsigned width, unsigned height, widget_position *widgets, size_t count) const
 	{
 		reposition_log.push_back(make_pair(width, height));
 		last_widgets.assign(widgets, widgets + count);
@@ -20,7 +20,7 @@ namespace ut
 	}
 
 
-	void fill_layout::layout(size_t width, size_t height, widget_position *widgets, size_t count) const
+	void fill_layout::layout(unsigned width, unsigned height, widget_position *widgets, size_t count) const
 	{
 		const position p = { 0, 0, width, height };
 

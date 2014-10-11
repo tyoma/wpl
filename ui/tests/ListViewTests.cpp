@@ -1,4 +1,6 @@
 #include <wpl/ui/listview.h>
+
+#include <wpl/ui/form.h>
 #include <wpl/ui/win32/controls.h>
 #include <wpl/ui/win32/native_view.h>
 
@@ -183,10 +185,10 @@ namespace wpl
 					return item.cxy;
 				}
 
-				vector<int> get_matching_indices(HWND hlv, unsigned int mask)
+				vector<size_t> get_matching_indices(HWND hlv, unsigned int mask)
 				{
 					int i = -1;
-					vector<int> result;
+					vector<size_t> result;
 
 					mask &= LVNI_STATEMASK;
 					while (i = ListView_GetNextItem(hlv, i, LVNI_ALL | mask), i != -1)
@@ -216,6 +218,22 @@ namespace wpl
 				}
 
 			public:
+				[TestMethod]
+				void CreateListView()
+				{
+					// INIT
+					shared_ptr<form> f = form::create();
+					ut::window_tracker wt(L"SysListView32");
+
+					// ACT
+					shared_ptr<listview> lv = static_pointer_cast<listview>(create_widget(wt, *f->get_root_container(), L"listview", L"1"));
+
+					// ASSERT
+					Assert::IsTrue(!!lv);
+					Assert::IsTrue(1u == wt.created.size());
+					Assert::IsTrue((LVS_REPORT | LVS_OWNERDATA) == ((LVS_REPORT | LVS_OWNERDATA) & ::GetWindowLong(wt.created[0], GWL_STYLE)));
+				}
+
 				[TestMethod]
 				void WrongWrappingLeadsToException()
 				{
@@ -1225,7 +1243,7 @@ namespace wpl
 					// INIT
 					HWND hlv = create_listview();
 					shared_ptr<listview> lv(wrap_listview(hlv));
-					vector<int> selection;
+					vector<size_t> selection;
 
 					lv->set_model(model_ptr(new mock_model(7)));
 
@@ -1264,7 +1282,7 @@ namespace wpl
 					// INIT
 					HWND hlv = create_listview();
 					shared_ptr<listview> lv(wrap_listview(hlv));
-					vector<int> selection;
+					vector<size_t> selection;
 
 					lv->set_model(model_ptr(new mock_model(7)));
 
@@ -1477,7 +1495,7 @@ namespace wpl
 					shared_ptr<listview> lv(wrap_listview(hlv));
 					model_ptr m(new mock_model(100));
 					trackable_ptr t(mock_trackable::add(m->trackables, 5));
-					vector<int> matched;
+					vector<size_t> matched;
 
 					lv->set_model(m);
 

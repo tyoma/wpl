@@ -25,6 +25,7 @@
 
 #include <tchar.h>
 #include <windows.h>
+#include <commctrl.h>
 
 using namespace std;
 
@@ -41,7 +42,8 @@ namespace wpl
 
 			if (L"listview" == type)
 			{
-				h = ::CreateWindow(_T("SysListView32"), NULL, WS_CHILD | WS_VISIBLE, 0, 0, 10, 10, parent, NULL, NULL, NULL);
+				h = ::CreateWindow(_T("SysListView32"), NULL, WS_CHILD | WS_VISIBLE | LVS_REPORT | LVS_OWNERDATA,
+					0, 0, 10, 10, parent, NULL, NULL, NULL);
 				w = wrap_listview(h);
 			}
 			else if (L"button" == type)

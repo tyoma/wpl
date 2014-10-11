@@ -14,14 +14,27 @@ namespace std
 	using tr1::shared_ptr;
 }
 
+namespace wpl
+{
+	namespace ui
+	{
+		class container;
+		struct widget;
+	}
+}
+
 typedef struct HWND__ *HWND;	// stolen from windows.h
 typedef struct tagRECT RECT;
 
 namespace ut
 {
+	class window_tracker;
+
 	RECT get_window_rect(HWND hwnd);
 	RECT rect(int left, int top, int width, int height);
 	std::wstring get_window_text(HWND hwnd);
+	std::shared_ptr<wpl::ui::widget> create_widget(window_tracker &wt, wpl::ui::container &c, const std::wstring &type,
+		const std::wstring &id);
 
 
 	[Microsoft::VisualStudio::TestTools::UnitTesting::TestClass]

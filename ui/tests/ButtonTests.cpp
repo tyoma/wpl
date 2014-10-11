@@ -24,14 +24,6 @@ namespace wpl
 		{
 			namespace
 			{
-				widget_ptr create_widget(ut::window_tracker &wt, container &c, const wstring &type, const wstring &id)
-				{
-					widget_ptr w = c.create_widget(type, id);
-
-					wt.checkpoint();
-					return w;
-				}
-
 				void increment(int *counter)
 				{	++*counter;	}
 			}
