@@ -32,12 +32,11 @@ namespace wpl
 			unsigned common_size, layout_manager::widget_position * const widgets, const size_t count) const
 		{
 			vector<int>::const_iterator i;
-			int remainder = shared_size, relative_base;
-			int location;
+			int remainder, relative_base, location;
 			layout_manager::widget_position *w;
 			size_t c;
 
-			for (i = _sizes.begin(), relative_base = 0; count && i != _sizes.end(); ++i)
+			for (i = _sizes.begin(), remainder = shared_size, relative_base = 0; count && i != _sizes.end(); ++i)
 			{
 				remainder -= *i > 0 ? *i : 0;
 				relative_base += *i < 0 ? *i : 0;
