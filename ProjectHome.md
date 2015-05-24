@@ -1,0 +1,1 @@
+Handful foundation of your native Windows application with clear and simple C++ interface.
