@@ -41,7 +41,7 @@ namespace ut
 	public ref class WindowTestsBase
 	{
 		std::vector<HWND> *_windows;
-		std::vector< std::shared_ptr<wpl::destructible> > *_connections;
+		std::vector< std::shared_ptr<void> > *_connections;
 
 	protected:
 		HWND create_window();

@@ -48,7 +48,7 @@ namespace wpl
 				shared_ptr<columns_model> _columns_model;
 				shared_ptr<model> _model;
 				shared_ptr<window> _listview;
-				shared_ptr<destructible> _advisory, _invalidated_connection, _sort_order_changed_connection;
+				shared_ptr<void> _advisory, _invalidated_connection, _sort_order_changed_connection;
 				columns_model::index_type _sort_column;
 				shared_ptr<const trackable> _focused_item;
 				selection_trackers _selected_items;

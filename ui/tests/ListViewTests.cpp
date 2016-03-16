@@ -968,7 +968,7 @@ namespace wpl
 					vector<listview::index_type> selections;
 					HWND hlv = create_listview();
 					shared_ptr<listview> lv(wrap_listview(hlv));
-					shared_ptr<destructible> c =
+					slot_connection c =
 						lv->item_activate += bind(&push_back<listview::index_type>, ref(selections), _1);
 					NMITEMACTIVATE nm = {	{	0, 0, LVN_ITEMACTIVATE	},	};
 
@@ -1006,7 +1006,7 @@ namespace wpl
 					vector<bool> selection_states;
 					HWND hlv = create_listview();
 					shared_ptr<listview> lv(wrap_listview(hlv));
-					shared_ptr<destructible>
+					slot_connection
 						c1 = lv->selection_changed += bind(&push_back<listview::index_type>, ref(selection_indices), _1),
 						c2 = lv->selection_changed += bind(&push_back<bool>, ref(selection_states), _2);
 					NMLISTVIEW nmlv = {
@@ -1035,7 +1035,7 @@ namespace wpl
 					vector<bool> selection_states;
 					HWND hlv = create_listview();
 					shared_ptr<listview> lv(wrap_listview(hlv));
-					shared_ptr<destructible>
+					slot_connection
 						c1 = lv->selection_changed += bind(&push_back<listview::index_type>, ref(selection_indices), _1),
 						c2 = lv->selection_changed += bind(&push_back<bool>, ref(selection_states), _2);
 					NMLISTVIEW nmlv = {

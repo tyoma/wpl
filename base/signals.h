@@ -20,8 +20,6 @@
 
 #pragma once
 
-#include "concepts.h"
-
 #include <functional>
 #include <memory>
 #include <vector>
@@ -34,7 +32,7 @@ namespace std
 
 namespace wpl
 {
-	typedef std::shared_ptr<destructible> slot_connection;
+	typedef std::shared_ptr<void> slot_connection;
 
 	template <typename F>
 	class signal
@@ -101,14 +99,14 @@ namespace wpl
 
 
 	template <typename F>
-	class signal<F>::auto_connection : public destructible
+	class signal<F>::auto_connection
 	{
 		_slots_ptr_t _slots;
 		size_t _index;
 
 	public:
 		auto_connection(const _slots_ptr_t slots, size_t index);
-		virtual ~auto_connection() throw();
+		~auto_connection() throw();
 	};
 
 

@@ -20,8 +20,6 @@
 
 #pragma once
 
-#include "../../base/concepts.h"
-
 #include <windows.h>
 #include <memory>
 #include <functional>
@@ -69,7 +67,7 @@ namespace wpl
 			static std::shared_ptr<window> attach(HWND hwnd);
 			bool detach() throw();
 
-			std::shared_ptr<destructible> advise(const user_handler_t &user_handler);
+			std::shared_ptr<void> advise(const user_handler_t &user_handler);
 			void unadvise() throw();
 
 			HWND hwnd() const throw();

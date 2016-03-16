@@ -198,7 +198,7 @@ namespace wpl
 					TCHAR buffer[5] = { 0 };
 
 					// ACT
-					shared_ptr<destructible> c(w->advise(bind(&handler::on_message, &h, _1, _2, _3, _4)));
+					shared_ptr<void> c(w->advise(bind(&handler::on_message, &h, _1, _2, _3, _4)));
 					::SetWindowText(hwnd, s1);
 					::SetWindowText(hwnd, s2);
 					::GetWindowText(hwnd, buffer, 3);
@@ -225,7 +225,7 @@ namespace wpl
 					handler h;
 					shared_ptr<window> w(window::attach(hwnd));
 
-					shared_ptr<destructible> c(w->advise(bind(&handler::on_message, &h, _1, _2, _3, _4)));
+					shared_ptr<void> c(w->advise(bind(&handler::on_message, &h, _1, _2, _3, _4)));
 
 					// ACT
 					h.myresult = 123;
@@ -247,7 +247,7 @@ namespace wpl
 					handler h;
 					shared_ptr<window> w(window::attach(hwnd));
 
-					shared_ptr<destructible> c(w->advise(bind(&handler::on_message, &h, _1, _2, _3, _4)));
+					shared_ptr<void> c(w->advise(bind(&handler::on_message, &h, _1, _2, _3, _4)));
 
 					// ACT
 					::SetWindowText(hwnd, _T("allowed"));
@@ -270,7 +270,7 @@ namespace wpl
 					HWND hwnd = create_window();
 					handler h;
 					shared_ptr<window> w(window::attach(hwnd));
-					shared_ptr<destructible> c(w->advise(bind(&handler::on_message, &h, _1, _2, _3, _4)));
+					shared_ptr<void> c(w->advise(bind(&handler::on_message, &h, _1, _2, _3, _4)));
 
 					::SetWindowText(hwnd, _T("allowed"));
 					::SetWindowText(hwnd, _T("disallowed"));
@@ -298,7 +298,7 @@ namespace wpl
 					HWND hwnd = create_window();
 					bool property_exists = true;
 					shared_ptr<window> w(window::attach(hwnd));
-					shared_ptr<destructible> c(w->advise(bind(&checker_handler, hwnd, &property_exists)));
+					shared_ptr<void> c(w->advise(bind(&checker_handler, hwnd, &property_exists)));
 
 					// ACT / ASSERT
 					Assert::IsTrue(::GetProp(hwnd, _T("IntegricityWrapperPtr")) != 0);

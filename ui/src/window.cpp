@@ -20,6 +20,8 @@
 
 #include "../win32/window.h"
 
+#include "../../base/concepts.h"
+
 #include <tchar.h>
 #include <stdexcept>
 
@@ -32,23 +34,6 @@ namespace wpl
 		namespace
 		{
 			const TCHAR c_wrapper_ptr_name[] = _T("IntegricityWrapperPtr");
-
-			class disconnector : noncopyable, public destructible
-			{
-				shared_ptr<window> _target;
-
-			public:
-				disconnector(shared_ptr<window> target);
-				~disconnector() throw();
-			};
-
-
-			disconnector::disconnector(shared_ptr<window> target)
-				: _target(target)
-			{	}
-
-			disconnector::~disconnector() throw()
-			{	_target->unadvise();	}
 		}
 
 
@@ -115,10 +100,24 @@ namespace wpl
 			return true;
 		}
 
-		shared_ptr<destructible> window::advise(const user_handler_t &user_handler)
+		shared_ptr<void> window::advise(const user_handler_t &user_handler)
 		{
+			class connection : noncopyable
+			{
+			public:
+				connection(const shared_ptr<window> &w)
+					: _window(w)
+				{	}
+
+				~connection()
+				{	_window->unadvise();	}
+
+			private:
+				const shared_ptr<window> _window;
+			};
+
 			_user_handler = user_handler;
-			return shared_ptr<destructible>(new disconnector(shared_from_this()));
+			return shared_ptr<void>(new connection(shared_from_this()));
 		}
 
 		void window::unadvise() throw()

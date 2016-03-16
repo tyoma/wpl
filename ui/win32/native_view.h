@@ -22,6 +22,8 @@
 
 #include "../widget.h"
 
+#include "../../base/concepts.h"
+
 typedef struct HWND__ *HWND;
 
 namespace wpl

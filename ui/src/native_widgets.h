@@ -40,7 +40,7 @@ namespace wpl
 
 		private:
 			std::shared_ptr<window> _window;
-			std::shared_ptr<destructible> _advisory;
+			std::shared_ptr<void> _advisory;
 		};
 	}
 }

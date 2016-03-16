@@ -91,7 +91,7 @@ namespace ut
 
 
 	WindowTestsBase::WindowTestsBase()
-		: _windows(new vector<HWND>()), _connections(new vector< shared_ptr<wpl::destructible> >)
+		: _windows(new vector<HWND>()), _connections(new vector< shared_ptr<void> >)
 	{	}
 
 	WindowTestsBase::~WindowTestsBase()

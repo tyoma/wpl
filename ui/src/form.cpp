@@ -53,7 +53,7 @@ namespace wpl
 			class form_impl : public form
 			{
 				shared_ptr<window> _window;
-				shared_ptr<destructible> _advisory;
+				shared_ptr<void> _advisory;
 				shared_ptr<native_container> _container;
 
 				virtual shared_ptr<container> get_root_container();

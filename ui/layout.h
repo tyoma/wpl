@@ -22,6 +22,8 @@
 
 #include "widget.h"
 
+#include "../base/concepts.h"
+
 namespace wpl
 {
 	namespace ui
