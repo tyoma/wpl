@@ -1,6 +1,7 @@
 #include <wpl/ui/geometry.h>
 
-using namespace Microsoft::VisualStudio::TestTools::UnitTesting;
+#include <ut/assert.h>
+#include <ut/test.h>
 
 namespace wpl
 {
@@ -8,12 +9,9 @@ namespace wpl
 	{
 		namespace tests
 		{
-			[TestClass]
-			public ref class GeometryBasicsTests
-			{
-			public: 
-				[TestMethod]
-				void CreatedTransformMakesNoChangesInMap()
+			begin_test_suite( GeometryBasicsTests )
+
+				test( CreatedTransformMakesNoChangesInMap )
 				{
 					// INIT
 					transform t;
@@ -24,15 +22,14 @@ namespace wpl
 					t.map(x2, y2);
 
 					// ASSERT
-					Assert::IsTrue(x1 == 1);
-					Assert::IsTrue(y1 == 3);
-					Assert::IsTrue(x2 == 5);
-					Assert::IsTrue(y2 == 7);
+					assert_equal(1, x1);
+					assert_equal(3, y1);
+					assert_equal(5, x2);
+					assert_equal(7, y2);
 				}
 
 
-				[TestMethod]
-				void CreatedTransformMakesNoChangesInUnmap()
+				test( CreatedTransformMakesNoChangesInUnmap )
 				{
 					// INIT
 					transform t;
@@ -43,15 +40,14 @@ namespace wpl
 					t.unmap(x2, y2);
 
 					// ASSERT
-					Assert::IsTrue(x1 == 7);
-					Assert::IsTrue(y1 == 5);
-					Assert::IsTrue(x2 == 3);
-					Assert::IsTrue(y2 == 1);
+					assert_equal(7, x1);
+					assert_equal(5, y1);
+					assert_equal(3, x2);
+					assert_equal(1, y2);
 				}
 
 
-				[TestMethod]
-				void MapPointAccordinglyToOrigin()
+				test( MapPointAccordinglyToOrigin )
 				{
 					// INIT
 					transform t;
@@ -62,21 +58,20 @@ namespace wpl
 					t.map(x, y);
 
 					// ASSERT
-					Assert::IsTrue(x == -12);
-					Assert::IsTrue(y == 2);
+					assert_equal(x, -12);
+					assert_equal(2, y);
 
 					// ACT
 					t.set_origin(-12, 1);
 					t.map(x, y);
 
 					// ASSERT
-					Assert::IsTrue(x == 0);
-					Assert::IsTrue(y == 1);
+					assert_equal(0, x);
+					assert_equal(1, y);
 				}
 
 
-				[TestMethod]
-				void UnmapPointAccordinglyToOrigin()
+				test( UnmapPointAccordinglyToOrigin )
 				{
 					// INIT
 					transform t;
@@ -87,18 +82,18 @@ namespace wpl
 					t.unmap(x, y);
 
 					// ASSERT
-					Assert::IsTrue(x == 18);
-					Assert::IsTrue(y == 12);
+					assert_equal(18, x);
+					assert_equal(12, y);
 
 					// ACT
 					t.set_origin(-12, 1);
 					t.unmap(x, y);
 
 					// ASSERT
-					Assert::IsTrue(x == 6);
-					Assert::IsTrue(y == 13);
+					assert_equal(6, x);
+					assert_equal(13, y);
 				}
-			};
+			end_test_suite
 		}
 	}
 }

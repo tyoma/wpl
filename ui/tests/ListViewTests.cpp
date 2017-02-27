@@ -6,11 +6,14 @@
 
 #include "Mockups.h"
 #include "TestHelpers.h"
+
 #include <windows.h>
 #include <commctrl.h>
-#include <olectl.h>
-#include <atlstr.h>
 #include <map>
+#include <olectl.h>
+#include <tchar.h>
+#include <ut/assert.h>
+#include <ut/test.h>
 
 namespace std
 {
@@ -21,7 +24,6 @@ namespace std
 }
 
 using namespace std;
-using namespace Microsoft::VisualStudio::TestTools::UnitTesting;
 
 namespace wpl
 {
@@ -60,8 +62,7 @@ namespace wpl
 
 					virtual void get_text(index_type row, index_type column, wstring &text) const
 					{
-						if (row >= items.size())
-							Assert::Fail("Requested item is at invalid index!");
+						assert_is_true(row < items.size());
 						text = items[row][column];
 					}
 
@@ -162,17 +163,16 @@ namespace wpl
 					return (item.fmt & HDF_SORTUP) ? dir_ascending : (item.fmt & HDF_SORTDOWN) ? dir_descending : dir_none;
 				}
 
-				CString get_column_text(HWND hlv, listview::index_type column)
+				basic_string<TCHAR> get_column_text(HWND hlv, listview::index_type column)
 				{
-					CString buffer;
 					HDITEM item = { 0 };
 					HWND hheader = ListView_GetHeader(hlv);
+					vector<TCHAR> buffer(item.cchTextMax = 100);
 					
 					item.mask = HDI_TEXT;
-					item.pszText = buffer.GetBuffer(item.cchTextMax = 100);
+					item.pszText = &buffer[0];
 					Header_GetItem(hheader, column, &item);
-					buffer.ReleaseBuffer();
-					return buffer;
+					return item.pszText;
 				}
 
 				int get_column_width(HWND hlv, listview::index_type column)
@@ -206,62 +206,69 @@ namespace wpl
 				}
 			}
 
-			[TestClass]
-			public ref class ListViewTests : ut::WindowTestsBase
-			{
-				HWND create_listview()
-				{
-					HWND hparent = create_visible_window();
+			begin_test_suite( ListViewTests )
 
-					enable_reflection(hparent);
-					return create_window(_T("SysListView32"), hparent, WS_CHILD | WS_VISIBLE | LVS_REPORT | LVS_OWNERDATA, 0);
+				WindowManager windowManager;
+
+				init( Init )
+				{
+					windowManager.Init();
 				}
 
-			public:
-				[TestMethod]
-				void CreateListView()
+				teardown( Cleanup )
+				{
+					windowManager.Cleanup();
+				}
+
+				HWND create_listview()
+				{
+					HWND hparent = windowManager.create_visible_window();
+
+					windowManager.enable_reflection(hparent);
+					return windowManager.create_window(_T("SysListView32"), hparent,
+						WS_CHILD | WS_VISIBLE | LVS_REPORT | LVS_OWNERDATA, 0);
+				}
+
+				test( CreateListView )
 				{
 					// INIT
 					shared_ptr<form> f = form::create();
-					ut::window_tracker wt(L"SysListView32");
+					window_tracker wt(L"SysListView32");
 
 					// ACT
 					shared_ptr<listview> lv = static_pointer_cast<listview>(create_widget(wt, *f->get_root_container(), L"listview", L"1"));
 
 					// ASSERT
-					Assert::IsTrue(!!lv);
-					Assert::IsTrue(1u == wt.created.size());
-					Assert::IsTrue((LVS_REPORT | LVS_OWNERDATA) == ((LVS_REPORT | LVS_OWNERDATA) & ::GetWindowLong(wt.created[0], GWL_STYLE)));
+					assert_not_null(lv);
+					assert_equal(1u, wt.created.size());
+					assert_equal((LVS_REPORT | LVS_OWNERDATA), ((LVS_REPORT | LVS_OWNERDATA) & ::GetWindowLong(wt.created[0], GWL_STYLE)));
 				}
 
-				[TestMethod]
-				void WrongWrappingLeadsToException()
+				test( WrongWrappingLeadsToException )
 				{
 					// INIT
 					HWND wrong_hwnd1 = (HWND)0x12345678;
-					HWND wrong_hwnd2 = create_window();
+					HWND wrong_hwnd2 = windowManager.create_window();
 
-					destroy_window(wrong_hwnd2);
+					windowManager.destroy_window(wrong_hwnd2);
 
 					// ACT / ASSERT
-					ASSERT_THROWS(wrap_listview(wrong_hwnd1), invalid_argument);
-					ASSERT_THROWS(wrap_listview(wrong_hwnd2), invalid_argument);
+					assert_throws(wrap_listview(wrong_hwnd1), invalid_argument);
+					assert_throws(wrap_listview(wrong_hwnd2), invalid_argument);
 				}
 
 
-				[TestMethod]
-				void WrapListViewGetNonNullPtr()
+				test( WrapListViewGetNonNullPtr )
 				{
 					// INIT
-					HWND hlv = create_window(_T("SysListView32"));
+					HWND hlv = windowManager.create_window(_T("SysListView32"));
 
 					// ACT / ASSERT
-					Assert::IsTrue(wrap_listview(hlv) != 0);
+					assert_not_null(wrap_listview(hlv));
 				}
 
 
-				[TestMethod]
-				void ListViewItemsCountSetOnSettingModel()
+				test( ListViewItemsCountSetOnSettingModel )
 				{
 					// INIT
 					HWND hlv = create_listview();
@@ -271,18 +278,17 @@ namespace wpl
 					lv->set_model(model_ptr(new mock_model(11)));
 
 					// ASSERT
-					Assert::IsTrue(ListView_GetItemCount(hlv) == 11);
+					assert_equal(11, ListView_GetItemCount(hlv));
 
 					// ACT
 					lv->set_model(model_ptr(new mock_model(23)));
 
 					// ASSERT
-					Assert::IsTrue(ListView_GetItemCount(hlv) == 23);
+					assert_equal(23, ListView_GetItemCount(hlv));
 				}
 
 
-				[TestMethod]
-				void ColumnsByTextAreBeingAddedAccordinglyToTheColumnsModel()
+				test( ColumnsByTextAreBeingAddedAccordinglyToTheColumnsModel )
 				{
 					// INIT
 					HWND hlv = create_listview();
@@ -297,15 +303,14 @@ namespace wpl
 					lv->set_columns_model(mock_columns_model::create(columns, listview::columns_model::npos, false));
 
 					// ASSERT
-					Assert::IsTrue(3 == get_columns_count(hlv));
-					Assert::IsTrue(_T("Contract") == get_column_text(hlv, 0));
-					Assert::IsTrue(_T("Price") == get_column_text(hlv, 1));
-					Assert::IsTrue(_T("Volume") == get_column_text(hlv, 2));
+					assert_equal(3u, get_columns_count(hlv));
+					assert_equal(_T("Contract"), get_column_text(hlv, 0));
+					assert_equal(_T("Price"), get_column_text(hlv, 1));
+					assert_equal(_T("Volume"), get_column_text(hlv, 2));
 				}
 
 
-				[TestMethod]
-				void ColumnsAreResetOnNewColumnsModelSetting()
+				test( ColumnsAreResetOnNewColumnsModelSetting )
 				{
 					// INIT
 					HWND hlv = create_listview();
@@ -320,13 +325,12 @@ namespace wpl
 					lv->set_columns_model(mock_columns_model::create(L"Team"));
 
 					// ASSERT
-					Assert::IsTrue(1 == get_columns_count(hlv));
-					Assert::IsTrue(_T("Team") == get_column_text(hlv, 0));
+					assert_equal(1u, get_columns_count(hlv));
+					assert_equal(_T("Team"), get_column_text(hlv, 0));
 				}
 
 
-				[TestMethod]
-				void ListViewInvalidatedOnModelInvalidate()
+				test( ListViewInvalidatedOnModelInvalidate )
 				{
 					// INIT
 					HWND hlv = create_listview();
@@ -340,18 +344,17 @@ namespace wpl
 					::UpdateWindow(hlv);
 
 					// ASSERT
-					Assert::IsFalse(!!::GetUpdateRect(hlv, NULL, FALSE));
+					assert_is_false(!!::GetUpdateRect(hlv, NULL, FALSE));
 
 					// ACT
 					m->invalidated(11);
 
 					// ASSERT
-					Assert::IsTrue(!!::GetUpdateRect(hlv, NULL, FALSE));
+					assert_not_null(::GetUpdateRect(hlv, NULL, FALSE));
 				}
 
 
-				[TestMethod]
-				void ChangingItemsCountIsTrackedByListView()
+				test( ChangingItemsCountIsTrackedByListView )
 				{
 					// INIT
 					HWND hlv = create_listview();
@@ -364,18 +367,17 @@ namespace wpl
 					m->set_count(3);
 
 					// ASSERT
-					Assert::IsTrue(ListView_GetItemCount(hlv) == 3);
+					assert_equal(3, ListView_GetItemCount(hlv));
 
 					// ACT
 					m->set_count(13);
 
 					// ASSERT
-					Assert::IsTrue(ListView_GetItemCount(hlv) == 13);
+					assert_equal(13, ListView_GetItemCount(hlv));
 				}
 
 
-				[TestMethod]
-				void InvalidationsFromOldModelsAreNotAccepted()
+				test( InvalidationsFromOldModelsAreNotAccepted )
 				{
 					// INIT
 					HWND hlv = create_listview();
@@ -389,12 +391,11 @@ namespace wpl
 					m1->set_count(3);
 
 					// ASSERT
-					Assert::IsTrue(7 == ListView_GetItemCount(hlv));
+					assert_equal(7, ListView_GetItemCount(hlv));
 				}
 
 
-				[TestMethod]
-				void ResettingModelSetsZeroItemsCountAndDisconnectsFromInvalidationEvent()
+				test( ResettingModelSetsZeroItemsCountAndDisconnectsFromInvalidationEvent )
 				{
 					// INIT
 					HWND hlv = create_listview();
@@ -407,18 +408,17 @@ namespace wpl
 					lv->set_model(shared_ptr<listview::model>());
 
 					// ASSERT
-					Assert::IsTrue(0 == ListView_GetItemCount(hlv));
+					assert_equal(0, ListView_GetItemCount(hlv));
 
 					// ACT
 					m->set_count(7);
 
 					// ASSERT
-					Assert::IsTrue(0 == ListView_GetItemCount(hlv));
+					assert_equal(0, ListView_GetItemCount(hlv));
 				}
 
 
-				[TestMethod]
-				void GettingDispInfoOtherThanTextIsNotFailing()
+				test( GettingDispInfoOtherThanTextIsNotFailing )
 				{
 					// INIT
 					HWND hlv = create_listview();
@@ -438,8 +438,7 @@ namespace wpl
 				}
 
 
-				[TestMethod]
-				void GettingItemTextNoTruncationANSI()
+				test( GettingItemTextNoTruncationANSI )
 				{
 					// INIT
 					HWND hlv = create_listview();
@@ -460,44 +459,43 @@ namespace wpl
 					// ACT / ASSERT
 					nmlvdi.item.iItem = 0, nmlvdi.item.iSubItem = 0;
 					::SendMessage(hlv, OCM_NOTIFY, 0, reinterpret_cast<LPARAM>(&nmlvdi));
-					Assert::IsTrue(0 == strcmp("one", buffer));
+					assert_equal(0, strcmp("one", buffer));
 
 					nmlvdi.item.iItem = 0, nmlvdi.item.iSubItem = 1;
 					::SendMessage(hlv, OCM_NOTIFY, 0, reinterpret_cast<LPARAM>(&nmlvdi));
-					Assert::IsTrue(0 == strcmp("two", buffer));
+					assert_equal(0, strcmp("two", buffer));
 
 					nmlvdi.item.iItem = 0, nmlvdi.item.iSubItem = 2;
 					::SendMessage(hlv, OCM_NOTIFY, 0, reinterpret_cast<LPARAM>(&nmlvdi));
-					Assert::IsTrue(0 == strcmp("three", buffer));
+					assert_equal(0, strcmp("three", buffer));
 
 					nmlvdi.item.iItem = 1, nmlvdi.item.iSubItem = 0;
 					::SendMessage(hlv, OCM_NOTIFY, 0, reinterpret_cast<LPARAM>(&nmlvdi));
-					Assert::IsTrue(0 == strcmp("four", buffer));
+					assert_equal(0, strcmp("four", buffer));
 
 					nmlvdi.item.iItem = 1, nmlvdi.item.iSubItem = 1;
 					::SendMessage(hlv, OCM_NOTIFY, 0, reinterpret_cast<LPARAM>(&nmlvdi));
-					Assert::IsTrue(0 == strcmp("five", buffer));
+					assert_equal(0, strcmp("five", buffer));
 
 					nmlvdi.item.iItem = 1, nmlvdi.item.iSubItem = 2;
 					::SendMessage(hlv, OCM_NOTIFY, 0, reinterpret_cast<LPARAM>(&nmlvdi));
-					Assert::IsTrue(0 == strcmp("six", buffer));
+					assert_equal(0, strcmp("six", buffer));
 
 					nmlvdi.item.iItem = 2, nmlvdi.item.iSubItem = 0;
 					::SendMessage(hlv, OCM_NOTIFY, 0, reinterpret_cast<LPARAM>(&nmlvdi));
-					Assert::IsTrue(0 == strcmp("seven", buffer));
+					assert_equal(0, strcmp("seven", buffer));
 
 					nmlvdi.item.iItem = 2, nmlvdi.item.iSubItem = 1;
 					::SendMessage(hlv, OCM_NOTIFY, 0, reinterpret_cast<LPARAM>(&nmlvdi));
-					Assert::IsTrue(0 == strcmp("eight", buffer));
+					assert_equal(0, strcmp("eight", buffer));
 
 					nmlvdi.item.iItem = 2, nmlvdi.item.iSubItem = 2;
 					::SendMessage(hlv, OCM_NOTIFY, 0, reinterpret_cast<LPARAM>(&nmlvdi));
-					Assert::IsTrue(0 == strcmp("NINE", buffer));
+					assert_equal(0, strcmp("NINE", buffer));
 				}
 
 
-				[TestMethod]
-				void GettingItemTextNoTruncationUnicode()
+				test( GettingItemTextNoTruncationUnicode )
 				{
 					// INIT
 					HWND hlv = create_listview();
@@ -518,44 +516,43 @@ namespace wpl
 					// ACT / ASSERT
 					nmlvdi.item.iItem = 0, nmlvdi.item.iSubItem = 0;
 					::SendMessage(hlv, OCM_NOTIFY, 0, reinterpret_cast<LPARAM>(&nmlvdi));
-					Assert::IsTrue(0 == wcscmp(L"one", buffer));
+					assert_equal(0, wcscmp(L"one", buffer));
 
 					nmlvdi.item.iItem = 0, nmlvdi.item.iSubItem = 1;
 					::SendMessage(hlv, OCM_NOTIFY, 0, reinterpret_cast<LPARAM>(&nmlvdi));
-					Assert::IsTrue(0 == wcscmp(L"two", buffer));
+					assert_equal(0, wcscmp(L"two", buffer));
 
 					nmlvdi.item.iItem = 0, nmlvdi.item.iSubItem = 2;
 					::SendMessage(hlv, OCM_NOTIFY, 0, reinterpret_cast<LPARAM>(&nmlvdi));
-					Assert::IsTrue(0 == wcscmp(L"three", buffer));
+					assert_equal(0, wcscmp(L"three", buffer));
 
 					nmlvdi.item.iItem = 1, nmlvdi.item.iSubItem = 0;
 					::SendMessage(hlv, OCM_NOTIFY, 0, reinterpret_cast<LPARAM>(&nmlvdi));
-					Assert::IsTrue(0 == wcscmp(L"four", buffer));
+					assert_equal(0, wcscmp(L"four", buffer));
 
 					nmlvdi.item.iItem = 1, nmlvdi.item.iSubItem = 1;
 					::SendMessage(hlv, OCM_NOTIFY, 0, reinterpret_cast<LPARAM>(&nmlvdi));
-					Assert::IsTrue(0 == wcscmp(L"five", buffer));
+					assert_equal(0, wcscmp(L"five", buffer));
 
 					nmlvdi.item.iItem = 1, nmlvdi.item.iSubItem = 2;
 					::SendMessage(hlv, OCM_NOTIFY, 0, reinterpret_cast<LPARAM>(&nmlvdi));
-					Assert::IsTrue(0 == wcscmp(L"six", buffer));
+					assert_equal(0, wcscmp(L"six", buffer));
 
 					nmlvdi.item.iItem = 2, nmlvdi.item.iSubItem = 0;
 					::SendMessage(hlv, OCM_NOTIFY, 0, reinterpret_cast<LPARAM>(&nmlvdi));
-					Assert::IsTrue(0 == wcscmp(L"seven", buffer));
+					assert_equal(0, wcscmp(L"seven", buffer));
 
 					nmlvdi.item.iItem = 2, nmlvdi.item.iSubItem = 1;
 					::SendMessage(hlv, OCM_NOTIFY, 0, reinterpret_cast<LPARAM>(&nmlvdi));
-					Assert::IsTrue(0 == wcscmp(L"eight", buffer));
+					assert_equal(0, wcscmp(L"eight", buffer));
 
 					nmlvdi.item.iItem = 2, nmlvdi.item.iSubItem = 2;
 					::SendMessage(hlv, OCM_NOTIFY, 0, reinterpret_cast<LPARAM>(&nmlvdi));
-					Assert::IsTrue(0 == wcscmp(L"NINE", buffer));
+					assert_equal(0, wcscmp(L"NINE", buffer));
 				}
 
 
-				[TestMethod]
-				void GettingItemTextWithTruncationANSI()
+				test( GettingItemTextWithTruncationANSI )
 				{
 					// INIT
 					HWND hlv = create_listview();
@@ -574,20 +571,19 @@ namespace wpl
 					// ACT / ASSERT
 					nmlvdi.item.iItem = 0, nmlvdi.item.iSubItem = 0;
 					::SendMessage(hlv, OCM_NOTIFY, 0, reinterpret_cast<LPARAM>(&nmlvdi));
-					Assert::IsTrue(0 == strcmp("one", buffer));
+					assert_equal(0, strcmp("one", buffer));
 
 					nmlvdi.item.iItem = 0, nmlvdi.item.iSubItem = 1;
 					::SendMessage(hlv, OCM_NOTIFY, 0, reinterpret_cast<LPARAM>(&nmlvdi));
-					Assert::IsTrue(0 == strcmp("two", buffer));
+					assert_equal(0, strcmp("two", buffer));
 
 					nmlvdi.item.iItem = 0, nmlvdi.item.iSubItem = 2;
 					::SendMessage(hlv, OCM_NOTIFY, 0, reinterpret_cast<LPARAM>(&nmlvdi));
-					Assert::IsTrue(0 == strcmp("thr", buffer));
+					assert_equal(0, strcmp("thr", buffer));
 				}
 
 
-				[TestMethod]
-				void GettingItemTextWithTruncationUnicode()
+				test( GettingItemTextWithTruncationUnicode )
 				{
 					// INIT
 					HWND hlv = create_listview();
@@ -606,20 +602,19 @@ namespace wpl
 					// ACT / ASSERT
 					nmlvdi.item.iItem = 0, nmlvdi.item.iSubItem = 0;
 					::SendMessage(hlv, OCM_NOTIFY, 0, reinterpret_cast<LPARAM>(&nmlvdi));
-					Assert::IsTrue(0 == wcscmp(L"one", buffer));
+					assert_equal(0, wcscmp(L"one", buffer));
 
 					nmlvdi.item.iItem = 0, nmlvdi.item.iSubItem = 1;
 					::SendMessage(hlv, OCM_NOTIFY, 0, reinterpret_cast<LPARAM>(&nmlvdi));
-					Assert::IsTrue(0 == wcscmp(L"two", buffer));
+					assert_equal(0, wcscmp(L"two", buffer));
 
 					nmlvdi.item.iItem = 0, nmlvdi.item.iSubItem = 2;
 					::SendMessage(hlv, OCM_NOTIFY, 0, reinterpret_cast<LPARAM>(&nmlvdi));
-					Assert::IsTrue(0 == wcscmp(L"thr", buffer));
+					assert_equal(0, wcscmp(L"thr", buffer));
 				}
 
 
-				[TestMethod]
-				void ModelIsOrderedAccordinglyToColumnsModelSet()
+				test( ModelIsOrderedAccordinglyToColumnsModelSet )
 				{
 					// INIT
 					HWND hlv = create_listview();
@@ -637,25 +632,24 @@ namespace wpl
 					lv->set_columns_model(mock_columns_model::create(columns, 0, true));
 
 					// ASSERT
-					Assert::IsTrue(1 == m->ordering.size());
-					Assert::IsTrue(0 == m->ordering[0].first);
-					Assert::IsTrue(true == m->ordering[0].second);
+					assert_equal(1u, m->ordering.size());
+					assert_equal(0u, m->ordering[0].first);
+					assert_equal(true, m->ordering[0].second);
 
 					// ACT
 					lv->set_columns_model(mock_columns_model::create(columns, 2, false));
 					lv->set_columns_model(mock_columns_model::create(columns, 1, true));
 
 					// ASSERT
-					Assert::IsTrue(3 == m->ordering.size());
-					Assert::IsTrue(2 == m->ordering[1].first);
-					Assert::IsTrue(false == m->ordering[1].second);
-					Assert::IsTrue(1 == m->ordering[2].first);
-					Assert::IsTrue(true == m->ordering[2].second);
+					assert_equal(3u, m->ordering.size());
+					assert_equal(2u, m->ordering[1].first);
+					assert_equal(false, m->ordering[1].second);
+					assert_equal(1u, m->ordering[2].first);
+					assert_equal(true, m->ordering[2].second);
 				}
 
 
-				[TestMethod]
-				void ModelIsNotOrderedIfColumnsModelIsNotOrdered()
+				test( ModelIsNotOrderedIfColumnsModelIsNotOrdered )
 				{
 					// INIT
 					HWND hlv = create_listview();
@@ -672,12 +666,11 @@ namespace wpl
 					lv->set_columns_model(mock_columns_model::create(columns, listview::columns_model::npos, true));
 
 					// ASSERT
-					Assert::IsTrue(0 == m->ordering.size());
+					assert_is_empty(m->ordering);
 				}
 
 
-				[TestMethod]
-				void ModelIsSortedOnSortOrderChangedEvent()
+				test( ModelIsSortedOnSortOrderChangedEvent )
 				{
 					// INIT
 					HWND hlv = create_listview();
@@ -697,25 +690,24 @@ namespace wpl
 					cm->set_sort_order(1, false);
 
 					// ASSERT
-					Assert::IsTrue(1 == m->ordering.size());
-					Assert::IsTrue(1 == m->ordering[0].first);
-					Assert::IsTrue(false == m->ordering[0].second);
+					assert_equal(1u, m->ordering.size());
+					assert_equal(1u, m->ordering[0].first);
+					assert_equal(false, m->ordering[0].second);
 
 					// ACT
 					cm->set_sort_order(2, false);
 					cm->set_sort_order(0, true);
 
 					// ASSERT
-					Assert::IsTrue(3 == m->ordering.size());
-					Assert::IsTrue(2 == m->ordering[1].first);
-					Assert::IsTrue(false == m->ordering[1].second);
-					Assert::IsTrue(0 == m->ordering[2].first);
-					Assert::IsTrue(true == m->ordering[2].second);
+					assert_equal(3u, m->ordering.size());
+					assert_equal(2u, m->ordering[1].first);
+					assert_equal(false, m->ordering[1].second);
+					assert_equal(0u, m->ordering[2].first);
+					assert_equal(true, m->ordering[2].second);
 				}
 
 
-				[TestMethod]
-				void ClickingAColumnCausesColumnActivation()
+				test( ClickingAColumnCausesColumnActivation )
 				{
 					// INIT
 					HWND hlv = create_listview();
@@ -740,8 +732,8 @@ namespace wpl
 					::SendMessage(hlv, OCM_NOTIFY, 0, reinterpret_cast<LPARAM>(&nmlvdi));
 
 					// ASSERT
-					Assert::IsTrue(1 == cm->column_activation_log.size());
-					Assert::IsTrue(2 == cm->column_activation_log[0]);
+					assert_equal(1u, cm->column_activation_log.size());
+					assert_equal(2, cm->column_activation_log[0]);
 
 					// ACT
 					nmlvdi.iSubItem = 0;
@@ -750,14 +742,13 @@ namespace wpl
 					::SendMessage(hlv, OCM_NOTIFY, 0, reinterpret_cast<LPARAM>(&nmlvdi));
 
 					// ASSERT
-					Assert::IsTrue(3 == cm->column_activation_log.size());
-					Assert::IsTrue(0 == cm->column_activation_log[1]);
-					Assert::IsTrue(1 == cm->column_activation_log[2]);
+					assert_equal(3u, cm->column_activation_log.size());
+					assert_equal(0, cm->column_activation_log[1]);
+					assert_equal(1, cm->column_activation_log[2]);
 				}
 
 
-				[TestMethod]
-				void PreorderingOnChangingModel()
+				test( PreorderingOnChangingModel )
 				{
 					// INIT
 					HWND hlv = create_listview();
@@ -776,9 +767,9 @@ namespace wpl
 					lv->set_model(m2);
 
 					// ASSERT
-					Assert::IsTrue(1 == m2->ordering.size());
-					Assert::IsTrue(0 == m2->ordering[0].first);
-					Assert::IsTrue(m2->ordering[0].second);
+					assert_equal(1u, m2->ordering.size());
+					assert_equal(0u, m2->ordering[0].first);
+					assert_is_true(m2->ordering[0].second);
 
 					// INIT
 					cm->set_sort_order(1, false);
@@ -788,14 +779,13 @@ namespace wpl
 					lv->set_model(m1);
 
 					// ASSERT
-					Assert::IsTrue(1 == m1->ordering.size());
-					Assert::IsTrue(1 == m1->ordering[0].first);
-					Assert::IsFalse(m1->ordering[0].second);
+					assert_equal(1u, m1->ordering.size());
+					assert_equal(1u, m1->ordering[0].first);
+					assert_is_false(m1->ordering[0].second);
 				}
 
 
-				[TestMethod]
-				void PreorderingHandlesNullModelWell()
+				test( PreorderingHandlesNullModelWell )
 				{
 					// INIT
 					HWND hlv = create_listview();
@@ -814,8 +804,7 @@ namespace wpl
 				}
 
 
-				[TestMethod]
-				void SettingColumnsModelWhithOrderingWhenModelIsMissingIsOkay()
+				test( SettingColumnsModelWhithOrderingWhenModelIsMissingIsOkay )
 				{
 					// INIT
 					HWND hlv = create_listview();
@@ -831,8 +820,7 @@ namespace wpl
 				}
 
 
-				[TestMethod]
-				void ColumnMarkerIsSetOnResettingColumnsModel()
+				test( ColumnMarkerIsSetOnResettingColumnsModel )
 				{
 					// INIT
 					HWND hlv = create_listview();
@@ -849,27 +837,26 @@ namespace wpl
 					lv->set_columns_model(cm1);
 
 					// ASSERT
-					Assert::IsTrue(dir_none == get_column_direction(hlv, 0));
-					Assert::IsTrue(dir_none == get_column_direction(hlv, 1));
+					assert_equal(dir_none, get_column_direction(hlv, 0));
+					assert_equal(dir_none, get_column_direction(hlv, 1));
 
 					// ACT
 					lv->set_columns_model(cm2);
 
 					// ASSERT
-					Assert::IsTrue(dir_descending == get_column_direction(hlv, 0));
-					Assert::IsTrue(dir_none == get_column_direction(hlv, 1));
+					assert_equal(dir_descending, get_column_direction(hlv, 0));
+					assert_equal(dir_none, get_column_direction(hlv, 1));
 
 					// ACT
 					lv->set_columns_model(cm3);
 
 					// ASSERT
-					Assert::IsTrue(dir_none == get_column_direction(hlv, 0));
-					Assert::IsTrue(dir_ascending == get_column_direction(hlv, 1));
+					assert_equal(dir_none, get_column_direction(hlv, 0));
+					assert_equal(dir_ascending, get_column_direction(hlv, 1));
 				}
 
 
-				[TestMethod]
-				void ColumnMarkerIsSetOnSortChange()
+				test( ColumnMarkerIsSetOnSortChange )
 				{
 					// INIT
 					HWND hlv = create_listview();
@@ -888,27 +875,26 @@ namespace wpl
 					cm->set_sort_order(0, true);
 
 					// ASSERT
-					Assert::IsTrue(dir_ascending == get_column_direction(hlv, 0));
-					Assert::IsTrue(dir_none == get_column_direction(hlv, 1));
+					assert_equal(dir_ascending, get_column_direction(hlv, 0));
+					assert_equal(dir_none, get_column_direction(hlv, 1));
 
 					// ACT
 					cm->set_sort_order(1, false);
 
 					// ASSERT
-					Assert::IsTrue(dir_none == get_column_direction(hlv, 0));
-					Assert::IsTrue(dir_descending == get_column_direction(hlv, 1));
+					assert_equal(dir_none, get_column_direction(hlv, 0));
+					assert_equal(dir_descending, get_column_direction(hlv, 1));
 
 					// ACT
 					cm->set_sort_order(1, true);
 
 					// ASSERT
-					Assert::IsTrue(dir_none == get_column_direction(hlv, 0));
-					Assert::IsTrue(dir_ascending == get_column_direction(hlv, 1));
+					assert_equal(dir_none, get_column_direction(hlv, 0));
+					assert_equal(dir_ascending, get_column_direction(hlv, 1));
 				}
 
 
-				[TestMethod]
-				void ColumnMarkersAreChangedOnSortChangeWhenSortedColumnsModelWasInitiallySet()
+				test( ColumnMarkersAreChangedOnSortChangeWhenSortedColumnsModelWasInitiallySet )
 				{
 					// INIT
 					HWND hlv = create_listview();
@@ -925,13 +911,12 @@ namespace wpl
 					cm->set_sort_order(0, true);
 
 					// ASSERT
-					Assert::IsTrue(dir_ascending == get_column_direction(hlv, 0));
-					Assert::IsTrue(dir_none == get_column_direction(hlv, 1));
+					assert_equal(dir_ascending, get_column_direction(hlv, 0));
+					assert_equal(dir_none, get_column_direction(hlv, 1));
 				}				
 
 
-				[TestMethod]
-				void TheWholeListViewIsInvalidatedOnReorder()
+				test( TheWholeListViewIsInvalidatedOnReorder )
 				{
 					// INIT
 					HWND hlv = create_listview();
@@ -954,15 +939,14 @@ namespace wpl
 
 					// ASSERT
 					::GetUpdateRect(hlv, &rc_invalidated, FALSE);
-					Assert::IsTrue(rc_client.left == rc_invalidated.left);
-					Assert::IsTrue(rc_client.top == rc_invalidated.top);
-					Assert::IsTrue(rc_client.right == rc_invalidated.right);
-					Assert::IsTrue(rc_client.bottom == rc_invalidated.bottom);
+					assert_equal(rc_client.left, rc_invalidated.left);
+					assert_equal(rc_client.top, rc_invalidated.top);
+					assert_equal(rc_client.right, rc_invalidated.right);
+					assert_equal(rc_client.bottom, rc_invalidated.bottom);
 				}
 
 
-				[TestMethod]
-				void ItemActivationFiresCorrespondingEvent()
+				test( ItemActivationFiresCorrespondingEvent )
 				{
 					// INIT
 					vector<listview::index_type> selections;
@@ -979,8 +963,8 @@ namespace wpl
 					::SendMessage(hlv, OCM_NOTIFY, 0, reinterpret_cast<LPARAM>(&nm));
 
 					// ASSERT
-					Assert::IsTrue(1 == selections.size());
-					Assert::IsTrue(1 == selections[0]);
+					assert_equal(1u, selections.size());
+					assert_equal(1u, selections[0]);
 
 					// ACT
 					nm.iItem = 0;
@@ -991,15 +975,14 @@ namespace wpl
 					::SendMessage(hlv, OCM_NOTIFY, 0, reinterpret_cast<LPARAM>(&nm));
 
 					// ASSERT
-					Assert::IsTrue(4 == selections.size());
-					Assert::IsTrue(0 == selections[1]);
-					Assert::IsTrue(3 == selections[2]);
-					Assert::IsTrue(5 == selections[3]);
+					assert_equal(4u, selections.size());
+					assert_equal(0u, selections[1]);
+					assert_equal(3u, selections[2]);
+					assert_equal(5u, selections[3]);
 				}
 
 
-				[TestMethod]
-				void ItemChangeWithSelectionRemainingDoesNotFireEvent()
+				test( ItemChangeWithSelectionRemainingDoesNotFireEvent )
 				{
 					// INIT
 					vector<listview::index_type> selection_indices;
@@ -1023,12 +1006,11 @@ namespace wpl
 					::SendMessage(hlv, OCM_NOTIFY, 0, reinterpret_cast<LPARAM>(&nmlv));
 
 					// ASSERT
-					Assert::IsTrue(selection_indices.empty());
+					assert_is_empty(selection_indices);
 				}
 
 
-				[TestMethod]
-				void ItemChangeWithSelectionChangingDoesFireEvent()
+				test( ItemChangeWithSelectionChangingDoesFireEvent )
 				{
 					// INIT
 					vector<listview::index_type> selection_indices;
@@ -1054,41 +1036,40 @@ namespace wpl
 					::SendMessage(hlv, OCM_NOTIFY, 0, reinterpret_cast<LPARAM>(&nmlv));
 
 					// ASSERT
-					Assert::IsTrue(3 == selection_indices.size());
-					Assert::IsTrue(3 == selection_states.size());
-					Assert::IsTrue(1 == selection_indices[0]);
-					Assert::IsFalse(selection_states[0]);
-					Assert::IsTrue(2 == selection_indices[1]);
-					Assert::IsFalse(selection_states[1]);
-					Assert::IsTrue(7 == selection_indices[2]);
-					Assert::IsTrue(selection_states[2]);
+					assert_equal(3u, selection_indices.size());
+					assert_equal(3u, selection_states.size());
+					assert_equal(1u, selection_indices[0]);
+					assert_is_false(selection_states[0]);
+					assert_equal(2u, selection_indices[1]);
+					assert_is_false(selection_states[1]);
+					assert_equal(7u, selection_indices[2]);
+					assert_is_true(selection_states[2]);
 
 					// ACT
 					nmlv.iItem = 9, nmlv.uOldState = 0, nmlv.uNewState = LVIS_SELECTED;
 					::SendMessage(hlv, OCM_NOTIFY, 0, reinterpret_cast<LPARAM>(&nmlv));
 
 					// ASSERT
-					Assert::IsTrue(4 == selection_indices.size());
-					Assert::IsTrue(4 == selection_states.size());
-					Assert::IsTrue(9 == selection_indices[3]);
-					Assert::IsTrue(selection_states[3]);
+					assert_equal(4u, selection_indices.size());
+					assert_equal(4u, selection_states.size());
+					assert_equal(9u, selection_indices[3]);
+					assert_is_true(selection_states[3]);
 				}
 
 
-				[TestMethod]
-				void AutoAdjustColumnWidths()
+				test( AutoAdjustColumnWidths )
 				{
 					// INIT
 					HWND hlv1 = create_listview(), hlv2 = create_listview();
 					shared_ptr<listview> lv1(wrap_listview(hlv1)), lv2(wrap_listview(hlv2));
 					listview::columns_model::column columns3[] = {
-						listview::columns_model::column(L"ww"),
-						listview::columns_model::column(L"wwwwww"),
-						listview::columns_model::column(L"WW"),
+						listview::columns_model::column(L"_____ww"),
+						listview::columns_model::column(L"_____wwwwww"),
+						listview::columns_model::column(L"_____WW"),
 					};
 					listview::columns_model::column columns2[] = {
-						listview::columns_model::column(L"ii"),
-						listview::columns_model::column(L"iiii"),
+						listview::columns_model::column(L"_____ii"),
+						listview::columns_model::column(L"_____iiii"),
 					};
 
 					lv1->set_columns_model(mock_columns_model::create(columns3, listview::columns_model::npos, false));
@@ -1105,17 +1086,16 @@ namespace wpl
 					int w20 = get_column_width(hlv2, 0);
 					int w21 = get_column_width(hlv2, 1);
 
-					Assert::IsTrue(w10 < w11);
-					Assert::IsTrue(w12 < w11);
-					Assert::IsTrue(w10 < w12);
+					assert_is_true(w10 < w11);
+					assert_is_true(w12 < w11);
+					assert_is_true(w10 < w12);
 
-					Assert::IsTrue(w20 < w10);
-					Assert::IsTrue(w20 < w21);
+					assert_is_true(w20 < w10);
+					assert_is_true(w20 < w21);
 				}
 
 
-				[TestMethod]
-				void ColumnWidthIsSetInPixelsIfSpecifiedInColumn()
+				test( ColumnWidthIsSetInPixelsIfSpecifiedInColumn )
 				{
 					// INIT
 					HWND hlv1 = create_listview(), hlv2 = create_listview();
@@ -1141,17 +1121,16 @@ namespace wpl
 					int w21 = get_column_width(hlv2, 1);
 
 					// ASSERT
-					Assert::IsTrue(13 == w10);
-					Assert::IsTrue(17 == w11);
-					Assert::IsTrue(19 == w12);
+					assert_equal(13, w10);
+					assert_equal(17, w11);
+					assert_equal(19, w12);
 
-					Assert::IsTrue(23 == w20);
-					Assert::IsTrue(29 == w21);
+					assert_equal(23, w20);
+					assert_equal(29, w21);
 				}
 
 
-				[TestMethod]
-				void ChangingColumnWidthUpdatesColumnsModel()
+				test( ChangingColumnWidthUpdatesColumnsModel )
 				{
 					// INIT
 					HWND hlv = create_listview();
@@ -1180,7 +1159,7 @@ namespace wpl
 					::SendMessage(hlv, WM_NOTIFY, 0, reinterpret_cast<LPARAM>(&nmheader));
 
 					// ASSERT
-					Assert::IsTrue(111 == cm->columns[0].width);
+					assert_equal(111, cm->columns[0].width);
 
 					// ACT
 					nmheader.iItem = 2;
@@ -1188,12 +1167,11 @@ namespace wpl
 					::SendMessage(hlv, WM_NOTIFY, 0, reinterpret_cast<LPARAM>(&nmheader));
 
 					// ASSERT
-					Assert::IsTrue(313 == cm->columns[2].width);
+					assert_equal(313, cm->columns[2].width);
 				}
 
 
-				[TestMethod]
-				void NonColumnWidthChangeDoesNotAffectColumnsModel()
+				test( NonColumnWidthChangeDoesNotAffectColumnsModel )
 				{
 					// INIT
 					HWND hlv = create_listview();
@@ -1218,12 +1196,11 @@ namespace wpl
 					::SendMessage(hlv, WM_NOTIFY, 0, reinterpret_cast<LPARAM>(&nmheader));
 
 					// ASSERT
-					Assert::IsTrue(13 == cm->columns[0].width);
+					assert_equal(13, cm->columns[0].width);
 				}
 
 
-				[TestMethod]
-				void SelectionIsEmptyAtConstruction()
+				test( SelectionIsEmptyAtConstruction )
 				{
 					// INIT
 					HWND hlv = create_listview();
@@ -1233,12 +1210,11 @@ namespace wpl
 					lv->set_model(model_ptr(new mock_model(7)));
 
 					// ASSERT
-					Assert::IsTrue(get_matching_indices(hlv, LVNI_SELECTED).empty());
+					assert_is_empty(get_matching_indices(hlv, LVNI_SELECTED));
 				}
 
 
-				[TestMethod]
-				void ResetSelection()
+				test( ResetSelection )
 				{
 					// INIT
 					HWND hlv = create_listview();
@@ -1253,8 +1229,8 @@ namespace wpl
 					// ASSERT
 					selection = get_matching_indices(hlv, LVNI_SELECTED);
 
-					Assert::IsTrue(1 == selection.size());
-					Assert::IsTrue(0 == selection[0]);
+					assert_equal(1u, selection.size());
+					assert_equal(0u, selection[0]);
 
 					// ACT
 					lv->select(3, true);
@@ -1262,8 +1238,8 @@ namespace wpl
 					// ASSERT
 					selection = get_matching_indices(hlv, LVNI_SELECTED);
 
-					Assert::IsTrue(1 == selection.size());
-					Assert::IsTrue(3 == selection[0]);
+					assert_equal(1u, selection.size());
+					assert_equal(3u, selection[0]);
 
 					// ACT
 					lv->select(5, true);
@@ -1271,13 +1247,12 @@ namespace wpl
 					// ASSERT
 					selection = get_matching_indices(hlv, LVNI_SELECTED);
 
-					Assert::IsTrue(1 == selection.size());
-					Assert::IsTrue(5 == selection[0]);
+					assert_equal(1u, selection.size());
+					assert_equal(5u, selection[0]);
 				}
 
 
-				[TestMethod]
-				void AppendSelection()
+				test( AppendSelection )
 				{
 					// INIT
 					HWND hlv = create_listview();
@@ -1292,8 +1267,8 @@ namespace wpl
 					// ASSERT
 					selection = get_matching_indices(hlv, LVNI_SELECTED);
 
-					Assert::IsTrue(1 == selection.size());
-					Assert::IsTrue(1 == selection[0]);
+					assert_equal(1u, selection.size());
+					assert_equal(1u, selection[0]);
 
 					// ACT
 					lv->select(2, false);
@@ -1301,9 +1276,9 @@ namespace wpl
 					// ASSERT
 					selection = get_matching_indices(hlv, LVNI_SELECTED);
 
-					Assert::IsTrue(2 == selection.size());
-					Assert::IsTrue(1 == selection[0]);
-					Assert::IsTrue(2 == selection[1]);
+					assert_equal(2u, selection.size());
+					assert_equal(1u, selection[0]);
+					assert_equal(2u, selection[1]);
 
 					// ACT
 					lv->select(6, false);
@@ -1311,15 +1286,14 @@ namespace wpl
 					// ASSERT
 					selection = get_matching_indices(hlv, LVNI_SELECTED);
 
-					Assert::IsTrue(3 == selection.size());
-					Assert::IsTrue(1 == selection[0]);
-					Assert::IsTrue(2 == selection[1]);
-					Assert::IsTrue(6 == selection[2]);
+					assert_equal(3u, selection.size());
+					assert_equal(1u, selection[0]);
+					assert_equal(2u, selection[1]);
+					assert_equal(6u, selection[2]);
 				}
 
 
-				[TestMethod]
-				void ClearNonEmptySelection()
+				test( ClearNonEmptySelection )
 				{
 					// INIT
 					HWND hlv = create_listview();
@@ -1332,7 +1306,7 @@ namespace wpl
 					lv->clear_selection();
 
 					// ASSERT
-					Assert::IsTrue(get_matching_indices(hlv, LVNI_SELECTED).empty());
+					assert_is_empty(get_matching_indices(hlv, LVNI_SELECTED));
 
 					// ACT
 					lv->select(2, false);
@@ -1340,12 +1314,11 @@ namespace wpl
 					lv->clear_selection();
 
 					// ASSERT
-					Assert::IsTrue(get_matching_indices(hlv, LVNI_SELECTED).empty());
+					assert_is_empty(get_matching_indices(hlv, LVNI_SELECTED));
 				}
 
 
-				[TestMethod]
-				void RequestProperTrackableOnFocusChange()
+				test( RequestProperTrackableOnFocusChange )
 				{
 					// INIT
 					HWND hlv = create_listview();
@@ -1365,16 +1338,16 @@ namespace wpl
 					::SendMessage(hlv, OCM_NOTIFY, 0, reinterpret_cast<LPARAM>(&nmlv));
 
 					// ASSERT
-					Assert::IsTrue(1 == m->tracking_requested.size());
-					Assert::IsTrue(2 == m->tracking_requested[0]);
+					assert_equal(1u, m->tracking_requested.size());
+					assert_equal(2u, m->tracking_requested[0]);
 
 					// ACT
 					nmlv.iItem = 3, nmlv.uOldState = 0, nmlv.uNewState = LVIS_FOCUSED;
 					::SendMessage(hlv, OCM_NOTIFY, 0, reinterpret_cast<LPARAM>(&nmlv));
 
 					// ASSERT
-					Assert::IsTrue(2 == m->tracking_requested.size());
-					Assert::IsTrue(3 == m->tracking_requested[1]);
+					assert_equal(2u, m->tracking_requested.size());
+					assert_equal(3u, m->tracking_requested[1]);
 
 					// ACT
 					nmlv.iItem = 5, nmlv.uOldState = LVIS_SELECTED, nmlv.uNewState = LVIS_SELECTED | LVIS_FOCUSED;
@@ -1382,14 +1355,13 @@ namespace wpl
 					ListView_SetItemState(hlv, 7, LVIS_FOCUSED, LVIS_FOCUSED);
 
 					// ASSERT
-					Assert::IsTrue(4 == m->tracking_requested.size());
-					Assert::IsTrue(5 == m->tracking_requested[2]);
-					Assert::IsTrue(7 == m->tracking_requested[3]);
+					assert_equal(4u, m->tracking_requested.size());
+					assert_equal(5u, m->tracking_requested[2]);
+					assert_equal(7u, m->tracking_requested[3]);
 				}
 
 
-				[TestMethod]
-				void NotEnteringToFocusedDoesNotLeadToTracking()
+				test( NotEnteringToFocusedDoesNotLeadToTracking )
 				{
 					// INIT
 					HWND hlv = create_listview();
@@ -1415,12 +1387,11 @@ namespace wpl
 					::SendMessage(hlv, OCM_NOTIFY, 0, reinterpret_cast<LPARAM>(&nmlv));
 
 					// ASSERT
-					Assert::IsTrue(m->tracking_requested.empty());
+					assert_is_empty(m->tracking_requested);
 				}
 
 
-				[TestMethod]
-				void TakeOwnershipOverTrackable()
+				test( TakeOwnershipOverTrackable )
 				{
 					// INIT
 					HWND hlv = create_listview();
@@ -1439,12 +1410,11 @@ namespace wpl
 					t = trackable_ptr();
 
 					// ASSERT
-					Assert::IsFalse(wt.expired());
+					assert_is_false(wt.expired());
 				}
 
 
-				[TestMethod]
-				void ReleaseTrackableOnRemoveFocus()
+				test( ReleaseTrackableOnRemoveFocus )
 				{
 					// INIT
 					HWND hlv = create_listview();
@@ -1461,12 +1431,11 @@ namespace wpl
 					ListView_SetItemState(hlv, 5, 0, LVIS_FOCUSED);
 
 					// ASSERT
-					Assert::IsTrue(wt.expired());
+					assert_is_true(wt.expired());
 				}
 
 
-				[TestMethod]
-				void ReleaseTrackableOnNewFocus()
+				test( ReleaseTrackableOnNewFocus )
 				{
 					// INIT
 					HWND hlv = create_listview();
@@ -1483,12 +1452,11 @@ namespace wpl
 					ListView_SetItemState(hlv, 7, LVIS_FOCUSED, LVIS_FOCUSED);
 
 					// ASSERT
-					Assert::IsTrue(wt.expired());
+					assert_is_true(wt.expired());
 				}
 
 
-				[TestMethod]
-				void ResetFocusOnInvalidation()
+				test( ResetFocusOnInvalidation )
 				{
 					// INIT
 					HWND hlv = create_listview();
@@ -1508,9 +1476,9 @@ namespace wpl
 
 					// ASSERT
 					matched = get_matching_indices(hlv, LVNI_FOCUSED);
-					Assert::IsTrue(1 == matched.size());
-					Assert::IsTrue(7 == matched[0]);
-					Assert::IsTrue(m->tracking_requested.empty());
+					assert_equal(1u, matched.size());
+					assert_equal(7u, matched[0]);
+					assert_is_empty(m->tracking_requested);
 
 					// ACT
 					t->track_result = 13;
@@ -1518,14 +1486,13 @@ namespace wpl
 
 					// ASSERT
 					matched = get_matching_indices(hlv, LVNI_FOCUSED);
-					Assert::IsTrue(1 == matched.size());
-					Assert::IsTrue(13 == matched[0]);
-					Assert::IsTrue(m->tracking_requested.empty());
+					assert_equal(1u, matched.size());
+					assert_equal(13u, matched[0]);
+					assert_is_empty(m->tracking_requested);
 				}
 
 
-				[TestMethod]
-				void ReleaseTrackableOnBecameInvalid()
+				test( ReleaseTrackableOnBecameInvalid )
 				{
 					HWND hlv = create_listview();
 					shared_ptr<listview> lv(wrap_listview(hlv));
@@ -1545,13 +1512,12 @@ namespace wpl
 					m->invalidated(100);
 
 					// ASSERT
-					Assert::IsTrue(wt.expired());
-					Assert::IsTrue(get_matching_indices(hlv, LVNI_FOCUSED).empty());
+					assert_is_true(wt.expired());
+					assert_is_empty(get_matching_indices(hlv, LVNI_FOCUSED));
 				}
 
 
-				[TestMethod]
-				void ResetSelectionOnInvalidation1()
+				test( ResetSelectionOnInvalidation1 )
 				{
 					// INIT
 					HWND hlv = create_listview();
@@ -1578,7 +1544,7 @@ namespace wpl
 					// ASSERT
 					listview::index_type expected1[] = {	5, 7, 21,	};
 
-					ut::AreEquivalent(expected1, get_matching_indices(hlv, LVNI_SELECTED));
+					assert_equivalent(expected1, get_matching_indices(hlv, LVNI_SELECTED));
 
 					// ACT
 					t[0]->track_result = 13;
@@ -1587,7 +1553,7 @@ namespace wpl
 					// ASSERT
 					listview::index_type expected2[] = {	13, 7, 21,	};
 
-					ut::AreEquivalent(expected2, get_matching_indices(hlv, LVNI_SELECTED));
+					assert_equivalent(expected2, get_matching_indices(hlv, LVNI_SELECTED));
 
 					// ACT
 					t[1]->track_result = listview::npos;
@@ -1596,13 +1562,12 @@ namespace wpl
 					// ASSERT
 					listview::index_type expected3[] = {	13, 21,	};
 
-					ut::AreEquivalent(expected3, get_matching_indices(hlv, LVNI_SELECTED));
-					Assert::IsTrue(m->tracking_requested.empty());
+					assert_equivalent(expected3, get_matching_indices(hlv, LVNI_SELECTED));
+					assert_is_empty(m->tracking_requested);
 				}
 
 
-				[TestMethod]
-				void ResetSelectionOnInvalidation2()
+				test( ResetSelectionOnInvalidation2 )
 				{
 					// INIT
 					HWND hlv = create_listview();
@@ -1634,7 +1599,7 @@ namespace wpl
 					// ASSERT
 					listview::index_type expected1[] = {	5, 7, 3, 19, 47,	};
 
-					ut::AreEquivalent(expected1, get_matching_indices(hlv, LVNI_SELECTED));
+					assert_equivalent(expected1, get_matching_indices(hlv, LVNI_SELECTED));
 
 					// ACT
 					t[3]->track_result = 1;
@@ -1643,13 +1608,12 @@ namespace wpl
 					// ASSERT
 					listview::index_type expected2[] = {	5, 7, 3, 1, 47,	};
 
-					ut::AreEquivalent(expected2, get_matching_indices(hlv, LVNI_SELECTED));
-					Assert::IsTrue(m->tracking_requested.empty());
+					assert_equivalent(expected2, get_matching_indices(hlv, LVNI_SELECTED));
+					assert_is_empty(m->tracking_requested);
 				}
 
 
-				[TestMethod]
-				void ReleaseLostTrackables()
+				test( ReleaseLostTrackables )
 				{
 					// INIT
 					HWND hlv = create_listview();
@@ -1674,14 +1638,13 @@ namespace wpl
 					m->set_count(99);
 
 					// ASSERT
-					Assert::IsTrue(wt[0].expired());
-					Assert::IsFalse(wt[1].expired());
-					Assert::IsFalse(wt[2].expired());
+					assert_is_true(wt[0].expired());
+					assert_is_false(wt[1].expired());
+					assert_is_false(wt[2].expired());
 				}
 
 
-				[TestMethod]
-				void ReleaseTrackablesForDeselectedItems()
+				test( ReleaseTrackablesForDeselectedItems )
 				{
 					// INIT
 					HWND hlv = create_listview();
@@ -1704,14 +1667,13 @@ namespace wpl
 					ListView_SetItemState(hlv, 16, 0, LVIS_SELECTED);
 
 					// ASSERT
-					Assert::IsTrue(wt[0].expired());
-					Assert::IsFalse(wt[1].expired());
-					Assert::IsTrue(wt[2].expired());
+					assert_is_true(wt[0].expired());
+					assert_is_false(wt[1].expired());
+					assert_is_true(wt[2].expired());
 				}
 
 
-				[TestMethod]
-				void AbandonDeselectedItemTracking()
+				test( AbandonDeselectedItemTracking )
 				{
 					// INIT
 					HWND hlv = create_listview();
@@ -1738,7 +1700,7 @@ namespace wpl
 					// ASSERT
 					listview::index_type expected1[] = {	3, 7,	};
 
-					ut::AreEquivalent(expected1, get_matching_indices(hlv, LVNI_SELECTED));
+					assert_equivalent(expected1, get_matching_indices(hlv, LVNI_SELECTED));
 
 					// ACT
 					ListView_SetItemState(hlv, 3, 0, LVIS_SELECTED);
@@ -1748,12 +1710,11 @@ namespace wpl
 					// ASSERT
 					listview::index_type expected2[] = {	7,	};
 
-					ut::AreEquivalent(expected2, get_matching_indices(hlv, LVNI_SELECTED));
+					assert_equivalent(expected2, get_matching_indices(hlv, LVNI_SELECTED));
 				}
 
 
-				[TestMethod]
-				void AbandonTrackingOnDeselectAllItems()
+				test( AbandonTrackingOnDeselectAllItems )
 				{
 					// INIT
 					HWND hlv = create_listview();
@@ -1780,13 +1741,12 @@ namespace wpl
 					m->set_count(100);
 
 					// ASSERT
-					Assert::IsTrue(get_matching_indices(hlv, LVNI_SELECTED).empty());
-					Assert::IsTrue(m->tracking_requested.empty());
+					assert_is_empty(get_matching_indices(hlv, LVNI_SELECTED));
+					assert_is_empty(m->tracking_requested);
 				}
 
 
-				[TestMethod]
-				void FocusAndSelectionRequestTrackablesTwice()
+				test( FocusAndSelectionRequestTrackablesTwice )
 				{
 					// INIT
 					HWND hlv = create_listview();
@@ -1801,14 +1761,13 @@ namespace wpl
 					ListView_SetItemState(hlv, 7, LVIS_SELECTED | LVIS_FOCUSED, LVIS_SELECTED | LVIS_FOCUSED);
 
 					// ASSERT
-					Assert::IsTrue(2 == m->tracking_requested.size());
-					Assert::IsTrue(7 == m->tracking_requested[0]);
-					Assert::IsTrue(7 == m->tracking_requested[1]);
+					assert_equal(2u, m->tracking_requested.size());
+					assert_equal(7u, m->tracking_requested[0]);
+					assert_equal(7u, m->tracking_requested[1]);
 				}
 
 
-				[TestMethod]
-				void IgnoreNullTrackableForSelected()
+				test( IgnoreNullTrackableForSelected )
 				{
 					// INIT
 					HWND hlv = create_listview();
@@ -1825,12 +1784,11 @@ namespace wpl
 					// ASSERT
 					listview::index_type expected[] = {	7, 8,	};
 
-					ut::AreEquivalent(expected, get_matching_indices(hlv, LVNI_SELECTED));
+					assert_equivalent(expected, get_matching_indices(hlv, LVNI_SELECTED));
 				}
 
 
-				[TestMethod]
-				void ReleaseTrackablesOnModelChange()
+				test( ReleaseTrackablesOnModelChange )
 				{
 					// INIT
 					HWND hlv = create_listview();
@@ -1852,14 +1810,13 @@ namespace wpl
 					lv->set_model(model_ptr(new mock_model(130)));
 
 					// ASSERT
-					Assert::IsTrue(wt[0].expired());
-					Assert::IsTrue(wt[1].expired());
-					Assert::IsTrue(wt[2].expired());
+					assert_is_true(wt[0].expired());
+					assert_is_true(wt[1].expired());
+					assert_is_true(wt[2].expired());
 				}
 
 
-				[TestMethod]
-				void EnsureItemVisibility()
+				test( EnsureItemVisibility )
 				{
 					// INIT
 					HWND hlv = create_listview();
@@ -1873,30 +1830,29 @@ namespace wpl
 					lv->ensure_visible(99);
 
 					// ASSERT
-					Assert::IsTrue(is_item_visible(hlv, 99));
-					Assert::IsFalse(is_item_visible(hlv, 49));
-					Assert::IsFalse(is_item_visible(hlv, 0));
+					assert_is_true(is_item_visible(hlv, 99));
+					assert_is_false(is_item_visible(hlv, 49));
+					assert_is_false(is_item_visible(hlv, 0));
 
 					// ACT
 					lv->ensure_visible(49);
 
 					// ASSERT
-					Assert::IsFalse(is_item_visible(hlv, 99));
-					Assert::IsTrue(is_item_visible(hlv, 49));
-					Assert::IsFalse(is_item_visible(hlv, 0));
+					assert_is_false(is_item_visible(hlv, 99));
+					assert_is_true(is_item_visible(hlv, 49));
+					assert_is_false(is_item_visible(hlv, 0));
 
 					// ACT
 					lv->ensure_visible(0);
 
 					// ASSERT
-					Assert::IsFalse(is_item_visible(hlv, 99));
-					Assert::IsFalse(is_item_visible(hlv, 49));
-					Assert::IsTrue(is_item_visible(hlv, 0));
+					assert_is_false(is_item_visible(hlv, 99));
+					assert_is_false(is_item_visible(hlv, 49));
+					assert_is_true(is_item_visible(hlv, 0));
 				}
 
 
-				[TestMethod]
-				void CaptureTrackableOnSettingVisibilityTracking()
+				test( CaptureTrackableOnSettingVisibilityTracking )
 				{
 					// INIT
 					HWND hlv = create_listview();
@@ -1911,22 +1867,21 @@ namespace wpl
 					lv->ensure_visible(0);
 
 					// ASSERT
-					Assert::IsTrue(1 == m->tracking_requested.size());
-					Assert::IsTrue(0 == m->tracking_requested[0]);
+					assert_equal(1u, m->tracking_requested.size());
+					assert_equal(0u, m->tracking_requested[0]);
 
 					// ACT
 					lv->ensure_visible(1);
 					lv->ensure_visible(7);
 
 					// ASSERT
-					Assert::IsTrue(3 == m->tracking_requested.size());
-					Assert::IsTrue(1 == m->tracking_requested[1]);
-					Assert::IsTrue(7 == m->tracking_requested[2]);
+					assert_equal(3u, m->tracking_requested.size());
+					assert_equal(1u, m->tracking_requested[1]);
+					assert_equal(7u, m->tracking_requested[2]);
 				}
 
 
-				[TestMethod]
-				void ReleaseTrackableOnChangingVisibilityTracking()
+				test( ReleaseTrackableOnChangingVisibilityTracking )
 				{
 					// INIT
 					HWND hlv = create_listview();
@@ -1947,13 +1902,12 @@ namespace wpl
 					m->trackables.clear();
 
 					// ASSERT
-					Assert::IsTrue(wt[0].expired());
-					Assert::IsFalse(wt[1].expired());
+					assert_is_true(wt[0].expired());
+					assert_is_false(wt[1].expired());
 				}
 
 
-				[TestMethod]
-				void ReleaseVisibilityTrackableOnChangingModel()
+				test( ReleaseVisibilityTrackableOnChangingModel )
 				{
 					// INIT
 					HWND hlv = create_listview();
@@ -1971,12 +1925,11 @@ namespace wpl
 					lv->set_model(m2);
 
 					// ASSERT
-					Assert::IsTrue(wt.expired());
+					assert_is_true(wt.expired());
 				}
 
 
-				[TestMethod]
-				void EnsureItemVisibilityInDynamics()
+				test( EnsureItemVisibilityInDynamics )
 				{
 					// INIT
 					HWND hlv = create_listview();
@@ -1994,32 +1947,31 @@ namespace wpl
 					m->set_count(100);
 
 					// ASSERT
-					Assert::IsTrue(is_item_visible(hlv, 99));
-					Assert::IsFalse(is_item_visible(hlv, 49));
-					Assert::IsFalse(is_item_visible(hlv, 0));
+					assert_is_true(is_item_visible(hlv, 99));
+					assert_is_false(is_item_visible(hlv, 49));
+					assert_is_false(is_item_visible(hlv, 0));
 
 					// ACT
 					t->track_result = 49;
 					m->set_count(100);
 
 					// ASSERT
-					Assert::IsFalse(is_item_visible(hlv, 99));
-					Assert::IsTrue(is_item_visible(hlv, 49));
-					Assert::IsFalse(is_item_visible(hlv, 0));
+					assert_is_false(is_item_visible(hlv, 99));
+					assert_is_true(is_item_visible(hlv, 49));
+					assert_is_false(is_item_visible(hlv, 0));
 
 					// ACT
 					t->track_result = 0;
 					m->set_count(100);
 
 					// ASSERT
-					Assert::IsFalse(is_item_visible(hlv, 99));
-					Assert::IsFalse(is_item_visible(hlv, 49));
-					Assert::IsTrue(is_item_visible(hlv, 0));
+					assert_is_false(is_item_visible(hlv, 99));
+					assert_is_false(is_item_visible(hlv, 49));
+					assert_is_true(is_item_visible(hlv, 0));
 				}
 
 
-				[TestMethod]
-				void DontTrackItemIfItWasHidden1()
+				test( DontTrackItemIfItWasHidden1 )
 				{
 					// INIT
 					HWND hlv = create_listview();
@@ -2038,9 +1990,9 @@ namespace wpl
 					m->set_count(100);
 
 					// ASSERT
-					Assert::IsFalse(is_item_visible(hlv, 0));
-					Assert::IsTrue(is_item_visible(hlv, 49));
-					Assert::IsFalse(is_item_visible(hlv, 99));
+					assert_is_false(is_item_visible(hlv, 0));
+					assert_is_true(is_item_visible(hlv, 49));
+					assert_is_false(is_item_visible(hlv, 99));
 
 					// ACT
 					ListView_EnsureVisible(hlv, 0, FALSE);
@@ -2048,14 +2000,13 @@ namespace wpl
 					m->set_count(100);
 
 					// ASSERT
-					Assert::IsTrue(is_item_visible(hlv, 0));
-					Assert::IsFalse(is_item_visible(hlv, 49));
-					Assert::IsFalse(is_item_visible(hlv, 99));
+					assert_is_true(is_item_visible(hlv, 0));
+					assert_is_false(is_item_visible(hlv, 49));
+					assert_is_false(is_item_visible(hlv, 99));
 				}
 
 
-				[TestMethod]
-				void DontTrackItemIfItWasHidden2()
+				test( DontTrackItemIfItWasHidden2 )
 				{
 					// INIT
 					HWND hlv = create_listview();
@@ -2074,14 +2025,13 @@ namespace wpl
 					m->set_count(100);
 
 					// ASSERT
-					Assert::IsTrue(is_item_visible(hlv, 0));
-					Assert::IsFalse(is_item_visible(hlv, 49));
-					Assert::IsFalse(is_item_visible(hlv, 99));
+					assert_is_true(is_item_visible(hlv, 0));
+					assert_is_false(is_item_visible(hlv, 49));
+					assert_is_false(is_item_visible(hlv, 99));
 				}
 
 
-				[TestMethod]
-				void RestoreVisibilityTracking()
+				test( RestoreVisibilityTracking )
 				{
 					// INIT
 					HWND hlv = create_listview();
@@ -2103,14 +2053,13 @@ namespace wpl
 					m->set_count(100);
 
 					// ASSERT
-					Assert::IsFalse(is_item_visible(hlv, 0));
-					Assert::IsTrue(is_item_visible(hlv, 49));
-					Assert::IsFalse(is_item_visible(hlv, 99));
+					assert_is_false(is_item_visible(hlv, 0));
+					assert_is_true(is_item_visible(hlv, 49));
+					assert_is_false(is_item_visible(hlv, 99));
 				}
 
 
-				[TestMethod]
-				void FirstVisibleItemIsNotObscuredByHeader()
+				test( FirstVisibleItemIsNotObscuredByHeader )
 				{
 					// INIT
 					HWND hlv = create_listview();
@@ -2138,7 +2087,7 @@ namespace wpl
 					int first_visible = ListView_GetTopIndex(hlv);
 
 					// ASSERT
-					Assert::IsFalse(0 == first_visible);
+					assert_not_equal(0, first_visible);
 
 					// ACT
 					t->track_result = 0;
@@ -2146,7 +2095,7 @@ namespace wpl
 					first_visible = ListView_GetTopIndex(hlv);
 
 					// ASSERT
-					Assert::IsTrue(0 == first_visible);
+					assert_equal(0, first_visible);
 
 					// INIT (check that header location mapping is working)
 					::MoveWindow(::GetParent(hlv), 37, 71, LOWORD(dwsize), HIWORD(dwsize), TRUE);
@@ -2156,7 +2105,7 @@ namespace wpl
 					first_visible = ListView_GetTopIndex(hlv);
 
 					// ASSERT
-					Assert::IsFalse(0 == first_visible);
+					assert_not_equal(0, first_visible);
 
 					// ACT
 					t->track_result = 0;
@@ -2164,12 +2113,11 @@ namespace wpl
 					first_visible = ListView_GetTopIndex(hlv);
 
 					// ASSERT
-					Assert::IsTrue(0 == first_visible);
+					assert_equal(0, first_visible);
 				}
 
 
-				[TestMethod]
-				void ListViewIsNotScrolledIfNoHeaderAndViewRectMatchesNumberOfItems()
+				test( ListViewIsNotScrolledIfNoHeaderAndViewRectMatchesNumberOfItems )
 				{
 					// INIT
 					HWND hlv = create_listview();
@@ -2192,7 +2140,7 @@ namespace wpl
 					int first_visible = ListView_GetTopIndex(hlv);
 
 					// ASSERT
-					Assert::IsTrue(0 == first_visible);
+					assert_equal(0, first_visible);
 
 					// ACT
 					t->track_result = 0;
@@ -2200,12 +2148,11 @@ namespace wpl
 					first_visible = ListView_GetTopIndex(hlv);
 
 					// ASSERT
-					Assert::IsTrue(0 == first_visible);
+					assert_equal(0, first_visible);
 				}
 
 
-				[TestMethod, Ignore]
-				void ListViewIsWidget()
+				ignore( ListViewIsWidget )
 				{
 					// INIT
 					shared_ptr<listview> lv;
@@ -2215,11 +2162,10 @@ namespace wpl
 				}
 
 
-				[TestMethod]
-				void ListViewViewHoldsWrappedWindow()
+				test( ListViewViewHoldsWrappedWindow )
 				{
 					// INIT
-					HWND hparent = create_window();
+					HWND hparent = windowManager.create_window();
 					HWND hlv = create_listview();
 					shared_ptr<listview> lvw(wrap_listview(hlv));
 
@@ -2227,9 +2173,9 @@ namespace wpl
 					lvw->create_view(native_root(hparent));
 
 					// ASSERT
-					Assert::IsTrue(hparent == ::GetParent(hlv));
+					assert_equal(hparent, ::GetParent(hlv));
 				}
-			};
+			end_test_suite
 		}
 	}
 }

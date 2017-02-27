@@ -1,8 +1,10 @@
 #include <wpl/mt/thread.h>
 
+#include <functional>
+#include <ut/assert.h>
+#include <ut/test.h>
 #include <wpl/mt/synchronization.h>
 #include <windows.h>
-#include <functional>
 
 namespace std
 {
@@ -10,8 +12,6 @@ namespace std
 }
 
 using namespace std;
-using namespace System;
-using namespace Microsoft::VisualStudio::TestTools::UnitTesting;
 
 namespace wpl
 {
@@ -39,12 +39,8 @@ namespace wpl
 				{	*result = ptls->get();	}
 			}
 
-			[TestClass]
-			public ref class ThreadTests
-			{
-			public:
-				[TestMethod]
-				void ThreadCtorStartsNewThread()
+			begin_test_suite( ThreadTests )
+				test( ThreadCtorStartsNewThread )
 				{
 					// INIT
 					unsigned int new_thread_id;
@@ -55,12 +51,11 @@ namespace wpl
 					}
 
 					// ASSERT
-					Assert::AreNotEqual(::GetCurrentThreadId(), new_thread_id);
+					assert_not_equal(::GetCurrentThreadId(), new_thread_id);
 				}
 
 
-				[TestMethod]
-				void ThreadDtorWaitsForExecution()
+				test( ThreadDtorWaitsForExecution )
 				{
 					// INIT
 					unsigned int new_thread_id = ::GetCurrentThreadId();
@@ -70,29 +65,27 @@ namespace wpl
 						thread t(bind(&threadid_capture, &new_thread_id, 100));
 
 						// ASSERT
-						Assert::AreEqual(::GetCurrentThreadId(), new_thread_id);
+						assert_equal(::GetCurrentThreadId(), new_thread_id);
 
 						// ACT
 					}
 
 					// ASSERT
-					Assert::AreNotEqual(::GetCurrentThreadId(), new_thread_id);
+					assert_not_equal(::GetCurrentThreadId(), new_thread_id);
 				}
 
 
-				[TestMethod]
-				void ThreadIdIsNonZero()
+				test( ThreadIdIsNonZero )
 				{
 					// INIT
 					thread t(&do_nothing);
 
 					// ACT / ASSERT
-					Assert::IsTrue(0 != t.get_id());
+					assert_not_equal(0u, t.get_id());
 				}
 
 
-				[TestMethod]
-				void ThreadIdEqualsOSIdValue()
+				test( ThreadIdEqualsOSIdValue )
 				{
 					// INIT
 					unsigned int new_thread_id = ::GetCurrentThreadId();
@@ -101,39 +94,36 @@ namespace wpl
 					unsigned int id = thread(bind(&threadid_capture, &new_thread_id, 0)).get_id();
 
 					// ASSERT
-					Assert::IsTrue(new_thread_id == id);
+					assert_equal(new_thread_id, id);
 				}
 
 
-				[TestMethod]
-				void ThreadIdsAreUnique()
+				test( ThreadIdsAreUnique )
 				{
 					// INIT / ACT
 					thread t1(&do_nothing), t2(&do_nothing), t3(&do_nothing);
 
 					// ACT / ASSERT
-					Assert::IsTrue(t1.get_id() != t2.get_id());
-					Assert::IsTrue(t2.get_id() != t3.get_id());
-					Assert::IsTrue(t3.get_id() != t1.get_id());
+					assert_not_equal(t1.get_id(), t2.get_id());
+					assert_not_equal(t2.get_id(), t3.get_id());
+					assert_not_equal(t3.get_id(), t1.get_id());
 				}
 
 
-				[TestMethod]
-				void InitializedRunReturnsValidThreads()
+				test( InitializedRunReturnsValidThreads )
 				{
 					// INIT / ACT
 					auto_ptr<thread> t1(thread::run(&do_nothing, &do_nothing));
 					auto_ptr<thread> t2(thread::run(&do_nothing, &do_nothing));
 
 					// ASSERT
-					Assert::IsTrue(t1.get() != 0);
-					Assert::IsTrue(t2.get() != 0);
-					Assert::IsTrue(t2->get_id() != t1->get_id());
+					assert_not_null(t1.get());
+					assert_not_null(t2.get());
+					assert_not_equal(t2->get_id(), t1->get_id());
 				}
 
 
-				[TestMethod]
-				void DetachedThreadContinuesExecution()
+				test( DetachedThreadContinuesExecution )
 				{
 					// INIT
 					shared_ptr<void> e(::CreateEvent(NULL, TRUE, FALSE, NULL), &::CloseHandle);
@@ -150,7 +140,7 @@ namespace wpl
 					// ASSERT
 					::GetExitCodeThread(hthread.get(), &exit_code);
 					
-					Assert::IsTrue(STILL_ACTIVE == exit_code);
+					assert_equal(STILL_ACTIVE, exit_code);
 
 					// ACT
 					::SetEvent(e.get());
@@ -159,12 +149,11 @@ namespace wpl
 					// ASSERT
 					::GetExitCodeThread(hthread.get(), &exit_code);
 					
-					Assert::IsTrue(0 == exit_code);
+					assert_equal(0u, exit_code);
 				}
 
 
-				[TestMethod]
-				void JoinThreadGuaranteesItsCompletion()
+				test( JoinThreadGuaranteesItsCompletion )
 				{
 					// INIT
 					auto_ptr<thread> t(new thread(&do_nothing));
@@ -179,12 +168,11 @@ namespace wpl
 					// ASSERT
 					::GetExitCodeThread(hthread.get(), &exit_code);
 					
-					Assert::IsTrue(0 == exit_code);
+					assert_equal(0u, exit_code);
 				}
 
 
-				[TestMethod]
-				void InitializedRunInitializerAndJobAreCalledFromNewThread()
+				test( InitializedRunInitializerAndJobAreCalledFromNewThread )
 				{
 					// INIT
 					unsigned int id_initializer1, id_job1, id_initializer2, id_job2;
@@ -196,15 +184,14 @@ namespace wpl
 					::Sleep(100);
 
 					// ASSERT
-					Assert::IsTrue(t1->get_id() == id_initializer1);
-					Assert::IsTrue(t1->get_id() == id_job1);
-					Assert::IsTrue(t2->get_id() == id_initializer2);
-					Assert::IsTrue(t2->get_id() == id_job2);
+					assert_equal(t1->get_id(), id_initializer1);
+					assert_equal(t1->get_id(), id_job1);
+					assert_equal(t2->get_id(), id_initializer2);
+					assert_equal(t2->get_id(), id_job2);
 				}
 
 
-				[TestMethod]
-				void ThreadInitializerIsCalledSynchronuously()
+				test( ThreadInitializerIsCalledSynchronuously )
 				{
 					// INIT
 					unsigned int id_initializer1, id_initializer2;
@@ -214,26 +201,24 @@ namespace wpl
 					auto_ptr<thread> t2(thread::run(bind(&threadid_capture, &id_initializer2, 100), &do_nothing));
 
 					// ASSERT
-					Assert::IsTrue(t1->get_id() == id_initializer1);
-					Assert::IsTrue(t2->get_id() == id_initializer2);
+					assert_equal(t1->get_id(), id_initializer1);
+					assert_equal(t2->get_id(), id_initializer2);
 				}
 
 
-				[TestMethod]
-				void TlsValueIsNullAfterInitialization()
+				test( TlsValueIsNullAfterInitialization )
 				{
 					// INIT / ACT
 					tls<int> tls_int;
 					tls<const double> tls_dbl;
 
 					// ACT / ASSERT
-					Assert::IsTrue(tls_int.get() == 0);
-					Assert::IsTrue(tls_dbl.get() == 0);
+					assert_null(tls_int.get());
+					assert_null(tls_dbl.get());
 				}
 
 
-				[TestMethod]
-				void TlsReturnsSameObjectInHostThread()
+				test( TlsReturnsSameObjectInHostThread )
 				{
 					// INIT
 					int a = 123;
@@ -250,13 +235,12 @@ namespace wpl
 					const double *ptr_b = tls_dbl.get();
 
 					// ASSERT
-					Assert::IsTrue(ptr_a == &a);
-					Assert::IsTrue(ptr_b == &b);
+					assert_equal(ptr_a, &a);
+					assert_equal(ptr_b, &b);
 				}
 
 
-				[TestMethod]
-				void TlsReturnsNullWhenValueGotFromAnotherThread()
+				test( TlsReturnsNullWhenValueGotFromAnotherThread )
 				{
 					// INIT
 					tls<int> tls_int;
@@ -274,13 +258,12 @@ namespace wpl
 					thread(bind(&get_from_tls<const double>, &tls_dbl, &ptr_b));
 
 					// ASSERT
-					Assert::IsTrue(ptr_a == 0);
-					Assert::IsTrue(ptr_b == 0);
+					assert_null(ptr_a);
+					assert_null(ptr_b);
 				}
 
 
-				[TestMethod]
-				void TlsReturnsValueSetInSpecificThread()
+				test( TlsReturnsValueSetInSpecificThread )
 				{
 					// INIT
 					tls<int> tls_int;
@@ -300,12 +283,12 @@ namespace wpl
 					thread::run(bind(&tls<const double>::set, &tls_dbl, &b2), bind(&get_from_tls<const double>, &tls_dbl, &ptr_b));
 
 					// ASSERT
-					Assert::IsTrue(ptr_a == &a2);
-					Assert::IsTrue(ptr_b == &b2);
-					Assert::IsTrue(tls_int.get() == &a);
-					Assert::IsTrue(tls_dbl.get() == &b);
+					assert_equal(ptr_a, &a2);
+					assert_equal(ptr_b, &b2);
+					assert_equal(tls_int.get(), &a);
+					assert_equal(tls_dbl.get(), &b);
 				}
-			};
+			end_test_suite
 		}
 	}
 }

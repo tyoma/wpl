@@ -1,6 +1,7 @@
 #include <wpl/mt/synchronization.h>
 
-using namespace Microsoft::VisualStudio::TestTools::UnitTesting;
+#include <ut/assert.h>
+#include <ut/test.h>
 
 namespace wpl
 {
@@ -8,37 +9,31 @@ namespace wpl
 	{
 		namespace tests
 		{
-			[TestClass]
-			public ref class SynchronizationTests
-			{
-			public:
-				[TestMethod]
-				void EventFlagCreateRaised()
+			begin_test_suite( SynchronizationTests )
+				test( EventFlagCreateRaised )
 				{
 					// INIT
 					event_flag e(true, false);
 
 					// ACT / ASSERT
-					Assert::IsTrue(waitable::satisfied == e.wait(0));
-					Assert::IsTrue(waitable::satisfied == e.wait(10000));
-					Assert::IsTrue(waitable::satisfied == e.wait(waitable::infinite));
+					assert_equal(waitable::satisfied, e.wait(0));
+					assert_equal(waitable::satisfied, e.wait(10000));
+					assert_equal(waitable::satisfied, e.wait(waitable::infinite));
 				}
 
 
-				[TestMethod]
-				void EventFlagCreateLowered()
+				test( EventFlagCreateLowered )
 				{
 					// INIT
 					event_flag e(false, false);
 
 					// ACT / ASSERT
-					Assert::IsTrue(waitable::timeout == e.wait(0));
-					Assert::IsTrue(waitable::timeout == e.wait(200));
+					assert_equal(waitable::timeout, e.wait(0));
+					assert_equal(waitable::timeout, e.wait(200));
 				}
 
 
-				[TestMethod]
-				void EventFlagCreateAutoResettable()
+				test( EventFlagCreateAutoResettable )
 				{
 					// INIT
 					event_flag e(true, true);
@@ -46,12 +41,11 @@ namespace wpl
 					e.wait(100);
 
 					// ACT / ASSERT
-					Assert::IsTrue(waitable::timeout == e.wait(100));
+					assert_equal(waitable::timeout, e.wait(100));
 				}
 
 
-				[TestMethod]
-				void RaisingEventFlag()
+				test( RaisingEventFlag )
 				{
 					// INIT
 					event_flag e(false, false);
@@ -60,12 +54,11 @@ namespace wpl
 					e.raise();
 
 					// ACT / ASSERT
-					Assert::IsTrue(waitable::satisfied == e.wait());
+					assert_equal(waitable::satisfied, e.wait());
 				}
 
 
-				[TestMethod]
-				void LoweringEventFlag()
+				test( LoweringEventFlag )
 				{
 					// INIT
 					event_flag e(true, false);
@@ -74,9 +67,9 @@ namespace wpl
 					e.lower();
 
 					// ACT / ASSERT
-					Assert::IsTrue(waitable::timeout == e.wait(0));
+					assert_equal(waitable::timeout, e.wait(0));
 				}
-			};
+			end_test_suite
 		}
 	}
 }

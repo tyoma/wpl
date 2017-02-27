@@ -42,13 +42,13 @@ namespace wpl
 
 			if (L"listview" == type)
 			{
-				h = ::CreateWindow(_T("SysListView32"), NULL, WS_CHILD | WS_VISIBLE | LVS_REPORT | LVS_OWNERDATA,
-					0, 0, 10, 10, parent, NULL, NULL, NULL);
+				h = ::CreateWindow(WC_LISTVIEW, NULL, WS_CHILD | WS_VISIBLE | LVS_REPORT | LVS_OWNERDATA, 0, 0, 10, 10,
+					parent, NULL, NULL, NULL);
 				w = wrap_listview(h);
 			}
 			else if (L"button" == type)
 			{
-				h = ::CreateWindow(_T("button"), NULL, WS_CHILD | WS_VISIBLE, 0, 0, 10, 10, parent, NULL, NULL, NULL);
+				h = ::CreateWindow(WC_BUTTON, NULL, WS_CHILD | WS_VISIBLE, 0, 0, 10, 10, parent, NULL, NULL, NULL);
 				w.reset(new native_button(h));
 			}
 

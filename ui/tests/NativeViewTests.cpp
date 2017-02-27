@@ -1,11 +1,12 @@
 #include <wpl/ui/win32/native_view.h>
 
-#include "Mockups.h"
-
 #include <wpl/ui/geometry.h>
 
+#include "Mockups.h"
 #include "TestHelpers.h"
 
+#include <ut/assert.h>
+#include <ut/test.h>
 #include <windows.h>
 
 namespace std
@@ -14,7 +15,6 @@ namespace std
 }
 
 using namespace std;
-using namespace Microsoft::VisualStudio::TestTools::UnitTesting;
 
 namespace wpl
 {
@@ -22,63 +22,69 @@ namespace wpl
 	{
 		namespace tests
 		{
-			[TestClass]
-			public ref class NativeViewTests : ut::WindowTestsBase
-			{
-			public:
-				[TestMethod]
-				void WindowIsValidOnConstruction()
+			begin_test_suite( NativeViewTests )
+
+				WindowManager windowManager;
+
+				init( Init )
+				{
+					windowManager.Init();
+				}
+
+				teardown( Cleanup )
+				{
+					windowManager.Cleanup();
+				}
+
+				test( WindowIsValidOnConstruction )
 				{
 					// INIT
-					shared_ptr<ut::TestNativeWidget> w(new ut::TestNativeWidget);
+					shared_ptr<mocks::TestNativeWidget> w(new mocks::TestNativeWidget);
 
 					// ACT / ASSERT
-					Assert::IsTrue(!!::IsWindow(w->hwnd()));
+					assert_is_true(!!::IsWindow(w->hwnd()));
 				}
 
 				
-				[TestMethod]
-				void WindowIsDestroyedAtWidgetDeleted()
+				test( WindowIsDestroyedAtWidgetDeleted )
 				{
 					// INIT
-					shared_ptr<ut::TestNativeWidget> w(new ut::TestNativeWidget);
+					shared_ptr<mocks::TestNativeWidget> w(new mocks::TestNativeWidget);
 					HWND hwnd = w->hwnd();
 
 					// ACT
-					w = shared_ptr<ut::TestNativeWidget>();
+					w = shared_ptr<mocks::TestNativeWidget>();
 					
 					// ASSERT
-					Assert::IsFalse(!!::IsWindow(hwnd));
+					assert_is_false(!!::IsWindow(hwnd));
 				}
 
 
-				[TestMethod]
-				void SettingParentOnNativeViewChangesTestNativeWidgetsParentWindow()
+				test( SettingParentOnNativeViewChangesTestNativeWidgetsParentWindow )
 				{
 					// INIT
-					HWND hparent1 = create_window(), hparent2 = create_window();
-					shared_ptr<ut::TestNativeWidget> w(new ut::TestNativeWidget);
+					HWND hparent1 = windowManager.create_window(), hparent2 = windowManager.create_window();
+					shared_ptr<mocks::TestNativeWidget> w(new mocks::TestNativeWidget);
 					shared_ptr<view> v;
 
 					// ACT
 					v = w->create_view(native_root(hparent1));
 
 					// ASSERT
-					Assert::IsTrue(::GetParent(w->hwnd()) == hparent1);
+					assert_equal(::GetParent(w->hwnd()), hparent1);
 
 					// ACT
 					v = w->create_view(native_root(hparent2));
 
 					// ASSERT
-					Assert::IsTrue(::GetParent(w->hwnd()) == hparent2);
+					assert_equal(::GetParent(w->hwnd()), hparent2);
 				}
 
 
-				[TestMethod]
-				void WidgetIsHeldByItsView()
+				test( WidgetIsHeldByItsView )
 				{
 					// INIT
-					shared_ptr<widget> w_strong(new ut::TestNativeWidget);
+					shared_ptr<widget> w_strong(new mocks::TestNativeWidget);
 					weak_ptr<widget> w_weak(w_strong);
 					shared_ptr<view> v(w_strong->create_view(native_root(0)));
 
@@ -86,15 +92,14 @@ namespace wpl
 					w_strong = shared_ptr<widget>();
 
 					// ASSERT
-					Assert::IsFalse(w_weak.expired());
+					assert_is_false(w_weak.expired());
 				}
 
 
-				[TestMethod]
-				void WidgetIsDestroyedOnJunctionDestroy()
+				test( WidgetIsDestroyedOnJunctionDestroy )
 				{
 					// INIT
-					shared_ptr<widget> w_strong(new ut::TestNativeWidget);
+					shared_ptr<widget> w_strong(new mocks::TestNativeWidget);
 					weak_ptr<widget> w_weak(w_strong);
 					shared_ptr<view> v(w_strong->create_view(native_root(0)));
 
@@ -103,16 +108,15 @@ namespace wpl
 					v = shared_ptr<view>();
 
 					// ASSERT
-					Assert::IsTrue(w_weak.expired());
+					assert_is_true(w_weak.expired());
 				}
 
 
-				[TestMethod]
-				void MoveNativeView()
+				test( MoveNativeView )
 				{
 					// INIT
-					HWND hparent = create_window();
-					shared_ptr<ut::TestNativeWidget> w(new ut::TestNativeWidget);
+					HWND hparent = windowManager.create_window();
+					shared_ptr<mocks::TestNativeWidget> w(new mocks::TestNativeWidget);
 					shared_ptr<view> v(w->create_view(native_root(hparent)));
 					RECT rc;
 
@@ -120,25 +124,25 @@ namespace wpl
 					v->move(1, 3, 10, 20);
 
 					// ASSERT
-					rc = ut::get_window_rect(w->hwnd());
+					rc = get_window_rect(w->hwnd());
 
-					Assert::IsTrue(1 == rc.left);
-					Assert::IsTrue(3 == rc.top);
-					Assert::IsTrue(11 == rc.right);
-					Assert::IsTrue(23 == rc.bottom);
+					assert_equal(1, rc.left);
+					assert_equal(3, rc.top);
+					assert_equal(11, rc.right);
+					assert_equal(23, rc.bottom);
 
 					// ACT
 					v->move(7, 11, 13, 29);
 
 					// ASSERT
-					rc = ut::get_window_rect(w->hwnd());
+					rc = get_window_rect(w->hwnd());
 
-					Assert::IsTrue(7 == rc.left);
-					Assert::IsTrue(11 == rc.top);
-					Assert::IsTrue(20 == rc.right);
-					Assert::IsTrue(40 == rc.bottom);
+					assert_equal(7, rc.left);
+					assert_equal(11, rc.top);
+					assert_equal(20, rc.right);
+					assert_equal(40, rc.bottom);
 				}
-			};
+			end_test_suite
 		}
 	}
 }

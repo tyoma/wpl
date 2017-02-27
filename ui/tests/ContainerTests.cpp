@@ -5,9 +5,10 @@
 #include "Mockups.h"
 #include "TestHelpers.h"
 
+#include <ut/assert.h>
+#include <ut/test.h>
 #include <windows.h>
 
-using namespace Microsoft::VisualStudio::TestTools::UnitTesting;
 using namespace std;
 using namespace std::tr1::placeholders;
 
@@ -21,17 +22,25 @@ namespace wpl
 
 			form_and_handle create_form_with_handle();
 
-			[TestClass]
-			public ref class ContainerTests : ut::WindowTestsBase
-			{
-			public:
-				[TestMethod]
-				void ConstructNestedContainer()
+			begin_test_suite( ContainerTests )
+				WindowManager windowManager;
+
+				init( Init )
+				{
+					windowManager.Init();
+				}
+
+				teardown( Cleanup )
+				{
+					windowManager.Cleanup();
+				}
+
+				test( ConstructNestedContainer )
 				{
 					// INIT
 					shared_ptr<form> f = form::create();
 					shared_ptr<container> root = f->get_root_container();
-					ut::window_tracker wt;
+					window_tracker wt;
 
 					// ACT
 					shared_ptr<container> nc1 = root->create_container(L"1");
@@ -40,10 +49,10 @@ namespace wpl
 					// ASSERT
 					wt.checkpoint();
 
-					Assert::IsTrue(0 == wt.created.size());
-					Assert::IsTrue(!!nc1);
-					Assert::IsTrue(!!nc2);
-					Assert::IsTrue(nc1 != nc2);
+					assert_is_empty(wt.created);
+					assert_not_null(nc1);
+					assert_not_null(!!nc2);
+					assert_not_equal(nc1, nc2);
 
 					// ACT
 					shared_ptr<container> nc11 = nc1->create_container(L"3");
@@ -53,15 +62,14 @@ namespace wpl
 					// ASSERT
 					wt.checkpoint();
 
-					Assert::IsTrue(0 == wt.created.size());
-					Assert::IsTrue(!!nc11);
-					Assert::IsTrue(!!nc12);
-					Assert::IsTrue(!!nc21);
+					assert_is_empty(wt.created);
+					assert_not_null(nc11);
+					assert_not_null(nc12);
+					assert_not_null(nc21);
 				}
 
 
-				[TestMethod]
-				void NestedContainerIsHeldByTheParent()
+				test( NestedContainerIsHeldByTheParent )
 				{
 					// INIT
 					shared_ptr<form> f = form::create();
@@ -71,12 +79,11 @@ namespace wpl
 					weak_ptr<container> nc = root->create_container(L"1");
 
 					// ASSERT
-					Assert::IsFalse(nc.expired());
+					assert_is_false(nc.expired());
 				}
 
 
-				[TestMethod]
-				void NestedContainerIsDestroyedAlongWithParent()
+				test( NestedContainerIsDestroyedAlongWithParent )
 				{
 					// INIT
 					shared_ptr<form> f = form::create();
@@ -86,19 +93,18 @@ namespace wpl
 					f = shared_ptr<form>();
 
 					// ASSERT
-					Assert::IsTrue(nc.expired());
+					assert_is_true(nc.expired());
 				}
 
 
-				[TestMethod]
-				void NestedChildIsFosteredByTopLevelParent()
+				test( NestedChildIsFosteredByTopLevelParent )
 				{
 					// INIT
 					form_and_handle f = create_form_with_handle();
 					shared_ptr<container> root = f.first->get_root_container();
 					shared_ptr<container> nc1 = root->create_container(L"1");
 					shared_ptr<container> nc2 = root->create_container(L"2");
-					ut::window_tracker wt(L"SysListView32");
+					window_tracker wt(L"SysListView32");
 
 					// ACT
 					nc1->create_widget(L"listview", L"1");
@@ -106,14 +112,13 @@ namespace wpl
 					wt.checkpoint();
 
 					// ASSERT
-					Assert::IsTrue(2u == wt.created.size());
-					Assert::IsTrue(f.second == ::GetParent(wt.created[0]));
-					Assert::IsTrue(f.second == ::GetParent(wt.created[1]));
+					assert_equal(2u, wt.created.size());
+					assert_equal(f.second, ::GetParent(wt.created[0]));
+					assert_equal(f.second, ::GetParent(wt.created[1]));
 				}
 
 
-				[TestMethod]
-				void WidgetsAreEnumeratedOnLayout()
+				test( WidgetsAreEnumeratedOnLayout )
 				{
 					// INIT
 					form_and_handle f[] = {
@@ -133,33 +138,32 @@ namespace wpl
 						c[1]->create_widget(L"listview", L"3"),
 						c[1]->create_widget(L"listview", L"4"),
 					};
-					shared_ptr<ut::logging_layout_manager> lm[] = {
-						shared_ptr<ut::logging_layout_manager>(new ut::logging_layout_manager),
-						shared_ptr<ut::logging_layout_manager>(new ut::logging_layout_manager),
+					shared_ptr<mocks::logging_layout_manager> lm[] = {
+						shared_ptr<mocks::logging_layout_manager>(new mocks::logging_layout_manager),
+						shared_ptr<mocks::logging_layout_manager>(new mocks::logging_layout_manager),
 					};
 
 					c[0]->layout = lm[0];
 					c[1]->layout = lm[1];
-					f[1].first->get_root_container()->layout = shared_ptr<ut::logging_layout_manager>(new ut::logging_layout_manager);
+					f[1].first->get_root_container()->layout.reset(new mocks::logging_layout_manager);
 
 					// ACT
 					::MoveWindow(f[0].second, 10, 11, 150, 60, TRUE);
 					::MoveWindow(f[1].second, 10, 11, 160, 70, TRUE);
 
 					// ASSERT
-					Assert::IsTrue(2u == lm[0]->last_widgets.size());
-					Assert::IsTrue(w1[0] == lm[0]->last_widgets[0].first);
-					Assert::IsTrue(w1[1] == lm[0]->last_widgets[1].first);
+					assert_equal(2u, lm[0]->last_widgets.size());
+					assert_equal(w1[0], lm[0]->last_widgets[0].first);
+					assert_equal(w1[1], lm[0]->last_widgets[1].first);
 					
-					Assert::IsTrue(3u == lm[1]->last_widgets.size());
-					Assert::IsTrue(w2[0] == lm[1]->last_widgets[0].first);
-					Assert::IsTrue(w2[1] == lm[1]->last_widgets[1].first);
-					Assert::IsTrue(w2[2] == lm[1]->last_widgets[2].first);
+					assert_equal(3u, lm[1]->last_widgets.size());
+					assert_equal(w2[0], lm[1]->last_widgets[0].first);
+					assert_equal(w2[1], lm[1]->last_widgets[1].first);
+					assert_equal(w2[2], lm[1]->last_widgets[2].first);
 				}
 
 
-				[TestMethod]
-				void ContainersAreEnumeratedOnLayout()
+				test( ContainersAreEnumeratedOnLayout )
 				{
 					// INIT
 					form_and_handle f[] = {
@@ -179,11 +183,11 @@ namespace wpl
 						c[1]->create_container(L"2"),
 						c[1]->create_container(L"3"),
 					};
-					shared_ptr<ut::logging_layout_manager> lm[] = {
-						shared_ptr<ut::logging_layout_manager>(new ut::logging_layout_manager),
-						shared_ptr<ut::logging_layout_manager>(new ut::logging_layout_manager),
+					shared_ptr<mocks::logging_layout_manager> lm[] = {
+						shared_ptr<mocks::logging_layout_manager>(new mocks::logging_layout_manager),
+						shared_ptr<mocks::logging_layout_manager>(new mocks::logging_layout_manager),
 					};
-					shared_ptr<ut::logging_layout_manager> dummy_lm(new ut::logging_layout_manager);
+					shared_ptr<mocks::logging_layout_manager> dummy_lm(new mocks::logging_layout_manager);
 
 					c[0]->layout = lm[0];
 					c[1]->layout = lm[1];
@@ -198,19 +202,18 @@ namespace wpl
 					::MoveWindow(f[1].second, 10, 11, 160, 70, TRUE);
 
 					// ASSERT
-					Assert::IsTrue(3u == lm[0]->last_widgets.size());
-					Assert::IsTrue(c1[0] == lm[0]->last_widgets[0].first);
-					Assert::IsTrue(c1[1] == lm[0]->last_widgets[1].first);
-					Assert::IsTrue(c1[2] == lm[0]->last_widgets[2].first);
+					assert_equal(3u, lm[0]->last_widgets.size());
+					assert_equal(c1[0], lm[0]->last_widgets[0].first);
+					assert_equal(c1[1], lm[0]->last_widgets[1].first);
+					assert_equal(c1[2], lm[0]->last_widgets[2].first);
 
-					Assert::IsTrue(2u == lm[1]->last_widgets.size());
-					Assert::IsTrue(c2[0] == lm[1]->last_widgets[0].first);
-					Assert::IsTrue(c2[1] == lm[1]->last_widgets[1].first);
+					assert_equal(2u, lm[1]->last_widgets.size());
+					assert_equal(c2[0], lm[1]->last_widgets[0].first);
+					assert_equal(c2[1], lm[1]->last_widgets[1].first);
 				}
 
 
-				[TestMethod]
-				void WidgetsAndContainersAreEnumeratedOnLayout()
+				test( WidgetsAndContainersAreEnumeratedOnLayout )
 				{
 					// INIT
 					form_and_handle f = create_form_with_handle();
@@ -218,8 +221,8 @@ namespace wpl
 					shared_ptr<container> c1 = root->create_container(L"2");
 					widget_ptr w2 = root->create_widget(L"listview", L"3");
 					shared_ptr<container> c3 = root->create_container(L"4");
-					shared_ptr<ut::logging_layout_manager> lm(new ut::logging_layout_manager);
-					shared_ptr<ut::logging_layout_manager> dummy_lm(new ut::logging_layout_manager);
+					shared_ptr<mocks::logging_layout_manager> lm(new mocks::logging_layout_manager);
+					shared_ptr<mocks::logging_layout_manager> dummy_lm(new mocks::logging_layout_manager);
 
 					root->layout = lm;
 					c1->layout = dummy_lm;
@@ -229,19 +232,18 @@ namespace wpl
 					::MoveWindow(f.second, 10, 11, 150, 60, TRUE);
 
 					// ASSERT
-					Assert::IsTrue(3u == lm->last_widgets.size());
-					Assert::IsTrue(c1 == lm->last_widgets[0].first);
-					Assert::IsTrue(w2 == lm->last_widgets[1].first);
-					Assert::IsTrue(c3 == lm->last_widgets[2].first);
+					assert_equal(3u, lm->last_widgets.size());
+					assert_equal(c1, lm->last_widgets[0].first);
+					assert_equal(w2, lm->last_widgets[1].first);
+					assert_equal(c3, lm->last_widgets[2].first);
 				}
 
 
-				[TestMethod]
-				void ChildrenAreRepositionedAccordinglyToTheContainerOffset()
+				test( ChildrenAreRepositionedAccordinglyToTheContainerOffset )
 				{
 					// INIT
 					form_and_handle f = create_form_with_handle();
-					ut::window_tracker wt(L"SysListView32");
+					window_tracker wt(L"SysListView32");
 					shared_ptr<container> root = f.first->get_root_container();
 					shared_ptr<container> c1 = root->create_container(L"1");
 					widget_ptr w11 = create_widget(wt, *c1, L"listview", L"2");
@@ -253,9 +255,9 @@ namespace wpl
 					widget_ptr w33 = create_widget(wt, *c3, L"listview", L"8");
 
 					wt.checkpoint();
-					shared_ptr<ut::logging_layout_manager> lm(new ut::logging_layout_manager);
-					shared_ptr<ut::logging_layout_manager> lm1(new ut::logging_layout_manager);
-					shared_ptr<ut::logging_layout_manager> lm3(new ut::logging_layout_manager);
+					shared_ptr<mocks::logging_layout_manager> lm(new mocks::logging_layout_manager);
+					shared_ptr<mocks::logging_layout_manager> lm1(new mocks::logging_layout_manager);
+					shared_ptr<mocks::logging_layout_manager> lm3(new mocks::logging_layout_manager);
 
 					root->layout = lm;
 					c1->layout = lm1;
@@ -276,22 +278,22 @@ namespace wpl
 						{ 106, 2, 50, 35 },
 					};
 
-					lm->positions.assign(ut::begin(p10), ut::end(p10));
-					lm1->positions.assign(ut::begin(p11), ut::end(p11));
-					lm3->positions.assign(ut::begin(p13), ut::end(p13));
+					lm->positions.assign(begin(p10), end(p10));
+					lm1->positions.assign(begin(p11), end(p11));
+					lm3->positions.assign(begin(p13), end(p13));
 
 					// ACT
 					::MoveWindow(f.second, 10, 11, 150, 60, TRUE);
 
 					// ASSERT
-					Assert::IsTrue(ut::rect(5, 7, 30, 25) == ut::get_window_rect(wt.created[0]));
-					Assert::IsTrue(ut::rect(40, 7, 50, 25) == ut::get_window_rect(wt.created[1]));
-					Assert::IsTrue(ut::rect(5, 37, 85, 30) == ut::get_window_rect(wt.created[2]));
-					Assert::IsTrue(ut::rect(6, 72, 45, 35) == ut::get_window_rect(wt.created[3]));
-					Assert::IsTrue(ut::rect(56, 72, 50, 35) == ut::get_window_rect(wt.created[4]));
-					Assert::IsTrue(ut::rect(111, 72, 50, 35) == ut::get_window_rect(wt.created[5]));
+					assert_equal(rect(5, 7, 30, 25), get_window_rect(wt.created[0]));
+					assert_equal(rect(40, 7, 50, 25), get_window_rect(wt.created[1]));
+					assert_equal(rect(5, 37, 85, 30), get_window_rect(wt.created[2]));
+					assert_equal(rect(6, 72, 45, 35), get_window_rect(wt.created[3]));
+					assert_equal(rect(56, 72, 50, 35), get_window_rect(wt.created[4]));
+					assert_equal(rect(111, 72, 50, 35), get_window_rect(wt.created[5]));
 				}
-			};
+			end_test_suite
 		}
 	}
 }

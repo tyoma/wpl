@@ -1,11 +1,11 @@
 #include <wpl/base/signals.h>
 
 #include <string>
+#include <ut/assert.h>
+#include <ut/test.h>
 
 using namespace std;
 using namespace tr1;
-using namespace System;
-using namespace	Microsoft::VisualStudio::TestTools::UnitTesting;
 
 namespace wpl
 {
@@ -69,12 +69,8 @@ namespace wpl
 			{	++s11_n, s11_arg1 = arg1, s11_arg2 = arg2, s11_arg3 = arg3, s11_arg4 = arg4, s11_arg5 = &arg5;	}
 		}
 
-		[TestClass]
-		public ref class SignalTests
-		{
-		public:
-			[TestInitialize]
-			void Init()
+		begin_test_suite( SignalTests )
+			init( Init )
 			{
 				s1_n = s1x_n = s2_n = s3_n = s4_n = s5_n = s6_n = s7_n = s8_n = s9_n = s10_n = s11_n = 0;
 				s2_arg1 = 0;
@@ -89,8 +85,7 @@ namespace wpl
 				s11_arg1 = s11_arg2 = s11_arg3 = s11_arg4 = 0; s11_arg5 = 0;
 			}
 
-			[TestMethod]
-			void InstantiateDifferentSignalTypes()
+			test( InstantiateDifferentSignalTypes )
 			{
 				// INIT / ACT / ASSERT (compilable)
 				signal<void ()> s1;
@@ -120,8 +115,7 @@ namespace wpl
 			}
 
 
-			[TestMethod]
-			void ConnectAndCallSignalReceiver()
+			test( ConnectAndCallSignalReceiver )
 			{
 				// INIT
 				vector<slot_connection> cx;
@@ -168,52 +162,51 @@ namespace wpl
 				s11(890, 901, 1001, 2001, b);
 
 				// ASSERT
-				Assert::IsTrue(1 == s1_n);
-				Assert::IsTrue(2 == s2_n);
-				Assert::IsTrue(123 == s2_arg1);
-				Assert::IsTrue(3 == s3_n);
-				Assert::IsTrue("abc" == s3_arg1);
-				Assert::IsTrue(1 == s4_n);
-				Assert::IsTrue(123 == s4_arg1);
-				Assert::IsTrue(234 == s4_arg2);
-				Assert::IsTrue(1 == s5_n);
-				Assert::IsTrue(234 == s5_arg1);
-				Assert::IsTrue("bcd" == s5_arg2);
-				Assert::IsTrue(1 == s6_n);
-				Assert::IsTrue(345 == s6_arg1);
-				Assert::IsTrue(456 == s6_arg2);
-				Assert::IsTrue(567 == s6_arg3);
-				Assert::IsTrue(1 == s7_n);
-				Assert::IsTrue(456 == s7_arg1);
-				Assert::IsTrue(567 == s7_arg2);
-				Assert::IsTrue("cde" == s7_arg3);
-				Assert::IsTrue(1 == s8_n);
-				Assert::IsTrue(567 == s8_arg1);
-				Assert::IsTrue(678 == s8_arg2);
-				Assert::IsTrue(789 == s8_arg3);
-				Assert::IsTrue(890 == s8_arg4);
-				Assert::IsTrue(1 == s9_n);
-				Assert::IsTrue(678 == s9_arg1);
-				Assert::IsTrue(789 == s9_arg2);
-				Assert::IsTrue(890 == s9_arg3);
-				Assert::IsTrue("def" == s9_arg4);
-				Assert::IsTrue(1 == s10_n);
-				Assert::IsTrue(789 == s10_arg1);
-				Assert::IsTrue(890 == s10_arg2);
-				Assert::IsTrue(901 == s10_arg3);
-				Assert::IsTrue(&a == s10_arg4);
-				Assert::IsTrue(1001 == s10_arg5);
-				Assert::IsTrue(1 == s11_n);
-				Assert::IsTrue(890 == s11_arg1);
-				Assert::IsTrue(901 == s11_arg2);
-				Assert::IsTrue(1001 == s11_arg3);
-				Assert::IsTrue(2001 == s11_arg4);
-				Assert::IsTrue(&b == s11_arg5);
+				assert_equal(1, s1_n);
+				assert_equal(2, s2_n);
+				assert_equal(123, s2_arg1);
+				assert_equal(3, s3_n);
+				assert_equal("abc", s3_arg1);
+				assert_equal(1, s4_n);
+				assert_equal(123, s4_arg1);
+				assert_equal(234, s4_arg2);
+				assert_equal(1, s5_n);
+				assert_equal(234, s5_arg1);
+				assert_equal("bcd", s5_arg2);
+				assert_equal(1, s6_n);
+				assert_equal(345, s6_arg1);
+				assert_equal(456, s6_arg2);
+				assert_equal(567, s6_arg3);
+				assert_equal(1, s7_n);
+				assert_equal(456, s7_arg1);
+				assert_equal(567, s7_arg2);
+				assert_equal("cde", s7_arg3);
+				assert_equal(1, s8_n);
+				assert_equal(567, s8_arg1);
+				assert_equal(678, s8_arg2);
+				assert_equal(789, s8_arg3);
+				assert_equal(890, s8_arg4);
+				assert_equal(1, s9_n);
+				assert_equal(678, s9_arg1);
+				assert_equal(789, s9_arg2);
+				assert_equal(890, s9_arg3);
+				assert_equal("def", s9_arg4);
+				assert_equal(1, s10_n);
+				assert_equal(789, s10_arg1);
+				assert_equal(890, s10_arg2);
+				assert_equal(901, s10_arg3);
+				assert_equal(&a, s10_arg4);
+				assert_equal(1001, s10_arg5);
+				assert_equal(1, s11_n);
+				assert_equal(890, s11_arg1);
+				assert_equal(901, s11_arg2);
+				assert_equal(1001, s11_arg3);
+				assert_equal(2001, s11_arg4);
+				assert_equal(&b, s11_arg5);
 			}
 
 
-			[TestMethod]
-			void DisconnectedSlotIsNotCalled()
+			test( DisconnectedSlotIsNotCalled )
 			{
 				// INIT
 				signal<void ()> s;
@@ -227,13 +220,12 @@ namespace wpl
 				s();
 
 				// ASSERT
-				Assert::IsTrue(0 == s1_n);
-				Assert::IsTrue(1 == s1x_n);
+				assert_equal(0, s1_n);
+				assert_equal(1, s1x_n);
 			}
 
 
-			[TestMethod]
-			void DisconnectedSlotIsNotCalledForAllSignatures()
+			test( DisconnectedSlotIsNotCalledForAllSignatures )
 			{
 				// INIT
 				signal<void ()> s1;
@@ -260,17 +252,16 @@ namespace wpl
 				s10(789, 890, 901, 2002, 1001);
 
 				// ASSERT
-				Assert::IsTrue(0 == s1_n);
-				Assert::IsTrue(0 == s2_n);
-				Assert::IsTrue(0 == s4_n);
-				Assert::IsTrue(0 == s6_n);
-				Assert::IsTrue(0 == s8_n);
-				Assert::IsTrue(0 == s10_n);
+				assert_equal(0, s1_n);
+				assert_equal(0, s2_n);
+				assert_equal(0, s4_n);
+				assert_equal(0, s6_n);
+				assert_equal(0, s8_n);
+				assert_equal(0, s10_n);
 			}
 
 
-			[TestMethod]
-			void SlotConnectionIsAssignable()
+			test( SlotConnectionIsAssignable )
 			{
 				// INIT
 				signal<void ()> s;
@@ -285,12 +276,11 @@ namespace wpl
 				s();
 
 				// ASSERT
-				Assert::IsTrue(1 == s1_n);
+				assert_equal(1, s1_n);
 			}
 
 
-			[TestMethod]
-			void CopyingOfSignalDoesNotCopyConnectedSlots()
+			test( CopyingOfSignalDoesNotCopyConnectedSlots )
 			{
 				// INIT
 				signal<void ()> s_src;
@@ -302,12 +292,11 @@ namespace wpl
 				s_clone();
 
 				// ASSERT
-				Assert::IsTrue(0 == s1_n);
+				assert_equal(0, s1_n);
 			}
 
 
-			[TestMethod]
-			void CopiedSignalIsWorkable()
+			test( CopiedSignalIsWorkable )
 			{
 				// INIT
 				signal<void ()> s_src;
@@ -319,12 +308,11 @@ namespace wpl
 				s_clone();	// must not throw
 
 				// ASSERT
-				Assert::IsTrue(1 == s1_n);
+				assert_equal(1, s1_n);
 			}
 
 
-			[TestMethod]
-			void AssigningOfSignalDoesNotAssignConnectedSlotsAndContinueToCallOldSlots()
+			test( AssigningOfSignalDoesNotAssignConnectedSlotsAndContinueToCallOldSlots )
 			{
 				// INIT
 				signal<void ()> s_src;
@@ -337,13 +325,12 @@ namespace wpl
 				s_clone();
 
 				// ASSERT
-				Assert::IsTrue(0 == s1_n);
-				Assert::IsTrue(1 == s1x_n);
+				assert_equal(0, s1_n);
+				assert_equal(1, s1x_n);
 			}
 
 
-			[TestMethod]
-			void AssigningReturnsConstThis()
+			test( AssigningReturnsConstThis )
 			{
 				// INIT
 				signal<void ()> s_src;
@@ -353,12 +340,11 @@ namespace wpl
 				signal<void ()> *ref = &(s_clone = s_src);
 
 				// ASSERT
-				Assert::IsTrue(ref == &s_clone);
+				assert_equal(ref, &s_clone);
 			}
 
 
-			[TestMethod]
-			void SelfDestructionIsSupportedFromSignal0()
+			test( SelfDestructionIsSupportedFromSignal0 )
 			{
 				// INIT
 				typedef signal<void ()> signal_type;
@@ -371,13 +357,12 @@ namespace wpl
 				(*ps)();
 
 				// ASSERT
-				Assert::IsTrue(1 == s1_n);
-				Assert::IsTrue(ps.get() == 0);
+				assert_equal(1, s1_n);
+				assert_null(ps.get());
 			}
 
 
-			[TestMethod]
-			void SelfDestructionIsSupportedFromSignal1()
+			test( SelfDestructionIsSupportedFromSignal1 )
 			{
 				// INIT
 				typedef signal<void (int)> signal_type;
@@ -390,13 +375,12 @@ namespace wpl
 				(*ps)(0);
 
 				// ASSERT
-				Assert::IsTrue(1 == s2_n);
-				Assert::IsTrue(ps.get() == 0);
+				assert_equal(1, s2_n);
+				assert_null(ps.get());
 			}
 
 
-			[TestMethod]
-			void SelfDestructionIsSupportedFromSignal2()
+			test( SelfDestructionIsSupportedFromSignal2 )
 			{
 				// INIT
 				typedef signal<void (int, int)> signal_type;
@@ -409,13 +393,12 @@ namespace wpl
 				(*ps)(0, 0);
 
 				// ASSERT
-				Assert::IsTrue(1 == s4_n);
-				Assert::IsTrue(ps.get() == 0);
+				assert_equal(1, s4_n);
+				assert_null(ps.get());
 			}
 
 
-			[TestMethod]
-			void SelfDestructionIsSupportedFromSignal3()
+			test( SelfDestructionIsSupportedFromSignal3 )
 			{
 				// INIT
 				typedef signal<void (int, int, int)> signal_type;
@@ -428,13 +411,12 @@ namespace wpl
 				(*ps)(0, 0, 0);
 
 				// ASSERT
-				Assert::IsTrue(1 == s6_n);
-				Assert::IsTrue(ps.get() == 0);
+				assert_equal(1, s6_n);
+				assert_null(ps.get());
 			}
 
 
-			[TestMethod]
-			void SelfDestructionIsSupportedFromSignal4()
+			test( SelfDestructionIsSupportedFromSignal4 )
 			{
 				// INIT
 				typedef signal<void (int, int, int, int)> signal_type;
@@ -447,13 +429,12 @@ namespace wpl
 				(*ps)(0, 0, 0, 0);
 
 				// ASSERT
-				Assert::IsTrue(1 == s8_n);
-				Assert::IsTrue(ps.get() == 0);
+				assert_equal(1, s8_n);
+				assert_null(ps.get());
 			}
 
 
-			[TestMethod]
-			void SelfDestructionIsSupportedFromSignal5()
+			test( SelfDestructionIsSupportedFromSignal5 )
 			{
 				// INIT
 				typedef signal<void (int, int, int, int, int)> signal_type;
@@ -466,9 +447,9 @@ namespace wpl
 				(*ps)(0, 0, 0, 0, 0);
 
 				// ASSERT
-				Assert::IsTrue(1 == s10_n);
-				Assert::IsTrue(ps.get() == 0);
+				assert_equal(1, s10_n);
+				assert_null(ps.get());
 			}
-		};
+		end_test_suite
 	}
 }

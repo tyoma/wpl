@@ -2,15 +2,15 @@
 
 #include "TestHelpers.h"
 
-#include <tchar.h>
 #include <functional>
+#include <tchar.h>
+#include <ut/assert.h>
+#include <ut/test.h>
 #include <vector>
 
 using namespace std;
 using namespace tr1;
 using namespace tr1::placeholders;
-using namespace System;
-using namespace Microsoft::VisualStudio::TestTools::UnitTesting;
 
 namespace wpl
 {
@@ -56,116 +56,119 @@ namespace wpl
 				{	return ::CallWindowProc(original, hwnd, message, wparam, lparam);	}
 			}
 
-			[TestClass]
-			public ref class WindowingTests : ut::WindowTestsBase
-			{
-			public:
-				[TestMethod]
-				void FailToWrapNonWindow()
+			begin_test_suite( WindowingTests )
+
+				WindowManager windowManager;
+
+				init( Init )
 				{
-					// INIT / ACT / ASSERT
-					ASSERT_THROWS(window::attach((HWND)0x12345678), invalid_argument);
+					windowManager.Init();
+				}
+
+				teardown( Cleanup )
+				{
+					windowManager.Cleanup();
 				}
 
 
-				[TestMethod]
-				void WrapWindowAndReturnWrapper()
+				test( FailToWrapNonWindow )
+				{
+					// INIT / ACT / ASSERT
+					assert_throws(window::attach((HWND)0x12345678), invalid_argument);
+				}
+
+
+				test( WrapWindowAndReturnWrapper )
 				{
 					// INIT
-					HWND hwnd = create_window();
+					HWND hwnd = windowManager.create_window();
 
 					// ACT (must not throw)
 					shared_ptr<window> w(window::attach(hwnd));
 
 					// ASSERT
-					Assert::IsTrue(w != 0);
+					assert_not_null(w);
 				}
 
 
-				[TestMethod]
-				void WrappersForDifferentWindowsAreDifferent()
+				test( WrappersForDifferentWindowsAreDifferent )
 				{
 					// INIT
-					HWND hwnd1 = create_window(), hwnd2 = create_window();
+					HWND hwnd1 = windowManager.create_window(), hwnd2 = windowManager.create_window();
 
 					// ACT
 					shared_ptr<window> w1(window::attach(hwnd1));
 					shared_ptr<window> w2(window::attach(hwnd2));
 
 					// ASSERT
-					Assert::IsTrue(w1 != w2);
+					assert_not_equal(w1, w2);
 				}
 
 
-				[TestMethod]
-				void WrapperHoldsHWND()
+				test( WrapperHoldsHWND )
 				{
 					// INIT
-					HWND hwnd1 = create_window(), hwnd2 = create_window();
+					HWND hwnd1 = windowManager.create_window(), hwnd2 = windowManager.create_window();
 					shared_ptr<window> w1(window::attach(hwnd1));
 					shared_ptr<window> w2(window::attach(hwnd2));
 
 					// ACT / ASSERT
-					Assert::IsTrue(hwnd1 == w1->hwnd());
-					Assert::IsTrue(hwnd2 == w2->hwnd());
+					assert_equal(hwnd1, w1->hwnd());
+					assert_equal(hwnd2, w2->hwnd());
 				}
 
 
-				[TestMethod]
-				void WrapperForTheSameWindowIsTheSame()
+				test( WrapperForTheSameWindowIsTheSame )
 				{
 					// INIT
-					HWND hwnd = create_window();
+					HWND hwnd = windowManager.create_window();
 
 					// ACT
 					shared_ptr<window> w1(window::attach(hwnd));
 					shared_ptr<window> w2(window::attach(hwnd));
 
 					// ASSERT
-					Assert::IsTrue(w1 == w2);
+					assert_equal(w1, w2);
 				}
 
 
-				[TestMethod]
-				void SameWrapperForTheSameWindowIsReclaimed()
+				test( SameWrapperForTheSameWindowIsReclaimed )
 				{
 					// INIT
-					HWND hwnd = create_window();
+					HWND hwnd = windowManager.create_window();
 
 					// ACT
 					window * w1(window::attach(hwnd).get());	// do not hold reference
 					shared_ptr<window> w2(window::attach(hwnd));
 
 					// ASSERT
-					Assert::IsTrue(w2.get() == w1);
+					assert_equal(w2.get(), w1);
 				}
 
 
-				[TestMethod]
-				void WrapperDestroyedOnDestroyWindow()
+				test( WrapperDestroyedOnDestroyWindow )
 				{
 					// INIT
-					HWND hwnd = create_window();
+					HWND hwnd = windowManager.create_window();
 
 					// ACT
 					weak_ptr<window> w(window::attach(hwnd));
 
 					// ASSERT
-					Assert::IsFalse(w.expired());
+					assert_is_false(w.expired());
 
 					// ACT
 					::DestroyWindow(hwnd);
 
 					// ASSERT
-					Assert::IsTrue(w.expired());
+					assert_is_true(w.expired());
 				}
 
 
-				[TestMethod]
-				void MessagesAreDelegatedToOriginalWndProcIfNotIntercepted()
+				test( MessagesAreDelegatedToOriginalWndProcIfNotIntercepted )
 				{
 					// INIT
-					HWND hwnd = create_window();
+					HWND hwnd = windowManager.create_window();
 					TCHAR buffer[256] = { 0 };
 
 					window::attach(hwnd);
@@ -175,22 +178,21 @@ namespace wpl
 					::GetWindowText(hwnd, buffer, 255);
 
 					// ASSERT
-					Assert::IsTrue(0 == _tcscmp(buffer, _T("First message...")));
+					assert_equal(0, _tcscmp(buffer, _T("First message...")));
 
 					// ACT
 					::SetWindowText(hwnd, _T("Message #2"));
 					::GetWindowText(hwnd, buffer, 255);
 
 					// ASSERT
-					Assert::IsTrue(0 == _tcscmp(buffer, _T("Message #2")));
+					assert_equal(0, _tcscmp(buffer, _T("Message #2")));
 				}
 
 
-				[TestMethod]
-				void MessagesAreDelegatedToUserCBIfIntercepted()
+				test( MessagesAreDelegatedToUserCBIfIntercepted )
 				{
 					// INIT
-					HWND hwnd = create_window();
+					HWND hwnd = windowManager.create_window();
 					handler h;
 					shared_ptr<window> w(window::attach(hwnd));
 					LPCTSTR s1 = _T("Text #1");
@@ -205,23 +207,22 @@ namespace wpl
 					::GetWindowText(hwnd, buffer, 4);
 
 					// ASSERT
-					Assert::IsTrue(h.messages.size() == 4);
-					Assert::IsTrue(h.messages[0].message == WM_SETTEXT);
-					Assert::IsTrue(reinterpret_cast<LPCTSTR>(h.messages[0].lParam) == s1);
-					Assert::IsTrue(h.messages[1].message == WM_SETTEXT);
-					Assert::IsTrue(reinterpret_cast<LPCTSTR>(h.messages[1].lParam) == s2);
-					Assert::IsTrue(h.messages[2].message == WM_GETTEXT);
-					Assert::IsTrue(h.messages[2].wParam == 3);
-					Assert::IsTrue(h.messages[3].message == WM_GETTEXT);
-					Assert::IsTrue(h.messages[3].wParam == 4);
+					assert_equal(4u, h.messages.size());
+					assert_equal(WM_SETTEXT, (int)h.messages[0].message);
+					assert_equal(reinterpret_cast<LPCTSTR>(h.messages[0].lParam), s1);
+					assert_equal(WM_SETTEXT, (int)h.messages[1].message);
+					assert_equal(reinterpret_cast<LPCTSTR>(h.messages[1].lParam), s2);
+					assert_equal(WM_GETTEXT, (int)h.messages[2].message);
+					assert_equal(3u, h.messages[2].wParam);
+					assert_equal(WM_GETTEXT, (int)h.messages[3].message);
+					assert_equal(4u, h.messages[3].wParam);
 				}
 
 
-				[TestMethod]
-				void ResultIsProvidedFromInterceptor()
+				test( ResultIsProvidedFromInterceptor )
 				{
 					// INIT
-					HWND hwnd = create_window();
+					HWND hwnd = windowManager.create_window();
 					handler h;
 					shared_ptr<window> w(window::attach(hwnd));
 
@@ -234,16 +235,15 @@ namespace wpl
 					int r2 = ::GetWindowTextLength(hwnd);
 
 					// ASSERT
-					Assert::IsTrue(r1 == 123);
-					Assert::IsTrue(r2 == 321);
+					assert_equal(123, r1);
+					assert_equal(321, r2);
 				}
 
 
-				[TestMethod]
-				void MessageIsNotPassedToPreviousHandlerIfUserHandlerDoesNotCallIt()
+				test( MessageIsNotPassedToPreviousHandlerIfUserHandlerDoesNotCallIt )
 				{
 					// INIT
-					HWND hwnd = create_window();
+					HWND hwnd = windowManager.create_window();
 					handler h;
 					shared_ptr<window> w(window::attach(hwnd));
 
@@ -253,21 +253,20 @@ namespace wpl
 					::SetWindowText(hwnd, _T("allowed"));
 
 					// ASSERT
-					Assert::IsTrue(::GetWindowTextLength(hwnd) == 7);
+					assert_equal(7, ::GetWindowTextLength(hwnd));
 
 					// ACT
 					::SetWindowText(hwnd, _T("disallowed"));
 
 					// ASSERT
-					Assert::IsTrue(::GetWindowTextLength(hwnd) == 7);
+					assert_equal(7, ::GetWindowTextLength(hwnd));
 				}
 
 
-				[TestMethod]
-				void InterceptionStopsIfConnectionDestroyed()
+				test( InterceptionStopsIfConnectionDestroyed )
 				{
 					// INIT
-					HWND hwnd = create_window();
+					HWND hwnd = windowManager.create_window();
 					handler h;
 					shared_ptr<window> w(window::attach(hwnd));
 					shared_ptr<void> c(w->advise(bind(&handler::on_message, &h, _1, _2, _3, _4)));
@@ -276,7 +275,7 @@ namespace wpl
 					::SetWindowText(hwnd, _T("disallowed"));
 
 					// preASSERT
-					Assert::IsTrue(::GetWindowTextLength(hwnd) == 7);
+					assert_equal(7, ::GetWindowTextLength(hwnd));
 
 					// INIT
 					size_t calls = h.messages.size();
@@ -286,36 +285,34 @@ namespace wpl
 					::SetWindowText(hwnd, _T("disallowed"));
 
 					// ASSERT
-					Assert::IsTrue(::GetWindowTextLength(hwnd) == 10);
-					Assert::IsTrue(h.messages.size() == calls);
+					assert_equal(10, ::GetWindowTextLength(hwnd));
+					assert_equal(h.messages.size(), calls);
 				}
 
 
-				[TestMethod]
-				void WrapperPtrPropertyIsRemovedInNCDestroy()
+				test( WrapperPtrPropertyIsRemovedInNCDestroy )
 				{
 					// INIT
-					HWND hwnd = create_window();
+					HWND hwnd = windowManager.create_window();
 					bool property_exists = true;
 					shared_ptr<window> w(window::attach(hwnd));
 					shared_ptr<void> c(w->advise(bind(&checker_handler, hwnd, &property_exists)));
 
 					// ACT / ASSERT
-					Assert::IsTrue(::GetProp(hwnd, _T("IntegricityWrapperPtr")) != 0);
+					assert_not_null(::GetProp(hwnd, _T("IntegricityWrapperPtr")));
 
 					// ACT
 					::DestroyWindow(hwnd);
 
 					// ASSERT
-					Assert::IsFalse(property_exists);
+					assert_is_false(property_exists);
 				}
 
 
-				[TestMethod]
-				void DetachRestoresOriginalWindowProc()
+				test( DetachRestoresOriginalWindowProc )
 				{
 					// INIT
-					HWND hwnd = create_window();
+					HWND hwnd = windowManager.create_window();
 					shared_ptr<window> w(window::attach(hwnd));
 					WNDPROC replacement_wndproc = (WNDPROC)::GetWindowLongPtr(hwnd, GWLP_WNDPROC);
 
@@ -323,31 +320,29 @@ namespace wpl
 					bool detach_result = w->detach();
 
 					// ASSERT
-					Assert::IsTrue(detach_result);
-					Assert::IsFalse(replacement_wndproc == (WNDPROC)::GetWindowLongPtr(hwnd, GWLP_WNDPROC));
+					assert_is_true(detach_result);
+					assert_not_equal(replacement_wndproc, (WNDPROC)::GetWindowLongPtr(hwnd, GWLP_WNDPROC));
 				}
 
 
-				[TestMethod]
-				void PropIsRemovedOnDetachment()
+				test( PropIsRemovedOnDetachment )
 				{
 					// INIT
-					HWND hwnd = create_window();
+					HWND hwnd = windowManager.create_window();
 					shared_ptr<window> w(window::attach(hwnd));
 
 					// ACT
 					w->detach();
 
 					// ASSERT
-					Assert::IsTrue(0 == ::GetProp(hwnd, _T("IntegricityWrapperPtr")));
+					assert_null(::GetProp(hwnd, _T("IntegricityWrapperPtr")));
 				}
 
 
-				[TestMethod]
-				void DetachReleasesWrapperFromWindow()
+				test( DetachReleasesWrapperFromWindow )
 				{
 					// INIT
-					HWND hwnd = create_window();
+					HWND hwnd = windowManager.create_window();
 					shared_ptr<window> w(window::attach(hwnd));
 					weak_ptr<window> w_weak(w);
 
@@ -356,15 +351,14 @@ namespace wpl
 					w.reset();
 
 					// ASSERT
-					Assert::IsTrue(w_weak.expired());
+					assert_is_true(w_weak.expired());
 				}
 
 
-				[TestMethod]
-				void DetachFailsIfSubclassedAfterAttachment()
+				test( DetachFailsIfSubclassedAfterAttachment )
 				{
 					// INIT
-					HWND hwnd = create_window();
+					HWND hwnd = windowManager.create_window();
 					shared_ptr<window> w(window::attach(hwnd));
 
 					original = (WNDPROC)::SetWindowLongPtr(hwnd, GWLP_WNDPROC, (LONG_PTR)&replacement_proc);
@@ -373,16 +367,15 @@ namespace wpl
 					bool detach_result = w->detach();
 
 					// ASSERT
-					Assert::IsFalse(detach_result);
-					Assert::IsTrue(replacement_proc == (WNDPROC)::GetWindowLongPtr(hwnd, GWLP_WNDPROC));
+					assert_is_false(detach_result);
+					assert_equal(replacement_proc, (WNDPROC)::GetWindowLongPtr(hwnd, GWLP_WNDPROC));
 				}
 
 
-				[TestMethod]
-				void PropIsNotRemovedIfSubclassedAfterAttachment()
+				test( PropIsNotRemovedIfSubclassedAfterAttachment )
 				{
 					// INIT
-					HWND hwnd = create_window();
+					HWND hwnd = windowManager.create_window();
 					shared_ptr<window> w(window::attach(hwnd));
 
 					original = (WNDPROC)::SetWindowLongPtr(hwnd, GWLP_WNDPROC, (LONG_PTR)&replacement_proc);
@@ -392,15 +385,14 @@ namespace wpl
 					w->detach();
 
 					// ASSERT
-					Assert::IsFalse(0 == ::GetProp(hwnd, _T("IntegricityWrapperPtr")));
+					assert_not_null(::GetProp(hwnd, _T("IntegricityWrapperPtr")));
 				}
 
 
-				[TestMethod]
-				void DetachDoesNotReleasesWrapperFromOversubclassedWindow()
+				test( DetachDoesNotReleasesWrapperFromOversubclassedWindow )
 				{
 					// INIT
-					HWND hwnd = create_window();
+					HWND hwnd = windowManager.create_window();
 					shared_ptr<window> w(window::attach(hwnd));
 					weak_ptr<window> w_weak(w);
 
@@ -411,15 +403,14 @@ namespace wpl
 					w.reset();
 
 					// ASSERT
-					Assert::IsFalse(w_weak.expired());
+					assert_is_false(w_weak.expired());
 				}
 
 
-				[TestMethod]
-				void WrapperIsReleasedEvenIfOversubclassedOnDestroy()
+				test( WrapperIsReleasedEvenIfOversubclassedOnDestroy )
 				{
 					// INIT
-					HWND hwnd = create_window();
+					HWND hwnd = windowManager.create_window();
 					weak_ptr<window> w_weak(window::attach(hwnd));
 
 					original = (WNDPROC)::SetWindowLongPtr(hwnd, GWLP_WNDPROC, (LONG_PTR)&replacement_proc);
@@ -428,9 +419,9 @@ namespace wpl
 					::DestroyWindow(hwnd);
 
 					// ASSERT
-					Assert::IsTrue(w_weak.expired());
+					assert_is_true(w_weak.expired());
 				}
-			};
+			end_test_suite
 		}
 	}
 }
