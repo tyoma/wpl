@@ -2152,7 +2152,7 @@ namespace wpl
 				}
 
 
-				ignore( ListViewIsWidget )
+				ignored_test( ListViewIsWidget )
 				{
 					// INIT
 					shared_ptr<listview> lv;
