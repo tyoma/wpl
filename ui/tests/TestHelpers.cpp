@@ -97,10 +97,10 @@ namespace wpl
 			}
 
 			HWND WindowManager::create_window()
-			{	return create_window(_T("static"), 0, WS_POPUP, 0);	}
+			{	return create_window(L"static", 0, WS_POPUP, 0);	}
 
 			HWND WindowManager::create_visible_window()
-			{	return create_window(_T("static"), 0, WS_POPUP | WS_VISIBLE, 0);	}
+			{	return create_window(L"static", 0, WS_POPUP | WS_VISIBLE, 0);	}
 
 			HWND WindowManager::create_window(const wstring &class_name)
 			{	return create_window(class_name, 0, WS_POPUP, 0);	}

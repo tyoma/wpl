@@ -225,7 +225,7 @@ namespace wpl
 					HWND hparent = windowManager.create_visible_window();
 
 					windowManager.enable_reflection(hparent);
-					return windowManager.create_window(_T("SysListView32"), hparent,
+					return windowManager.create_window(L"SysListView32", hparent,
 						WS_CHILD | WS_VISIBLE | LVS_REPORT | LVS_OWNERDATA, 0);
 				}
 
@@ -261,7 +261,7 @@ namespace wpl
 				test( WrapListViewGetNonNullPtr )
 				{
 					// INIT
-					HWND hlv = windowManager.create_window(_T("SysListView32"));
+					HWND hlv = windowManager.create_window(L"SysListView32");
 
 					// ACT / ASSERT
 					assert_not_null(wrap_listview(hlv));
