@@ -1145,7 +1145,7 @@ namespace wpl
 						HDI_WIDTH,
 					};
 					NMHEADER nmheader = {
-						{ ListView_GetHeader(hlv), ::GetDlgCtrlID(ListView_GetHeader(hlv)), HDN_ITEMCHANGED },
+						{ ListView_GetHeader(hlv), static_cast<UINT_PTR>(::GetDlgCtrlID(ListView_GetHeader(hlv))), HDN_ITEMCHANGED },
 						0,
 						0,
 						&item
@@ -1182,7 +1182,7 @@ namespace wpl
 						HDI_TEXT,
 					};
 					NMHEADER nmheader = {
-						{ ListView_GetHeader(hlv), ::GetDlgCtrlID(ListView_GetHeader(hlv)), HDN_ITEMCHANGED },
+						{ ListView_GetHeader(hlv), static_cast<UINT_PTR>(::GetDlgCtrlID(ListView_GetHeader(hlv))), HDN_ITEMCHANGED },
 						0,
 						0,
 						&item

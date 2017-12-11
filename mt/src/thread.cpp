@@ -79,9 +79,9 @@ namespace wpl
 				void operator ()() const
 				{
 					(*initializer)();
-					thread::action job(*this->job);
+					thread::action job_(*this->job);
 					initialized_flag->raise();
-					job();
+					job_();
 				}
 			};
 

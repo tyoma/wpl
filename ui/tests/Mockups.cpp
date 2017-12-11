@@ -28,7 +28,7 @@ namespace wpl
 
 				void fill_layout::layout(unsigned width, unsigned height, widget_position *widgets, size_t count) const
 				{
-					const position p = { 0, 0, width, height };
+					const position p = { 0, 0, static_cast<int>(width), static_cast<int>(height) };
 
 					for (; count; --count, ++widgets)
 						widgets->second = p;
