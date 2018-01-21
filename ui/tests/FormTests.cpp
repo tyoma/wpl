@@ -9,16 +9,6 @@
 #include <ut/test.h>
 #include <windows.h>
 
-namespace std
-{
-	using tr1::bind;
-	using tr1::ref;
-   namespace placeholders
-   {
-      using namespace std::tr1::placeholders;
-   }
-}
-
 using namespace std;
 using namespace std::placeholders;
 

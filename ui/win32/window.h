@@ -24,13 +24,6 @@
 #include <memory>
 #include <functional>
 
-namespace std
-{
-	using tr1::enable_shared_from_this;
-	using tr1::function;
-	using tr1::shared_ptr;
-}
-
 namespace wpl
 {
 	namespace ui

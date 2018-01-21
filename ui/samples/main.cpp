@@ -5,11 +5,6 @@
 #include <wpl/ui/layout.h>
 #include <wpl/ui/listview.h>
 
-namespace std
-{
-	using tr1::static_pointer_cast;
-}
-
 using namespace std;
 using namespace wpl;
 using namespace wpl::ui;

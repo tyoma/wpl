@@ -33,16 +33,8 @@
 #include <olectl.h>
 #include <windows.h>
 
-namespace std
-{
-   namespace placeholders
-   {
-      using namespace tr1::placeholders;
-   }
-};
-
 using namespace std;
-using namespace placeholders;
+using namespace std::placeholders;
 
 namespace wpl
 {

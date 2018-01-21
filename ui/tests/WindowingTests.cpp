@@ -9,8 +9,7 @@
 #include <vector>
 
 using namespace std;
-using namespace tr1;
-using namespace tr1::placeholders;
+using namespace std::placeholders;
 
 namespace wpl
 {

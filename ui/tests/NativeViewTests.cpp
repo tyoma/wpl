@@ -9,11 +9,6 @@
 #include <ut/test.h>
 #include <windows.h>
 
-namespace std
-{
-   using tr1::weak_ptr;
-}
-
 using namespace std;
 
 namespace wpl

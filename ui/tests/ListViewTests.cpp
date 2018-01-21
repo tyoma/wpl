@@ -15,15 +15,8 @@
 #include <ut/assert.h>
 #include <ut/test.h>
 
-namespace std
-{
-	using tr1::ref;
-	using tr1::static_pointer_cast;
-	using tr1::weak_ptr;
-	using namespace tr1::placeholders;
-}
-
 using namespace std;
+using namespace std::placeholders;
 
 namespace wpl
 {

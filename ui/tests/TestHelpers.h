@@ -9,11 +9,6 @@
 #include <string>
 #include <vector>
 
-namespace std
-{
-	using tr1::shared_ptr;
-}
-
 typedef struct HWND__ *HWND;	// stolen from windows.h
 typedef struct tagRECT RECT;
 

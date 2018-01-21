@@ -23,12 +23,6 @@
 #include <functional>
 #include <memory>
 
-namespace std
-{
-	using tr1::function;
-	using tr1::shared_ptr;
-}
-
 namespace wpl
 {
 	namespace mt

@@ -3,7 +3,7 @@
 #include <olectl.h>
 
 using namespace std;
-using namespace std::tr1::placeholders;
+using namespace std::placeholders;
 
 namespace wpl
 {

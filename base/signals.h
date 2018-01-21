@@ -24,12 +24,6 @@
 #include <memory>
 #include <vector>
 
-namespace std
-{
-	using tr1::function;
-	using tr1::shared_ptr;
-}
-
 namespace wpl
 {
 	typedef std::shared_ptr<void> slot_connection;

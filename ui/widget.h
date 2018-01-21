@@ -22,12 +22,6 @@
 
 #include "../base/signals.h"
 
-namespace std
-{
-	using tr1::shared_ptr;
-	using tr1::enable_shared_from_this;
-}
-
 namespace wpl
 {
 	namespace ui

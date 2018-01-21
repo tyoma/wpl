@@ -5,7 +5,6 @@
 #include <ut/test.h>
 
 using namespace std;
-using namespace tr1;
 
 namespace wpl
 {
