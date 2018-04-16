@@ -20,50 +20,50 @@
 
 #pragma once
 
-#include <windows.h>
-#include <memory>
+#include "../../mt/thread.h"
+
 #include <functional>
+#include <memory>
+#include <unordered_map>
+#include <windows.h>
 
 namespace wpl
 {
 	namespace ui
 	{
-		class window : public std::enable_shared_from_this<window>
+		class window
 		{
-			typedef std::function<LRESULT (UINT, WPARAM, LPARAM)> _original_handler_t;
-			typedef std::function<LRESULT (UINT, WPARAM, LPARAM, const _original_handler_t &)> _user_handler_t;
-
-			struct data
-			{
-				data(HWND hwnd, WNDPROC address);
-
-				LRESULT operator ()(UINT message, WPARAM wparam, LPARAM lparam) const;
-
-				HWND hwnd;
-				WNDPROC address;
-			};
-
-			data _data;
-			_user_handler_t _user_handler;
-			std::shared_ptr<window> _this;
-
-			window(HWND hwnd);
-
-			static LRESULT CALLBACK windowproc_proxy(HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam);
-			static std::shared_ptr<window> extract(HWND hwnd);
+		public:
+			typedef window original_handler_t;
+			typedef std::function<LRESULT (UINT message, WPARAM wparam, LPARAM lparam, const original_handler_t &handler)> user_handler_t;
 
 		public:
-			typedef _original_handler_t original_handler_t;
-			typedef _user_handler_t user_handler_t;
-
-		public:
-			static std::shared_ptr<window> attach(HWND hwnd);
-			bool detach() throw();
-
-			std::shared_ptr<void> advise(const user_handler_t &user_handler);
-			void unadvise() throw();
+			static std::shared_ptr<window> attach(HWND hwnd, const user_handler_t &user_handler);
 
 			HWND hwnd() const throw();
+
+			LRESULT operator ()(UINT message, WPARAM wparam, LPARAM lparam) const;
+
+		private:
+			struct hwnd_hash { size_t operator ()(HWND hwnd) const; };
+			typedef std::unordered_map<HWND, window *, hwnd_hash> windows_map;
+
+		private:
+			window(HWND hwnd, const user_handler_t &user_handler);
+
+			const window &operator =(const window &rhs);
+
+			static LRESULT CALLBACK windowproc_proxy(HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam);
+			static void map(HWND hwnd, window *w);
+			static window *get_window(HWND hwnd) throw();
+			static bool unmap(HWND hwnd, bool force) throw();
+			static void detach(window *w);
+
+		private:
+			static mt::tls<windows_map> _windows;
+			HWND _hwnd;
+			LONG_PTR _wndproc;
+			user_handler_t _user_handler;
 		};
 	}
 }

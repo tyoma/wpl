@@ -34,7 +34,7 @@
 #include <windows.h>
 
 using namespace std;
-using namespace std::placeholders;
+using namespace placeholders;
 
 namespace wpl
 {
@@ -45,7 +45,6 @@ namespace wpl
 			class form_impl : public form
 			{
 				shared_ptr<window> _window;
-				shared_ptr<void> _advisory;
 				shared_ptr<native_container> _container;
 
 				virtual shared_ptr<container> get_root_container();
@@ -65,8 +64,7 @@ namespace wpl
 			{
 				HWND hwnd = ::CreateWindow(_T("#32770"), 0, WS_OVERLAPPEDWINDOW | WS_CLIPCHILDREN, 0, 0, 100, 20, 0, 0, 0, 0);
 
-				_window = window::attach(hwnd);
-				_advisory = _window->advise(bind(&form_impl::wndproc, this, _1, _2, _3, _4));
+				_window = window::attach(hwnd, bind(&form_impl::wndproc, this, _1, _2, _3, _4));
 				_container.reset(new native_container(_window->hwnd()));
 			}
 

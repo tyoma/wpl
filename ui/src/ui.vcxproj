@@ -24,20 +24,22 @@
   <Import Project="$(SolutionDir)build.props\platform.props" />
   <PropertyGroup Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
-		<CharacterSet>Unicode</CharacterSet>
+    <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="PropertySheets">
     <Import Project="$(SolutionDir)build.props\config.props" Condition="exists('$(SolutionDir)build.props\config.props')" />
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
-
   <ItemDefinitionGroup>
     <ClCompile>
     </ClCompile>
     <Lib>
       <AdditionalDependencies>user32.lib;comctl32.lib</AdditionalDependencies>
     </Lib>
+    <ProjectReference>
+      <LinkLibraryDependencies>true</LinkLibraryDependencies>
+    </ProjectReference>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="..\button.h" />
@@ -64,6 +66,11 @@
     <ClCompile Include="native_view.cpp" />
     <ClCompile Include="widget.cpp" />
     <ClCompile Include="window.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\mt\src\mt.vcxproj">
+      <Project>{4db355c8-12f1-4bbd-842c-f8d085b52f8c}</Project>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

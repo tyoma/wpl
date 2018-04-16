@@ -28,7 +28,7 @@
 #include <iterator>
 
 using namespace std;
-using namespace std::placeholders;
+using namespace placeholders;
 
 namespace wpl
 {
@@ -47,7 +47,7 @@ namespace wpl
 				shared_ptr<columns_model> _columns_model;
 				shared_ptr<model> _model;
 				shared_ptr<window> _listview;
-				shared_ptr<void> _advisory, _invalidated_connection, _sort_order_changed_connection;
+				shared_ptr<void> _invalidated_connection, _sort_order_changed_connection;
 				columns_model::index_type _sort_column;
 				shared_ptr<const trackable> _focused_item;
 				selection_trackers _selected_items;
@@ -83,8 +83,8 @@ namespace wpl
 
 
 			listview_impl::listview_impl(HWND hwnd)
-				: _avoid_notifications(false), _listview(window::attach(hwnd)), _sort_column(columns_model::npos)
-			{	_advisory = _listview->advise(bind(&listview_impl::wndproc, this, _1, _2, _3, _4));	}
+				: _avoid_notifications(false), _sort_column(columns_model::npos)
+			{	_listview = window::attach(hwnd, bind(&listview_impl::wndproc, this, _1, _2, _3, _4));	}
 
 			shared_ptr<view> listview_impl::create_view(const native_root &r)
 			{	return shared_ptr<view>(new native_view(shared_from_this(), _listview->hwnd(), r));	}
@@ -242,7 +242,7 @@ namespace wpl
 					set_column_direction(_sort_column, dir_none);
 				set_column_direction(new_ordering_column, ascending ? dir_ascending : dir_descending);
 				_sort_column = new_ordering_column;
-				::InvalidateRect(_listview->hwnd(), NULL, FALSE);
+				ListView_RedrawItems(_listview->hwnd(), 0, ListView_GetItemCount(_listview->hwnd()));
 			}
 
 			void listview_impl::invalidate_view(index_type new_count)
@@ -250,7 +250,7 @@ namespace wpl
 				if (new_count != static_cast<index_type>(ListView_GetItemCount(_listview->hwnd())))
 					ListView_SetItemCountEx(_listview->hwnd(), new_count, 0);
 				else
-					::InvalidateRect(_listview->hwnd(), NULL, FALSE);
+					ListView_RedrawItems(_listview->hwnd(), 0, new_count);
 				_avoid_notifications = true;
 				update_focus();
 				update_selection();

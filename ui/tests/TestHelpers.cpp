@@ -100,21 +100,21 @@ namespace wpl
 			{	return create_window(L"static", 0, WS_POPUP, 0);	}
 
 			HWND WindowManager::create_visible_window()
-			{	return create_window(L"static", 0, WS_POPUP | WS_VISIBLE, 0);	}
+			{	return create_window(L"static", 0, WS_VISIBLE, 0);	}
 
 			HWND WindowManager::create_window(const wstring &class_name)
 			{	return create_window(class_name, 0, WS_POPUP, 0);	}
 
 			HWND WindowManager::create_window(const wstring &class_name, HWND parent, unsigned int style, unsigned int exstyle)
 			{
-				HWND hwnd = ::CreateWindowEx(exstyle, w2t(class_name).c_str(), NULL, style, 0, 0, 50, 50, parent, NULL, NULL, NULL);
+				HWND hwnd = ::CreateWindowEx(exstyle, w2t(class_name).c_str(), NULL, style, 0, 0, 200, 150, parent, NULL, NULL, NULL);
 
 				_windows.push_back(hwnd);
 				return hwnd;
 			}
 
 			void WindowManager::enable_reflection(HWND hwnd)
-			{	_connections.push_back(wpl::ui::window::attach(hwnd)->advise(&reflection_wndproc));	}
+			{	_connections.push_back(wpl::ui::window::attach(hwnd, &reflection_wndproc));	}
 
 			void WindowManager::destroy_window(HWND hwnd)
 			{
