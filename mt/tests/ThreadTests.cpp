@@ -1,9 +1,9 @@
-#include <wpl/mt/thread.h>
+#include <mt/thread.h>
 
 #include <functional>
 #include <ut/assert.h>
 #include <ut/test.h>
-#include <wpl/mt/synchronization.h>
+#include <mt/synchronization.h>
 #include <windows.h>
 
 using namespace std;

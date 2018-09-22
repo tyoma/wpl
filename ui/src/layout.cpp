@@ -29,11 +29,11 @@ namespace wpl
 		template <int layout_manager::position::*SharedPosition, int layout_manager::position::*SharedSize,
 			int layout_manager::position::*CommonPosition, int layout_manager::position::*CommonSize>
 		inline void stack<SharedPosition, SharedSize, CommonPosition, CommonSize>::layout(unsigned shared_size,
-			unsigned common_size, layout_manager::widget_position * const widgets, const size_t count) const
+			unsigned common_size, layout_manager::view_position * const widgets, const size_t count) const
 		{
 			vector<int>::const_iterator i;
 			int remainder, relative_base, location;
-			layout_manager::widget_position *w;
+			layout_manager::view_position *w;
 			size_t c;
 
 			for (i = _sizes.begin(), remainder = shared_size, relative_base = 0; count && i != _sizes.end(); ++i)
@@ -58,11 +58,11 @@ namespace wpl
 		}
 
 
-		void hstack::layout(unsigned width, unsigned height, widget_position *widgets, size_t count) const
+		void hstack::layout(unsigned width, unsigned height, view_position *widgets, size_t count) const
 		{	base::layout(width, height, widgets, count);	}
 
 
-		void vstack::layout(unsigned width, unsigned height, widget_position *widgets, size_t count) const
+		void vstack::layout(unsigned width, unsigned height, view_position *widgets, size_t count) const
 		{	base::layout(height, width, widgets, count);	}
 	}
 }

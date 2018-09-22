@@ -5,54 +5,23 @@
       <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
       <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
     </Filter>
-    <Filter Include="Library Header Files">
-      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
-      <Extensions>h;hpp;hxx;hm;inl;inc;xsd</Extensions>
-    </Filter>
-    <Filter Include="Library Header Files\win32">
+    <Filter Include="win32">
       <UniqueIdentifier>{2ac5d412-9518-4444-8596-230f865e27a3}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\win32\window.h">
-      <Filter>Library Header Files\win32</Filter>
-    </ClInclude>
-    <ClInclude Include="..\listview.h">
-      <Filter>Library Header Files</Filter>
+      <Filter>win32</Filter>
     </ClInclude>
     <ClInclude Include="..\win32\controls.h">
-      <Filter>Library Header Files\win32</Filter>
+      <Filter>win32</Filter>
     </ClInclude>
-    <ClInclude Include="..\widget.h">
-      <Filter>Library Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\form.h">
-      <Filter>Library Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\geometry.h">
-      <Filter>Library Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\win32\native_view.h">
-      <Filter>Library Header Files\win32</Filter>
-    </ClInclude>
-    <ClInclude Include="..\layout.h">
-      <Filter>Library Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\container.h">
-      <Filter>Library Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="factory.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="native_container.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\button.h">
-      <Filter>Library Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="native_widgets.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
+    <ClInclude Include="..\form.h" />
+    <ClInclude Include="..\layout.h" />
+    <ClInclude Include="..\listview.h" />
+    <ClInclude Include="..\visual.h" />
+    <ClInclude Include="..\input.h" />
+    <ClInclude Include="..\view.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="window.cpp">
@@ -64,22 +33,10 @@
     <ClCompile Include="form.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="widget.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="native_view.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="layout.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="factory.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="native_container.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="native_widgets.cpp">
+    <ClCompile Include="visual.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

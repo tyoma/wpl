@@ -1,10 +1,7 @@
-#include <wpl/ui/listview.h>
+#include <ui/listview.h>
 
-#include <wpl/ui/form.h>
-#include <wpl/ui/win32/controls.h>
-#include <wpl/ui/win32/native_view.h>
+#include <ui/win32/controls.h>
 
-#include "Mockups.h"
 #include "TestHelpers.h"
 
 #include <windows.h>
@@ -239,20 +236,20 @@ namespace wpl
 						WS_CHILD | WS_VISIBLE | LVS_REPORT | LVS_OWNERDATA, 0);
 				}
 
-				test( CreateListView )
-				{
-					// INIT
-					shared_ptr<form> f = form::create();
-					window_tracker wt(L"SysListView32");
+				//test( CreateListView )
+				//{
+				//	// INIT
+				//	shared_ptr<form> f = form::create();
+				//	window_tracker wt(L"SysListView32");
 
-					// ACT
-					shared_ptr<listview> lv = static_pointer_cast<listview>(create_widget(wt, *f->get_root_container(), L"listview", L"1"));
+				//	// ACT
+				//	shared_ptr<listview> lv = static_pointer_cast<listview>(create_widget(wt, *f->get_root_container(), L"listview", L"1"));
 
-					// ASSERT
-					assert_not_null(lv);
-					assert_equal(1u, wt.created.size());
-					assert_equal((LVS_REPORT | LVS_OWNERDATA), ((LVS_REPORT | LVS_OWNERDATA) & ::GetWindowLong(wt.created[0], GWL_STYLE)));
-				}
+				//	// ASSERT
+				//	assert_not_null(lv);
+				//	assert_equal(1u, wt.created.size());
+				//	assert_equal((LVS_REPORT | LVS_OWNERDATA), ((LVS_REPORT | LVS_OWNERDATA) & ::GetWindowLong(wt.created[0], GWL_STYLE)));
+				//}
 
 				test( WrongWrappingLeadsToException )
 				{
@@ -2166,31 +2163,6 @@ namespace wpl
 
 					// ASSERT
 					assert_equal(0, first_visible);
-				}
-
-
-				ignored_test( ListViewIsWidget )
-				{
-					// INIT
-					shared_ptr<listview> lv;
-
-					// ACT / ASSERT (must compile)
-					shared_ptr<widget> lv_widget(lv);
-				}
-
-
-				test( ListViewViewHoldsWrappedWindow )
-				{
-					// INIT
-					HWND hparent = windowManager.create_window();
-					HWND hlv = create_listview();
-					shared_ptr<listview> lvw(wrap_listview(hlv));
-
-					// ACT
-					lvw->create_view(native_root(hparent));
-
-					// ASSERT
-					assert_equal(hparent, ::GetParent(hlv));
 				}
 			end_test_suite
 		}

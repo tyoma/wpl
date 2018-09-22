@@ -20,7 +20,7 @@
 
 #pragma once
 
-#include "widget.h"
+#include "view.h"
 
 #include "../base/concepts.h"
 
@@ -32,11 +32,11 @@ namespace wpl
 		{
 			struct position;
 			
-			typedef std::pair<std::shared_ptr<const widget>, position> widget_position;
+			typedef std::pair<std::shared_ptr<const view>, position> view_position;
 
 			virtual ~layout_manager() {	}
 
-			virtual void layout(unsigned width, unsigned height, widget_position *widgets, size_t count) const = 0;
+			virtual void layout(unsigned width, unsigned height, view_position *views, size_t count) const = 0;
 		};
 
 		struct layout_manager::position
@@ -53,7 +53,7 @@ namespace wpl
 			template <typename InputIterator>
 			stack(InputIterator begin, InputIterator end, unsigned spacing);
 
-			void layout(unsigned shared_size, unsigned common_size, layout_manager::widget_position * const widgets,
+			void layout(unsigned shared_size, unsigned common_size, layout_manager::view_position * const widgets,
 				const size_t count) const;
 
 		protected:
@@ -72,7 +72,7 @@ namespace wpl
 			template <typename InputIterator>
 			hstack(InputIterator begin, InputIterator end, unsigned spacing);
 
-			virtual void layout(unsigned width, unsigned height, widget_position *widgets, size_t count) const;
+			virtual void layout(unsigned width, unsigned height, view_position *widgets, size_t count) const;
 		};
 
 
@@ -83,7 +83,7 @@ namespace wpl
 			template <typename InputIterator>
 			vstack(InputIterator begin, InputIterator end, unsigned spacing);
 
-			virtual void layout(unsigned width, unsigned height, widget_position *widgets, size_t count) const;
+			virtual void layout(unsigned width, unsigned height, view_position *widgets, size_t count) const;
 		};
 
 

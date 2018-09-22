@@ -42,32 +42,26 @@
     </ProjectReference>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="..\button.h" />
-    <ClInclude Include="..\container.h" />
     <ClInclude Include="..\form.h" />
-    <ClInclude Include="..\geometry.h" />
+    <ClInclude Include="..\input.h" />
+    <ClInclude Include="..\visual.h" />
     <ClInclude Include="..\layout.h" />
-    <ClInclude Include="..\widget.h" />
+    <ClInclude Include="..\view.h" />
     <ClInclude Include="..\listview.h" />
     <ClInclude Include="..\win32\controls.h" />
-    <ClInclude Include="..\win32\native_view.h" />
     <ClInclude Include="..\win32\window.h" />
-    <ClInclude Include="native_container.h" />
-    <ClInclude Include="factory.h" />
-    <ClInclude Include="native_widgets.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="native_widgets.cpp" />
-    <ClCompile Include="factory.cpp" />
     <ClCompile Include="form.cpp" />
     <ClCompile Include="layout.cpp" />
     <ClCompile Include="listview.cpp" />
-    <ClCompile Include="native_container.cpp" />
-    <ClCompile Include="native_view.cpp" />
-    <ClCompile Include="widget.cpp" />
+    <ClCompile Include="visual.cpp" />
     <ClCompile Include="window.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\libraries\agge\src\agge\agge.vcxproj">
+      <Project>{f849e92c-248a-46b2-9eab-f86578a21316}</Project>
+    </ProjectReference>
     <ProjectReference Include="..\..\mt\src\mt.vcxproj">
       <Project>{4db355c8-12f1-4bbd-842c-f8d085b52f8c}</Project>
     </ProjectReference>

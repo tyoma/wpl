@@ -1,4 +1,4 @@
-#include <wpl/mt/synchronization.h>
+#include <mt/synchronization.h>
 
 #include <ut/assert.h>
 #include <ut/test.h>

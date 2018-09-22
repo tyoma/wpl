@@ -20,7 +20,10 @@
 
 #pragma once
 
-#include "container.h"
+#include "view.h"
+
+#include <memory>
+#include <string>
 
 namespace wpl
 {
@@ -30,7 +33,7 @@ namespace wpl
 		{
 			virtual ~form() {	}
 
-			virtual std::shared_ptr<container> get_root_container() = 0;
+			virtual void set_view(const std::shared_ptr<view> &v) = 0;
 			virtual void set_visible(bool value) = 0;
 			virtual void set_caption(const std::wstring &caption) = 0;
 

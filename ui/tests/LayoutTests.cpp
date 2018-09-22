@@ -1,4 +1,4 @@
-#include <wpl/ui/layout.h>
+#include <ui/layout.h>
 
 #include "Mockups.h"
 #include "TestHelpers.h"
@@ -24,8 +24,8 @@ namespace wpl
 					// INIT
 					int sizes1[] = { 13, };
 					int sizes2[] = { 171, };
-					layout_manager::widget_position p1[_countof(sizes1)];
-					layout_manager::widget_position p2[_countof(sizes2)];
+					layout_manager::view_position p1[_countof(sizes1)];
+					layout_manager::view_position p2[_countof(sizes2)];
 
 					// INIT / ACT
 					hstack s1(begin(sizes1), end(sizes1), 0);
@@ -67,7 +67,7 @@ namespace wpl
 				{
 					// INIT
 					int sizes[] = { 13, 17, 121 };
-					layout_manager::widget_position p[_countof(sizes)];
+					layout_manager::view_position p[_countof(sizes)];
 
 					// INIT / ACT
 					hstack s(begin(sizes), end(sizes), 0);
@@ -106,7 +106,7 @@ namespace wpl
 				{
 					// INIT
 					int sizes[] = { 13, 17, 121 };
-					layout_manager::widget_position p[_countof(sizes)];
+					layout_manager::view_position p[_countof(sizes)];
 
 					// INIT / ACT
 					vstack s(begin(sizes), end(sizes), 0);
@@ -145,7 +145,7 @@ namespace wpl
 				{
 					// INIT
 					int sizes[] = { 13, 17, 121, 71 };
-					layout_manager::widget_position p[_countof(sizes)];
+					layout_manager::view_position p[_countof(sizes)];
 
 					// INIT / ACT
 					vstack s(begin(sizes), end(sizes), 5);
@@ -173,8 +173,8 @@ namespace wpl
 					// INIT
 					int sizes1[] = { -10000 /* 10000 / 10000 */ };
 					int sizes2[] = { -5750 /* 5750 / 5750 */ };
-					layout_manager::widget_position p1[_countof(sizes1)];
-					layout_manager::widget_position p2[_countof(sizes2)];
+					layout_manager::view_position p1[_countof(sizes1)];
+					layout_manager::view_position p2[_countof(sizes2)];
 					hstack s1(begin(sizes1), end(sizes1), 0);
 					hstack s2(begin(sizes2), end(sizes2), 0);
 
@@ -198,8 +198,8 @@ namespace wpl
 					// INIT
 					int sizes1[] = { -10000 /* 10000 / 35500 */, -20500 /* 20000 / 35500 */, -5000 /* 5000 / 35500 */, };
 					int sizes2[] = { -5750 /* 5750 / 11500 */, -5750 /* 5750 / 11500 */, };
-					layout_manager::widget_position p1[_countof(sizes1)];
-					layout_manager::widget_position p2[_countof(sizes2)];
+					layout_manager::view_position p1[_countof(sizes1)];
+					layout_manager::view_position p2[_countof(sizes2)];
 					vstack s1(begin(sizes1), end(sizes1), 0);
 					vstack s2(begin(sizes2), end(sizes2), 0);
 
@@ -232,8 +232,8 @@ namespace wpl
 					// INIT
 					int sizes1[] = { -10000 /* 10000 / 15200 */, 100, -5200 /* 5200 / 15200 */, };
 					int sizes2[] = { -5750 /* 5750 / 5750 */, 107, };
-					layout_manager::widget_position p1[_countof(sizes1)];
-					layout_manager::widget_position p2[_countof(sizes2)];
+					layout_manager::view_position p1[_countof(sizes1)];
+					layout_manager::view_position p2[_countof(sizes2)];
 					vstack s1(begin(sizes1), end(sizes1), 3);
 					vstack s2(begin(sizes2), end(sizes2), 7);
 

@@ -1,6 +1,6 @@
 #pragma once
 
-#include <wpl/base/concepts.h>
+#include <base/concepts.h>
 
 #include <algorithm>
 #include <iterator>
@@ -26,8 +26,7 @@ namespace wpl
 			RECT get_window_rect(HWND hwnd);
 			RECT rect(int left, int top, int width, int height);
 			std::wstring get_window_text(HWND hwnd);
-			std::shared_ptr<wpl::ui::widget> create_widget(window_tracker &wt, wpl::ui::container &c, const std::wstring &type,
-				const std::wstring &id);
+			unsigned int pack_coordinates(short x, short y);
 
 
 			class WindowManager
@@ -80,6 +79,10 @@ namespace wpl
 			template <typename Container>
 			inline typename Container::iterator end(Container &container)
 			{	return container.end();	}
+
+
+			inline unsigned int pack_coordinates(short x, short y)
+			{	return (unsigned short)x | ((unsigned int )(unsigned short)y << 16);	}
 		}
 	}
 }

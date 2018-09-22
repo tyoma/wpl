@@ -4,17 +4,17 @@
     <Import Project="config.props" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros">
-    <TestRunnerExe>$(SolutionDir)_bin\Release_$(PlatformName)\utee-runner.exe</TestRunnerExe>
+    <TestRunnerExe>$(OutDir)\utee-runner.exe</TestRunnerExe>
   </PropertyGroup>
 
   <ItemDefinitionGroup>
     <ClCompile>
-      <AdditionalIncludeDirectories>$(SolutionDir)libraries/utee;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(MSBuildThisFileDirectory)..\libraries\utee;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
   </ItemDefinitionGroup>
   
   <ItemGroup>
-    <ProjectReference Include="$(SolutionDir)libraries\utee\make\utee.vcxproj">
+    <ProjectReference Include="$(MSBuildThisFileDirectory)..\libraries\utee\make\utee.vcxproj">
       <Project>{4db73ace-2d47-4a6c-8213-2be191dd921f}</Project>
     </ProjectReference>
   </ItemGroup>

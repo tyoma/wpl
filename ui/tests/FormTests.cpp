@@ -1,6 +1,4 @@
-#include <wpl/ui/form.h>
-
-#include <wpl/ui/layout.h>
+#include <ui/form.h>
 
 #include "Mockups.h"
 #include "TestHelpers.h"
@@ -132,8 +130,6 @@ namespace wpl
 				{
 					// INIT
 					form_and_handle f(create_form_with_handle());
-					
-					f.first->get_root_container()->layout.reset(new mocks::logging_layout_manager);
 
 					// ACT
 					f.first->set_visible(true);
@@ -149,24 +145,14 @@ namespace wpl
 				}
 
 
-				test( FormProvidesAValidContainer )
-				{
-					// INIT
-					shared_ptr<form> f = form::create();
-
-					// ACT / ASSERT
-					assert_not_null(f->get_root_container());
-				}
-
-
 				test( ResizingFormWindowLeadsToContentResize )
 				{
 					// INIT
-					shared_ptr<mocks::logging_layout_manager> lm(new mocks::logging_layout_manager);
+					shared_ptr<mocks::logging_visual<view>> v(new mocks::logging_visual<view>());
 					form_and_handle f(create_form_with_handle());
 					RECT rc;
 
-					f.first->get_root_container()->layout = lm;
+					f.first->set_view(v);
 
 					// ACT
 					::MoveWindow(f.second, 0, 0, 117, 213, TRUE);
@@ -174,9 +160,8 @@ namespace wpl
 					// ASSERT
 					::GetClientRect(f.second, &rc);
 
-					assert_equal(1u, lm->reposition_log.size());
-					assert_equal(rc.right, (int)lm->reposition_log[0].first);
-					assert_equal(rc.bottom, (int)lm->reposition_log[0].second);
+					assert_equal(1u, v->resize_log.size());
+					assert_equal(make_pair(rc.right, rc.bottom), v->resize_log[0]);
 
 					// ACT
 					::MoveWindow(f.second, 27, 190, 531, 97, TRUE);
@@ -184,22 +169,21 @@ namespace wpl
 					// ASSERT
 					::GetClientRect(f.second, &rc);
 
-					assert_equal(2u, lm->reposition_log.size());
-					assert_equal(rc.right, (int)lm->reposition_log[1].first);
-					assert_equal(rc.bottom, (int)lm->reposition_log[1].second);
+					assert_equal(2u, v->resize_log.size());
+					assert_equal(make_pair(rc.right, rc.bottom), v->resize_log[1]);
 				}
 
 
 				test( MovingFormDoesNotRaiseResizeSignal )
 				{
 					// INIT
-					shared_ptr<mocks::logging_layout_manager> lm(new mocks::logging_layout_manager);
+					shared_ptr<mocks::logging_visual<view>> v(new mocks::logging_visual<view>());
 					form_and_handle f(create_form_with_handle());
 
-					f.first->get_root_container()->layout = lm;
+					f.first->set_view(v);
 
 					::MoveWindow(f.second, 0, 0, 117, 213, TRUE);
-					lm->reposition_log.clear();
+					v->resize_log.clear();
 
 					// ACT
 					::MoveWindow(f.second, 23, 91, 117, 213, TRUE);
@@ -208,147 +192,7 @@ namespace wpl
 					::MoveWindow(f.second, 23, 100, 117, 213, TRUE);
 
 					// ASSERT
-					assert_is_empty(lm->reposition_log);
-				}
-
-
-				test( ChildrenAreCreatedViaContainer )
-				{
-					// INIT
-					form_and_handle f(create_form_with_handle());
-					shared_ptr<container> c = f.first->get_root_container();
-					window_tracker wt(L"SysListView32");
-
-					// ACT
-					shared_ptr<widget> lv1 = c->create_widget(L"listview", L"1");
-					shared_ptr<widget> lv2 = c->create_widget(L"listview", L"2");
-					wt.checkpoint();
-					
-					// ASSERT
-					assert_not_null(lv1);
-					assert_not_null(lv2);
-					assert_not_equal(lv1, lv2);
-
-					assert_equal(2u, wt.created.size());
-					assert_equal(0u, wt.destroyed.size());
-
-					assert_equal(f.second, ::GetParent(wt.created[0]));
-					assert_equal(f.second, ::GetParent(wt.created[1]));
-				}
-
-
-				test( ChildrenAreHeldByForm )
-				{
-					// INIT
-					form_and_handle f(create_form_with_handle());
-					shared_ptr<container> c = f.first->get_root_container();
-					vector<HWND> w;
-					shared_ptr<widget> lv1 = c->create_widget(L"listview", L"1");
-					shared_ptr<widget> lv2 = c->create_widget(L"listview", L"2");
-					window_tracker wt;
-					weak_ptr<widget> lv1_weak = lv1;
-					weak_ptr<widget> lv2_weak = lv2;
-					
-					// ACT
-					lv1 = shared_ptr<widget>();
-
-					// ASSERT
-					assert_is_false(lv1_weak.expired());
-					
-					// ACT
-					lv2 = shared_ptr<widget>();
-					wt.checkpoint();
-
-					// ASSERT
-					assert_is_empty(wt.destroyed);
-					assert_is_false(lv2_weak.expired());
-				}
-
-
-				test( ChildrenDestroyedOnFormDestruction )
-				{
-					// INIT
-					form_and_handle f(create_form_with_handle());
-					shared_ptr<widget> lv = f.first->get_root_container()->create_widget(L"listview", L"1");
-					weak_ptr<widget> lv_weak = lv;
-
-					lv = shared_ptr<widget>();
-
-					// ACT
-					f.first = shared_ptr<form>();
-
-					// ASSERT
-					assert_is_true(lv_weak.expired());
-				}
-
-
-				test( TwoChildWidgetsAreRepositionedAccordinglyToTheLayout )
-				{
-					// INIT
-					form_and_handle f(create_form_with_handle());
-					shared_ptr<container> c = f.first->get_root_container();
-					shared_ptr<mocks::logging_layout_manager> lm(new mocks::logging_layout_manager);
-					window_tracker wt(L"SysListView32");
-					shared_ptr<widget> lv1 = c->create_widget(L"listview", L"1");
-					wt.checkpoint();
-					shared_ptr<widget> lv2 = c->create_widget(L"listview", L"2");
-					wt.checkpoint();
-					f.first->get_root_container()->layout = lm;
-
-					// ACT
-					layout_manager::position positions1[] = {
-						{ 10, 21, 33, 15 },
-						{ 17, 121, 133, 175 },
-					};
-					lm->positions.assign(positions1, positions1 + _countof(positions1));
-					::MoveWindow(f.second, 23, 91, 167, 213, TRUE);
-
-					// ASSERT
-					assert_equal(rect(10, 21, 33, 15), get_window_rect(wt.created[0]));
-					assert_equal(rect(17, 121, 133, 175), get_window_rect(wt.created[1]));
-
-					// ACT
-					layout_manager::position positions2[] = {
-						{ 13, 121, 43, 31 },
-						{ 71, 21, 113, 105 },
-					};
-					lm->positions.assign(positions2, positions2 + _countof(positions2));
-					::MoveWindow(f.second, 23, 91, 117, 213, TRUE);
-
-					// ASSERT
-					assert_equal(rect(13, 121, 43, 31), get_window_rect(wt.created[0]));
-					assert_equal(rect(71, 21, 113, 105), get_window_rect(wt.created[1]));
-				}
-
-
-				test( ThreeChildWidgetsAreRepositionedAccordinglyToTheLayout )
-				{
-					// INIT
-					form_and_handle f(create_form_with_handle());
-					shared_ptr<container> c = f.first->get_root_container();
-					shared_ptr<mocks::logging_layout_manager> lm(new mocks::logging_layout_manager);
-					window_tracker wt(L"SysListView32");
-					shared_ptr<widget> lv1 = c->create_widget(L"listview", L"1");
-					wt.checkpoint();
-					shared_ptr<widget> lv2 = c->create_widget(L"listview", L"2");
-					wt.checkpoint();
-					shared_ptr<widget> lv3 = c->create_widget(L"listview", L"3");
-					wt.checkpoint();
-					f.first->get_root_container()->layout = lm;
-
-					// ACT
-					layout_manager::position positions[] = {
-						{ 10, 21, 33, 115 },
-						{ 11, 191, 133, 175 },
-						{ 16, 131, 103, 185 },
-					};
-					lm->positions.assign(positions, positions + _countof(positions));
-					::MoveWindow(f.second, 23, 91, 117, 213, TRUE);
-
-					// ASSERT
-					assert_equal(rect(10, 21, 33, 115), get_window_rect(wt.created[0]));
-					assert_equal(rect(11, 191, 133, 175), get_window_rect(wt.created[1]));
-					assert_equal(rect(16, 131, 103, 185), get_window_rect(wt.created[2]));
+					assert_is_empty(v->resize_log);
 				}
 
 
@@ -389,6 +233,391 @@ namespace wpl
 
 					// ASSERT
 					assert_equal(2, close_count);
+				}
+
+
+				test( RedrawingFormSuppliesBitmapOfTheSizeCorrespondingToRedrawAreaToTheContent )
+				{
+					// INIT
+					shared_ptr< mocks::logging_visual<view> > v(new mocks::logging_visual<view>());
+					form_and_handle f(create_form_with_handle());
+					RECT rc = { 0, 0, 100, 60 };
+
+					f.first->set_view(v);
+					f.first->set_visible(true);
+
+					::MoveWindow(f.second, 0, 0, 1000, 1000, TRUE);
+					::ValidateRect(f.second, NULL);
+
+					// ACT
+					::RedrawWindow(f.second, &rc, NULL, RDW_INVALIDATE | RDW_UPDATENOW);
+
+					// ASSERT
+					assert_equal(1u, v->surface_size_log.size());
+					assert_is_true(100 <= v->surface_size_log[0].first);
+					assert_is_true(115 > v->surface_size_log[0].first);
+					assert_is_true(60 <= v->surface_size_log[0].second);
+					assert_is_true(71 > v->surface_size_log[0].second);
+
+					// INIT
+					rc.left = 20;
+					rc.right = 135;
+					rc.top = 5;
+					rc.bottom = 76;
+
+					// ACT
+					::RedrawWindow(f.second, &rc, NULL, RDW_INVALIDATE | RDW_UPDATENOW);
+
+					// ASSERT
+					assert_equal(2u, v->surface_size_log.size());
+					assert_is_true(115 <= v->surface_size_log[1].first);
+					assert_is_true(135 > v->surface_size_log[1].first);
+					assert_is_true(71 <= v->surface_size_log[1].second);
+					assert_is_true(76 > v->surface_size_log[1].second);
+				}
+
+
+				test( WindowPassedToDrawCorrespondsToInvalidArea )
+				{
+					// INIT
+					shared_ptr< mocks::logging_visual<view> > v(new mocks::logging_visual<view>());
+					form_and_handle f(create_form_with_handle());
+					RECT rc = { 11, 17, 100, 60 };
+
+					f.first->set_view(v);
+					f.first->set_visible(true);
+
+					::MoveWindow(f.second, 0, 0, 1000, 1000, TRUE);
+					::ValidateRect(f.second, NULL);
+
+					// ACT
+					::RedrawWindow(f.second, &rc, NULL, RDW_INVALIDATE | RDW_UPDATENOW);
+
+					// ASSERT
+					assert_equal(1u, v->update_area_log.size());
+					assert_equal(11, v->update_area_log[0].x1);
+					assert_equal(17, v->update_area_log[0].y1);
+					assert_equal(100, v->update_area_log[0].x2);
+					assert_equal(60, v->update_area_log[0].y2);
+
+					// INIT
+					RECT rc2 = { 101, 107, 150, 260 };
+
+					// ACT
+					::RedrawWindow(f.second, &rc2, NULL, RDW_INVALIDATE | RDW_UPDATENOW);
+
+					// ASSERT
+					assert_equal(2u, v->update_area_log.size());
+					assert_equal(101, v->update_area_log[1].x1);
+					assert_equal(107, v->update_area_log[1].y1);
+					assert_equal(150, v->update_area_log[1].x2);
+					assert_equal(260, v->update_area_log[1].y2);
+				}
+
+
+				test( TheSameRasterizerIsSuppliedToDrawingProcedure )
+				{
+					// INIT
+					shared_ptr< mocks::logging_visual<view> > v(new mocks::logging_visual<view>());
+					form_and_handle f(create_form_with_handle());
+
+					f.first->set_view(v);
+					f.first->set_visible(true);
+
+					::MoveWindow(f.second, 0, 0, 100, 50, TRUE);
+
+					// ACT
+					::RedrawWindow(f.second, NULL, NULL, RDW_UPDATENOW);
+					::RedrawWindow(f.second, NULL, NULL, RDW_INVALIDATE | RDW_UPDATENOW);
+
+					// ASSERT
+					assert_equal(2u, v->rasterizers_log.size());
+					assert_not_null(v->rasterizers_log[0]);
+					assert_equal(v->rasterizers_log[0], v->rasterizers_log[1]);
+				}
+
+
+				test( RasterizerIsResetOnDraw )
+				{
+					// INIT
+					shared_ptr< mocks::logging_visual<view> > v(new mocks::logging_visual<view>());
+					form_and_handle f(create_form_with_handle());
+
+					f.first->set_view(v);
+					f.first->set_visible(true);
+
+					::MoveWindow(f.second, 0, 0, 100, 50, TRUE);
+
+					// ACT / ASSERT (done inside)
+					::RedrawWindow(f.second, NULL, NULL, RDW_UPDATENOW);
+					::RedrawWindow(f.second, NULL, NULL, RDW_INVALIDATE | RDW_UPDATENOW);
+				}
+
+
+				test( InvalidateSignalMarksAreaAsInvalid )
+				{
+					// INIT
+					shared_ptr< mocks::logging_visual<view> > v(new mocks::logging_visual<view>());
+					form_and_handle f(create_form_with_handle());
+					RECT rc, invalid;
+
+					f.first->set_view(v);
+					f.first->set_visible(true);
+
+					::MoveWindow(f.second, 0, 0, 1000, 1000, TRUE);
+					::GetClientRect(f.second, &rc);
+
+					// ACT
+					v->invalidate(0);
+
+					// ASSERT
+					assert_is_true(!!::GetUpdateRect(f.second, &invalid, FALSE));
+					assert_equal(rc, invalid);
+
+					// INIT
+					agge::rect_i rc2 = { 10, 13, 131, 251 };
+					::ValidateRect(f.second, NULL);
+
+					// ACT
+					v->invalidate(&rc2);
+
+					// ASSERT
+					RECT rc3 = { 10, 13, 131, 251 };
+
+					assert_is_true(!!::GetUpdateRect(f.second, &invalid, FALSE));
+					assert_equal(rc3, invalid);
+
+					// INIT
+					agge::rect_i rc4 = { 17, 19, 130, 250 };
+					::ValidateRect(f.second, NULL);
+
+					// ACT
+					v->invalidate(&rc4);
+
+					// ASSERT
+					RECT rc5 = { 17, 19, 130, 250 };
+
+					assert_is_true(!!::GetUpdateRect(f.second, &invalid, FALSE));
+					assert_equal(rc5, invalid);
+				}
+
+
+				test( MouseEventsAreDispatchedCorrespondingly )
+				{
+					// INIT
+					shared_ptr< mocks::logging_mouse_input<view> > v(new mocks::logging_mouse_input<view>());
+					form_and_handle f(create_form_with_handle());
+
+					f.first->set_view(v);
+
+					::MoveWindow(f.second, 0, 0, 100, 50, TRUE);
+
+					// ACT
+					::SendMessage(f.second, WM_LBUTTONDOWN, 0, pack_coordinates(-13, 1002));
+					::SendMessage(f.second, WM_LBUTTONUP, 0, pack_coordinates(11222, -200));
+					::SendMessage(f.second, WM_LBUTTONDOWN, 0, pack_coordinates(10, 10));
+
+					// ASSERT
+					mocks::mouse_event events1[] = {
+						mocks::me_down(mouse_input::left, 0, -13, 1002),
+						mocks::me_up(mouse_input::left, 0, 11222, -200),
+						mocks::me_down(mouse_input::left, 0, 10, 10),
+					};
+
+					assert_equal(events1, v->events_log);
+
+					// INIT
+					v->events_log.clear();
+
+					// ACT
+					::SendMessage(f.second, WM_RBUTTONDOWN, 0, pack_coordinates(-13, 1002));
+					::SendMessage(f.second, WM_RBUTTONUP, 0, pack_coordinates(112, -11));
+					::SendMessage(f.second, WM_RBUTTONDOWN, 0, pack_coordinates(1, 1));
+					::SendMessage(f.second, WM_RBUTTONUP, 0, pack_coordinates(-3, -7));
+
+					// ASSERT
+					mocks::mouse_event events2[] = {
+						mocks::me_down(mouse_input::right, 0, -13, 1002),
+						mocks::me_up(mouse_input::right, 0, 112, -11),
+						mocks::me_down(mouse_input::right, 0, 1, 1),
+						mocks::me_up(mouse_input::right, 0, -3, -7),
+					};
+
+					assert_equal(events2, v->events_log);
+
+					// INIT
+					v->events_log.clear();
+
+					// ACT
+					::SendMessage(f.second, WM_MOUSEMOVE, 0, pack_coordinates(-11, 12));
+					::SendMessage(f.second, WM_MOUSEMOVE, 0, pack_coordinates(13, -14));
+
+					// ASSERT
+					mocks::mouse_event events3[] = {
+						mocks::me_enter(),
+						mocks::me_move(0, -11, 12),
+						mocks::me_move(0, 13, -14),
+					};
+
+					assert_equal(events3, v->events_log);
+				}
+
+
+				test( RequestingCaptureSetsHandleAndSetsUnderlyingCapture )
+				{
+					// INIT
+					shared_ptr< mocks::logging_mouse_input<view> > v(new mocks::logging_mouse_input<view>());
+					form_and_handle f(create_form_with_handle());
+					shared_ptr<void> h;
+
+					f.first->set_view(v);
+
+					::MoveWindow(f.second, 0, 0, 150, 100, TRUE);
+					f.first->set_visible(true);
+					::SetFocus(f.second);
+
+					// ACT
+					v->capture(h);
+
+					// ASSERT
+					assert_not_null(h);
+					assert_equal(f.second, ::GetCapture());
+				}
+
+
+				test( SwitchingCaptureNotifiesView )
+				{
+					// INIT
+					shared_ptr< mocks::logging_mouse_input<view> > v1(new mocks::logging_mouse_input<view>());
+					shared_ptr< mocks::logging_mouse_input<view> > v2(new mocks::logging_mouse_input<view>());
+					form_and_handle f1(create_form_with_handle());
+					form_and_handle f2(create_form_with_handle());
+					shared_ptr<void> h1, h2;
+
+					f1.first->set_view(v1);
+					f2.first->set_view(v2);
+
+					f1.first->set_visible(true);
+					f2.first->set_visible(true);
+					::SetFocus(f1.second);
+
+					v1->capture(h1);
+					
+					// ACT
+					v2->capture(h2);
+
+					// ASSERT
+					assert_equal(1u, v1->capture_lost);
+				}
+
+
+				test( ResettingHandleReleasesTheCapture )
+				{
+					// INIT
+					shared_ptr< mocks::logging_mouse_input<view> > v(new mocks::logging_mouse_input<view>());
+					form_and_handle f(create_form_with_handle());
+					shared_ptr<void> h;
+
+					f.first->set_view(v);
+					f.first->set_visible(true);
+					::SetFocus(f.second);
+					v->capture(h);
+
+					// ACT
+					h.reset();
+
+					// ASSERT
+					assert_null(::GetCapture());
+				}
+
+
+				test( FirstMouseMoveGeneratesMouseEnterPriorTheMouseMove )
+				{
+					// INIT
+					shared_ptr< mocks::logging_mouse_input<view> > v(new mocks::logging_mouse_input<view>());
+					form_and_handle f(create_form_with_handle());
+					shared_ptr<void> h;
+
+					f.first->set_view(v);
+					f.first->set_visible(true);
+
+					// ACT
+					::SendMessage(f.second, WM_MOUSEMOVE, 0, pack_coordinates(0, 0));
+
+					// ASSERT
+					mocks::mouse_event events[] = {
+						mocks::me_enter(),
+						mocks::me_move(0, 0, 0),
+					};
+
+					assert_equal(events, v->events_log);
+
+					// ACT
+					::SendMessage(f.second, WM_MOUSEMOVE, 0, pack_coordinates(7, 17));
+
+					// ASSERT
+					mocks::mouse_event events2[] = {
+						mocks::me_enter(),
+						mocks::me_move(0, 0, 0),
+						mocks::me_move(0, 7, 17),
+					};
+
+					assert_equal(events2, v->events_log);
+				}
+
+
+				test( MouseLeaveEventCausesNotification )
+				{
+					// INIT
+					shared_ptr< mocks::logging_mouse_input<view> > v(new mocks::logging_mouse_input<view>());
+					form_and_handle f(create_form_with_handle());
+					shared_ptr<void> h;
+
+					f.first->set_view(v);
+					f.first->set_visible(true);
+
+					::SendMessage(f.second, WM_MOUSEMOVE, 0, pack_coordinates(0, 0));
+
+					// ACT
+					::SendMessage(f.second, WM_MOUSELEAVE, 0, 0);
+
+					// ASSERT
+					mocks::mouse_event events[] = {
+						mocks::me_enter(),
+						mocks::me_move(0, 0, 0),
+						mocks::me_leave(),
+					};
+
+					assert_equal(events, v->events_log);
+				}
+
+
+				test( MouseEnterCanBeGeneratedAgainAfterMouseLeave )
+				{
+					// INIT
+					shared_ptr< mocks::logging_mouse_input<view> > v(new mocks::logging_mouse_input<view>());
+					form_and_handle f(create_form_with_handle());
+					shared_ptr<void> h;
+
+					f.first->set_view(v);
+					f.first->set_visible(true);
+
+					::SendMessage(f.second, WM_MOUSEMOVE, 0, pack_coordinates(0, 0));
+					::SendMessage(f.second, WM_MOUSELEAVE, 0, 0);
+
+					// ACT
+					::SendMessage(f.second, WM_MOUSEMOVE, 0, pack_coordinates(1, 2));
+
+					// ASSERT
+					mocks::mouse_event events[] = {
+						mocks::me_enter(),
+						mocks::me_move(0, 0, 0),
+						mocks::me_leave(),
+						mocks::me_enter(),
+						mocks::me_move(0, 1, 2),
+					};
+
+					assert_equal(events, v->events_log);
 				}
 			end_test_suite
 		}

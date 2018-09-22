@@ -20,7 +20,6 @@
 
 #include "../win32/controls.h"
 #include "../win32/window.h"
-#include "../win32/native_view.h"
 
 #include <commctrl.h>
 #include <atlstr.h>
@@ -53,9 +52,6 @@ namespace wpl
 				selection_trackers _selected_items;
 				tracked_item _visible_item;
 
-				//	widget interface
-				virtual shared_ptr<view> create_view(const native_root &r);
-
 				// listview interface
 				virtual void set_columns_model(shared_ptr<columns_model> cm);
 				virtual void set_model(shared_ptr<model> model);
@@ -85,9 +81,6 @@ namespace wpl
 			listview_impl::listview_impl(HWND hwnd)
 				: _avoid_notifications(false), _sort_column(columns_model::npos)
 			{	_listview = window::attach(hwnd, bind(&listview_impl::wndproc, this, _1, _2, _3, _4));	}
-
-			shared_ptr<view> listview_impl::create_view(const native_root &r)
-			{	return shared_ptr<view>(new native_view(shared_from_this(), _listview->hwnd(), r));	}
 
 			void listview_impl::set_columns_model(shared_ptr<columns_model> cm)
 			{

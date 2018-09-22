@@ -20,7 +20,7 @@
 
 #pragma once
 
-#include "widget.h"
+#include "view.h"
 
 #include "../base/concepts.h"
 
@@ -30,7 +30,7 @@ namespace wpl
 {
 	namespace ui
 	{
-		struct listview : widget
+		struct listview : view
 		{
 			typedef size_t index_type;
 			struct columns_model;

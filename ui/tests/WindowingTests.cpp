@@ -1,4 +1,4 @@
-#include <wpl/ui/win32/window.h>
+#include <ui/win32/window.h>
 
 #include "TestHelpers.h"
 

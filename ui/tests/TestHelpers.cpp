@@ -1,7 +1,6 @@
 #include "TestHelpers.h"
 
-#include <wpl/ui/win32/window.h>
-#include <wpl/ui/container.h>
+#include <ui/win32/window.h>
 
 #include <algorithm>
 #include <commctrl.h>
@@ -79,15 +78,6 @@ namespace wpl
 
 				::GetWindowText(hwnd, &text[0], static_cast<int>(text.size()));
 				return t2w(tstring(&text[0]));
-			}
-
-			shared_ptr<wpl::ui::widget> create_widget(window_tracker &wt, wpl::ui::container &c, const wstring &type,
-				const wstring &id)
-			{
-				shared_ptr<wpl::ui::widget> w = c.create_widget(type, id);
-
-				wt.checkpoint();
-				return w;
 			}
 
 
