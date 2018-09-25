@@ -1,12 +1,4 @@
 #include <windows.h>
-#include <commctrl.h>
-
-void init_platform()
-{
-	INITCOMMONCONTROLSEX icc = { sizeof(INITCOMMONCONTROLSEX), ICC_LISTVIEW_CLASSES };
-
-	::InitCommonControlsEx(&icc);
-}
 
 void run_message_loop()
 {
