@@ -3,7 +3,6 @@
 #include "animation.h"
 
 #include <agge/types.h>
-#include <agge/stroke.h>
 #include <ui/view.h>
 
 namespace wpl
@@ -44,9 +43,8 @@ namespace wpl
 
 		private:
 			segments_t _segments;
-			int _center_x, _center_y, _base_radius, _accenture;
+			int _center_x, _center_y, _base_radius;
 			int _hover_index;
-			mutable agge::stroke _stroke;
 			std::shared_ptr<void> _animation_timer;
 		};
 

@@ -19,6 +19,12 @@ namespace wpl
 {
 	namespace ui
 	{
+		namespace
+		{
+			joined_path<arc, arc> pie_segment(real_t cx, real_t cy, real_t outer_r, real_t inner_r, real_t start, real_t end)
+			{	return join(arc(cx, cy, outer_r, start, end), arc(cx, cy, inner_r, end, start));	}
+		}
+
 		typedef blender_solid_color<simd::blender_solid_color, order_bgra> blender_t;
 
 		color make_color(unsigned char r, unsigned char g, unsigned char b)
@@ -28,11 +34,8 @@ namespace wpl
 		}
 
 		piechart::piechart()
-			: _base_radius(50), _accenture(20), _hover_index(-1)
+			: _base_radius(200), _hover_index(-1)
 		{
-			_stroke.set_cap(caps::butt());
-			_stroke.set_join(joins::bevel());
-
 			segment s;
 
 			s.clr = make_color(200, 40, 40);
@@ -61,9 +64,10 @@ namespace wpl
 				float d = 2 * pi * i->value / sum;
 
 				rasterizer->reset();
-				_stroke.width(_base_radius + 2.0f * _accenture * i->aline.get_value());
-				add_path(*rasterizer, assist(arc((real_t)_center_x, (real_t)_center_y,
-					_base_radius + _accenture * i->aline.get_value(), angle, angle + d), _stroke));
+				add_path(*rasterizer, pie_segment((real_t)_center_x, (real_t)_center_y,
+					0.6f * _base_radius, (1.0f + i->aline.get_value()) * _base_radius,
+					angle, angle + d));
+				rasterizer->close_polygon();
 				ctx(rasterizer, blender_t(i->clr.r, i->clr.g, i->clr.b, i->clr.a), winding<>());
 				angle += d;
 			}
@@ -96,7 +100,7 @@ namespace wpl
 				int index2 = 0;
 
 				for (segments_t::iterator i = _segments.begin(); i != _segments.end(); ++i, ++index2)
-					i->aline.run(index == index2 ? 0.2f : -0.1f, 200);
+					i->aline.run(index == index2 ? 0.1f : -0.05f, 200);
 				_animation_timer = create_timer(15, bind(&piechart::update_animation, this, _1));
 				_hover_index = index;
 			}
