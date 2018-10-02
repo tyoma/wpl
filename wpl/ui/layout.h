@@ -20,7 +20,7 @@
 
 #pragma once
 
-#include "view.h"
+#include "container.h"
 
 #include "../base/concepts.h"
 
@@ -30,31 +30,22 @@ namespace wpl
 	{
 		struct layout_manager
 		{
-			struct position;
-			
-			typedef std::pair<std::shared_ptr<const view>, position> view_position;
-
 			virtual ~layout_manager() {	}
 
-			virtual void layout(unsigned width, unsigned height, view_position *views, size_t count) const = 0;
-		};
-
-		struct layout_manager::position
-		{
-			int left, top, width, height;
+			virtual void layout(unsigned width, unsigned height, container::positioned_view *views, size_t count) const = 0;
 		};
 
 
-		template <int layout_manager::position::*SharedPosition, int layout_manager::position::*SharedSize,
-			int layout_manager::position::*CommonPosition, int layout_manager::position::*CommonSize>
+		template <int container::positioned_view::*SharedPosition, int container::positioned_view::*SharedSize,
+			int container::positioned_view::*CommonPosition, int container::positioned_view::*CommonSize>
 		class stack : noncopyable
 		{
 		public:
 			template <typename InputIterator>
 			stack(InputIterator begin, InputIterator end, unsigned spacing);
 
-			void layout(unsigned shared_size, unsigned common_size, layout_manager::view_position * const widgets,
-				const size_t count) const;
+			void layout(unsigned shared_size, unsigned common_size, container::positioned_view *views,
+				size_t count) const;
 
 		protected:
 			typedef stack base;
@@ -65,31 +56,31 @@ namespace wpl
 		};
 
 
-		class hstack : public layout_manager, stack<&layout_manager::position::left, &layout_manager::position::width,
-			&layout_manager::position::top, &layout_manager::position::height>
+		class hstack : public layout_manager, stack<&container::positioned_view::left, &container::positioned_view::width,
+			&container::positioned_view::top, &container::positioned_view::height>
 		{
 		public:
 			template <typename InputIterator>
 			hstack(InputIterator begin, InputIterator end, unsigned spacing);
 
-			virtual void layout(unsigned width, unsigned height, view_position *widgets, size_t count) const;
+			virtual void layout(unsigned width, unsigned height, container::positioned_view *widgets, size_t count) const;
 		};
 
 
-		class vstack : public layout_manager, stack<&layout_manager::position::top, &layout_manager::position::height,
-			&layout_manager::position::left, &layout_manager::position::width>
+		class vstack : public layout_manager, stack<&container::positioned_view::top, &container::positioned_view::height,
+			&container::positioned_view::left, &container::positioned_view::width>
 		{
 		public:
 			template <typename InputIterator>
 			vstack(InputIterator begin, InputIterator end, unsigned spacing);
 
-			virtual void layout(unsigned width, unsigned height, view_position *widgets, size_t count) const;
+			virtual void layout(unsigned width, unsigned height, container::positioned_view *widgets, size_t count) const;
 		};
 
 
 
-		template <int layout_manager::position::*SharedPosition, int layout_manager::position::*SharedSize,
-			int layout_manager::position::*CommonPosition, int layout_manager::position::*CommonSize>
+		template <int container::positioned_view::*SharedPosition, int container::positioned_view::*SharedSize,
+			int container::positioned_view::*CommonPosition, int container::positioned_view::*CommonSize>
 		template <typename InputIterator>
 		inline stack<SharedPosition, SharedSize, CommonPosition, CommonSize>::stack(InputIterator begin, InputIterator end,
 				unsigned spacing)

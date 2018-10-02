@@ -40,6 +40,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="ContainerTests.cpp" />
     <ClCompile Include="FormTests.cpp" />
     <ClCompile Include="LayoutTests.cpp" />
     <ClCompile Include="ListViewTests.cpp" />

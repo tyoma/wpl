@@ -1,5 +1,6 @@
 #pragma once
 
+#include <agge/types.h>
 #include <wpl/base/concepts.h>
 
 #include <algorithm>
@@ -83,8 +84,19 @@ namespace wpl
 
 			inline unsigned int pack_coordinates(short x, short y)
 			{	return (unsigned short)x | ((unsigned int )(unsigned short)y << 16);	}
+
+			template <typename T>
+			inline agge::rect<T> make_rect(T x1, T y1, T x2, T y2)
+			{
+				agge::rect<T> r = { x1, y1, x2, y2 };
+				return r;
+			}
 		}
 	}
 }
+
+template <typename T>
+inline bool operator ==(const agge::rect<T> &lhs, const agge::rect<T> &rhs)
+{	return lhs.x1 == rhs.x1 && lhs.y1 == rhs.y1 && lhs.x2 == rhs.x2 && lhs.y2 == rhs.y2;	}
 
 bool operator ==(const RECT &lhs, const RECT &rhs);

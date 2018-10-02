@@ -43,6 +43,7 @@
     </ProjectReference>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="container.cpp" />
     <ClCompile Include="form.cpp" />
     <ClCompile Include="layout.cpp" />
     <ClCompile Include="listview.cpp" />
@@ -55,6 +56,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\wpl\ui\container.h" />
     <ClInclude Include="..\..\wpl\ui\form.h" />
     <ClInclude Include="..\..\wpl\ui\input.h" />
     <ClInclude Include="..\..\wpl\ui\layout.h" />

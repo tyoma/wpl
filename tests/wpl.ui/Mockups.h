@@ -1,6 +1,8 @@
 #pragma once
 
 #include <agge/filling_rules.h>
+#include <agge/figures.h>
+#include <agge/path.h>
 #include <wpl/ui/view.h>
 #include <wpl/ui/layout.h>
 #include <ut/assert.h>
@@ -47,8 +49,8 @@ namespace wpl
 				class logging_visual : public BaseT
 				{
 				public:
-					std::vector< std::pair<long /*cx*/, long /*cy*/> > resize_log;
-					mutable std::vector< std::pair<long /*cx*/, long /*cy*/> > surface_size_log;
+					std::vector< std::pair<int /*cx*/, int /*cy*/> > resize_log;
+					mutable std::vector< std::pair<int /*cx*/, int /*cy*/> > surface_size_log;
 					mutable std::vector<agge::rect_i> update_area_log;
 					mutable std::vector<gcontext::rasterizer_type *> rasterizers_log;
 
@@ -83,19 +85,22 @@ namespace wpl
 				class logging_layout_manager : public wpl::ui::layout_manager
 				{
 				public:
+					struct position { int left, top, width, height; };
+
+				public:
 					mutable std::vector< std::pair<size_t, size_t> > reposition_log;
-					mutable std::vector<view_position> last_widgets;
+					mutable std::vector<container::positioned_view> last_widgets;
 					std::vector<position> positions;
 
 				private:
-					virtual void layout(unsigned width, unsigned height, view_position *widgets, size_t count) const;
+					virtual void layout(unsigned width, unsigned height, container::positioned_view *widgets, size_t count) const;
 				};
 
 
 				class fill_layout : public wpl::ui::layout_manager
 				{
 				private:
-					virtual void layout(unsigned width, unsigned height, view_position *widgets, size_t count) const;
+					virtual void layout(unsigned width, unsigned height, container::positioned_view *widgets, size_t count) const;
 				};
 
 
@@ -121,19 +126,14 @@ namespace wpl
 					}
 				}
 
+
 				template <typename BaseT>
 				inline void logging_visual<BaseT>::draw(gcontext &ctx, gcontext::rasterizer_ptr &rasterizer) const
 				{
 					blender b;
-//					agge::rect_i w = { -1000, -1000, 1000, 1000 };
 
 					assert_equal(0, rasterizer->width());
-					rasterizer->reset_clipping();
-					rasterizer->move_to(-1000.0f, -1000.0f);
-					rasterizer->line_to(1000.0f, -1000.0f);
-					rasterizer->line_to(1000.0f, 1000.0f);
-					rasterizer->line_to(-1000.0f, 1000.0f);
-					rasterizer->close_polygon();
+					agge::add_path(*rasterizer, agge::rectangle(-1000.0f, -1000.0f, 1000.0f, 1000.0f));
 					ctx(rasterizer, b, agge::winding<>());
 					surface_size_log.push_back(std::make_pair(b.max_x - b.min_x, b.max_y - b.min_y + 1));
 					update_area_log.push_back(ctx.update_area());

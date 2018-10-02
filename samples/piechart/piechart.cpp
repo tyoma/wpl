@@ -8,6 +8,7 @@
 #include <agge/figures.h>
 #include <agge/filling_rules.h>
 #include <agge/math.h>
+#include <agge/path.h>
 #include <agge/stroke_features.h>
 #include <math.h>
 

@@ -161,7 +161,7 @@ namespace wpl
 					::GetClientRect(f.second, &rc);
 
 					assert_equal(1u, v->resize_log.size());
-					assert_equal(make_pair(rc.right, rc.bottom), v->resize_log[0]);
+					assert_equal(make_pair((int)rc.right, (int)rc.bottom), v->resize_log[0]);
 
 					// ACT
 					::MoveWindow(f.second, 27, 190, 531, 97, TRUE);
@@ -170,7 +170,7 @@ namespace wpl
 					::GetClientRect(f.second, &rc);
 
 					assert_equal(2u, v->resize_log.size());
-					assert_equal(make_pair(rc.right, rc.bottom), v->resize_log[1]);
+					assert_equal(make_pair((int)rc.right, (int)rc.bottom), v->resize_log[1]);
 				}
 
 
@@ -295,10 +295,7 @@ namespace wpl
 
 					// ASSERT
 					assert_equal(1u, v->update_area_log.size());
-					assert_equal(11, v->update_area_log[0].x1);
-					assert_equal(17, v->update_area_log[0].y1);
-					assert_equal(100, v->update_area_log[0].x2);
-					assert_equal(60, v->update_area_log[0].y2);
+					assert_equal(make_rect(11, 17, 100, 60), v->update_area_log[0]);
 
 					// INIT
 					RECT rc2 = { 101, 107, 150, 260 };
@@ -308,10 +305,7 @@ namespace wpl
 
 					// ASSERT
 					assert_equal(2u, v->update_area_log.size());
-					assert_equal(101, v->update_area_log[1].x1);
-					assert_equal(107, v->update_area_log[1].y1);
-					assert_equal(150, v->update_area_log[1].x2);
-					assert_equal(260, v->update_area_log[1].y2);
+					assert_equal(make_rect(101, 107, 150, 260), v->update_area_log[1]);
 				}
 
 

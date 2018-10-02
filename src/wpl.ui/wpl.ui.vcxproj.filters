@@ -25,6 +25,9 @@
     <ClCompile Include="visual.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="container.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\wpl\ui\win32\controls.h">
@@ -39,5 +42,6 @@
     <ClInclude Include="..\..\wpl\ui\listview.h" />
     <ClInclude Include="..\..\wpl\ui\view.h" />
     <ClInclude Include="..\..\wpl\ui\visual.h" />
+    <ClInclude Include="..\..\wpl\ui\container.h" />
   </ItemGroup>
 </Project>

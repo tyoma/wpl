@@ -7,7 +7,6 @@
 #include <agge/platform/bitmap.h>
 #include <agge/rasterizer.h>
 #include <agge/renderer_parallel.h>
-#include <agge.text/text_engine.h>
 
 namespace wpl
 {
@@ -21,14 +20,13 @@ namespace wpl
 			typedef agge::rasterizer< agge::clipper<int> > rasterizer_type;
 			typedef std::auto_ptr<rasterizer_type> rasterizer_ptr;
 			typedef agge::renderer_parallel renderer_type;
-			typedef agge::text_engine<rasterizer_type> text_engine_type;
 
 		public:
-			gcontext(surface_type &surface, renderer_type &renderer, const agge::rect_i &window/*,
-				t_engine_type &text_engine*/);
+			gcontext(surface_type &surface, renderer_type &renderer, const agge::rect_i &window);
+
+			gcontext transform(int offset_x, int offset_y) const;
 
 			agge::rect_i update_area() const;
-			text_engine_type &text_engine() const;
 
 			template <typename BlenderT, typename AlphaFn>
 			void operator ()(rasterizer_ptr &rasterizer, const BlenderT &blender, const AlphaFn &alpha);
@@ -54,26 +52,12 @@ namespace wpl
 
 
 
-		inline gcontext::gcontext(surface_type &surface, renderer_type &renderer, const agge::rect_i &window/*,
-				text_engine_type &text_engine*/)
-			: _surface(surface), _renderer(renderer), _window(window)
-		{	}
-
-		inline agge::rect_i gcontext::update_area() const
-		{	return _window;	}
-
 		template <typename BlenderT, typename AlphaFn>
 		inline void gcontext::operator ()(rasterizer_ptr &rasterizer, const BlenderT &blender, const AlphaFn &alpha)
 		{
 			rasterizer->sort();
 			_renderer(_surface, &_window, *rasterizer, blender, alpha);
+			rasterizer->reset();
 		}
-
-
-		inline void visual::draw(gcontext &/*ctx*/, gcontext::rasterizer_ptr &/*rasterizer*/) const
-		{	}
-
-		inline void visual::resize(unsigned /*cx*/, unsigned /*cy*/)
-		{	}
 	}
 }
