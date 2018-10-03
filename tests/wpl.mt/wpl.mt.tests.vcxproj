@@ -45,7 +45,9 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="SynchronizationTests.cpp" />
-    <ClCompile Include="ThreadTests.cpp" />
+    <ClCompile Include="ThreadTests.cpp">
+		<DisableLanguageExtensions>false</DisableLanguageExtensions>
+    </ClCompile>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
 </Project>

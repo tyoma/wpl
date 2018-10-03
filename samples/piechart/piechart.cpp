@@ -5,7 +5,6 @@
 #include <agge/blenders.h>
 #include <agge/blenders_simd.h>
 #include <agge/curves.h>
-#include <agge/figures.h>
 #include <agge/filling_rules.h>
 #include <agge/math.h>
 #include <agge/path.h>
@@ -50,13 +49,9 @@ namespace wpl
 			_segments.push_back(s);
 		}
 
-		void piechart::draw(gcontext &ctx, gcontext::rasterizer_ptr &rasterizer) const
+		void piechart::draw(gcontext &ctx, gcontext::rasterizer_ptr &ras) const
 		{
 			float sum = 0.0, angle = -pi / 2;
-
-			rasterizer->reset();
-			add_path(*rasterizer, rectangle(0.0f, 0.0f, 2.0f * _center_x, 2.0f * _center_y));
-			ctx(rasterizer, blender_t(10, 20, 40, 255), winding<>());
 
 			for (segments_t::const_iterator i = _segments.begin(); i != _segments.end(); ++i)
 				sum += i->value;
@@ -64,12 +59,12 @@ namespace wpl
 			{
 				float d = 2 * pi * i->value / sum;
 
-				rasterizer->reset();
-				add_path(*rasterizer, pie_segment((real_t)_center_x, (real_t)_center_y,
+				ras->reset();
+				add_path(*ras, pie_segment((real_t)_center_x, (real_t)_center_y,
 					0.6f * _base_radius, (1.0f + i->aline.get_value()) * _base_radius,
 					angle, angle + d));
-				rasterizer->close_polygon();
-				ctx(rasterizer, blender_t(i->clr.r, i->clr.g, i->clr.b, i->clr.a), winding<>());
+				ras->close_polygon();
+				ctx(ras, blender_t(i->clr.r, i->clr.g, i->clr.b, i->clr.a), winding<>());
 				angle += d;
 			}
 		}
@@ -101,7 +96,12 @@ namespace wpl
 				int index2 = 0;
 
 				for (segments_t::iterator i = _segments.begin(); i != _segments.end(); ++i, ++index2)
-					i->aline.run(index == index2 ? 0.1f : -0.05f, 200);
+				{
+					if (index == index2)
+						i->aline.run(0.1f, 200);
+					else
+						i->aline.run(-0.05f, 600);
+				}
 				_animation_timer = create_timer(15, bind(&piechart::update_animation, this, _1));
 				_hover_index = index;
 			}

@@ -66,20 +66,20 @@ namespace wpl
 			};
 
 			template <typename T, size_t n>
-			inline T *begin(T (&container)[n])
-			{	return container;	}
+			inline T *begin(T (&container_)[n])
+			{	return container_;	}
 
 			template <typename Container>
-			inline typename Container::iterator begin(Container &container)
-			{	return container.begin();	}
+			inline typename Container::iterator begin(Container &container_)
+			{	return container_.begin();	}
 
 			template <typename T, size_t n>
-			inline T *end(T (&container)[n])
-			{	return container + n;	}
+			inline T *end(T (&container_)[n])
+			{	return container_ + n;	}
 
 			template <typename Container>
-			inline typename Container::iterator end(Container &container)
-			{	return container.end();	}
+			inline typename Container::iterator end(Container &container_)
+			{	return container_.end();	}
 
 
 			inline unsigned int pack_coordinates(short x, short y)

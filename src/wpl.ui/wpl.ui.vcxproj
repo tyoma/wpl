@@ -44,11 +44,17 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="container.cpp" />
-    <ClCompile Include="form.cpp" />
+    <ClCompile Include="form.cpp">
+		<DisableLanguageExtensions>false</DisableLanguageExtensions>
+    </ClCompile>
     <ClCompile Include="layout.cpp" />
-    <ClCompile Include="listview.cpp" />
+    <ClCompile Include="listview.cpp">
+		<DisableLanguageExtensions>false</DisableLanguageExtensions>
+    </ClCompile>
     <ClCompile Include="visual.cpp" />
-    <ClCompile Include="window.cpp" />
+    <ClCompile Include="window.cpp">
+		<DisableLanguageExtensions>false</DisableLanguageExtensions>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\wpl.mt\wpl.mt.vcxproj">
@@ -67,6 +73,4 @@
     <ClInclude Include="..\..\wpl\ui\win32\window.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
-  <ImportGroup Label="ExtensionTargets">
-  </ImportGroup>
 </Project>

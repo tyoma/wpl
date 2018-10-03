@@ -73,10 +73,10 @@ namespace wpl
 				private:
 					virtual void mouse_enter();
 					virtual void mouse_leave();
-					virtual void mouse_move(int buttons, int x, int y);
-					virtual void mouse_down(mouse_input::mouse_buttons button, int buttons, int x, int y);
-					virtual void mouse_up(mouse_input::mouse_buttons button, int buttons, int x, int y);
-					virtual void mouse_double_click(mouse_input::mouse_buttons button, int buttons, int x, int y);
+					virtual void mouse_move(int depressed, int x, int y);
+					virtual void mouse_down(mouse_input::mouse_buttons button, int depressed, int x, int y);
+					virtual void mouse_up(mouse_input::mouse_buttons button, int depressed, int x, int y);
+					virtual void mouse_double_click(mouse_input::mouse_buttons button, int depressed, int x, int y);
 					virtual void lost_capture();
 				};
 
@@ -88,7 +88,7 @@ namespace wpl
 					struct position { int left, top, width, height; };
 
 				public:
-					mutable std::vector< std::pair<size_t, size_t> > reposition_log;
+					mutable std::vector< std::pair<unsigned, unsigned> > reposition_log;
 					mutable std::vector<container::positioned_view> last_widgets;
 					std::vector<position> positions;
 
@@ -202,20 +202,20 @@ namespace wpl
 				{	events_log.push_back(me_leave());	}
 
 				template <typename BaseT>
-				inline void logging_mouse_input<BaseT>::mouse_move(int buttons, int x, int y)
-				{	events_log.push_back(me_move(buttons, x, y));	}
+				inline void logging_mouse_input<BaseT>::mouse_move(int depressed, int x, int y)
+				{	events_log.push_back(me_move(depressed, x, y));	}
 
 				template <typename BaseT>
-				inline void logging_mouse_input<BaseT>::mouse_down(mouse_input::mouse_buttons button, int buttons, int x, int y)
-				{	events_log.push_back(me_down(button, buttons, x, y));	}
+				inline void logging_mouse_input<BaseT>::mouse_down(mouse_input::mouse_buttons button, int depressed, int x, int y)
+				{	events_log.push_back(me_down(button, depressed, x, y));	}
 
 				template <typename BaseT>
-				inline void logging_mouse_input<BaseT>::mouse_up(mouse_input::mouse_buttons button, int buttons, int x, int y)
-				{	events_log.push_back(me_up(button, buttons, x, y));	}
+				inline void logging_mouse_input<BaseT>::mouse_up(mouse_input::mouse_buttons button, int depressed, int x, int y)
+				{	events_log.push_back(me_up(button, depressed, x, y));	}
 
 				template <typename BaseT>
-				inline void logging_mouse_input<BaseT>::mouse_double_click(mouse_input::mouse_buttons button, int buttons, int x, int y)
-				{	events_log.push_back(me_up(button, buttons, x, y));	}
+				inline void logging_mouse_input<BaseT>::mouse_double_click(mouse_input::mouse_buttons button, int depressed, int x, int y)
+				{	events_log.push_back(me_up(button, depressed, x, y));	}
 
 				template <typename BaseT>
 				inline void logging_mouse_input<BaseT>::lost_capture()

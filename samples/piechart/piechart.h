@@ -35,7 +35,7 @@ namespace wpl
 			virtual void draw(gcontext &ctx, gcontext::rasterizer_ptr &rasterizer) const;
 			virtual void resize(unsigned cx, unsigned cy);
 
-			virtual void mouse_move(int buttons, int x, int y);
+			virtual void mouse_move(int depressed, int x, int y);
 			virtual void mouse_leave();
 
 			void update_animation(unsigned elapsed);

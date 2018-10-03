@@ -28,8 +28,8 @@ namespace wpl
 	{
 		template <int container::positioned_view::*SharedPosition, int container::positioned_view::*SharedSize,
 			int container::positioned_view::*CommonPosition, int container::positioned_view::*CommonSize>
-			inline void stack<SharedPosition, SharedSize, CommonPosition, CommonSize>::layout(unsigned shared_size,
-				unsigned common_size, container::positioned_view *widgets, size_t count) const
+		inline void stack<SharedPosition, SharedSize, CommonPosition, CommonSize>::layout(unsigned shared_size,
+			unsigned common_size, container::positioned_view *widgets, size_t count) const
 		{
 			vector<int>::const_iterator i;
 			int remainder, relative_base, location;

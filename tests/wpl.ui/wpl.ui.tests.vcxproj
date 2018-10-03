@@ -41,13 +41,23 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="ContainerTests.cpp" />
-    <ClCompile Include="FormTests.cpp" />
+    <ClCompile Include="FormTests.cpp">
+		<DisableLanguageExtensions>false</DisableLanguageExtensions>
+    </ClCompile>
     <ClCompile Include="LayoutTests.cpp" />
-    <ClCompile Include="ListViewTests.cpp" />
-    <ClCompile Include="main.cpp" />
-    <ClCompile Include="TestHelpers.cpp" />
+    <ClCompile Include="ListViewTests.cpp">
+		<DisableLanguageExtensions>false</DisableLanguageExtensions>
+    </ClCompile>
+    <ClCompile Include="main.cpp">
+		<DisableLanguageExtensions>false</DisableLanguageExtensions>
+    </ClCompile>
+    <ClCompile Include="TestHelpers.cpp">
+		<DisableLanguageExtensions>false</DisableLanguageExtensions>
+    </ClCompile>
     <ClCompile Include="Mockups.cpp" />
-    <ClCompile Include="WindowingTests.cpp" />
+    <ClCompile Include="WindowingTests.cpp">
+		<DisableLanguageExtensions>false</DisableLanguageExtensions>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="TestHelpers.h" />
