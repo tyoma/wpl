@@ -14,7 +14,7 @@ namespace wpl
 		public:
 			timer(unsigned timeout, const function<void(unsigned elapsed)> &callback)
 				: _callback(callback), _start_time(::GetTickCount()),
-					_window(::CreateWindow(_T("static"), 0, WS_CHILD, 0, 0, 1, 1, HWND_MESSAGE, 0, 0, 0), &::DestroyWindow)					
+					_window(::CreateWindow(_T("static"), 0, WS_CHILD, 0, 0, 1, 1, HWND_MESSAGE, 0, 0, 0), &::DestroyWindow)
 			{	::SetTimer(static_cast<HWND>(_window.get()), reinterpret_cast<UINT_PTR>(this), timeout, &timer_proc);	}
 
 			~timer()
