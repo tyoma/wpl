@@ -43,5 +43,12 @@
     <ClInclude Include="..\..\wpl\ui\view.h" />
     <ClInclude Include="..\..\wpl\ui\visual.h" />
     <ClInclude Include="..\..\wpl\ui\container.h" />
+    <ClInclude Include="..\..\wpl\ui\types.h" />
+    <ClInclude Include="..\..\wpl\ui\win32\native_view.h">
+      <Filter>win32</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\wpl\ui\win32\types.h">
+      <Filter>win32</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

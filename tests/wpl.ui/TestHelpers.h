@@ -2,6 +2,7 @@
 
 #include <agge/types.h>
 #include <wpl/base/concepts.h>
+#include <wpl/ui/types.h>
 
 #include <algorithm>
 #include <iterator>
@@ -91,7 +92,16 @@ namespace wpl
 				agge::rect<T> r = { x1, y1, x2, y2 };
 				return r;
 			}
+
+			inline view_location make_position(int x, int y, int width, int height)
+			{
+				view_location p = { x, y, width, height };
+				return p;
+			}
 		}
+
+		inline bool operator ==(const view_location &lhs, const view_location &rhs)
+		{	return lhs.left == rhs.left && lhs.top == rhs.top && lhs.width == rhs.width && lhs.height == rhs.height;	}
 	}
 }
 

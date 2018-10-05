@@ -21,6 +21,7 @@
 #include <wpl/ui/form.h>
 
 #include <wpl/base/concepts.h>
+#include <wpl/ui/win32/native_view.h>
 #include <wpl/ui/win32/window.h>
 
 #include <algorithm>
@@ -81,6 +82,8 @@ namespace wpl
 
 				void dispatch_mouse(UINT message, WPARAM wparam, LPARAM lparam);
 
+				void reposition_native_views() throw();
+
 			private:
 				shared_ptr<window> _window;
 				shared_ptr<view> _view;
@@ -89,6 +92,7 @@ namespace wpl
 				gcontext::renderer_type _renderer;
 				slot_connection _invalidate_connection, _capture_connection;
 				bool _mouse_in : 1;
+				vector<visual::positioned_native_view> _positioned_views;
 			};
 
 
@@ -153,7 +157,8 @@ namespace wpl
 						return 0;
 
 					case WM_SIZE:
-						_view->resize(LOWORD(lparam), HIWORD(lparam));
+						_view->resize(LOWORD(lparam), HIWORD(lparam), _positioned_views);
+						reposition_native_views();
 						break;
 
 					case WM_LBUTTONDOWN:
@@ -219,6 +224,27 @@ namespace wpl
 					_view->mouse_up(mouse_input::right, 0, x, y);
 					break;
 				}
+			}
+
+			void form_impl::reposition_native_views() throw()
+			{
+				HDWP hdwp = ::BeginDeferWindowPos(static_cast<int>(_positioned_views.size()));
+
+				for (visual::positioned_native_views::const_iterator i = _positioned_views.begin();
+					i != _positioned_views.end(); ++i)
+				{
+					HWND h = i->get_view().get_window();
+
+					if (::GetParent(h) != _window->hwnd())
+					{
+						::SetWindowLong(h, GWL_STYLE, (::GetWindowLong(h, GWL_STYLE) | WS_CHILD) & ~(WS_POPUP | WS_OVERLAPPED));
+						::SetParent(h, _window->hwnd());
+					}
+					hdwp = ::DeferWindowPos(hdwp, h, NULL, i->location.left, i->location.top,
+						i->location.width, i->location.height, SWP_NOZORDER);
+				}
+				::EndDeferWindowPos(hdwp);
+				_positioned_views.clear();
 			}
 		}
 

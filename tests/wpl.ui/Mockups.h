@@ -56,7 +56,14 @@ namespace wpl
 
 				private:
 					virtual void draw(gcontext &ctx, gcontext::rasterizer_ptr &rasterizer) const;
-					virtual void resize(unsigned cx, unsigned cy);
+					virtual void resize(unsigned cx, unsigned cy, visual::positioned_native_views &nviews);
+				};
+
+
+				class visual_with_native_view : public view
+				{
+				private:
+					virtual void resize(unsigned cx, unsigned cy, positioned_native_views &nviews);
 				};
 
 
@@ -85,12 +92,9 @@ namespace wpl
 				class logging_layout_manager : public wpl::ui::layout_manager
 				{
 				public:
-					struct position { int left, top, width, height; };
-
-				public:
 					mutable std::vector< std::pair<unsigned, unsigned> > reposition_log;
 					mutable std::vector<container::positioned_view> last_widgets;
-					std::vector<position> positions;
+					std::vector<view_location> positions;
 
 				private:
 					virtual void layout(unsigned width, unsigned height, container::positioned_view *widgets, size_t count) const;
@@ -141,7 +145,7 @@ namespace wpl
 				}
 
 				template <typename BaseT>
-				inline void logging_visual<BaseT>::resize(unsigned cx, unsigned cy)
+				inline void logging_visual<BaseT>::resize(unsigned cx, unsigned cy, visual::positioned_native_views &/*nviews*/)
 				{	resize_log.push_back(std::make_pair(cx, cy));	}
 
 

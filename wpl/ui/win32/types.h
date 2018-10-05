@@ -20,14 +20,12 @@
 
 #pragma once
 
-#include "types.h"
-
-#include "../listview.h"
+typedef struct HWND__ *HWND;
 
 namespace wpl
 {
 	namespace ui
 	{
-		std::shared_ptr<listview> wrap_listview(HWND hwnd);
+
 	}
 }

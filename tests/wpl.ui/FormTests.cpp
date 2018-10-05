@@ -1,8 +1,10 @@
 #include <wpl/ui/form.h>
+#include <wpl/ui/win32/native_view.h>
 
 #include "Mockups.h"
 #include "TestHelpers.h"
 
+#include <tchar.h>
 #include <ut/assert.h>
 #include <ut/test.h>
 #include <windows.h>
@@ -18,22 +20,48 @@ namespace wpl
 		{
 			namespace
 			{
+				typedef pair<shared_ptr<form>, HWND> form_and_handle;
+
+				class child_window : public native_view
+				{
+				public:
+					child_window()
+						: _hwnd(::CreateWindow(_T("static"), NULL, WS_POPUP, 0, 0, 0, 0, NULL, NULL, NULL, 0))
+					{	}
+
+					~child_window()
+					{
+						if (::IsWindow(_hwnd))
+							::DestroyWindow(_hwnd);
+					}
+
+					virtual HWND get_window()
+					{	return _hwnd;	}
+
+				private:
+					HWND _hwnd;
+				};
+
+				form_and_handle create_form_with_handle()
+				{
+					window_tracker wt(L"#32770");
+					shared_ptr<form> f(form::create());
+
+					wt.checkpoint();
+
+					if (wt.created.size() != 1)
+						throw runtime_error("Unexpected amount of windows created!");
+					return make_pair(f, wt.created[0]);
+				}
+
+				shared_ptr<void> create_window(HWND hparent)
+				{
+					return shared_ptr<void>(::CreateWindow(_T("static"), NULL, WS_CHILD | WS_VISIBLE, 0, 0, 0, 0, hparent,
+						NULL, NULL, 0), &::DestroyWindow);
+				}
+
 				void increment(int *counter)
 				{	++*counter;	}
-			}
-
-			typedef pair<shared_ptr<form>, HWND> form_and_handle;
-
-			form_and_handle create_form_with_handle()
-			{
-				window_tracker wt(L"#32770");
-				shared_ptr<form> f(form::create());
-
-				wt.checkpoint();
-
-				if (wt.created.size() != 1)
-					throw runtime_error("Unexpected amount of windows created!");
-				return make_pair(f, wt.created[0]);
 			}
 
 			begin_test_suite( FormTests )
@@ -612,6 +640,89 @@ namespace wpl
 					};
 
 					assert_equal(events, v->events_log);
+				}
+
+
+				struct view_providing_nviews : view
+				{
+					typedef vector< pair<shared_ptr<child_window>, view_location> > response_t;
+
+					view_providing_nviews()
+						: container_was_dirty(false)
+					{	}
+
+					void resize(unsigned /*cx*/, unsigned /*cy*/, vector<visual::positioned_native_view> &nviews)
+					{
+						container_was_dirty = container_was_dirty || !nviews.empty();
+						for (response_t::const_iterator i = response.begin(); i != response.end(); ++i)
+							nviews.push_back(visual::positioned_native_view(*i->first, i->second));
+					}
+
+					response_t response;
+					bool container_was_dirty;
+				};
+
+				test( NativeViewWindowsAreReparented )
+				{
+					// INIT
+					shared_ptr<view_providing_nviews> v(new view_providing_nviews);
+					form_and_handle f(create_form_with_handle());
+
+					v->response.push_back(make_pair(shared_ptr<child_window>(new child_window), view_location()));
+					v->response.push_back(make_pair(shared_ptr<child_window>(new child_window), view_location()));
+					f.first->set_view(v);
+
+					// ACT
+					::MoveWindow(f.second, 0, 0, 100, 50, TRUE);
+
+					// ASSERT
+					assert_is_false(v->container_was_dirty);
+					assert_equal(f.second, ::GetParent(v->response[0].first->get_window()));
+					assert_equal(0u, WS_POPUP & ::GetWindowLong(v->response[0].first->get_window(), GWL_STYLE));
+					assert_equal(WS_CHILD, WS_CHILD & ::GetWindowLong(v->response[0].first->get_window(), GWL_STYLE));
+					assert_equal(f.second, ::GetParent(v->response[1].first->get_window()));
+					assert_equal(0u, WS_POPUP & ::GetWindowLong(v->response[1].first->get_window(), GWL_STYLE));
+					assert_equal(WS_CHILD, WS_CHILD & ::GetWindowLong(v->response[1].first->get_window(), GWL_STYLE));
+
+					// ACT
+					::MoveWindow(f.second, 0, 0, 101, 51, TRUE);
+
+					// ASSERT
+					assert_is_false(v->container_was_dirty);
+				}
+
+
+				test( NativeViewWindowsAreResizedAccordinglyToTheirLocations )
+				{
+					// INIT
+					shared_ptr<view_providing_nviews> v(new view_providing_nviews);
+					form_and_handle f(create_form_with_handle());
+					view_location l1 = { 10, 17, 100, 134 }, l2 = { 100, 1, 91, 200 }, l3 = { 10, 10, 100, 200 };
+					shared_ptr<child_window> children[] = {
+						shared_ptr<child_window>(new child_window), shared_ptr<child_window>(new child_window),
+					};
+
+					v->response.push_back(make_pair(children[0], l1));
+					v->response.push_back(make_pair(children[1], l2));
+					f.first->set_view(v);
+
+					// ACT
+					::MoveWindow(f.second, 0, 0, 100, 50, TRUE);
+
+					// ASSERT
+					assert_equal(rect(10, 17, 100, 134), get_window_rect(children[0]->get_window()));
+					assert_equal(rect(100, 1, 91, 200), get_window_rect(children[1]->get_window()));
+
+					// INIT
+					v->response[0].second = l3;
+					v->response.resize(1);
+
+					// ACT
+					::MoveWindow(f.second, 0, 0, 101, 51, TRUE);
+
+					// ASSERT
+					assert_equal(rect(10, 10, 100, 200), get_window_rect(children[0]->get_window()));
+					assert_equal(rect(100, 1, 91, 200), get_window_rect(children[1]->get_window()));
 				}
 			end_test_suite
 		}

@@ -21,7 +21,10 @@ namespace wpl
 			};
 
 			_children.push_back(c);
-			do_layout();
+
+			positioned_native_views nviews;
+
+			resize(_cx, _cy, nviews);
 		}
 
 		void container::set_layout(const shared_ptr<layout_manager> &layout)
@@ -33,15 +36,24 @@ namespace wpl
 		{
 			FOR_EACH(views_t::const_iterator, i, _children)
 			{
-				gcontext child_ctx = ctx.transform(i->left, i->top);
+				gcontext child_ctx = ctx.transform(i->location.left, i->location.top);
 				i->child->draw(child_ctx, rasterizer);
 			}
 		}
 
-		void container::resize(unsigned cx, unsigned cy)
+		void container::resize(unsigned cx, unsigned cy, positioned_native_views &nviews)
 		{
 			_cx = cx, _cy = cy;
-			do_layout();
+			if (!_children.empty())
+				_layout->layout(_cx, _cy, &_children[0], _children.size());
+			FOR_EACH(views_t::const_iterator, i, _children)
+			{
+				size_t j = nviews.size();
+
+				i->child->resize(i->location.width, i->location.height, nviews);
+				for (const size_t k = nviews.size(); j < k; ++j)
+					nviews[j].location.left += i->location.left, nviews[j].location.top += i->location.top;
+			}
 		}
 
 		void container::mouse_leave()
@@ -76,22 +88,14 @@ namespace wpl
 				v->mouse_double_click(button, depressed, x, y);
 		}
 
-		void container::do_layout()
-		{
-			if (!_children.empty())
-				_layout->layout(_cx, _cy, &_children[0], _children.size());
-			FOR_EACH(views_t::const_iterator, i, _children)
-				i->child->resize(i->width, i->height);
-		}
-
 		void container::on_invalidate(unsigned index, const agge::rect_i *area)
 		{
 			const positioned_view &v = _children[index];
-			agge::rect_i area2 = { 0, 0, v.width, v.height };
+			agge::rect_i area2 = { 0, 0, v.location.width, v.location.height };
 
 			if (area)
 				area2 = *area;
-			area2.x1 += v.left, area2.y1 += v.top, area2.x2 += v.left, area2.y2 += v.top;
+			area2.x1 += v.location.left, area2.y1 += v.location.top, area2.x2 += v.location.left, area2.y2 += v.location.top;
 			invalidate(&area2);
 		}
 
@@ -99,9 +103,9 @@ namespace wpl
 		{
 			FOR_EACH(views_t::const_iterator, i, _children)
 			{
-				int x2 = x - i->left, y2 = y - i->top;
+				int x2 = x - i->location.left, y2 = y - i->location.top;
 
-				if ((x2 < 0) | (y2 < 0) | (x2 >= i->width) | (y2 >= i->height))
+				if ((x2 < 0) | (y2 < 0) | (x2 >= i->location.width) | (y2 >= i->location.height))
 					continue;
 				x = x2, y = y2;
 				return i->child;

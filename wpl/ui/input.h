@@ -1,5 +1,7 @@
 #pragma once
 
+#include "../base/signals.h"
+
 namespace wpl
 {
 	struct keyboard_input

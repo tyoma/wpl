@@ -13,7 +13,7 @@ namespace wpl
 	namespace ui
 	{
 		static bool operator ==(const container::positioned_view &lhs, const container::positioned_view &rhs)
-		{	return lhs.left == rhs.left && lhs.top == rhs.top && lhs.width == rhs.width && lhs.height == rhs.height;	}
+		{	return lhs.location == rhs.location;	}
 
 		namespace tests
 		{
@@ -36,30 +36,30 @@ namespace wpl
 					s2.layout(1000, 551, p2, _countof(p2));
 
 					// ASSERT
-					assert_equal(0, p1[0].left);
-					assert_equal(0, p1[0].top);
-					assert_equal(13, p1[0].width);
-					assert_equal(15, p1[0].height);
+					assert_equal(0, p1[0].location.left);
+					assert_equal(0, p1[0].location.top);
+					assert_equal(13, p1[0].location.width);
+					assert_equal(15, p1[0].location.height);
 
-					assert_equal(0, p2[0].left);
-					assert_equal(0, p2[0].top);
-					assert_equal(171, p2[0].width);
-					assert_equal(551, p2[0].height);
+					assert_equal(0, p2[0].location.left);
+					assert_equal(0, p2[0].location.top);
+					assert_equal(171, p2[0].location.width);
+					assert_equal(551, p2[0].location.height);
 
 					// ACT
 					s1.layout(10, 19, p1, _countof(p1));
 					s2.layout(1000, 41, p2, _countof(p2));
 
 					// ASSERT
-					assert_equal(0, p1[0].left);
-					assert_equal(0, p1[0].top);
-					assert_equal(13, p1[0].width);
-					assert_equal(19, p1[0].height);
+					assert_equal(0, p1[0].location.left);
+					assert_equal(0, p1[0].location.top);
+					assert_equal(13, p1[0].location.width);
+					assert_equal(19, p1[0].location.height);
 
-					assert_equal(0, p2[0].left);
-					assert_equal(0, p2[0].top);
-					assert_equal(171, p2[0].width);
-					assert_equal(41, p2[0].height);
+					assert_equal(0, p2[0].location.left);
+					assert_equal(0, p2[0].location.top);
+					assert_equal(171, p2[0].location.width);
+					assert_equal(41, p2[0].location.height);
 				}
 
 

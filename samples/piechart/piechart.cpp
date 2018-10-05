@@ -69,7 +69,7 @@ namespace wpl
 			}
 		}
 
-		void piechart::resize(unsigned cx, unsigned cy)
+		void piechart::resize(unsigned cx, unsigned cy, positioned_native_views &)
 		{	_center_x = cx / 2, _center_y = cy / 2;	}
 
 		void piechart::mouse_move(int /*buttons*/, int x, int y)

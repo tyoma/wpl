@@ -22,12 +22,17 @@
 
 #include "types.h"
 
-#include "../listview.h"
-
 namespace wpl
 {
 	namespace ui
 	{
-		std::shared_ptr<listview> wrap_listview(HWND hwnd);
+		class native_view
+		{
+		public:
+			virtual HWND get_window() throw() = 0;
+
+		protected:
+			~native_view() throw() {	}
+		};
 	}
 }

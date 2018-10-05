@@ -20,8 +20,8 @@
 
 #pragma once
 
-#include "visual.h"
 #include "input.h"
+#include "visual.h"
 
 namespace wpl
 {

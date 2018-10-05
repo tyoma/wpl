@@ -20,14 +20,13 @@
 
 #pragma once
 
-#include "types.h"
-
-#include "../listview.h"
-
 namespace wpl
 {
 	namespace ui
 	{
-		std::shared_ptr<listview> wrap_listview(HWND hwnd);
+		struct view_location
+		{
+			int left, top, width, height;
+		};
 	}
 }

@@ -4,6 +4,7 @@
 #include <wpl/ui/container.h>
 #include <wpl/ui/form.h>
 #include <wpl/ui/layout.h>
+#include <wpl/ui/listview.h>
 
 using namespace std;
 using namespace wpl;
@@ -11,6 +12,7 @@ using namespace wpl::ui;
 
 void run_message_loop();
 void exit_message_loop();
+shared_ptr<listview> create_listview();
 
 int main()
 {
@@ -27,7 +29,7 @@ int main()
 
 	cc->set_layout(lm);
 	cc->add_view(charts[0]);
-	cc->add_view(charts[1]);
+	cc->add_view(create_listview());
 	cc->add_view(charts[2]);
 	f->set_view(cc);
 	f->set_visible(true);

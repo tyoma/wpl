@@ -36,8 +36,8 @@ namespace wpl
 		};
 
 
-		template <int container::positioned_view::*SharedPosition, int container::positioned_view::*SharedSize,
-			int container::positioned_view::*CommonPosition, int container::positioned_view::*CommonSize>
+		template <int view_location::*SharedPosition, int view_location::*SharedSize,
+			int view_location::*CommonPosition, int view_location::*CommonSize>
 		class stack : noncopyable
 		{
 		public:
@@ -56,8 +56,8 @@ namespace wpl
 		};
 
 
-		class hstack : public layout_manager, stack<&container::positioned_view::left, &container::positioned_view::width,
-			&container::positioned_view::top, &container::positioned_view::height>
+		class hstack : public layout_manager, stack<&view_location::left, &view_location::width,
+			&view_location::top, &view_location::height>
 		{
 		public:
 			template <typename InputIterator>
@@ -67,8 +67,8 @@ namespace wpl
 		};
 
 
-		class vstack : public layout_manager, stack<&container::positioned_view::top, &container::positioned_view::height,
-			&container::positioned_view::left, &container::positioned_view::width>
+		class vstack : public layout_manager, stack<&view_location::top, &view_location::height,
+			&view_location::left, &view_location::width>
 		{
 		public:
 			template <typename InputIterator>
@@ -79,8 +79,8 @@ namespace wpl
 
 
 
-		template <int container::positioned_view::*SharedPosition, int container::positioned_view::*SharedSize,
-			int container::positioned_view::*CommonPosition, int container::positioned_view::*CommonSize>
+		template <int view_location::*SharedPosition, int view_location::*SharedSize,
+			int view_location::*CommonPosition, int view_location::*CommonSize>
 		template <typename InputIterator>
 		inline stack<SharedPosition, SharedSize, CommonPosition, CommonSize>::stack(InputIterator begin, InputIterator end,
 				unsigned spacing)

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../base/signals.h"
+#include "types.h"
 
 #include <agge/bitmap.h>
 #include <agge/clipper.h>
@@ -12,6 +13,8 @@ namespace wpl
 {
 	namespace ui
 	{
+		class native_view;
+
 		class gcontext
 		{
 		public:
@@ -42,12 +45,27 @@ namespace wpl
 
 		struct visual
 		{
+			struct positioned_native_view;
+			typedef std::vector<positioned_native_view> positioned_native_views;
+
 			virtual ~visual() {	}
 
 			virtual void draw(gcontext &ctx, gcontext::rasterizer_ptr &rasterizer) const;
-			virtual void resize(unsigned cx, unsigned cy);
+			virtual void resize(unsigned cx, unsigned cy, positioned_native_views &native_views);
 
 			signal<void(const agge::rect_i *window)> invalidate;
+		};
+
+		struct visual::positioned_native_view
+		{
+			positioned_native_view(native_view &nview_, const view_location &location_) throw();
+
+			native_view &get_view() const throw();
+
+			view_location location;
+
+		private:
+			native_view *_nview;
 		};
 
 

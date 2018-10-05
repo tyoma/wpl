@@ -14,23 +14,13 @@ namespace wpl
 	namespace ui
 	{
 		inline bool operator ==(const container::positioned_view &lhs, const container::positioned_view &rhs)
-		{
-			return lhs.left == rhs.left && lhs.top == rhs.top && lhs.width == rhs.width && lhs.height == rhs.height
-				&& lhs.child == rhs.child;
-		}
+		{	return lhs.location == rhs.location && lhs.child == rhs.child;	}
 
 		namespace tests
 		{
-			namespace
-			{
-				mocks::logging_layout_manager::position make_position(int x, int y, int width, int height)
-				{
-					mocks::logging_layout_manager::position p = { x, y, width, height };
-					return p;
-				}
-			}
-
 			begin_test_suite( ContainerTests )
+				vector<visual::positioned_native_view> nviews;
+
 				test( NoLayoutIsMadeOnResizingEmptyContainer )
 				{
 					// INIT
@@ -40,7 +30,7 @@ namespace wpl
 					c.set_layout(lm);
 
 					// ACT
-					c.resize(100, 117);
+					c.resize(100, 117, nviews);
 
 					// ASSERT
 					assert_is_empty(lm->reposition_log);
@@ -56,7 +46,7 @@ namespace wpl
 					shared_ptr< mocks::logging_visual<view> > v2(new mocks::logging_visual<view>());
 
 					c.set_layout(lm);
-					c.resize(200, 317);
+					c.resize(200, 317, nviews);
 
 					// ACT
 					c.add_view(v1);
@@ -69,7 +59,7 @@ namespace wpl
 					assert_equal(reference1, lm->last_widgets);
 
 					// INIT
-					c.resize(150, 114);
+					c.resize(150, 114, nviews);
 					lm->reposition_log.clear();
 
 					// ACT
@@ -98,14 +88,14 @@ namespace wpl
 					lm->reposition_log.clear();
 
 					// ACT
-					c.resize(100, 117);
+					c.resize(100, 117, nviews);
 
 					// ASSERT
 					assert_equal(1u, lm->reposition_log.size());
 					assert_equal(make_pair(100u, 117u), lm->reposition_log[0]);
 
 					// ACT
-					c.resize(53, 91);
+					c.resize(53, 91, nviews);
 
 					// ASSERT
 					assert_equal(2u, lm->reposition_log.size());
@@ -160,7 +150,7 @@ namespace wpl
 					v2->resize_log.clear();
 
 					// ACT
-					c.resize(1000, 1000);
+					c.resize(1000, 1000, nviews);
 
 					// ASSERT
 					assert_equal(1u, v1->resize_log.size());
@@ -173,7 +163,7 @@ namespace wpl
 					lm->positions[1] = make_position(90, 40, 11, 12);
 
 					// ACT
-					c.resize(1001, 1002);
+					c.resize(1001, 1002, nviews);
 
 					// ASSERT
 					assert_equal(2u, v1->resize_log.size());
@@ -547,6 +537,54 @@ namespace wpl
 
 					assert_is_empty(v1->events_log);
 					assert_equal(reference2, v2->events_log);
+				}
+
+
+				test( NativeViewPlacementsAreShiftedAccordinglyToViewLocation )
+				{
+					// INIT
+					shared_ptr<mocks::logging_layout_manager> lm[] = {
+						shared_ptr<mocks::logging_layout_manager>(new mocks::logging_layout_manager),
+						shared_ptr<mocks::logging_layout_manager>(new mocks::logging_layout_manager),
+					};
+					shared_ptr<container> c[] = {
+						shared_ptr<container>(new container), shared_ptr<container>(new container),
+					};
+					shared_ptr<mocks::visual_with_native_view> v[] = {
+						shared_ptr<mocks::visual_with_native_view>(new mocks::visual_with_native_view()),
+						shared_ptr<mocks::visual_with_native_view>(new mocks::visual_with_native_view()),
+						shared_ptr<mocks::visual_with_native_view>(new mocks::visual_with_native_view()),
+					};
+
+					lm[0]->positions.push_back(make_position(13, 17, 31, 23));
+					lm[0]->positions.push_back(make_position(91, 45, 100, 100));
+					lm[1]->positions.push_back(make_position(130, 171, 31, 23));
+					lm[1]->positions.push_back(make_position(910, 145, 100, 100));
+
+					c[0]->set_layout(lm[0]);
+					c[1]->set_layout(lm[1]);
+
+					c[1]->add_view(v[0]);
+					c[1]->add_view(v[1]);
+					c[0]->add_view(v[2]);
+					c[0]->add_view(c[1]);
+
+					// ACT
+					c[1]->resize(10, 100, nviews);
+
+					// ASSERT
+					assert_equal(2u, nviews.size());
+					assert_equal(make_position(130, 171, 31, 23), nviews[0].location);
+					assert_equal(make_position(910, 145, 100, 100), nviews[1].location);
+
+					// ACT
+					c[0]->resize(10, 100, nviews);
+
+					// ASSERT
+					assert_equal(5u, nviews.size());
+					assert_equal(make_position(13, 17, 31, 23), nviews[2].location);
+					assert_equal(make_position(130 + 91, 171 + 45, 31, 23), nviews[3].location);
+					assert_equal(make_position(910 + 91, 145 + 45, 100, 100), nviews[4].location);
 				}
 			end_test_suite
 		}

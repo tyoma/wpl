@@ -33,7 +33,7 @@ namespace wpl
 
 		private:
 			virtual void draw(gcontext &ctx, gcontext::rasterizer_ptr &rasterizer) const;
-			virtual void resize(unsigned cx, unsigned cy);
+			virtual void resize(unsigned cx, unsigned cy, positioned_native_views &);
 
 			virtual void mouse_move(int depressed, int x, int y);
 			virtual void mouse_leave();

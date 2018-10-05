@@ -26,8 +26,8 @@ namespace wpl
 {
 	namespace ui
 	{
-		template <int container::positioned_view::*SharedPosition, int container::positioned_view::*SharedSize,
-			int container::positioned_view::*CommonPosition, int container::positioned_view::*CommonSize>
+		template <int view_location::*SharedPosition, int view_location::*SharedSize,
+			int view_location::*CommonPosition, int view_location::*CommonSize>
 		inline void stack<SharedPosition, SharedSize, CommonPosition, CommonSize>::layout(unsigned shared_size,
 			unsigned common_size, container::positioned_view *widgets, size_t count) const
 		{
@@ -48,10 +48,10 @@ namespace wpl
 			{
 				int size = *i > 0 ? *i : *i * remainder / relative_base;
 
-				w->*SharedPosition = location;
-				w->*CommonPosition = 0;
-				w->*SharedSize = size;
-				w->*CommonSize = common_size;
+				w->location.*SharedPosition = location;
+				w->location.*CommonPosition = 0;
+				w->location.*SharedSize = size;
+				w->location.*CommonSize = common_size;
 
 				location += size + _spacing;
 			}

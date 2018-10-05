@@ -19,6 +19,8 @@
 //	THE SOFTWARE.
 
 #include <wpl/ui/win32/controls.h>
+
+#include <wpl/ui/win32/native_view.h>
 #include <wpl/ui/win32/window.h>
 
 #include <commctrl.h>
@@ -35,7 +37,7 @@ namespace wpl
 	{
 		namespace
 		{
-			class listview_impl : public listview
+			class listview_impl : public listview, private native_view
 			{
 				enum sort_direction	{	dir_none, dir_ascending, dir_descending	};
 				typedef pair< index_type /*last_index*/, shared_ptr<const trackable> > tracked_item;
@@ -62,6 +64,12 @@ namespace wpl
 				virtual void clear_selection();
 
 				virtual void ensure_visible(index_type item);
+
+				// visual interface
+				virtual void resize(unsigned cx, unsigned cy, positioned_native_views &native_views);
+
+				// native_view interface
+				virtual HWND get_window() throw();
 
 				LRESULT wndproc(UINT message, WPARAM wparam, LPARAM lparam, const window::original_handler_t &previous);
 
@@ -155,6 +163,15 @@ namespace wpl
 				_visible_item = make_pair(item, _model->track(item));
 				ListView_EnsureVisible(_listview->hwnd(), item, FALSE);
 			}
+
+			void listview_impl::resize(unsigned cx, unsigned cy, positioned_native_views &native_views)
+			{
+				view_location l = { 0, 0, cx, cy };
+				native_views.push_back(positioned_native_view(*this, l));
+			}
+
+			HWND listview_impl::get_window() throw()
+			{	return _listview->hwnd();	}
 
 			LRESULT listview_impl::wndproc(UINT message, WPARAM wparam, LPARAM lparam, const window::original_handler_t &previous)
 			{

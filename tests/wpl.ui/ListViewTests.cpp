@@ -1,6 +1,7 @@
 #include <wpl/ui/listview.h>
 
 #include <wpl/ui/win32/controls.h>
+#include <wpl/ui/win32/native_view.h>
 
 #include "TestHelpers.h"
 
@@ -2163,6 +2164,31 @@ namespace wpl
 
 					// ASSERT
 					assert_equal(0, first_visible);
+				}
+
+
+				test( ListViewProvidesNativeViewOnResize )
+				{
+					// INIT
+					HWND hlv = create_listview();
+					shared_ptr<listview> lv(wrap_listview(hlv));
+					visual::positioned_native_views nviews;
+
+					// ACT
+					lv->resize(10, 11, nviews);
+
+					// ASSERT
+					assert_equal(1u, nviews.size());
+					assert_equal(hlv, nviews[0].get_view().get_window());
+					assert_equal(make_position(0, 0, 10, 11), nviews[0].location);
+
+					// ACT
+					lv->resize(107, 1100, nviews);
+
+					// ASSERT
+					assert_equal(2u, nviews.size());
+					assert_equal(hlv, nviews[1].get_view().get_window());
+					assert_equal(make_position(0, 0, 107, 1100), nviews[1].location);
 				}
 			end_test_suite
 		}
