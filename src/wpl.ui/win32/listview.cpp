@@ -18,8 +18,9 @@
 //	OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //	THE SOFTWARE.
 
-#include <wpl/ui/win32/controls.h>
+#include <wpl/ui/listview.h>
 
+#include <wpl/ui/win32/controls.h>
 #include <wpl/ui/win32/native_view.h>
 #include <wpl/ui/win32/window.h>
 
@@ -166,7 +167,7 @@ namespace wpl
 
 			void listview_impl::resize(unsigned cx, unsigned cy, positioned_native_views &native_views)
 			{
-				view_location l = { 0, 0, cx, cy };
+				view_location l = { 0, 0, static_cast<int>(cx), static_cast<int>(cy) };
 				native_views.push_back(positioned_native_view(*this, l));
 			}
 

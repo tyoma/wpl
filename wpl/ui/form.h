@@ -20,20 +20,18 @@
 
 #pragma once
 
-#include "view.h"
+#include "view_host.h"
 
-#include <memory>
+#include "../base/signals.h"
+
 #include <string>
 
 namespace wpl
 {
 	namespace ui
 	{
-		struct form
+		struct form : view_host
 		{
-			virtual ~form() {	}
-
-			virtual void set_view(const std::shared_ptr<view> &v) = 0;
 			virtual void set_visible(bool value) = 0;
 			virtual void set_caption(const std::wstring &caption) = 0;
 

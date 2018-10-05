@@ -20,18 +20,18 @@
 
 #pragma once
 
-#include "types.h"
-
 #include <memory>
 
 namespace wpl
 {
 	namespace ui
 	{
-		struct listview;
-		struct view_host;
+		struct view;
 
-		std::shared_ptr<listview> wrap_listview(HWND hwnd);
-		std::shared_ptr<view_host> wrap_view_host(HWND hwnd);
+		struct view_host
+		{
+			virtual ~view_host() {	}
+			virtual void set_view(const std::shared_ptr<view> &v) = 0;
+		};
 	}
 }

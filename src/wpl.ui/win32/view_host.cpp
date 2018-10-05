@@ -18,17 +18,14 @@
 //	OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //	THE SOFTWARE.
 
-#include <wpl/ui/form.h>
+#include "view_host.h"
 
-#include <wpl/base/concepts.h>
+#include <wpl/ui/win32/controls.h>
 #include <wpl/ui/win32/native_view.h>
-#include <wpl/ui/win32/window.h>
 
 #include <algorithm>
 #include <iterator>
-#include <tchar.h>
 #include <olectl.h>
-#include <windows.h>
 #include <windowsx.h>
 
 using namespace agge;
@@ -39,8 +36,14 @@ namespace wpl
 {
 	namespace ui
 	{
-		namespace
+		namespace win32
 		{
+			namespace
+			{
+				LRESULT passthrough(UINT message, WPARAM wparam, LPARAM lparam, const window::original_handler_t &previous)
+				{	return previous(message, wparam, lparam);	}
+			}
+
 			class paint_sequence : noncopyable, public PAINTSTRUCT
 			{
 			public:
@@ -67,48 +70,19 @@ namespace wpl
 				{	::ReleaseCapture();	}
 			};
 
-			class form_impl : public form
+
+
+			view_host::view_host(HWND hwnd, const window::user_handler_t &user_handler)
+				: _user_handler(user_handler), _surface(1, 1, 0), _rasterizer(new gcontext::rasterizer_type), _renderer(1),
+					_mouse_in(false)
 			{
-			public:
-				form_impl();
-				~form_impl();
-
-			private:
-				virtual void set_view(const shared_ptr<view> &v);
-				virtual void set_visible(bool value);
-				virtual void set_caption(const std::wstring &caption);
-
-				LRESULT wndproc(UINT message, WPARAM wparam, LPARAM lparam, const window::original_handler_t &previous);
-
-				void dispatch_mouse(UINT message, WPARAM wparam, LPARAM lparam);
-
-				void reposition_native_views() throw();
-
-			private:
-				shared_ptr<window> _window;
-				shared_ptr<view> _view;
-				gcontext::surface_type _surface;
-				gcontext::rasterizer_ptr _rasterizer;
-				gcontext::renderer_type _renderer;
-				slot_connection _invalidate_connection, _capture_connection;
-				bool _mouse_in : 1;
-				vector<visual::positioned_native_view> _positioned_views;
-			};
-
-
-
-			form_impl::form_impl()
-				: _surface(1, 1, 0), _rasterizer(new gcontext::rasterizer_type), _renderer(1), _mouse_in(false)
-			{
-				HWND hwnd = ::CreateWindow(_T("#32770"), 0, WS_OVERLAPPEDWINDOW | WS_CLIPCHILDREN, 0, 0, 100, 20, 0, 0, 0, 0);
-
-				_window = window::attach(hwnd, bind(&form_impl::wndproc, this, _1, _2, _3, _4));
+				_window = window::attach(hwnd, bind(&view_host::wndproc, this, _1, _2, _3, _4));
 			}
 
-			form_impl::~form_impl()
-			{	::DestroyWindow(_window->hwnd());	}
+			view_host::~view_host()
+			{	}
 
-			void form_impl::set_view(const shared_ptr<view> &v)
+			void view_host::set_view(const shared_ptr<view> &v)
 			{
 				_view = v;
 				_invalidate_connection = v->invalidate += [this] (const agge::rect_i *rc) {
@@ -126,20 +100,10 @@ namespace wpl
 				};
 			}
 
-			void form_impl::set_visible(bool value)
-			{	::ShowWindow(_window->hwnd(), value ? SW_SHOW : SW_HIDE);	}
-
-			void form_impl::set_caption(const std::wstring &caption)
-			{	::SetWindowTextW(_window->hwnd(), caption.c_str());	}
-
-			LRESULT form_impl::wndproc(UINT message, WPARAM wparam, LPARAM lparam, const window::original_handler_t &previous)
+			LRESULT view_host::wndproc(UINT message, WPARAM wparam, LPARAM lparam, const window::original_handler_t &previous)
 			{
 				switch (message)
 				{
-				case WM_CLOSE:
-					close();
-					return 0;
-
 				case WM_COMMAND:
 					::SendMessage(reinterpret_cast<HWND>(lparam), OCM_COMMAND, wparam, lparam);
 					return 0;
@@ -182,10 +146,10 @@ namespace wpl
 						return 0;
 					}
 				}
-				return previous(message, wparam, lparam);
+				return _user_handler(message, wparam, lparam, previous);
 			}
 
-			void form_impl::dispatch_mouse(UINT message, WPARAM /*wparam*/, LPARAM lparam)
+			void view_host::dispatch_mouse(UINT message, WPARAM /*wparam*/, LPARAM lparam)
 			{
 				const int x = GET_X_LPARAM(lparam), y = GET_Y_LPARAM(lparam);
 
@@ -226,7 +190,7 @@ namespace wpl
 				}
 			}
 
-			void form_impl::reposition_native_views() throw()
+			void view_host::reposition_native_views() throw()
 			{
 				HDWP hdwp = ::BeginDeferWindowPos(static_cast<int>(_positioned_views.size()));
 
@@ -248,9 +212,7 @@ namespace wpl
 			}
 		}
 
-		shared_ptr<form> form::create()
-		{
-			return shared_ptr<form>(new form_impl());
-		}
+		shared_ptr<view_host> wrap_view_host(HWND hwnd)
+		{	return shared_ptr<view_host>(new win32::view_host(hwnd, &win32::passthrough));	}
 	}
 }

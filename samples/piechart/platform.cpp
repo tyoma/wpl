@@ -1,6 +1,7 @@
 #include <windows.h>
 
 #include <tchar.h>
+#include <wpl/ui/listview.h>
 #include <wpl/ui/win32/controls.h>
 #include <CommCtrl.h>
 

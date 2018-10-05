@@ -8,17 +8,11 @@
     <Filter Include="win32">
       <UniqueIdentifier>{2ac5d412-9518-4444-8596-230f865e27a3}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\win32">
+      <UniqueIdentifier>{c6e0779a-2551-4241-bdca-37edcbd1bc28}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="window.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="listview.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="form.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="layout.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -27,6 +21,18 @@
     </ClCompile>
     <ClCompile Include="container.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="win32\form.cpp">
+      <Filter>Source Files\win32</Filter>
+    </ClCompile>
+    <ClCompile Include="win32\listview.cpp">
+      <Filter>Source Files\win32</Filter>
+    </ClCompile>
+    <ClCompile Include="win32\view_host.cpp">
+      <Filter>Source Files\win32</Filter>
+    </ClCompile>
+    <ClCompile Include="win32\window.cpp">
+      <Filter>Source Files\win32</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -49,6 +55,10 @@
     </ClInclude>
     <ClInclude Include="..\..\wpl\ui\win32\types.h">
       <Filter>win32</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\wpl\ui\view_host.h" />
+    <ClInclude Include="win32\view_host.h">
+      <Filter>Source Files\win32</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

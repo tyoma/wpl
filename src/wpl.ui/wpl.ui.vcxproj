@@ -44,15 +44,18 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="container.cpp" />
-    <ClCompile Include="form.cpp">
+    <ClCompile Include="win32\form.cpp">
       <DisableLanguageExtensions>false</DisableLanguageExtensions>
     </ClCompile>
     <ClCompile Include="layout.cpp" />
-    <ClCompile Include="listview.cpp">
+    <ClCompile Include="win32\listview.cpp">
+      <DisableLanguageExtensions>false</DisableLanguageExtensions>
+    </ClCompile>
+    <ClCompile Include="win32\view_host.cpp">
       <DisableLanguageExtensions>false</DisableLanguageExtensions>
     </ClCompile>
     <ClCompile Include="visual.cpp" />
-    <ClCompile Include="window.cpp">
+    <ClCompile Include="win32\window.cpp">
       <DisableLanguageExtensions>false</DisableLanguageExtensions>
     </ClCompile>
   </ItemGroup>
@@ -69,11 +72,13 @@
     <ClInclude Include="..\..\wpl\ui\listview.h" />
     <ClInclude Include="..\..\wpl\ui\types.h" />
     <ClInclude Include="..\..\wpl\ui\view.h" />
+    <ClInclude Include="..\..\wpl\ui\view_host.h" />
     <ClInclude Include="..\..\wpl\ui\visual.h" />
     <ClInclude Include="..\..\wpl\ui\win32\controls.h" />
     <ClInclude Include="..\..\wpl\ui\win32\native_view.h" />
     <ClInclude Include="..\..\wpl\ui\win32\types.h" />
     <ClInclude Include="..\..\wpl\ui\win32\window.h" />
+    <ClInclude Include="win32\view_host.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
 </Project>
