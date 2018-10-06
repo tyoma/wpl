@@ -26,15 +26,23 @@ namespace wpl
 {
 	namespace ui
 	{
-		template <int view_location::*SharedPosition, int view_location::*SharedSize,
-			int view_location::*CommonPosition, int view_location::*CommonSize>
-		inline void stack<SharedPosition, SharedSize, CommonPosition, CommonSize>::layout(unsigned shared_size,
-			unsigned common_size, container::positioned_view *widgets, size_t count) const
+		stack::stack(int spacing, bool horizontal)
+			: _spacing(spacing), _horizontal(horizontal)
+		{	}
+
+		void stack::add(int size)
+		{	_sizes.push_back(size);	}
+
+		inline void stack::layout(unsigned common_size, unsigned shared_size, container::positioned_view *widgets,
+			size_t count) const
 		{
 			vector<int>::const_iterator i;
 			int remainder, relative_base, location;
 			container::positioned_view *w;
 			size_t c;
+
+			if (_horizontal)
+				swap(common_size, shared_size);
 
 			for (i = _sizes.begin(), remainder = shared_size, relative_base = 0; count && i != _sizes.end(); ++i)
 			{
@@ -48,21 +56,12 @@ namespace wpl
 			{
 				int size = *i > 0 ? *i : *i * remainder / relative_base;
 
-				w->location.*SharedPosition = location;
-				w->location.*CommonPosition = 0;
-				w->location.*SharedSize = size;
-				w->location.*CommonSize = common_size;
-
+				w->location.left = _horizontal ? location : 0;
+				w->location.top = _horizontal ? 0 : location;
+				w->location.width = _horizontal ? size : common_size;
+				w->location.height = _horizontal ? common_size : size;
 				location += size + _spacing;
 			}
 		}
-
-
-		void hstack::layout(unsigned width, unsigned height, container::positioned_view *widgets, size_t count) const
-		{	base::layout(width, height, widgets, count);	}
-
-
-		void vstack::layout(unsigned width, unsigned height, container::positioned_view *widgets, size_t count) const
-		{	base::layout(height, width, widgets, count);	}
 	}
 }

@@ -12,6 +12,29 @@ namespace wpl
 {
 	namespace ui
 	{
+		namespace
+		{
+			template <typename IteratorT>
+			stack hstack(IteratorT b, IteratorT e, int spacing)
+			{
+				stack s(spacing, true);
+
+				for (; b != e; ++b)
+					s.add(*b);
+				return s;
+			}
+
+			template <typename IteratorT>
+			stack vstack(IteratorT b, IteratorT e, int spacing)
+			{
+				stack s(spacing, false);
+
+				for (; b != e; ++b)
+					s.add(*b);
+				return s;
+			}
+		}
+
 		static bool operator ==(const container::positioned_view &lhs, const container::positioned_view &rhs)
 		{	return lhs.location == rhs.location;	}
 
@@ -28,8 +51,8 @@ namespace wpl
 					container::positioned_view p2[_countof(sizes2)];
 
 					// INIT / ACT
-					hstack s1(begin(sizes1), end(sizes1), 0);
-					hstack s2(begin(sizes2), end(sizes2), 0);
+					stack s1 = hstack(begin(sizes1), end(sizes1), 0);
+					stack s2 = hstack(begin(sizes2), end(sizes2), 0);
 
 					// ACT
 					s1.layout(10, 15, p1, _countof(p1));
@@ -70,7 +93,7 @@ namespace wpl
 					container::positioned_view p[_countof(sizes)];
 
 					// INIT / ACT
-					hstack s(begin(sizes), end(sizes), 0);
+					stack s = hstack(begin(sizes), end(sizes), 0);
 
 					// ACT
 					s.layout(10, 15, p, _countof(p));
@@ -109,7 +132,7 @@ namespace wpl
 					container::positioned_view p[_countof(sizes)];
 
 					// INIT / ACT
-					vstack s(begin(sizes), end(sizes), 0);
+					stack s = vstack(begin(sizes), end(sizes), 0);
 
 					// ACT
 					s.layout(11, 15, p, _countof(p));
@@ -148,7 +171,7 @@ namespace wpl
 					container::positioned_view p[_countof(sizes)];
 
 					// INIT / ACT
-					vstack s(begin(sizes), end(sizes), 5);
+					stack s = vstack(begin(sizes), end(sizes), 5);
 
 					// ACT
 					s.layout(11, 15, p, _countof(p));
@@ -175,8 +198,8 @@ namespace wpl
 					int sizes2[] = { -5750 /* 5750 / 5750 */ };
 					container::positioned_view p1[_countof(sizes1)];
 					container::positioned_view p2[_countof(sizes2)];
-					hstack s1(begin(sizes1), end(sizes1), 0);
-					hstack s2(begin(sizes2), end(sizes2), 0);
+					stack s1 = hstack(begin(sizes1), end(sizes1), 0);
+					stack s2 = hstack(begin(sizes2), end(sizes2), 0);
 
 					// ACT
 					s1.layout(11, 15, p1, _countof(p1));
@@ -200,8 +223,8 @@ namespace wpl
 					int sizes2[] = { -5750 /* 5750 / 11500 */, -5750 /* 5750 / 11500 */, };
 					container::positioned_view p1[_countof(sizes1)];
 					container::positioned_view p2[_countof(sizes2)];
-					vstack s1(begin(sizes1), end(sizes1), 0);
-					vstack s2(begin(sizes2), end(sizes2), 0);
+					stack s1 = vstack(begin(sizes1), end(sizes1), 0);
+					stack s2 = vstack(begin(sizes2), end(sizes2), 0);
 
 					// ACT
 					s1.layout(19, 1315, p1, _countof(p1));
@@ -234,8 +257,8 @@ namespace wpl
 					int sizes2[] = { -5750 /* 5750 / 5750 */, 107, };
 					container::positioned_view p1[_countof(sizes1)];
 					container::positioned_view p2[_countof(sizes2)];
-					vstack s1(begin(sizes1), end(sizes1), 3);
-					vstack s2(begin(sizes2), end(sizes2), 7);
+					stack s1 = vstack(begin(sizes1), end(sizes1), 3);
+					stack s2 = vstack(begin(sizes2), end(sizes2), 7);
 
 					// ACT
 					s1.layout(19, 1315, p1, _countof(p1));
