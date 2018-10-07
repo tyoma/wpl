@@ -214,6 +214,7 @@ namespace wpl
 					{
 						::SetWindowLong(h, GWL_STYLE, (::GetWindowLong(h, GWL_STYLE) | WS_CHILD) & ~(WS_POPUP | WS_OVERLAPPED));
 						::SetParent(h, _window->hwnd());
+						::SendMessage(h, WM_SETFONT, ::SendMessage(_window->hwnd(), WM_GETFONT, 0, 0), 0);
 					}
 					hdwp = ::DeferWindowPos(hdwp, h, NULL, i->location.left, i->location.top,
 						i->location.width, i->location.height, SWP_NOZORDER);
