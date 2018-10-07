@@ -9,10 +9,10 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\signals.h">
+    <ClInclude Include="..\..\wpl\base\concepts.h">
       <Filter>Library Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\concepts.h">
+    <ClInclude Include="..\..\wpl\base\signals.h">
       <Filter>Library Header Files</Filter>
     </ClInclude>
   </ItemGroup>

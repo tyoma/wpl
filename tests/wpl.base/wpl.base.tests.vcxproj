@@ -27,7 +27,7 @@
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="PropertySheets">
-    <Import Project="$(SolutionDir)build.props\wpl.tests.props" Condition="exists('$(SolutionDir)build.props\wpl.tests.props')" />
+    <Import Project="$(SolutionDir)build.props\config.tests.props" Condition="exists('$(SolutionDir)build.props\config.tests.props')" />
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <ItemDefinitionGroup>
@@ -42,8 +42,8 @@
     <ClCompile Include="SignalTests.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\concepts.h" />
-    <ClInclude Include="..\signals.h" />
+    <ClInclude Include="..\..\wpl\base\concepts.h" />
+    <ClInclude Include="..\..\wpl\base\signals.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
 </Project>
