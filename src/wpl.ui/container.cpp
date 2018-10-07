@@ -17,14 +17,12 @@ namespace wpl
 			positioned_view c = {
 				0, 0, 0, 0,
 				child,
-				child->invalidate += bind(&container::on_invalidate, this, static_cast<unsigned>(_children.size()), _1)
+				child->invalidate += bind(&container::on_invalidate, this, static_cast<unsigned>(_children.size()), _1),
+				child->force_layout += bind(&container::on_force_layout, this)
 			};
 
 			_children.push_back(c);
-
-			positioned_native_views nviews;
-
-			resize(_cx, _cy, nviews);
+			force_layout();
 		}
 
 		void container::set_layout(const shared_ptr<layout_manager> &layout)
@@ -43,9 +41,8 @@ namespace wpl
 
 		void container::resize(unsigned cx, unsigned cy, positioned_native_views &nviews)
 		{
-			_cx = cx, _cy = cy;
 			if (!_children.empty())
-				_layout->layout(_cx, _cy, &_children[0], _children.size());
+				_layout->layout(cx, cy, &_children[0], _children.size());
 			FOR_EACH(views_t::const_iterator, i, _children)
 			{
 				size_t j = nviews.size();
@@ -98,6 +95,9 @@ namespace wpl
 			area2.x1 += v.location.left, area2.y1 += v.location.top, area2.x2 += v.location.left, area2.y2 += v.location.top;
 			invalidate(&area2);
 		}
+
+		void container::on_force_layout()
+		{	force_layout();	}
 
 		shared_ptr<view> container::child_from_point(int &x, int &y) const
 		{

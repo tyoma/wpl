@@ -16,6 +16,9 @@ namespace wpl
 		inline bool operator ==(const container::positioned_view &lhs, const container::positioned_view &rhs)
 		{	return lhs.location == rhs.location && lhs.child == rhs.child;	}
 
+		inline void increment(int *v)
+		{	++*v;	}
+
 		namespace tests
 		{
 			begin_test_suite( ContainerTests )
@@ -37,40 +40,55 @@ namespace wpl
 				}
 
 
-				test( LayoutIsRecalculatedOnAddingAChild )
+				test( AddingAViewForcesLayoutRecalculate )
 				{
 					// INIT
 					container c;
-					shared_ptr<mocks::logging_layout_manager> lm(new mocks::logging_layout_manager);
-					shared_ptr< mocks::logging_visual<view> > v1(new mocks::logging_visual<view>());
-					shared_ptr< mocks::logging_visual<view> > v2(new mocks::logging_visual<view>());
-
-					c.set_layout(lm);
-					c.resize(200, 317, nviews);
+					shared_ptr<view> v1(new view);
+					shared_ptr<view> v2(new view);
+					shared_ptr<layout_manager> lm(new mocks::logging_layout_manager);
+					int layout_forced = 0;
+					slot_connection conn = c.force_layout += bind(&increment, &layout_forced);
 
 					// ACT
 					c.add_view(v1);
 
 					// ASSERT
-					container::positioned_view reference1[] = { { 0, 0, 0, 0, v1 }, };
-
-					assert_equal(1u, lm->reposition_log.size());
-					assert_equal(make_pair(200u, 317u), lm->reposition_log[0]);
-					assert_equal(reference1, lm->last_widgets);
-
-					// INIT
-					c.resize(150, 114, nviews);
-					lm->reposition_log.clear();
+					assert_equal(1, layout_forced);
 
 					// ACT
 					c.add_view(v2);
 
 					// ASSERT
-					container::positioned_view reference2[] = { { 0, 0, 0, 0, v1 }, { 0, 0, 0, 0, v2 }, };
+					assert_equal(2, layout_forced);
+				}
 
-					assert_equal(1u, lm->reposition_log.size());
-					assert_equal(make_pair(150u, 114u), lm->reposition_log[0]);
-					assert_equal(reference2, lm->last_widgets);
+
+				test( ForceLyaoutIsPropagatedUpstream )
+				{
+					// INIT
+					container c;
+					shared_ptr<view> v1(new view);
+					shared_ptr<view> v2(new view);
+					shared_ptr<layout_manager> lm(new mocks::logging_layout_manager);
+					int layout_forced = 0;
+
+					c.add_view(v1);
+					c.add_view(v2);
+
+					slot_connection conn = c.force_layout += bind(&increment, &layout_forced);
+
+					// ACT
+					v1->force_layout();
+
+					// ASSERT
+					assert_equal(1, layout_forced);
+
+					// ACT
+					v2->force_layout();
+
+					// ASSERT
+					assert_equal(2, layout_forced);
 				}
 
 
@@ -100,36 +118,6 @@ namespace wpl
 					// ASSERT
 					assert_equal(2u, lm->reposition_log.size());
 					assert_equal(make_pair(53u, 91u), lm->reposition_log[1]);
-				}
-
-
-				test( ChildrenAreResizedOnAdd )
-				{
-					// INIT
-					container c;
-					shared_ptr<mocks::logging_layout_manager> lm(new mocks::logging_layout_manager);
-					shared_ptr< mocks::logging_visual<view> > v1(new mocks::logging_visual<view>());
-					shared_ptr< mocks::logging_visual<view> > v2(new mocks::logging_visual<view>());
-
-					lm->positions.push_back(make_position(13, 17, 100, 200));
-					lm->positions.push_back(make_position(90, 40, 110, 112));
-					c.set_layout(lm);
-
-					// ACT
-					c.add_view(v1);
-
-					// ASSERT
-					assert_equal(1u, v1->resize_log.size());
-					assert_equal(make_pair(100, 200), v1->resize_log[0]);
-
-					// ACT
-					c.add_view(v2);
-
-					// ASSERT
-					assert_equal(2u, v1->resize_log.size());
-					assert_equal(make_pair(100, 200), v1->resize_log[1]);
-					assert_equal(1u, v2->resize_log.size());
-					assert_equal(make_pair(110, 112), v2->resize_log[0]);
 				}
 
 
@@ -195,6 +183,8 @@ namespace wpl
 					c1.add_view(v1);
 					c2.set_layout(lm2);
 					c2.add_view(v2);
+					c1.resize(1000, 1000, nviews);
+					c2.resize(1000, 1000, nviews);
 
 					// ACT
 					c1.draw(ctx, ras);
@@ -232,6 +222,7 @@ namespace wpl
 					c.set_layout(lm);
 					c.add_view(v1);
 					c.add_view(v2);
+					c.resize(1000, 1000, nviews);
 
 					// ACT
 					c.draw(ctx, ras);
@@ -266,6 +257,7 @@ namespace wpl
 					c.set_layout(lm);
 					c.add_view(v1);
 					c.add_view(v2);
+					c.resize(1000, 1000, nviews);
 
 					// ACT
 					v1->invalidate(0);
@@ -298,6 +290,7 @@ namespace wpl
 					c.set_layout(lm);
 					c.add_view(v1);
 					c.add_view(v2);
+					c.resize(1000, 1000, nviews);
 
 					// ACT
 					v1->invalidate(&a1);
@@ -335,6 +328,7 @@ namespace wpl
 					c.set_layout(lm);
 					c.add_view(v1);
 					c.add_view(v2);
+					c.resize(1000, 1000, nviews);
 
 					// ACT
 					c.mouse_move(mouse_input::left, 14, 19);
@@ -451,6 +445,7 @@ namespace wpl
 					lm->positions.push_back(make_position(13, 17, 31, 23));
 					c.set_layout(lm);
 					c.add_view(v);
+					c.resize(1000, 1000, nviews);
 
 					// ACT
 					c.mouse_move(0, 13, 17);
@@ -513,6 +508,7 @@ namespace wpl
 					c.set_layout(lm);
 					c.add_view(v1);
 					c.add_view(v2);
+					c.resize(1000, 1000, nviews);
 
 					c.mouse_move(0, 14, 19);
 
@@ -586,6 +582,7 @@ namespace wpl
 					assert_equal(make_position(130 + 91, 171 + 45, 31, 23), nviews[3].location);
 					assert_equal(make_position(910 + 91, 145 + 45, 100, 100), nviews[4].location);
 				}
+
 			end_test_suite
 		}
 	}

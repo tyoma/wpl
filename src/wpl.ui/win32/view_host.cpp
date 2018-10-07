@@ -85,19 +85,29 @@ namespace wpl
 			void view_host::set_view(const shared_ptr<view> &v)
 			{
 				_view = v;
-				_invalidate_connection = v->invalidate += [this] (const agge::rect_i *rc) {
+				_connections.clear();
+				if (!v)
+					return;
+				_connections.push_back(v->invalidate += [this] (const agge::rect_i *rc) {
 					RECT rc2;
 
 					if (rc)
 						rc2.left = rc->x1, rc2.top = rc->y1, rc2.right = rc->x2, rc2.bottom = rc->y2;
 					::InvalidateRect(_window->hwnd(), rc ? &rc2 : NULL, FALSE);
-				};
-				_capture_connection = v->capture += [this] (shared_ptr<void> &handle) {
+				});
+				_connections.push_back(v->capture += [this] (shared_ptr<void> &handle) {
 					if (::SetCapture(_window->hwnd()), ::GetCapture() == _window->hwnd())	
 						handle.reset(new capture_context);
 					else
 						handle.reset(); // untested
-				};
+				});
+				_connections.push_back(v->force_layout += [this] () {
+					RECT rc;
+
+					::GetClientRect(_window->hwnd(), &rc);
+					resize_view(rc.right, rc.bottom);
+				});
+				v->force_layout();
 			}
 
 			LRESULT view_host::wndproc(UINT message, WPARAM wparam, LPARAM lparam, const window::original_handler_t &previous)
@@ -121,8 +131,7 @@ namespace wpl
 						return 0;
 
 					case WM_SIZE:
-						_view->resize(LOWORD(lparam), HIWORD(lparam), _positioned_views);
-						reposition_native_views();
+						resize_view(LOWORD(lparam), HIWORD(lparam));
 						break;
 
 					case WM_LBUTTONDOWN:
@@ -190,8 +199,10 @@ namespace wpl
 				}
 			}
 
-			void view_host::reposition_native_views() throw()
+			void view_host::resize_view(unsigned cx, unsigned cy) throw()
 			{
+				_view->resize(cx, cy, _positioned_views);
+
 				HDWP hdwp = ::BeginDeferWindowPos(static_cast<int>(_positioned_views.size()));
 
 				for (visual::positioned_native_views::const_iterator i = _positioned_views.begin();

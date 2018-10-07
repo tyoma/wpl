@@ -54,6 +54,7 @@ namespace wpl
 			virtual void resize(unsigned cx, unsigned cy, positioned_native_views &native_views);
 
 			signal<void(const agge::rect_i *window)> invalidate;
+			signal<void()> force_layout;
 		};
 
 		struct visual::positioned_native_view

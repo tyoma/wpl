@@ -181,6 +181,7 @@ namespace wpl
 					RECT rc;
 
 					f.first->set_view(v);
+					v->resize_log.clear();
 
 					// ACT
 					::MoveWindow(f.second, 0, 0, 117, 213, TRUE);
@@ -723,6 +724,116 @@ namespace wpl
 					// ASSERT
 					assert_equal(rect(10, 10, 100, 200), get_window_rect(children[0]->get_window()));
 					assert_equal(rect(100, 1, 91, 200), get_window_rect(children[1]->get_window()));
+				}
+
+
+				test( ResettingViewDetachesFromEventsOfThePreviousView )
+				{
+					// INIT
+					shared_ptr<view> v(new view);
+					form_and_handle f(create_form_with_handle());
+					shared_ptr<void> capture;
+
+					f.first->set_view(v);
+					f.first->set_visible(true);
+					::MoveWindow(f.second, 0, 0, 500, 400, TRUE);
+					::ValidateRect(f.second, NULL);
+
+					// ACT
+					f.first->set_view(shared_ptr<view>());
+
+					// ASSERT
+					assert_is_true(v.unique());
+
+					// ACT
+					v->invalidate(0);
+					v->capture(capture);
+
+					// ASSERT
+					assert_is_false(!!::GetUpdateRect(f.second, NULL, FALSE));
+					assert_equal(HWND(), ::GetCapture());
+					assert_null(capture);
+				}
+
+
+				test( ForcingLayoutSignalLeadsToViewResize )
+				{
+					// INIT
+					shared_ptr< mocks::logging_visual<view> > v(new mocks::logging_visual<view>);
+					form_and_handle f(create_form_with_handle());
+					RECT rc;
+
+					f.first->set_view(v);
+					::MoveWindow(f.second, 0, 0, 500, 400, TRUE);
+					::GetClientRect(f.second, &rc);
+					v->resize_log.clear();
+
+					// ACT
+					v->force_layout();
+
+					// ASSERT
+					assert_equal(1u, v->resize_log.size());
+					assert_equal(rc.right, v->resize_log[0].first);
+					assert_equal(rc.bottom, v->resize_log[0].second);
+				}
+
+
+				test( NativeViewWindowsAreResizedAccordinglyToTheirLocationsOnForceLayout )
+				{
+					// INIT
+					shared_ptr<view_providing_nviews> v(new view_providing_nviews);
+					form_and_handle f(create_form_with_handle());
+					view_location l1 = { 10, 17, 100, 134 }, l2 = { 100, 1, 91, 200 };
+					shared_ptr<child_window> children[] = {
+						shared_ptr<child_window>(new child_window), shared_ptr<child_window>(new child_window),
+					};
+
+					v->response.push_back(make_pair(children[0], l1));
+					v->response.push_back(make_pair(children[1], l2));
+					f.first->set_view(v);
+					::MoveWindow(f.second, 0, 0, 100, 100, TRUE);
+					::MoveWindow(children[0]->get_window(), 0, 0, 1, 1, TRUE);
+					::MoveWindow(children[1]->get_window(), 0, 0, 1, 1, TRUE);
+
+					// ACT
+					v->force_layout();
+
+					// ASSERT
+					assert_equal(rect(10, 17, 100, 134), get_window_rect(children[0]->get_window()));
+					assert_equal(rect(100, 1, 91, 200), get_window_rect(children[1]->get_window()));
+				}
+
+
+				test( SettingViewResizesItToAClient )
+				{
+					// INIT
+					form_and_handle f(create_form_with_handle());
+					shared_ptr< mocks::logging_visual<view> > v(new mocks::logging_visual<view>);
+					RECT rc;
+
+					::MoveWindow(f.second, 0, 0, 500, 400, TRUE);
+					::GetClientRect(f.second, &rc);
+
+					// ACT
+					f.first->set_view(v);
+
+					// ASSERT
+					assert_equal(1u, v->resize_log.size());
+					assert_equal(rc.right, v->resize_log[0].first);
+					assert_equal(rc.bottom, v->resize_log[0].second);
+
+					// INIT
+					f.first->set_view(shared_ptr<view>());
+					::MoveWindow(f.second, 0, 0, 203, 150, TRUE);
+					::GetClientRect(f.second, &rc);
+
+					// ACT
+					f.first->set_view(v);
+
+					// ASSERT
+					assert_equal(2u, v->resize_log.size());
+					assert_equal(rc.right, v->resize_log[1].first);
+					assert_equal(rc.bottom, v->resize_log[1].second);
 				}
 			end_test_suite
 		}

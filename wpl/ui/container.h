@@ -16,6 +16,7 @@ namespace wpl
 				view_location location;
 				std::shared_ptr<view> child;
 				slot_connection invalidate_connection;
+				slot_connection force_layout_connection;
 			};
 
 		public:
@@ -31,14 +32,12 @@ namespace wpl
 			virtual void mouse_up(mouse_buttons button, int depressed, int x, int y);
 			virtual void mouse_double_click(mouse_buttons button, int depressed, int x, int y);
 
-		public:
-			signal<void()> force_layout;
-
 		private:
 			typedef std::vector<positioned_view> views_t;
 
 		private:
 			void on_invalidate(unsigned index, const agge::rect_i *area);
+			void on_force_layout();
 			std::shared_ptr<view> child_from_point(int &x, int &y) const;
 			std::shared_ptr<view> switch_mouse_over(int &x, int &y);
 
@@ -46,7 +45,6 @@ namespace wpl
 			views_t _children;
 			std::shared_ptr<mouse_input> _mouse_over;
 			std::shared_ptr<layout_manager> _layout;
-			int _cx, _cy;
 		};
 	}
 }

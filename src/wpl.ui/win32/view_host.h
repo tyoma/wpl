@@ -40,7 +40,7 @@ namespace wpl
 			private:
 				LRESULT wndproc(UINT message, WPARAM wparam, LPARAM lparam, const window::original_handler_t &previous);
 				void dispatch_mouse(UINT message, WPARAM wparam, LPARAM lparam);
-				void reposition_native_views() throw();
+				void resize_view(unsigned cx, unsigned cy) throw();
 
 			private:
 				window::user_handler_t _user_handler;
@@ -49,7 +49,7 @@ namespace wpl
 				gcontext::surface_type _surface;
 				gcontext::rasterizer_ptr _rasterizer;
 				gcontext::renderer_type _renderer;
-				slot_connection _invalidate_connection, _capture_connection;
+				std::vector<slot_connection> _connections;
 				std::vector<visual::positioned_native_view> _positioned_views;
 				bool _mouse_in : 1;
 			};
