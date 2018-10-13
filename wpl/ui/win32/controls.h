@@ -33,5 +33,6 @@ namespace wpl
 
 		std::shared_ptr<listview> wrap_listview(HWND hwnd);
 		std::shared_ptr<view_host> wrap_view_host(HWND hwnd);
+		std::shared_ptr<listview> create_listview();
 	}
 }

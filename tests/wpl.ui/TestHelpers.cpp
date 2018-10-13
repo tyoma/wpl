@@ -161,6 +161,21 @@ namespace wpl
 				set_difference(_windows.begin(), _windows.end(), data.windows.begin(), data.windows.end(), back_inserter(destroyed));
 				_windows = data.windows;
 			}
+
+			vector<HWND> window_tracker::find_created(const wstring &class_name)
+			{
+				vector<HWND> result;
+
+				for (vector<HWND>::const_iterator i = created.begin(); i != created.end(); ++i)
+				{
+					TCHAR tmp[100] = { 0 };
+
+					::GetClassName(*i, tmp, _countof(tmp));
+					if (0 == _tcsicmp(class_name.c_str(), tmp))
+						result.push_back(*i);
+				}
+				return result;
+			}
 		}
 	}
 }

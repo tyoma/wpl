@@ -79,6 +79,7 @@
     <ClInclude Include="..\..\wpl\ui\win32\native_view.h" />
     <ClInclude Include="..\..\wpl\ui\win32\types.h" />
     <ClInclude Include="..\..\wpl\ui\win32\window.h" />
+    <ClInclude Include="win32\listview.h" />
     <ClInclude Include="win32\view_host.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

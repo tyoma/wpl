@@ -18,11 +18,7 @@
 //	OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //	THE SOFTWARE.
 
-#include <wpl/ui/listview.h>
-
-#include <wpl/ui/win32/controls.h>
-#include <wpl/ui/win32/native_view.h>
-#include <wpl/ui/win32/window.h>
+#include "listview.h"
 
 #include <commctrl.h>
 #include <atlstr.h>
@@ -36,62 +32,100 @@ namespace wpl
 {
 	namespace ui
 	{
-		namespace
+		namespace win32
 		{
-			class listview_impl : public listview, private native_view
+			namespace
 			{
-				enum sort_direction	{	dir_none, dir_ascending, dir_descending	};
-				typedef pair< index_type /*last_index*/, shared_ptr<const trackable> > tracked_item;
-				typedef vector<tracked_item> selection_trackers;
+				enum {
+					style = LVS_REPORT | LVS_SINGLESEL | LVS_SHOWSELALWAYS | LVS_OWNERDATA | WS_BORDER | WS_VISIBLE,
+					listview_style = LVS_EX_FULLROWSELECT | LVS_EX_DOUBLEBUFFER,
+				};
+				const TCHAR c_reflector_class[] = _T("wpl_reflector_class");
+			}
 
-				bool _avoid_notifications;
-				wstring _text_buffer;
-				shared_ptr<columns_model> _columns_model;
-				shared_ptr<model> _model;
-				shared_ptr<window> _listview;
-				shared_ptr<void> _invalidated_connection, _sort_order_changed_connection;
-				columns_model::index_type _sort_column;
-				shared_ptr<const trackable> _focused_item;
-				selection_trackers _selected_items;
-				tracked_item _visible_item;
 
-				// listview interface
-				virtual void set_columns_model(shared_ptr<columns_model> cm);
-				virtual void set_model(shared_ptr<model> model);
-
-				virtual void adjust_column_widths();
-
-				virtual void select(index_type item, bool reset_previous);
-				virtual void clear_selection();
-
-				virtual void ensure_visible(index_type item);
-
-				// visual interface
-				virtual void resize(unsigned cx, unsigned cy, positioned_native_views &native_views);
-
-				// native_view interface
-				virtual HWND get_window() throw();
-
-				LRESULT wndproc(UINT message, WPARAM wparam, LPARAM lparam, const window::original_handler_t &previous);
-
-				void update_sort_order(columns_model::index_type new_ordering_column, bool ascending);
-				void invalidate_view(index_type new_count);
-				void update_focus();
-				void update_selection();
-				void ensure_tracked_visibility();
-				bool is_item_visible(index_type item) const throw();
-				void set_column_direction(index_type column, sort_direction direction) throw();
-
+			class reflector_host::reflector_class : WNDCLASS
+			{
 			public:
-				listview_impl(HWND hwnd);
+				reflector_class(WNDPROC wndproc)
+				{
+					WNDCLASS zero = {};
+
+					*static_cast<WNDCLASS *>(this) = zero;
+					style = WS_OVERLAPPED;
+					lpfnWndProc = wndproc;
+					lpszClassName = c_reflector_class;
+ 					_id = ::RegisterClass(this);
+				}
+
+				~reflector_class()
+				{	::UnregisterClass(reinterpret_cast<LPCTSTR>(_id), NULL);	}
+
+			private:
+				ATOM _id;
 			};
 
 
-			listview_impl::listview_impl(HWND hwnd)
-				: _avoid_notifications(false), _sort_column(columns_model::npos)
-			{	_listview = window::attach(hwnd, bind(&listview_impl::wndproc, this, _1, _2, _3, _4));	}
+			reflector_host::reflector_class reflector_host::_class(&reflector_host::windowproc_proxy);
 
-			void listview_impl::set_columns_model(shared_ptr<columns_model> cm)
+
+			reflector_host::reflector_host()
+				: _hwnd(::CreateWindowEx(WS_EX_TOOLWINDOW, c_reflector_class, NULL, WS_POPUP, 0, 0, 10, 10, NULL, NULL,
+					NULL, NULL))
+			{	SetWindowLongPtr(_hwnd, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(this));	}
+
+			reflector_host::~reflector_host()
+			{
+				if (_hwnd)
+					::DestroyWindow(_hwnd);
+			}
+
+			HWND reflector_host::get_window() throw()
+			{	return _hwnd;	}
+
+			LRESULT CALLBACK reflector_host::windowproc_proxy(HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam)
+			{
+				switch (message)
+				{
+				case WM_NOTIFY:
+					return SendMessage(reinterpret_cast<const NMHDR*>(lparam)->hwndFrom, OCM_NOTIFY, wparam, lparam);
+
+				case WM_NCDESTROY:
+					reinterpret_cast<reflector_host *>(GetWindowLongPtr(hwnd, GWLP_USERDATA))->_hwnd = NULL;
+
+				default:
+					return ::DefWindowProc(hwnd, message, wparam, lparam);
+				}
+			}
+
+
+			listview::listview()
+				: _reflector_parent(new reflector_host), _hwnd_listview(::CreateWindow(WC_LISTVIEW, NULL, WS_POPUP | style,
+					0, 0, 1, 1, _reflector_parent->get_window(), NULL, NULL, NULL))
+			{
+				ListView_SetExtendedListViewStyle(_hwnd_listview,
+					listview_style | ListView_GetExtendedListViewStyle(_hwnd_listview));
+				wrap_init(_hwnd_listview);
+			}
+
+			listview::listview(HWND hwnd)
+				: _hwnd_listview(NULL)
+			{	wrap_init(hwnd);	}
+
+			listview::~listview()
+			{
+				if (_hwnd_listview)
+					::DestroyWindow(_hwnd_listview);
+			}
+
+			void listview::wrap_init(HWND hwnd)
+			{
+				_avoid_notifications = false,
+				_sort_column = columns_model::npos;
+				_listview = window::attach(hwnd, bind(&listview::wndproc, this, _1, _2, _3, _4));
+			}
+
+			void listview::set_columns_model(shared_ptr<columns_model> cm)
 			{
 				CString caption;
 				LVCOLUMN lvcolumn = { 0 };
@@ -121,11 +155,11 @@ namespace wpl
 				_sort_column = sort_order.first;
 
 				_sort_order_changed_connection =
-					cm->sort_order_changed += bind(&listview_impl::update_sort_order, this, _1, _2);
+					cm->sort_order_changed += bind(&listview::update_sort_order, this, _1, _2);
 				_columns_model = cm;
 			}
 
-			void listview_impl::set_model(shared_ptr<model> model)
+			void listview::set_model(shared_ptr<model> model)
 			{
 				if (_columns_model && model)
 				{
@@ -135,7 +169,7 @@ namespace wpl
 						model->set_order(sort_order.first, sort_order.second);
 				}
 				_invalidated_connection = model ?
-					model->invalidated += bind(&listview_impl::invalidate_view, this, _1) : slot_connection();
+					model->invalidated += bind(&listview::invalidate_view, this, _1) : slot_connection();
 				invalidate_view(model ? model->get_count() : 0);
 				_focused_item.reset();
 				_selected_items.clear();
@@ -143,109 +177,118 @@ namespace wpl
 				_model = model;
 			}
 
-			void listview_impl::adjust_column_widths()
+			void listview::adjust_column_widths()
 			{
 				for (int i = 0, count = Header_GetItemCount(ListView_GetHeader(_listview->hwnd())); i < count; ++i)
 					ListView_SetColumnWidth(_listview->hwnd(), i, LVSCW_AUTOSIZE_USEHEADER);
 			}
 
-			void listview_impl::select(index_type item, bool reset_previous)
+			void listview::select(index_type item, bool reset_previous)
 			{
 				if (reset_previous)
 					clear_selection();
 				ListView_SetItemState(_listview->hwnd(), item, LVIS_SELECTED, LVIS_SELECTED);
 			}
 
-			void listview_impl::clear_selection()
+			void listview::clear_selection()
 			{	ListView_SetItemState(_listview->hwnd(), -1, 0, LVIS_SELECTED);	}
 
-			void listview_impl::ensure_visible(index_type item)
+			void listview::ensure_visible(index_type item)
 			{
 				_visible_item = make_pair(item, _model->track(item));
 				ListView_EnsureVisible(_listview->hwnd(), item, FALSE);
 			}
 
-			void listview_impl::resize(unsigned cx, unsigned cy, positioned_native_views &native_views)
+			void listview::resize(unsigned cx, unsigned cy, positioned_native_views &native_views)
 			{
 				view_location l = { 0, 0, static_cast<int>(cx), static_cast<int>(cy) };
 				native_views.push_back(positioned_native_view(*this, l));
 			}
 
-			HWND listview_impl::get_window() throw()
+			HWND listview::get_window() throw()
 			{	return _listview->hwnd();	}
 
-			LRESULT listview_impl::wndproc(UINT message, WPARAM wparam, LPARAM lparam, const window::original_handler_t &previous)
+			LRESULT listview::wndproc(UINT message, WPARAM wparam, LPARAM lparam, const window::original_handler_t &previous)
 			{
-				if (OCM_NOTIFY != message && WM_NOTIFY != message)
-					return previous(message, wparam, lparam);
-				if (WM_NOTIFY == message)
+				switch (message)
 				{
-					const NMHEADER *pnmhd = reinterpret_cast<const NMHEADER *>(lparam);
+				case WM_NCDESTROY:
+					_hwnd_listview = NULL;
+					break;
 
-					if (_columns_model)
-						if (HDN_ITEMCHANGED == pnmhd->hdr.code && 0 != (HDI_WIDTH & pnmhd->pitem->mask))
+				case WM_NOTIFY:
+					if (const NMHEADER *pnmhd = reinterpret_cast<const NMHEADER *>(lparam))
+					{
+						if (_columns_model && HDN_ITEMCHANGED == pnmhd->hdr.code && 0 != (HDI_WIDTH & pnmhd->pitem->mask))
 						{
 							_columns_model->update_column(static_cast<columns_model::index_type>(pnmhd->iItem),
 								static_cast<short>(pnmhd->pitem->cxy));
 						}
-					return previous(message, wparam, lparam);
-				}
-				if (_model && !_avoid_notifications)
-				{
-					UINT code = reinterpret_cast<const NMHDR *>(lparam)->code;
-					const NMLISTVIEW *pnmlv = reinterpret_cast<const NMLISTVIEW *>(lparam);
+					}
+					break;
 
-					if (LVN_ITEMCHANGED == code)
+				case OCM_NOTIFY:
+					if (_model && !_avoid_notifications)
 					{
-						if ((pnmlv->uOldState & LVIS_FOCUSED) != (pnmlv->uNewState & LVIS_FOCUSED))
-							_focused_item = pnmlv->uNewState & LVIS_FOCUSED ? _model->track(pnmlv->iItem) : shared_ptr<const trackable>();
-						if ((pnmlv->uOldState & LVIS_SELECTED) != (pnmlv->uNewState & LVIS_SELECTED))
-							if (pnmlv->uNewState & LVIS_SELECTED)
-								_selected_items.push_back(make_pair(pnmlv->iItem, _model->track(pnmlv->iItem)));
-							else if (-1 != pnmlv->iItem)
+						UINT code = reinterpret_cast<const NMHDR *>(lparam)->code;
+						const NMLISTVIEW *pnmlv = reinterpret_cast<const NMLISTVIEW *>(lparam);
+
+						switch (code)
+						{
+						case LVN_ITEMCHANGED:
+							if ((pnmlv->uOldState & LVIS_FOCUSED) != (pnmlv->uNewState & LVIS_FOCUSED))
+								_focused_item = pnmlv->uNewState & LVIS_FOCUSED ? _model->track(pnmlv->iItem) : shared_ptr<const trackable>();
+							if ((pnmlv->uOldState & LVIS_SELECTED) != (pnmlv->uNewState & LVIS_SELECTED))
 							{
-								for (selection_trackers::iterator i = _selected_items.begin(); i != _selected_items.end(); ++i)
-									if (static_cast<index_type>(pnmlv->iItem) == i->first)
-									{
-										_selected_items.erase(i);
-										break;
-									}
+								if (pnmlv->uNewState & LVIS_SELECTED)
+									_selected_items.push_back(make_pair(pnmlv->iItem, _model->track(pnmlv->iItem)));
+								else if (-1 != pnmlv->iItem)
+								{
+									for (selection_trackers::iterator i = _selected_items.begin(); i != _selected_items.end(); ++i)
+										if (static_cast<index_type>(pnmlv->iItem) == i->first)
+										{
+											_selected_items.erase(i);
+											break;
+										}
+								}
+								else
+									_selected_items.clear();
+								selection_changed(pnmlv->iItem, 0 != (pnmlv->uNewState & LVIS_SELECTED));
 							}
-							else
-								_selected_items.clear();
-					}
-					
-					if (LVN_ITEMCHANGED == code && (pnmlv->uOldState & LVIS_SELECTED) != (pnmlv->uNewState & LVIS_SELECTED))
-						selection_changed(pnmlv->iItem, 0 != (pnmlv->uNewState & LVIS_SELECTED));
-					else if (LVN_ITEMACTIVATE == code)
-						item_activate(reinterpret_cast<const NMITEMACTIVATE *>(lparam)->iItem);
-					else if (LVN_GETDISPINFOA == code)
-					{
-						const NMLVDISPINFOA *pdi = reinterpret_cast<const NMLVDISPINFOA *>(lparam);
+							return 0;
 
-						if (pdi->item.mask & LVIF_TEXT)
-						{
-							_model->get_text(pdi->item.iItem, pdi->item.iSubItem, _text_buffer);
-							wcstombs_s(0, pdi->item.pszText, pdi->item.cchTextMax, _text_buffer.c_str(), _TRUNCATE);
+						case LVN_ITEMACTIVATE:
+							item_activate(reinterpret_cast<const NMITEMACTIVATE *>(lparam)->iItem);
+							return 0;
+
+						case LVN_GETDISPINFOA:
+							if (const NMLVDISPINFOA *pdi = reinterpret_cast<const NMLVDISPINFOA *>(lparam))
+								if (pdi->item.mask & LVIF_TEXT)
+								{
+									_model->get_text(pdi->item.iItem, pdi->item.iSubItem, _text_buffer);
+									wcstombs_s(0, pdi->item.pszText, pdi->item.cchTextMax, _text_buffer.c_str(), _TRUNCATE);
+								}
+							return 0;
+
+						case LVN_GETDISPINFOW:
+							if (const NMLVDISPINFOW *pdi = reinterpret_cast<const NMLVDISPINFOW *>(lparam))
+								if (pdi->item.mask & LVIF_TEXT)
+								{
+									_model->get_text(pdi->item.iItem, pdi->item.iSubItem, _text_buffer);
+									wcsncpy_s(pdi->item.pszText, pdi->item.cchTextMax, _text_buffer.c_str(), _TRUNCATE);
+								}
+							return 0;
+
+						case LVN_COLUMNCLICK:
+							_columns_model->activate_column( static_cast<columns_model::index_type>(reinterpret_cast<const NMLISTVIEW *>(lparam)->iSubItem));
+							return 0;
 						}
 					}
-					else if (LVN_GETDISPINFOW == code)
-					{
-						const NMLVDISPINFOW *pdi = reinterpret_cast<const NMLVDISPINFOW *>(lparam);
-
-						if (pdi->item.mask & LVIF_TEXT)
-						{
-							_model->get_text(pdi->item.iItem, pdi->item.iSubItem, _text_buffer);
-							wcsncpy_s(pdi->item.pszText, pdi->item.cchTextMax, _text_buffer.c_str(), _TRUNCATE);
-						}
-					}
-					else if (LVN_COLUMNCLICK == code)
-						_columns_model->activate_column( static_cast<columns_model::index_type>(reinterpret_cast<const NMLISTVIEW *>(lparam)->iSubItem));
 				}
-				return 0;
+				return previous(message, wparam, lparam);
 			}
 
-			void listview_impl::update_sort_order(columns_model::index_type new_ordering_column, bool ascending)
+			void listview::update_sort_order(columns_model::index_type new_ordering_column, bool ascending)
 			{
 				if (_model)
 					_model->set_order(new_ordering_column, ascending);
@@ -256,7 +299,7 @@ namespace wpl
 				ListView_RedrawItems(_listview->hwnd(), 0, ListView_GetItemCount(_listview->hwnd()));
 			}
 
-			void listview_impl::invalidate_view(index_type new_count)
+			void listview::invalidate_view(index_type new_count)
 			{
 				if (new_count != static_cast<index_type>(ListView_GetItemCount(_listview->hwnd())))
 					ListView_SetItemCountEx(_listview->hwnd(), new_count, 0);
@@ -269,7 +312,7 @@ namespace wpl
 				_avoid_notifications = false;
 			}
 
-			void listview_impl::update_focus()
+			void listview::update_focus()
 			{
 				if (_focused_item)
 				{
@@ -281,7 +324,7 @@ namespace wpl
 				}
 			}
 
-			void listview_impl::update_selection()
+			void listview::update_selection()
 			{
 				vector<index_type> selection_before, selection_after, d;
 
@@ -302,7 +345,7 @@ namespace wpl
 					ListView_SetItemState(_listview->hwnd(), *i, 0, LVIS_SELECTED);
 			}
 
-			void listview_impl::ensure_tracked_visibility()
+			void listview::ensure_tracked_visibility()
 			{
 				if (_visible_item.second)
 				{
@@ -313,7 +356,7 @@ namespace wpl
 				}
 			}
 
-			bool listview_impl::is_item_visible(index_type item) const throw()
+			bool listview::is_item_visible(index_type item) const throw()
 			{
 				RECT rc1, rc2, rc;
 
@@ -334,7 +377,7 @@ namespace wpl
 				return true;
 			}
 
-			void listview_impl::set_column_direction(index_type column, sort_direction dir) throw()
+			void listview::set_column_direction(index_type column, sort_direction dir) throw()
 			{
 				HDITEM item = { 0 };
 				HWND hheader = ListView_GetHeader(_listview->hwnd());
@@ -346,8 +389,9 @@ namespace wpl
 		}
 
 		shared_ptr<listview> wrap_listview(HWND hwnd)
-		{
-			return shared_ptr<listview>(new listview_impl(hwnd));
-		}
+		{	return shared_ptr<listview>(new win32::listview(hwnd));	}
+		
+		shared_ptr<listview> create_listview()
+		{	return shared_ptr<listview>(new win32::listview());	}
 	}
 }

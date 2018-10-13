@@ -60,5 +60,8 @@
     <ClInclude Include="win32\view_host.h">
       <Filter>Source Files\win32</Filter>
     </ClInclude>
+    <ClInclude Include="win32\listview.h">
+      <Filter>Source Files\win32</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

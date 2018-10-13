@@ -61,6 +61,7 @@ namespace wpl
 				window_tracker(const std::wstring &allow = L"", const std::wstring &prohibit = L"MSCTFIME UI");
 
 				void checkpoint();
+				std::vector<HWND> find_created(const std::wstring &class_name);
 
 				std::vector<HWND> created;
 				std::vector<HWND> destroyed;

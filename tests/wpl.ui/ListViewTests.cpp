@@ -3,6 +3,7 @@
 #include <wpl/ui/win32/controls.h>
 #include <wpl/ui/win32/native_view.h>
 
+#include "MockupsListView.h"
 #include "TestHelpers.h"
 
 #include <windows.h>
@@ -25,119 +26,6 @@ namespace wpl
 			namespace
 			{
 				enum sort_direction	{	dir_none, dir_ascending, dir_descending	};
-
-				struct mock_trackable : public listview::trackable
-				{
-					~mock_trackable()
-					{	}
-
-					virtual listview::index_type index() const
-					{	return track_result;	}
-
-					listview::index_type track_result;
-
-					template <typename Map>
-					static shared_ptr<mock_trackable> add(Map &m, listview::index_type index)
-					{
-						shared_ptr<mock_trackable> t(new mock_trackable());
-
-						m[t->track_result = index] = t;
-						return t;
-					}
-				};
-
-				class mock_model : public listview::model
-				{
-					virtual index_type get_count() const throw()
-					{	return items.size();	}
-
-					virtual void get_text(index_type row, index_type column, wstring &text) const
-					{
-						assert_is_true(row < items.size());
-						text = items[row][column];
-					}
-
-					virtual void set_order(index_type column, bool ascending)
-					{	ordering.push_back(make_pair(column, ascending));	}
-
-					virtual shared_ptr<const listview::trackable> track(index_type row) const
-					{
-						tracking_requested.push_back(row);
-
-						map< index_type, shared_ptr<const listview::trackable> >::const_iterator i = trackables.find(row);
-
-						return i != trackables.end() ? i->second : shared_ptr<const listview::trackable>();
-					}
-
-				public:
-					mock_model(index_type count, index_type columns = 0)
-						: columns_count(columns)
-					{	items.resize(count, vector<wstring>(columns));	}
-
-					void set_count(index_type new_count)
-					{
-						items.resize(new_count, vector<wstring>(columns_count));
-						invalidated(items.size());
-					}
-
-					index_type columns_count;
-					vector< vector<wstring> > items;
-					map< index_type, shared_ptr<const listview::trackable> > trackables;
-					vector< pair<index_type, bool> > ordering;
-					mutable vector<index_type> tracking_requested;
-				};
-
-				class mock_columns_model : public listview::columns_model
-				{
-					template<size_t n>
-					mock_columns_model(const column (&columns_)[n], index_type sort_column_, bool ascending_)
-						: columns(columns_, columns_ + n), sort_column(sort_column_), sort_ascending(ascending_)
-					{	}
-
-					virtual index_type get_count() const throw()
-					{	return static_cast<index_type>(columns.size());	}
-
-					virtual void get_column(index_type index, column &column) const
-					{	column = columns[index];	}
-
-					virtual void update_column(index_type index, short int width)
-					{	columns[index].width = width;	}
-
-					virtual pair<index_type, bool> get_sort_order() const throw()
-					{	return make_pair(sort_column, sort_ascending);	}
-
-					virtual void activate_column(index_type column)
-					{	column_activation_log.push_back(column);	}
-
-				public:
-					template<size_t n>
-					static shared_ptr<mock_columns_model> create(const column (&columns)[n], index_type sort_column,
-						bool ascending)
-					{	return shared_ptr<mock_columns_model>(new mock_columns_model(columns, sort_column, ascending));	}
-
-					static shared_ptr<mock_columns_model> create(const wstring &caption, short int width = 0)
-					{
-						column columns[] = { column(caption, width), };
-
-						return create(columns, npos, false);
-					}
-
-					void set_sort_order(index_type column, bool ascending)
-					{
-						sort_column = column;
-						sort_ascending = ascending;
-						sort_order_changed(sort_column, sort_ascending);
-					}
-
-					vector<column> columns;
-					vector<index_type> column_activation_log;
-					index_type sort_column;
-					bool sort_ascending;
-				};
-
-				typedef shared_ptr<mock_model> model_ptr;
-				typedef shared_ptr<mock_columns_model> columns_model_ptr;
-				typedef shared_ptr<mock_trackable> trackable_ptr;
 
 				template <typename T>
 				void push_back(vector<T> &v, const T &value)
@@ -283,13 +171,13 @@ namespace wpl
 					shared_ptr<listview> lv(wrap_listview(hlv));
 
 					// ACT
-					lv->set_model(model_ptr(new mock_model(11)));
+					lv->set_model(mocks::model_ptr(new mocks::listview_model(11)));
 
 					// ASSERT
 					assert_equal(11, ListView_GetItemCount(hlv));
 
 					// ACT
-					lv->set_model(model_ptr(new mock_model(23)));
+					lv->set_model(mocks::model_ptr(new mocks::listview_model(23)));
 
 					// ASSERT
 					assert_equal(23, ListView_GetItemCount(hlv));
@@ -308,7 +196,7 @@ namespace wpl
 					};
 					
 					// ACT
-					lv->set_columns_model(mock_columns_model::create(columns, listview::columns_model::npos, false));
+					lv->set_columns_model(mocks::listview_columns_model::create(columns, listview::columns_model::npos, false));
 
 					// ASSERT
 					assert_equal(3u, get_columns_count(hlv));
@@ -329,8 +217,8 @@ namespace wpl
 					};
 					
 					// ACT
-					lv->set_columns_model(mock_columns_model::create(columns, listview::columns_model::npos, false));
-					lv->set_columns_model(mock_columns_model::create(L"Team"));
+					lv->set_columns_model(mocks::listview_columns_model::create(columns, listview::columns_model::npos, false));
+					lv->set_columns_model(mocks::listview_columns_model::create(L"Team"));
 
 					// ASSERT
 					assert_equal(1u, get_columns_count(hlv));
@@ -343,9 +231,9 @@ namespace wpl
 					// INIT
 					HWND hlv = create_listview();
 					shared_ptr<listview> lv(wrap_listview(hlv));
-					model_ptr m(new mock_model(11, 1));
+					mocks::model_ptr m(new mocks::listview_model(11, 1));
 
-					lv->set_columns_model(mock_columns_model::create(L"test", 13));
+					lv->set_columns_model(mocks::listview_columns_model::create(L"test", 13));
 					lv->set_model(m);
 
 					// ACT
@@ -367,7 +255,7 @@ namespace wpl
 					// INIT
 					HWND hlv = create_listview();
 					shared_ptr<listview> lv(wrap_listview(hlv));
-					model_ptr m(new mock_model(0));
+					mocks::model_ptr m(new mocks::listview_model(0));
 
 					lv->set_model(m);
 
@@ -390,7 +278,7 @@ namespace wpl
 					// INIT
 					HWND hlv = create_listview();
 					shared_ptr<listview> lv(wrap_listview(hlv));
-					model_ptr m1(new mock_model(5)), m2(new mock_model(7));
+					mocks::model_ptr m1(new mocks::listview_model(5)), m2(new mocks::listview_model(7));
 
 					lv->set_model(m1);
 
@@ -408,7 +296,7 @@ namespace wpl
 					// INIT
 					HWND hlv = create_listview();
 					shared_ptr<listview> lv(wrap_listview(hlv));
-					model_ptr m(new mock_model(5));
+					mocks::model_ptr m(new mocks::listview_model(5));
 
 					lv->set_model(m);
 
@@ -431,7 +319,7 @@ namespace wpl
 					// INIT
 					HWND hlv = create_listview();
 					shared_ptr<listview> lv(wrap_listview(hlv));
-					model_ptr m(new mock_model(0));
+					mocks::model_ptr m(new mocks::listview_model(0));
 					NMLVDISPINFO nmlvdi = {
 						{	0, 0, LVN_GETDISPINFO	},
 						{ /* mask = */ LVIF_STATE, /* item = */ 0, /* subitem = */ 0, 0, 0, 0, 0, }
@@ -451,7 +339,7 @@ namespace wpl
 					// INIT
 					HWND hlv = create_listview();
 					shared_ptr<listview> lv(wrap_listview(hlv));
-					model_ptr m(new mock_model(0));
+					mocks::model_ptr m(new mocks::listview_model(0));
 					char buffer[100] = { 0 };
 					NMLVDISPINFOA nmlvdi = {
 						{	0, 0, LVN_GETDISPINFOA	},
@@ -508,7 +396,7 @@ namespace wpl
 					// INIT
 					HWND hlv = create_listview();
 					shared_ptr<listview> lv(wrap_listview(hlv));
-					model_ptr m(new mock_model(0));
+					mocks::model_ptr m(new mocks::listview_model(0));
 					wchar_t buffer[100] = { 0 };
 					NMLVDISPINFOW nmlvdi = {
 						{	0, 0, LVN_GETDISPINFOW	},
@@ -565,7 +453,7 @@ namespace wpl
 					// INIT
 					HWND hlv = create_listview();
 					shared_ptr<listview> lv(wrap_listview(hlv));
-					model_ptr m(new mock_model(0));
+					mocks::model_ptr m(new mocks::listview_model(0));
 					char buffer[4] = { 0 };
 					NMLVDISPINFOA nmlvdi = {
 						{	0, 0, LVN_GETDISPINFOA	},
@@ -596,7 +484,7 @@ namespace wpl
 					// INIT
 					HWND hlv = create_listview();
 					shared_ptr<listview> lv(wrap_listview(hlv));
-					model_ptr m(new mock_model(0));
+					mocks::model_ptr m(new mocks::listview_model(0));
 					wchar_t buffer[4] = { 0 };
 					NMLVDISPINFOW nmlvdi = {
 						{	0, 0, LVN_GETDISPINFOW	},
@@ -632,12 +520,12 @@ namespace wpl
 						listview::columns_model::column(L"", 10),
 						listview::columns_model::column(L"", 10),
 					};
-					model_ptr m(new mock_model(0));
+					mocks::model_ptr m(new mocks::listview_model(0));
 
 					lv->set_model(m);
 
 					// ACT
-					lv->set_columns_model(mock_columns_model::create(columns, 0, true));
+					lv->set_columns_model(mocks::listview_columns_model::create(columns, 0, true));
 
 					// ASSERT
 					assert_equal(1u, m->ordering.size());
@@ -645,8 +533,8 @@ namespace wpl
 					assert_equal(true, m->ordering[0].second);
 
 					// ACT
-					lv->set_columns_model(mock_columns_model::create(columns, 2, false));
-					lv->set_columns_model(mock_columns_model::create(columns, 1, true));
+					lv->set_columns_model(mocks::listview_columns_model::create(columns, 2, false));
+					lv->set_columns_model(mocks::listview_columns_model::create(columns, 1, true));
 
 					// ASSERT
 					assert_equal(3u, m->ordering.size());
@@ -666,12 +554,12 @@ namespace wpl
 						listview::columns_model::column(L"", 10),
 						listview::columns_model::column(L"", 10),
 					};
-					model_ptr m(new mock_model(0));
+					mocks::model_ptr m(new mocks::listview_model(0));
 
 					lv->set_model(m);
 
 					// ACT
-					lv->set_columns_model(mock_columns_model::create(columns, listview::columns_model::npos, true));
+					lv->set_columns_model(mocks::listview_columns_model::create(columns, listview::columns_model::npos, true));
 
 					// ASSERT
 					assert_is_empty(m->ordering);
@@ -688,8 +576,8 @@ namespace wpl
 						listview::columns_model::column(L"", 10),
 						listview::columns_model::column(L"", 10),
 					};
-					model_ptr m(new mock_model(0));
-					columns_model_ptr cm(mock_columns_model::create(columns, listview::columns_model::npos, false));
+					mocks::model_ptr m(new mocks::listview_model(0));
+					mocks::columns_model_ptr cm(mocks::listview_columns_model::create(columns, listview::columns_model::npos, false));
 
 					lv->set_model(m);
 					lv->set_columns_model(cm);
@@ -725,8 +613,8 @@ namespace wpl
 						listview::columns_model::column(L"", 10),
 						listview::columns_model::column(L"", 10),
 					};
-					columns_model_ptr cm(mock_columns_model::create(columns, listview::columns_model::npos, false));
-					model_ptr m(new mock_model(0));
+					mocks::columns_model_ptr cm(mocks::listview_columns_model::create(columns, listview::columns_model::npos, false));
+					mocks::model_ptr m(new mocks::listview_model(0));
 					NMLISTVIEW nmlvdi = {
 						{	0, 0, LVN_COLUMNCLICK	},
 						/* iItem = */ LVIF_TEXT /* see if wndproc differentiates notifications */, /* iSubItem = */ 0,
@@ -765,8 +653,8 @@ namespace wpl
 						listview::columns_model::column(L"", 10),
 						listview::columns_model::column(L"", 10),
 					};
-					model_ptr m1(new mock_model(0)), m2(new mock_model(0));
-					columns_model_ptr cm(mock_columns_model::create(columns, 0, true));
+					mocks::model_ptr m1(new mocks::listview_model(0)), m2(new mocks::listview_model(0));
+					mocks::columns_model_ptr cm(mocks::listview_columns_model::create(columns, 0, true));
 
 					lv->set_model(m1);
 					lv->set_columns_model(cm);
@@ -802,10 +690,10 @@ namespace wpl
 						listview::columns_model::column(L"", 10),
 						listview::columns_model::column(L"", 10),
 					};
-					model_ptr m(new mock_model(0));
+					mocks::model_ptr m(new mocks::listview_model(0));
 
 					lv->set_model(m);
-					lv->set_columns_model(mock_columns_model::create(columns, 1, false));
+					lv->set_columns_model(mocks::listview_columns_model::create(columns, 1, false));
 
 					// ACT / ASSERT (must not throw)
 					lv->set_model(shared_ptr<listview::model>());
@@ -821,7 +709,7 @@ namespace wpl
 						listview::columns_model::column(L"", 10),
 						listview::columns_model::column(L"", 10),
 					};
-					columns_model_ptr cm(mock_columns_model::create(columns, 1, true));
+					mocks::columns_model_ptr cm(mocks::listview_columns_model::create(columns, 1, true));
 
 					// ACT / ASSERT (must not fail)
 					lv->set_columns_model(cm);
@@ -837,9 +725,9 @@ namespace wpl
 						listview::columns_model::column(L"", 10),
 						listview::columns_model::column(L"", 10),
 					};
-					columns_model_ptr cm1(mock_columns_model::create(columns, listview::columns_model::npos, false));
-					columns_model_ptr cm2(mock_columns_model::create(columns, 0, false));
-					columns_model_ptr cm3(mock_columns_model::create(columns, 1, true));
+					mocks::columns_model_ptr cm1(mocks::listview_columns_model::create(columns, listview::columns_model::npos, false));
+					mocks::columns_model_ptr cm2(mocks::listview_columns_model::create(columns, 0, false));
+					mocks::columns_model_ptr cm3(mocks::listview_columns_model::create(columns, 1, true));
 
 					// ACT
 					lv->set_columns_model(cm1);
@@ -873,8 +761,8 @@ namespace wpl
 						listview::columns_model::column(L"", 10),
 						listview::columns_model::column(L"", 10),
 					};
-					columns_model_ptr cm(mock_columns_model::create(columns, listview::columns_model::npos, false));
-					model_ptr m(new mock_model(0));
+					mocks::columns_model_ptr cm(mocks::listview_columns_model::create(columns, listview::columns_model::npos, false));
+					mocks::model_ptr m(new mocks::listview_model(0));
 
 					lv->set_model(m);
 					lv->set_columns_model(cm);
@@ -911,7 +799,7 @@ namespace wpl
 						listview::columns_model::column(L"", 10),
 						listview::columns_model::column(L"", 10),
 					};
-					columns_model_ptr cm(mock_columns_model::create(columns, 1, false));
+					mocks::columns_model_ptr cm(mocks::listview_columns_model::create(columns, 1, false));
 
 					lv->set_columns_model(cm);
 
@@ -933,8 +821,8 @@ namespace wpl
 						listview::columns_model::column(L"a", 23),
 						listview::columns_model::column(L"b", 15),
 					};
-					columns_model_ptr cm(mock_columns_model::create(columns, listview::columns_model::npos, false));
-					model_ptr m(new mock_model(1, 4));
+					mocks::columns_model_ptr cm(mocks::listview_columns_model::create(columns, listview::columns_model::npos, false));
+					mocks::model_ptr m(new mocks::listview_model(1, 4));
 					RECT rc_invalidated = { 0 };
 
 					lv->set_model(m);
@@ -971,7 +859,7 @@ namespace wpl
 						lv->item_activate += bind(&push_back<listview::index_type>, ref(selections), _1);
 					NMITEMACTIVATE nm = {	{	0, 0, LVN_ITEMACTIVATE	},	};
 
-					lv->set_model(model_ptr(new mock_model(10)));
+					lv->set_model(mocks::model_ptr(new mocks::listview_model(10)));
 
 					// ACT
 					nm.iItem = 1;
@@ -1040,7 +928,7 @@ namespace wpl
 						/* iItem = */ 0, /* iSubItem = */ 0,
 					};
 
-					lv->set_model(model_ptr(new mock_model(10)));
+					lv->set_model(mocks::model_ptr(new mocks::listview_model(10)));
 
 					// ACT
 					nmlv.iItem = 1, nmlv.uOldState = LVIS_FOCUSED | LVIS_SELECTED, nmlv.uNewState = 0;
@@ -1087,8 +975,8 @@ namespace wpl
 						listview::columns_model::column(L"_____iiii"),
 					};
 
-					lv1->set_columns_model(mock_columns_model::create(columns3, listview::columns_model::npos, false));
-					lv2->set_columns_model(mock_columns_model::create(columns2, listview::columns_model::npos, false));
+					lv1->set_columns_model(mocks::listview_columns_model::create(columns3, listview::columns_model::npos, false));
+					lv2->set_columns_model(mocks::listview_columns_model::create(columns2, listview::columns_model::npos, false));
 
 					// ACT
 					lv1->adjust_column_widths();
@@ -1125,8 +1013,8 @@ namespace wpl
 						listview::columns_model::column(L"Apples", 29),
 					};
 
-					lv1->set_columns_model(mock_columns_model::create(columns3, listview::columns_model::npos, false));
-					lv2->set_columns_model(mock_columns_model::create(columns2, listview::columns_model::npos, false));
+					lv1->set_columns_model(mocks::listview_columns_model::create(columns3, listview::columns_model::npos, false));
+					lv2->set_columns_model(mocks::listview_columns_model::create(columns2, listview::columns_model::npos, false));
 
 					// ACT
 					int w10 = get_column_width(hlv1, 0);
@@ -1155,7 +1043,7 @@ namespace wpl
 						listview::columns_model::column(L"two", 17),
 						listview::columns_model::column(L"three", 19),
 					};
-					columns_model_ptr cm = mock_columns_model::create(columns, listview::columns_model::npos, false);
+					mocks::columns_model_ptr cm = mocks::listview_columns_model::create(columns, listview::columns_model::npos, false);
 					HDITEM item = {
 						HDI_WIDTH,
 					};
@@ -1192,7 +1080,7 @@ namespace wpl
 					HWND hlv = create_listview();
 					shared_ptr<listview> lv(wrap_listview(hlv));
 					listview::columns_model::column columns[] = { listview::columns_model::column(L"one", 13),	};
-					columns_model_ptr cm = mock_columns_model::create(columns, listview::columns_model::npos, false);
+					mocks::columns_model_ptr cm = mocks::listview_columns_model::create(columns, listview::columns_model::npos, false);
 					HDITEM item = {
 						HDI_TEXT,
 					};
@@ -1222,7 +1110,7 @@ namespace wpl
 					shared_ptr<listview> lv(wrap_listview(hlv));
 
 					// ACT
-					lv->set_model(model_ptr(new mock_model(7)));
+					lv->set_model(mocks::model_ptr(new mocks::listview_model(7)));
 
 					// ASSERT
 					assert_is_empty(get_matching_indices(hlv, LVNI_SELECTED));
@@ -1236,7 +1124,7 @@ namespace wpl
 					shared_ptr<listview> lv(wrap_listview(hlv));
 					vector<size_t> selection;
 
-					lv->set_model(model_ptr(new mock_model(7)));
+					lv->set_model(mocks::model_ptr(new mocks::listview_model(7)));
 
 					// ACT
 					lv->select(0, true);
@@ -1274,7 +1162,7 @@ namespace wpl
 					shared_ptr<listview> lv(wrap_listview(hlv));
 					vector<size_t> selection;
 
-					lv->set_model(model_ptr(new mock_model(7)));
+					lv->set_model(mocks::model_ptr(new mocks::listview_model(7)));
 
 					// ACT
 					lv->select(1, false);
@@ -1314,7 +1202,7 @@ namespace wpl
 					HWND hlv = create_listview();
 					shared_ptr<listview> lv(wrap_listview(hlv));
 
-					lv->set_model(model_ptr(new mock_model(7)));
+					lv->set_model(mocks::model_ptr(new mocks::listview_model(7)));
 
 					// ACT
 					lv->select(1, false);
@@ -1338,14 +1226,14 @@ namespace wpl
 					// INIT
 					HWND hlv = create_listview();
 					shared_ptr<listview> lv(wrap_listview(hlv));
-					model_ptr m(new mock_model(100, 1));
+					mocks::model_ptr m(new mocks::listview_model(100, 1));
 					NMLISTVIEW nmlv = {
 						{	0, 0, LVN_ITEMCHANGED	},
 						/* iItem = */ 0, /* iSubItem = */ 0,
 					};
 
 					lv->set_model(m);
-					lv->set_columns_model(mock_columns_model::create(L"iiii"));
+					lv->set_columns_model(mocks::listview_columns_model::create(L"iiii"));
 					lv->adjust_column_widths();
 
 					// ACT
@@ -1381,14 +1269,14 @@ namespace wpl
 					// INIT
 					HWND hlv = create_listview();
 					shared_ptr<listview> lv(wrap_listview(hlv));
-					model_ptr m(new mock_model(100, 1));
+					mocks::model_ptr m(new mocks::listview_model(100, 1));
 					NMLISTVIEW nmlv = {
 						{	0, 0, LVN_ITEMCHANGED	},
 						/* iItem = */ 0, /* iSubItem = */ 0,
 					};
 
 					lv->set_model(m);
-					lv->set_columns_model(mock_columns_model::create(L"iiii"));
+					lv->set_columns_model(mocks::listview_columns_model::create(L"iiii"));
 					lv->adjust_column_widths();
 
 					// ACT
@@ -1411,8 +1299,8 @@ namespace wpl
 					// INIT
 					HWND hlv = create_listview();
 					shared_ptr<listview> lv(wrap_listview(hlv));
-					model_ptr m(new mock_model(100));
-					shared_ptr<const listview::trackable> t(new mock_trackable());
+					mocks::model_ptr m(new mocks::listview_model(100));
+					shared_ptr<const listview::trackable> t(new mocks::listview_trackable());
 					weak_ptr<const listview::trackable> wt(t);
 					vector<int> matched;
 
@@ -1422,7 +1310,7 @@ namespace wpl
 					// ACT
 					ListView_SetItemState(hlv, 5, LVIS_FOCUSED, LVIS_FOCUSED);
 					m->trackables.clear();
-					t = trackable_ptr();
+					t = mocks::trackable_ptr();
 
 					// ASSERT
 					assert_is_false(wt.expired());
@@ -1434,8 +1322,8 @@ namespace wpl
 					// INIT
 					HWND hlv = create_listview();
 					shared_ptr<listview> lv(wrap_listview(hlv));
-					model_ptr m(new mock_model(100));
-					weak_ptr<const listview::trackable> wt(mock_trackable::add(m->trackables, 5));
+					mocks::model_ptr m(new mocks::listview_model(100));
+					weak_ptr<const listview::trackable> wt(mocks::listview_trackable::add(m->trackables, 5));
 					vector<int> matched;
 
 					lv->set_model(m);
@@ -1455,8 +1343,8 @@ namespace wpl
 					// INIT
 					HWND hlv = create_listview();
 					shared_ptr<listview> lv(wrap_listview(hlv));
-					model_ptr m(new mock_model(100));
-					weak_ptr<const listview::trackable> wt(mock_trackable::add(m->trackables, 5));
+					mocks::model_ptr m(new mocks::listview_model(100));
+					weak_ptr<const listview::trackable> wt(mocks::listview_trackable::add(m->trackables, 5));
 					vector<int> matched;
 
 					lv->set_model(m);
@@ -1476,8 +1364,8 @@ namespace wpl
 					// INIT
 					HWND hlv = create_listview();
 					shared_ptr<listview> lv(wrap_listview(hlv));
-					model_ptr m(new mock_model(100));
-					trackable_ptr t(mock_trackable::add(m->trackables, 5));
+					mocks::model_ptr m(new mocks::listview_model(100));
+					mocks::trackable_ptr t(mocks::listview_trackable::add(m->trackables, 5));
 					vector<size_t> matched;
 
 					lv->set_model(m);
@@ -1511,8 +1399,8 @@ namespace wpl
 				{
 					HWND hlv = create_listview();
 					shared_ptr<listview> lv(wrap_listview(hlv));
-					model_ptr m(new mock_model(100));
-					trackable_ptr t(mock_trackable::add(m->trackables, 5));
+					mocks::model_ptr m(new mocks::listview_model(100));
+					mocks::trackable_ptr t(mocks::listview_trackable::add(m->trackables, 5));
 					weak_ptr<const listview::trackable> wt(t);
 					vector<int> matched;
 
@@ -1537,11 +1425,11 @@ namespace wpl
 					// INIT
 					HWND hlv = create_listview();
 					shared_ptr<listview> lv(wrap_listview(hlv));
-					model_ptr m(new mock_model(100));
-					trackable_ptr t[] = {
-						mock_trackable::add(m->trackables, 5),
-						mock_trackable::add(m->trackables, 7),
-						mock_trackable::add(m->trackables, 17),
+					mocks::model_ptr m(new mocks::listview_model(100));
+					mocks::trackable_ptr t[] = {
+						mocks::listview_trackable::add(m->trackables, 5),
+						mocks::listview_trackable::add(m->trackables, 7),
+						mocks::listview_trackable::add(m->trackables, 17),
 					};
 					vector<int> matched;
 
@@ -1587,13 +1475,13 @@ namespace wpl
 					// INIT
 					HWND hlv = create_listview();
 					shared_ptr<listview> lv(wrap_listview(hlv));
-					model_ptr m(new mock_model(100));
-					trackable_ptr t[] = {
-						mock_trackable::add(m->trackables, 5),
-						mock_trackable::add(m->trackables, 7),
-						mock_trackable::add(m->trackables, 17),
-						mock_trackable::add(m->trackables, 19),
-						mock_trackable::add(m->trackables, 23),
+					mocks::model_ptr m(new mocks::listview_model(100));
+					mocks::trackable_ptr t[] = {
+						mocks::listview_trackable::add(m->trackables, 5),
+						mocks::listview_trackable::add(m->trackables, 7),
+						mocks::listview_trackable::add(m->trackables, 17),
+						mocks::listview_trackable::add(m->trackables, 19),
+						mocks::listview_trackable::add(m->trackables, 23),
 					};
 					vector<int> matched;
 
@@ -1633,12 +1521,12 @@ namespace wpl
 					// INIT
 					HWND hlv = create_listview();
 					shared_ptr<listview> lv(wrap_listview(hlv));
-					model_ptr m(new mock_model(100));
-					trackable_ptr t(mock_trackable::add(m->trackables, 4));
+					mocks::model_ptr m(new mocks::listview_model(100));
+					mocks::trackable_ptr t(mocks::listview_trackable::add(m->trackables, 4));
 					weak_ptr<const listview::trackable> wt[] = {
 						t,
-						mock_trackable::add(m->trackables, 8),
-						mock_trackable::add(m->trackables, 16),
+						mocks::listview_trackable::add(m->trackables, 8),
+						mocks::listview_trackable::add(m->trackables, 16),
 					};
 
 					lv->set_model(m);
@@ -1664,11 +1552,11 @@ namespace wpl
 					// INIT
 					HWND hlv = create_listview();
 					shared_ptr<listview> lv(wrap_listview(hlv));
-					model_ptr m(new mock_model(100));
+					mocks::model_ptr m(new mocks::listview_model(100));
 					weak_ptr<const listview::trackable> wt[] = {
-						mock_trackable::add(m->trackables, 4),
-						mock_trackable::add(m->trackables, 8),
-						mock_trackable::add(m->trackables, 16),
+						mocks::listview_trackable::add(m->trackables, 4),
+						mocks::listview_trackable::add(m->trackables, 8),
+						mocks::listview_trackable::add(m->trackables, 16),
 					};
 
 					lv->set_model(m);
@@ -1693,11 +1581,11 @@ namespace wpl
 					// INIT
 					HWND hlv = create_listview();
 					shared_ptr<listview> lv(wrap_listview(hlv));
-					model_ptr m(new mock_model(100));
-					trackable_ptr t[] = {
-						mock_trackable::add(m->trackables, 5),
-						mock_trackable::add(m->trackables, 7),
-						mock_trackable::add(m->trackables, 17),
+					mocks::model_ptr m(new mocks::listview_model(100));
+					mocks::trackable_ptr t[] = {
+						mocks::listview_trackable::add(m->trackables, 5),
+						mocks::listview_trackable::add(m->trackables, 7),
+						mocks::listview_trackable::add(m->trackables, 17),
 					};
 
 					lv->set_model(m);
@@ -1734,11 +1622,11 @@ namespace wpl
 					// INIT
 					HWND hlv = create_listview();
 					shared_ptr<listview> lv(wrap_listview(hlv));
-					model_ptr m(new mock_model(100));
-					trackable_ptr t[] = {
-						mock_trackable::add(m->trackables, 5),
-						mock_trackable::add(m->trackables, 7),
-						mock_trackable::add(m->trackables, 17),
+					mocks::model_ptr m(new mocks::listview_model(100));
+					mocks::trackable_ptr t[] = {
+						mocks::listview_trackable::add(m->trackables, 5),
+						mocks::listview_trackable::add(m->trackables, 7),
+						mocks::listview_trackable::add(m->trackables, 17),
 					};
 
 					lv->set_model(m);
@@ -1766,8 +1654,8 @@ namespace wpl
 					// INIT
 					HWND hlv = create_listview();
 					shared_ptr<listview> lv(wrap_listview(hlv));
-					model_ptr m(new mock_model(100));
-					trackable_ptr t(mock_trackable::add(m->trackables, 7));
+					mocks::model_ptr m(new mocks::listview_model(100));
+					mocks::trackable_ptr t(mocks::listview_trackable::add(m->trackables, 7));
 					
 					lv->set_model(m);
 					m->tracking_requested.clear();
@@ -1787,7 +1675,7 @@ namespace wpl
 					// INIT
 					HWND hlv = create_listview();
 					shared_ptr<listview> lv(wrap_listview(hlv));
-					model_ptr m(new mock_model(100));
+					mocks::model_ptr m(new mocks::listview_model(100));
 					
 					lv->set_model(m);
 					ListView_SetItemState(hlv, 7, LVIS_SELECTED, LVIS_SELECTED);
@@ -1808,11 +1696,11 @@ namespace wpl
 					// INIT
 					HWND hlv = create_listview();
 					shared_ptr<listview> lv(wrap_listview(hlv));
-					model_ptr m(new mock_model(100));
+					mocks::model_ptr m(new mocks::listview_model(100));
 					weak_ptr<const listview::trackable> wt[] = {
-						mock_trackable::add(m->trackables, 4),
-						mock_trackable::add(m->trackables, 8),
-						mock_trackable::add(m->trackables, 16),
+						mocks::listview_trackable::add(m->trackables, 4),
+						mocks::listview_trackable::add(m->trackables, 8),
+						mocks::listview_trackable::add(m->trackables, 16),
 					};
 
 					lv->set_model(m);
@@ -1822,7 +1710,7 @@ namespace wpl
 					m->trackables.clear();
 
 					// ACT
-					lv->set_model(model_ptr(new mock_model(130)));
+					lv->set_model(mocks::model_ptr(new mocks::listview_model(130)));
 
 					// ASSERT
 					assert_is_true(wt[0].expired());
@@ -1837,8 +1725,8 @@ namespace wpl
 					HWND hlv = create_listview();
 					shared_ptr<listview> lv(wrap_listview(hlv));
 
-					lv->set_model(model_ptr(new mock_model(100, 1)));
-					lv->set_columns_model(mock_columns_model::create(L"iiii"));
+					lv->set_model(mocks::model_ptr(new mocks::listview_model(100, 1)));
+					lv->set_columns_model(mocks::listview_columns_model::create(L"iiii"));
 					lv->adjust_column_widths();
 
 					// ACT
@@ -1872,9 +1760,9 @@ namespace wpl
 					// INIT
 					HWND hlv = create_listview();
 					shared_ptr<listview> lv(wrap_listview(hlv));
-					model_ptr m(new mock_model(100, 1));
+					mocks::model_ptr m(new mocks::listview_model(100, 1));
 
-					lv->set_columns_model(mock_columns_model::create(L"iiii"));
+					lv->set_columns_model(mocks::listview_columns_model::create(L"iiii"));
 					lv->adjust_column_widths();
 					lv->set_model(m);
 
@@ -1901,13 +1789,13 @@ namespace wpl
 					// INIT
 					HWND hlv = create_listview();
 					shared_ptr<listview> lv(wrap_listview(hlv));
-					model_ptr m(new mock_model(100, 1));
+					mocks::model_ptr m(new mocks::listview_model(100, 1));
 					weak_ptr<const listview::trackable> wt[] = {
-						mock_trackable::add(m->trackables, 4),
-						mock_trackable::add(m->trackables, 7),
+						mocks::listview_trackable::add(m->trackables, 4),
+						mocks::listview_trackable::add(m->trackables, 7),
 					};
 
-					lv->set_columns_model(mock_columns_model::create(L"iiii"));
+					lv->set_columns_model(mocks::listview_columns_model::create(L"iiii"));
 					lv->adjust_column_widths();
 					lv->set_model(m);
 
@@ -1927,10 +1815,10 @@ namespace wpl
 					// INIT
 					HWND hlv = create_listview();
 					shared_ptr<listview> lv(wrap_listview(hlv));
-					model_ptr m1(new mock_model(100, 1)), m2(new mock_model(100, 1));
-					weak_ptr<const listview::trackable> wt = mock_trackable::add(m1->trackables, 5);
+					mocks::model_ptr m1(new mocks::listview_model(100, 1)), m2(new mocks::listview_model(100, 1));
+					weak_ptr<const listview::trackable> wt = mocks::listview_trackable::add(m1->trackables, 5);
 
-					lv->set_columns_model(mock_columns_model::create(L"iiii"));
+					lv->set_columns_model(mocks::listview_columns_model::create(L"iiii"));
 					lv->adjust_column_widths();
 					lv->set_model(m1);
 					lv->ensure_visible(5);
@@ -1949,11 +1837,11 @@ namespace wpl
 					// INIT
 					HWND hlv = create_listview();
 					shared_ptr<listview> lv(wrap_listview(hlv));
-					model_ptr m(new mock_model(100, 1));
-					trackable_ptr t(mock_trackable::add(m->trackables, 0));
+					mocks::model_ptr m(new mocks::listview_model(100, 1));
+					mocks::trackable_ptr t(mocks::listview_trackable::add(m->trackables, 0));
 
 					lv->set_model(m);
-					lv->set_columns_model(mock_columns_model::create(L"iiii"));
+					lv->set_columns_model(mocks::listview_columns_model::create(L"iiii"));
 					lv->adjust_column_widths();
 					lv->ensure_visible(0);
 
@@ -1991,11 +1879,11 @@ namespace wpl
 					// INIT
 					HWND hlv = create_listview();
 					shared_ptr<listview> lv(wrap_listview(hlv));
-					model_ptr m(new mock_model(100, 1));
-					trackable_ptr t(mock_trackable::add(m->trackables, 0));
+					mocks::model_ptr m(new mocks::listview_model(100, 1));
+					mocks::trackable_ptr t(mocks::listview_trackable::add(m->trackables, 0));
 
 					lv->set_model(m);
-					lv->set_columns_model(mock_columns_model::create(L"iiii"));
+					lv->set_columns_model(mocks::listview_columns_model::create(L"iiii"));
 					lv->adjust_column_widths();
 					lv->ensure_visible(0);
 
@@ -2026,11 +1914,11 @@ namespace wpl
 					// INIT
 					HWND hlv = create_listview();
 					shared_ptr<listview> lv(wrap_listview(hlv));
-					model_ptr m(new mock_model(100, 1));
-					trackable_ptr t(mock_trackable::add(m->trackables, 49));
+					mocks::model_ptr m(new mocks::listview_model(100, 1));
+					mocks::trackable_ptr t(mocks::listview_trackable::add(m->trackables, 49));
 
 					lv->set_model(m);
-					lv->set_columns_model(mock_columns_model::create(L"iiii"));
+					lv->set_columns_model(mocks::listview_columns_model::create(L"iiii"));
 					lv->adjust_column_widths();
 					lv->ensure_visible(49);
 
@@ -2051,11 +1939,11 @@ namespace wpl
 					// INIT
 					HWND hlv = create_listview();
 					shared_ptr<listview> lv(wrap_listview(hlv));
-					model_ptr m(new mock_model(100, 1));
-					trackable_ptr t(mock_trackable::add(m->trackables, 49));
+					mocks::model_ptr m(new mocks::listview_model(100, 1));
+					mocks::trackable_ptr t(mocks::listview_trackable::add(m->trackables, 49));
 
 					lv->set_model(m);
-					lv->set_columns_model(mock_columns_model::create(L"iiii"));
+					lv->set_columns_model(mocks::listview_columns_model::create(L"iiii"));
 					lv->adjust_column_widths();
 					lv->ensure_visible(49);
 					ListView_EnsureVisible(hlv, 0, FALSE);
@@ -2079,14 +1967,14 @@ namespace wpl
 					// INIT
 					HWND hlv = create_listview();
 					shared_ptr<listview> lv(wrap_listview(hlv));
-					model_ptr m(new mock_model(10, 2));
-					trackable_ptr t(mock_trackable::add(m->trackables, 9));
+					mocks::model_ptr m(new mocks::listview_model(10, 2));
+					mocks::trackable_ptr t(mocks::listview_trackable::add(m->trackables, 9));
 					listview::columns_model::column columns[] = {
 						listview::columns_model::column(L"iiii"),
 						listview::columns_model::column(L"wwwwwwwwwwwww"),
 					};
 
-					lv->set_columns_model(mock_columns_model::create(columns, listview::columns_model::npos, false));
+					lv->set_columns_model(mocks::listview_columns_model::create(columns, listview::columns_model::npos, false));
 					lv->adjust_column_widths();
 					lv->set_model(m);
 
@@ -2137,10 +2025,10 @@ namespace wpl
 					// INIT
 					HWND hlv = create_listview();
 					shared_ptr<listview> lv(wrap_listview(hlv));
-					model_ptr m(new mock_model(10, 1));
-					trackable_ptr t(mock_trackable::add(m->trackables, 9));
+					mocks::model_ptr m(new mocks::listview_model(10, 1));
+					mocks::trackable_ptr t(mocks::listview_trackable::add(m->trackables, 9));
 
-					lv->set_columns_model(mock_columns_model::create(L"iiii"));
+					lv->set_columns_model(mocks::listview_columns_model::create(L"iiii"));
 					lv->adjust_column_widths();
 					lv->set_model(m);
 
@@ -2189,6 +2077,105 @@ namespace wpl
 					assert_equal(2u, nviews.size());
 					assert_equal(hlv, nviews[1].get_view().get_window());
 					assert_equal(make_position(0, 0, 107, 1100), nviews[1].location);
+				}
+
+
+				test( ListViewCanBeIndependablyCreated )
+				{
+					// INIT
+					window_tracker wt;
+
+					wt.checkpoint();
+
+					// INIT / ACT
+					shared_ptr<listview> lv = wpl::ui::create_listview();
+
+					// ASSERT
+					assert_not_null(lv);
+					wt.checkpoint();
+
+					vector<HWND> created = wt.find_created(WC_LISTVIEWW);
+
+					assert_equal(1u, created.size());
+
+					// ACT
+					lv.reset();
+
+					// ASSERT
+					wt.checkpoint();
+					assert_not_equal(wt.destroyed.end(), find(wt.destroyed.begin(), wt.destroyed.end(), created[0]));
+				}
+
+
+				test( ListViewIsCreatedWithExpectedStyles )
+				{
+					// INIT
+					window_tracker wt;
+
+					// INIT / ACT
+					shared_ptr<listview> lv = wpl::ui::create_listview();
+
+					// ASSERT
+					wt.checkpoint();
+
+					enum {
+						expected_style = LVS_REPORT | LVS_SINGLESEL | LVS_SHOWSELALWAYS | LVS_OWNERDATA | WS_BORDER,
+						expected_lv_style = LVS_EX_FULLROWSELECT | LVS_EX_DOUBLEBUFFER,
+					};
+					HWND hwnd = wt.find_created(WC_LISTVIEW)[0];
+
+					assert_equal(expected_style, expected_style & ::GetWindowLongA(hwnd, GWL_STYLE));
+					assert_equal((DWORD)expected_lv_style, expected_lv_style & ListView_GetExtendedListViewStyle(hwnd));
+				}
+
+
+				test( IndependtListViewHandlesNativeNotifications )
+				{
+					// INIT
+					window_tracker wt;
+					shared_ptr<listview> lv = wpl::ui::create_listview();
+					vector<listview::index_type> selections;
+					slot_connection c =
+						lv->selection_changed += bind(&push_back<listview::index_type>, ref(selections), _1);
+
+					wt.checkpoint();
+
+					RECT rc;
+					HWND hlv = wt.find_created(WC_LISTVIEW)[0];
+					listview::columns_model::column columns[] = {
+						listview::columns_model::column(L"", 100),
+						listview::columns_model::column(L"", 100),
+						listview::columns_model::column(L"", 50),
+					};
+					mocks::columns_model_ptr cm(mocks::listview_columns_model::create(columns, listview::columns_model::npos, false));
+					mocks::model_ptr m(new mocks::listview_model(3, 3));
+
+					::MoveWindow(hlv, 0, 0, 300, 200, TRUE);
+					lv->set_columns_model(cm);
+					lv->set_model(m);
+
+					// ACT
+					ListView_GetItemRect(hlv, 0, &rc, LVIR_SELECTBOUNDS);
+ 					::PostMessage(hlv, WM_LBUTTONUP, 0, (rc.top << 16) | rc.left);
+					::SendMessage(hlv, WM_LBUTTONDOWN, 0, (rc.top << 16) | rc.left);
+
+					// ASSERT
+					listview::index_type reference1[] = { 0, };
+
+					assert_equal(reference1, selections);
+
+					// ACT
+					ListView_GetItemRect(hlv, 2, &rc, LVIR_SELECTBOUNDS);
+ 					::PostMessage(hlv, WM_LBUTTONUP, 0, (rc.top << 16) | rc.left);
+					::SendMessage(hlv, WM_LBUTTONDOWN, 0, (rc.top << 16) | rc.left);
+					ListView_GetItemRect(hlv, 1, &rc, LVIR_SELECTBOUNDS);
+ 					::PostMessage(hlv, WM_LBUTTONUP, 0, (rc.top << 16) | rc.left);
+					::SendMessage(hlv, WM_LBUTTONDOWN, 0, (rc.top << 16) | rc.left);
+
+					// ASSERT
+					listview::index_type reference2[] = { 0, listview::npos, 2, listview::npos, 1, };
+
+					assert_equal(reference2, selections);
 				}
 			end_test_suite
 		}
