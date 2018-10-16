@@ -63,5 +63,6 @@
     <ClInclude Include="win32\listview.h">
       <Filter>Source Files\win32</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\wpl\ui\models.h" />
   </ItemGroup>
 </Project>

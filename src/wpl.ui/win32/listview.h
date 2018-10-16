@@ -65,7 +65,7 @@ namespace wpl
 
 				// listview interface
 				virtual void set_columns_model(std::shared_ptr<columns_model> cm);
-				virtual void set_model(std::shared_ptr<model> model);
+				virtual void set_model(std::shared_ptr<table_model> model);
 
 				virtual void adjust_column_widths();
 
@@ -96,7 +96,7 @@ namespace wpl
 				bool _avoid_notifications;
 				std::wstring _text_buffer;
 				std::shared_ptr<columns_model> _columns_model;
-				std::shared_ptr<model> _model;
+				std::shared_ptr<table_model> _model;
 				std::shared_ptr<window> _listview;
 				std::shared_ptr<void> _invalidated_connection, _sort_order_changed_connection;
 				columns_model::index_type _sort_column;

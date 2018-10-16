@@ -43,7 +43,7 @@ namespace wpl
 
 
 				listview_model::index_type listview_model::get_count() const throw()
-				{	return items.size();	}
+				{	return static_cast<index_type>(items.size());	}
 
 				void listview_model::get_text(index_type row, index_type column, wstring &text) const
 				{
@@ -54,13 +54,13 @@ namespace wpl
 				void listview_model::set_order(index_type column, bool ascending)
 				{	ordering.push_back(make_pair(column, ascending));	}
 
-				shared_ptr<const listview::trackable> listview_model::track(index_type row) const
+				shared_ptr<const trackable> listview_model::track(index_type row) const
 				{
 					tracking_requested.push_back(row);
 
-					map< index_type, shared_ptr<const listview::trackable> >::const_iterator i = trackables.find(row);
+					map< index_type, shared_ptr<const trackable> >::const_iterator i = trackables.find(row);
 
-					return i != trackables.end() ? i->second : shared_ptr<const listview::trackable>();
+					return i != trackables.end() ? i->second : shared_ptr<const trackable>();
 				}
 
 				listview_model::listview_model(index_type count, index_type columns)
@@ -70,7 +70,7 @@ namespace wpl
 				void listview_model::set_count(index_type new_count)
 				{
 					items.resize(new_count, vector<wstring>(columns_count));
-					invalidated(items.size());
+					invalidated(static_cast<index_type>(items.size()));
 				}
 			}
 		}

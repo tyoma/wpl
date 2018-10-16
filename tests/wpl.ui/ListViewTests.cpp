@@ -301,7 +301,7 @@ namespace wpl
 					lv->set_model(m);
 
 					// ACT
-					lv->set_model(shared_ptr<listview::model>());
+					lv->set_model(shared_ptr<table_model>());
 
 					// ASSERT
 					assert_equal(0, ListView_GetItemCount(hlv));
@@ -696,7 +696,7 @@ namespace wpl
 					lv->set_columns_model(mocks::listview_columns_model::create(columns, 1, false));
 
 					// ACT / ASSERT (must not throw)
-					lv->set_model(shared_ptr<listview::model>());
+					lv->set_model(shared_ptr<table_model>());
 				}
 
 
@@ -1300,8 +1300,8 @@ namespace wpl
 					HWND hlv = create_listview();
 					shared_ptr<listview> lv(wrap_listview(hlv));
 					mocks::model_ptr m(new mocks::listview_model(100));
-					shared_ptr<const listview::trackable> t(new mocks::listview_trackable());
-					weak_ptr<const listview::trackable> wt(t);
+					shared_ptr<const trackable> t(new mocks::listview_trackable());
+					weak_ptr<const trackable> wt(t);
 					vector<int> matched;
 
 					lv->set_model(m);
@@ -1323,7 +1323,7 @@ namespace wpl
 					HWND hlv = create_listview();
 					shared_ptr<listview> lv(wrap_listview(hlv));
 					mocks::model_ptr m(new mocks::listview_model(100));
-					weak_ptr<const listview::trackable> wt(mocks::listview_trackable::add(m->trackables, 5));
+					weak_ptr<const trackable> wt(mocks::listview_trackable::add(m->trackables, 5));
 					vector<int> matched;
 
 					lv->set_model(m);
@@ -1344,7 +1344,7 @@ namespace wpl
 					HWND hlv = create_listview();
 					shared_ptr<listview> lv(wrap_listview(hlv));
 					mocks::model_ptr m(new mocks::listview_model(100));
-					weak_ptr<const listview::trackable> wt(mocks::listview_trackable::add(m->trackables, 5));
+					weak_ptr<const trackable> wt(mocks::listview_trackable::add(m->trackables, 5));
 					vector<int> matched;
 
 					lv->set_model(m);
@@ -1401,7 +1401,7 @@ namespace wpl
 					shared_ptr<listview> lv(wrap_listview(hlv));
 					mocks::model_ptr m(new mocks::listview_model(100));
 					mocks::trackable_ptr t(mocks::listview_trackable::add(m->trackables, 5));
-					weak_ptr<const listview::trackable> wt(t);
+					weak_ptr<const trackable> wt(t);
 					vector<int> matched;
 
 					lv->set_model(m);
@@ -1523,7 +1523,7 @@ namespace wpl
 					shared_ptr<listview> lv(wrap_listview(hlv));
 					mocks::model_ptr m(new mocks::listview_model(100));
 					mocks::trackable_ptr t(mocks::listview_trackable::add(m->trackables, 4));
-					weak_ptr<const listview::trackable> wt[] = {
+					weak_ptr<const trackable> wt[] = {
 						t,
 						mocks::listview_trackable::add(m->trackables, 8),
 						mocks::listview_trackable::add(m->trackables, 16),
@@ -1553,7 +1553,7 @@ namespace wpl
 					HWND hlv = create_listview();
 					shared_ptr<listview> lv(wrap_listview(hlv));
 					mocks::model_ptr m(new mocks::listview_model(100));
-					weak_ptr<const listview::trackable> wt[] = {
+					weak_ptr<const trackable> wt[] = {
 						mocks::listview_trackable::add(m->trackables, 4),
 						mocks::listview_trackable::add(m->trackables, 8),
 						mocks::listview_trackable::add(m->trackables, 16),
@@ -1697,7 +1697,7 @@ namespace wpl
 					HWND hlv = create_listview();
 					shared_ptr<listview> lv(wrap_listview(hlv));
 					mocks::model_ptr m(new mocks::listview_model(100));
-					weak_ptr<const listview::trackable> wt[] = {
+					weak_ptr<const trackable> wt[] = {
 						mocks::listview_trackable::add(m->trackables, 4),
 						mocks::listview_trackable::add(m->trackables, 8),
 						mocks::listview_trackable::add(m->trackables, 16),
@@ -1790,7 +1790,7 @@ namespace wpl
 					HWND hlv = create_listview();
 					shared_ptr<listview> lv(wrap_listview(hlv));
 					mocks::model_ptr m(new mocks::listview_model(100, 1));
-					weak_ptr<const listview::trackable> wt[] = {
+					weak_ptr<const trackable> wt[] = {
 						mocks::listview_trackable::add(m->trackables, 4),
 						mocks::listview_trackable::add(m->trackables, 7),
 					};
@@ -1816,7 +1816,7 @@ namespace wpl
 					HWND hlv = create_listview();
 					shared_ptr<listview> lv(wrap_listview(hlv));
 					mocks::model_ptr m1(new mocks::listview_model(100, 1)), m2(new mocks::listview_model(100, 1));
-					weak_ptr<const listview::trackable> wt = mocks::listview_trackable::add(m1->trackables, 5);
+					weak_ptr<const trackable> wt = mocks::listview_trackable::add(m1->trackables, 5);
 
 					lv->set_columns_model(mocks::listview_columns_model::create(L"iiii"));
 					lv->adjust_column_widths();

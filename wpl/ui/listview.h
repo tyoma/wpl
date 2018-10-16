@@ -20,26 +20,19 @@
 
 #pragma once
 
+#include "models.h"
 #include "view.h"
-
-#include "../base/concepts.h"
-
-#include <string>
 
 namespace wpl
 {
 	namespace ui
 	{
-		struct listview : view
+		struct listview : view, index_traits
 		{
-			typedef size_t index_type;
 			struct columns_model;
-			struct model;
-			struct trackable;
-			static const index_type npos = static_cast<index_type>(-1);
 
 			virtual void set_columns_model(std::shared_ptr<columns_model> cm) = 0;
-			virtual void set_model(std::shared_ptr<model> ds) = 0;
+			virtual void set_model(std::shared_ptr<table_model> ds) = 0;
 
 			virtual void adjust_column_widths() = 0;
 
@@ -78,31 +71,6 @@ namespace wpl
 			short int width;
 		};
 
-		struct listview::model : destructible
-		{
-			typedef listview::index_type index_type;
-
-			virtual index_type get_count() const throw() = 0;
-			virtual void get_text(index_type row, index_type column, std::wstring &text) const = 0;
-			virtual void set_order(index_type column, bool ascending) = 0;
-			virtual void precache(index_type from, index_type count) const;
-			virtual std::shared_ptr<const listview::trackable> track(index_type row) const;
-
-			signal<void (index_type /*new_count*/)> invalidated;
-		};
-
-		struct listview::trackable : destructible
-		{
-			virtual listview::index_type index() const = 0;
-		};
-
-
-
-		inline void listview::model::precache(index_type /*from*/, index_type /*count*/) const
-		{	}
-
-		inline std::shared_ptr<const listview::trackable> listview::model::track(index_type /*row*/) const
-		{	return std::shared_ptr<listview::trackable>();	}
 
 
 		inline listview::columns_model::column::column()

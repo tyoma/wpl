@@ -159,7 +159,7 @@ namespace wpl
 				_columns_model = cm;
 			}
 
-			void listview::set_model(shared_ptr<model> model)
+			void listview::set_model(shared_ptr<table_model> model)
 			{
 				if (_columns_model && model)
 				{

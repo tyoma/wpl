@@ -66,6 +66,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\wpl\ui\models.h" />
     <ClInclude Include="..\..\wpl\ui\container.h" />
     <ClInclude Include="..\..\wpl\ui\form.h" />
     <ClInclude Include="..\..\wpl\ui\input.h" />

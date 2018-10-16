@@ -19,7 +19,7 @@ namespace wpl
 				typedef std::shared_ptr<listview_columns_model> columns_model_ptr;
 				typedef std::shared_ptr<listview_trackable> trackable_ptr;
 
-				class listview_trackable : public listview::trackable
+				class listview_trackable : public trackable
 				{
 				public:
 					~listview_trackable();
@@ -64,7 +64,7 @@ namespace wpl
 					virtual void activate_column(index_type column);
 				};
 
-				class listview_model : public listview::model
+				class listview_model : public table_model
 				{
 				public:
 					listview_model(index_type count, index_type columns = 0);
@@ -73,7 +73,7 @@ namespace wpl
 				public:
 					index_type columns_count;
 					std::vector< std::vector<std::wstring> > items;
-					std::map< index_type, std::shared_ptr<const listview::trackable> > trackables;
+					std::map< index_type, std::shared_ptr<const trackable> > trackables;
 					std::vector< std::pair<index_type, bool> > ordering;
 					mutable std::vector<index_type> tracking_requested;
 
@@ -81,7 +81,7 @@ namespace wpl
 					virtual index_type get_count() const throw();
 					virtual void get_text(index_type row, index_type column, std::wstring &text) const;
 					virtual void set_order(index_type column, bool ascending);
-					virtual std::shared_ptr<const listview::trackable> track(index_type row) const;
+					virtual std::shared_ptr<const trackable> track(index_type row) const;
 				};
 
 
