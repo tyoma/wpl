@@ -136,8 +136,10 @@ namespace wpl
 
 					case WM_LBUTTONDOWN:
 					case WM_LBUTTONUP:
+					case WM_LBUTTONDBLCLK:
 					case WM_RBUTTONDOWN:
 					case WM_RBUTTONUP:
+					case WM_RBUTTONDBLCLK:
 					case WM_MOUSEMOVE:
 					case WM_MOUSELEAVE:
 						dispatch_mouse(message, wparam, lparam);
@@ -189,12 +191,20 @@ namespace wpl
 					_view->mouse_up(mouse_input::left, 0, x, y);
 					break;
 
+				case WM_LBUTTONDBLCLK:
+					_view->mouse_double_click(mouse_input::left, 0, x, y);
+					break;
+
 				case WM_RBUTTONDOWN:
 					_view->mouse_down(mouse_input::right, 0, x, y);
 					break;
 
 				case WM_RBUTTONUP:
 					_view->mouse_up(mouse_input::right, 0, x, y);
+					break;
+
+				case WM_RBUTTONDBLCLK:
+					_view->mouse_double_click(mouse_input::right, 0, x, y);
 					break;
 				}
 			}

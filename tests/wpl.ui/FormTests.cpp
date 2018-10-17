@@ -439,12 +439,16 @@ namespace wpl
 					::SendMessage(f.second, WM_LBUTTONDOWN, 0, pack_coordinates(-13, 1002));
 					::SendMessage(f.second, WM_LBUTTONUP, 0, pack_coordinates(11222, -200));
 					::SendMessage(f.second, WM_LBUTTONDOWN, 0, pack_coordinates(10, 10));
+					::SendMessage(f.second, WM_LBUTTONDBLCLK, 0, pack_coordinates(12, 11));
+					::SendMessage(f.second, WM_LBUTTONDBLCLK, 0, pack_coordinates(10, 13));
 
 					// ASSERT
 					mocks::mouse_event events1[] = {
 						mocks::me_down(mouse_input::left, 0, -13, 1002),
 						mocks::me_up(mouse_input::left, 0, 11222, -200),
 						mocks::me_down(mouse_input::left, 0, 10, 10),
+						mocks::me_double_click(mouse_input::left, 0, 12, 11),
+						mocks::me_double_click(mouse_input::left, 0, 10, 13),
 					};
 
 					assert_equal(events1, v->events_log);
@@ -456,6 +460,8 @@ namespace wpl
 					::SendMessage(f.second, WM_RBUTTONDOWN, 0, pack_coordinates(-13, 1002));
 					::SendMessage(f.second, WM_RBUTTONUP, 0, pack_coordinates(112, -11));
 					::SendMessage(f.second, WM_RBUTTONDOWN, 0, pack_coordinates(1, 1));
+					::SendMessage(f.second, WM_RBUTTONDBLCLK, 0, pack_coordinates(12, 11));
+					::SendMessage(f.second, WM_RBUTTONDBLCLK, 0, pack_coordinates(10, 13));
 					::SendMessage(f.second, WM_RBUTTONUP, 0, pack_coordinates(-3, -7));
 
 					// ASSERT
@@ -463,6 +469,8 @@ namespace wpl
 						mocks::me_down(mouse_input::right, 0, -13, 1002),
 						mocks::me_up(mouse_input::right, 0, 112, -11),
 						mocks::me_down(mouse_input::right, 0, 1, 1),
+						mocks::me_double_click(mouse_input::right, 0, 12, 11),
+						mocks::me_double_click(mouse_input::right, 0, 10, 13),
 						mocks::me_up(mouse_input::right, 0, -3, -7),
 					};
 
