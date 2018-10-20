@@ -51,7 +51,7 @@ namespace wpl
 
 			struct column;
 
-			static const short int npos = -1;
+			const static index_type npos = static_cast<index_type>(-1);
 
 			virtual index_type get_count() const throw() = 0;
 			virtual void get_column(index_type index, column &column) const = 0;

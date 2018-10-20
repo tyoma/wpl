@@ -45,7 +45,9 @@
     <ClCompile Include="FormTests.cpp">
       <DisableLanguageExtensions>false</DisableLanguageExtensions>
     </ClCompile>
-    <ClCompile Include="IntegrationTests.cpp" />
+    <ClCompile Include="IntegrationTests.cpp">
+      <DisableLanguageExtensions>false</DisableLanguageExtensions>
+    </ClCompile>
     <ClCompile Include="LayoutTests.cpp" />
     <ClCompile Include="ListViewTests.cpp">
       <DisableLanguageExtensions>false</DisableLanguageExtensions>
