@@ -80,7 +80,7 @@ namespace wpl
 					::DestroyWindow(_hwnd);
 			}
 
-			HWND reflector_host::get_window() throw()
+			HWND reflector_host::get_host_hwnd() throw()
 			{	return _hwnd;	}
 
 			LRESULT CALLBACK reflector_host::windowproc_proxy(HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam)
@@ -100,29 +100,24 @@ namespace wpl
 
 
 			listview::listview()
-				: _reflector_parent(new reflector_host), _hwnd_listview(::CreateWindow(WC_LISTVIEW, NULL, WS_POPUP | style,
-					0, 0, 1, 1, _reflector_parent->get_window(), NULL, NULL, NULL))
 			{
-				ListView_SetExtendedListViewStyle(_hwnd_listview,
-					listview_style | ListView_GetExtendedListViewStyle(_hwnd_listview));
-				wrap_init(_hwnd_listview);
+				native_view<wpl::ui::listview>::init(::CreateWindow(WC_LISTVIEW, NULL, WS_POPUP | style, 0, 0, 1, 1,
+					get_host_hwnd(), NULL, NULL, NULL), true);
+				ListView_SetExtendedListViewStyle(get_window(),
+					listview_style | ListView_GetExtendedListViewStyle(get_window()));
+				init();
 			}
 
 			listview::listview(HWND hwnd)
-				: _hwnd_listview(NULL)
-			{	wrap_init(hwnd);	}
-
-			listview::~listview()
 			{
-				if (_hwnd_listview)
-					::DestroyWindow(_hwnd_listview);
+				native_view<wpl::ui::listview>::init(hwnd, false);
+				init();
 			}
 
-			void listview::wrap_init(HWND hwnd)
+			void listview::init()
 			{
 				_avoid_notifications = false,
 				_sort_column = columns_model::npos;
-				_listview = window::attach(hwnd, bind(&listview::wndproc, this, _1, _2, _3, _4));
 			}
 
 			void listview::set_columns_model(shared_ptr<columns_model> cm)
@@ -131,8 +126,8 @@ namespace wpl
 				LVCOLUMN lvcolumn = { 0 };
 				columns_model::column c;
 
-				for (int i = Header_GetItemCount(ListView_GetHeader(_listview->hwnd())) - 1; i >= 0; --i)
-					ListView_DeleteColumn(_listview->hwnd(), i);
+				for (int i = Header_GetItemCount(ListView_GetHeader(get_window())) - 1; i >= 0; --i)
+					ListView_DeleteColumn(get_window(), i);
 				for (columns_model::index_type i = 0, count = cm->get_count(); i != count; ++i)
 				{
 					cm->get_column(i, c);
@@ -141,7 +136,7 @@ namespace wpl
 					lvcolumn.pszText = (LPTSTR)(LPCTSTR)caption;
 					lvcolumn.iSubItem = i;
 					lvcolumn.cx = c.width;
-					ListView_InsertColumn(_listview->hwnd(), i, &lvcolumn);
+					ListView_InsertColumn(get_window(), i, &lvcolumn);
 				}
 
 				pair<columns_model::index_type, bool> sort_order = cm->get_sort_order();
@@ -179,43 +174,31 @@ namespace wpl
 
 			void listview::adjust_column_widths()
 			{
-				for (int i = 0, count = Header_GetItemCount(ListView_GetHeader(_listview->hwnd())); i < count; ++i)
-					ListView_SetColumnWidth(_listview->hwnd(), i, LVSCW_AUTOSIZE_USEHEADER);
+				for (int i = 0, count = Header_GetItemCount(ListView_GetHeader(get_window())); i < count; ++i)
+					ListView_SetColumnWidth(get_window(), i, LVSCW_AUTOSIZE_USEHEADER);
 			}
 
 			void listview::select(index_type item, bool reset_previous)
 			{
 				if (reset_previous)
 					clear_selection();
-				ListView_SetItemState(_listview->hwnd(), item, LVIS_SELECTED, LVIS_SELECTED);
+				ListView_SetItemState(get_window(), item, LVIS_SELECTED, LVIS_SELECTED);
 			}
 
 			void listview::clear_selection()
-			{	ListView_SetItemState(_listview->hwnd(), -1, 0, LVIS_SELECTED);	}
+			{	ListView_SetItemState(get_window(), -1, 0, LVIS_SELECTED);	}
 
 			void listview::ensure_visible(index_type item)
 			{
 				_visible_item = make_pair(item, _model->track(item));
-				ListView_EnsureVisible(_listview->hwnd(), item, FALSE);
+				ListView_EnsureVisible(get_window(), item, FALSE);
 			}
 
-			void listview::resize(unsigned cx, unsigned cy, positioned_native_views &native_views)
-			{
-				view_location l = { 0, 0, static_cast<int>(cx), static_cast<int>(cy) };
-				native_views.push_back(positioned_native_view(*this, l));
-			}
-
-			HWND listview::get_window() throw()
-			{	return _listview->hwnd();	}
-
-			LRESULT listview::wndproc(UINT message, WPARAM wparam, LPARAM lparam, const window::original_handler_t &previous)
+			LRESULT listview::on_message(UINT message, WPARAM wparam, LPARAM lparam,
+				const window::original_handler_t &previous)
 			{
 				switch (message)
 				{
-				case WM_NCDESTROY:
-					_hwnd_listview = NULL;
-					break;
-
 				case WM_NOTIFY:
 					if (const NMHEADER *pnmhd = reinterpret_cast<const NMHEADER *>(lparam))
 					{
@@ -296,15 +279,15 @@ namespace wpl
 					set_column_direction(_sort_column, dir_none);
 				set_column_direction(new_ordering_column, ascending ? dir_ascending : dir_descending);
 				_sort_column = new_ordering_column;
-				ListView_RedrawItems(_listview->hwnd(), 0, ListView_GetItemCount(_listview->hwnd()));
+				ListView_RedrawItems(get_window(), 0, ListView_GetItemCount(get_window()));
 			}
 
 			void listview::invalidate_view(index_type new_count)
 			{
-				if (new_count != static_cast<index_type>(ListView_GetItemCount(_listview->hwnd())))
-					ListView_SetItemCountEx(_listview->hwnd(), new_count, 0);
+				if (new_count != static_cast<index_type>(ListView_GetItemCount(get_window())))
+					ListView_SetItemCountEx(get_window(), new_count, 0);
 				else
-					ListView_RedrawItems(_listview->hwnd(), 0, new_count);
+					ListView_RedrawItems(get_window(), 0, new_count);
 				_avoid_notifications = true;
 				update_focus();
 				update_selection();
@@ -318,7 +301,7 @@ namespace wpl
 				{
 					index_type new_focus = _focused_item->index();
 
-					ListView_SetItemState(_listview->hwnd(), new_focus, npos != new_focus ? LVIS_FOCUSED : 0, LVIS_FOCUSED);
+					ListView_SetItemState(get_window(), new_focus, npos != new_focus ? LVIS_FOCUSED : 0, LVIS_FOCUSED);
 					if (npos == new_focus)
 						_focused_item.reset();
 				}
@@ -328,7 +311,7 @@ namespace wpl
 			{
 				vector<index_type> selection_before, selection_after, d;
 
-				for (int i = -1; i = ListView_GetNextItem(_listview->hwnd(), i, LVNI_ALL | LVNI_SELECTED), i != -1; )
+				for (int i = -1; i = ListView_GetNextItem(get_window(), i, LVNI_ALL | LVNI_SELECTED), i != -1; )
 					selection_before.push_back(i);
 				for (selection_trackers::iterator i = _selected_items.begin(); i != _selected_items.end(); )
 					if (!i->second || (i->first = i->second->index()) != npos)
@@ -338,11 +321,11 @@ namespace wpl
 				sort(selection_after.begin(), selection_after.end());
 				set_difference(selection_after.begin(), selection_after.end(), selection_before.begin(), selection_before.end(), back_inserter(d));
 				for (vector<index_type>::const_iterator i = d.begin(); i != d.end(); ++i)
-					ListView_SetItemState(_listview->hwnd(), *i, LVIS_SELECTED, LVIS_SELECTED);
+					ListView_SetItemState(get_window(), *i, LVIS_SELECTED, LVIS_SELECTED);
 				d.clear();
 				set_difference(selection_before.begin(), selection_before.end(), selection_after.begin(), selection_after.end(), back_inserter(d));
 				for (vector<index_type>::const_iterator i = d.begin(); i != d.end(); ++i)
-					ListView_SetItemState(_listview->hwnd(), *i, 0, LVIS_SELECTED);
+					ListView_SetItemState(get_window(), *i, 0, LVIS_SELECTED);
 			}
 
 			void listview::ensure_tracked_visibility()
@@ -351,7 +334,7 @@ namespace wpl
 				{
 					index_type new_position = _visible_item.second->index();
 					if (new_position != _visible_item.first && is_item_visible(_visible_item.first) && !is_item_visible(new_position))
-						ListView_EnsureVisible(_listview->hwnd(), new_position, FALSE);
+						ListView_EnsureVisible(get_window(), new_position, FALSE);
 					_visible_item.first = new_position;
 				}
 			}
@@ -360,16 +343,16 @@ namespace wpl
 			{
 				RECT rc1, rc2, rc;
 
-				::GetClientRect(_listview->hwnd(), &rc1);
-				ListView_GetItemRect(_listview->hwnd(), item, &rc2, LVIR_BOUNDS);
+				::GetClientRect(get_window(), &rc1);
+				ListView_GetItemRect(get_window(), item, &rc2, LVIR_BOUNDS);
 				if (!::IntersectRect(&rc, &rc1, &rc2))
 					return false;
-				if (HWND hheader = ListView_GetHeader(_listview->hwnd()))
+				if (HWND hheader = ListView_GetHeader(get_window()))
 					if (::IsWindowVisible(hheader))
 					{
 						rc2 = rc;
 						::GetWindowRect(hheader, &rc1);
-						::MapWindowPoints(HWND_DESKTOP, _listview->hwnd(), reinterpret_cast<POINT *>(&rc1), 2);
+						::MapWindowPoints(HWND_DESKTOP, get_window(), reinterpret_cast<POINT *>(&rc1), 2);
 						::UnionRect(&rc, &rc1, &rc2);
 						if (::EqualRect(&rc, &rc1))
 							return false;
@@ -380,7 +363,7 @@ namespace wpl
 			void listview::set_column_direction(index_type column, sort_direction dir) throw()
 			{
 				HDITEM item = { 0 };
-				HWND hheader = ListView_GetHeader(_listview->hwnd());
+				HWND hheader = ListView_GetHeader(get_window());
 
 				item.mask = HDI_FORMAT;
 				item.fmt = HDF_STRING | (dir == dir_ascending ? HDF_SORTUP : dir == dir_descending ? HDF_SORTDOWN : 0);

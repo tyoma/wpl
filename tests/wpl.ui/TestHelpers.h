@@ -28,7 +28,7 @@ namespace wpl
 			RECT get_window_rect(HWND hwnd);
 			RECT rect(int left, int top, int width, int height);
 			std::wstring get_window_text(HWND hwnd);
-			unsigned int pack_coordinates(short x, short y);
+			unsigned int pack_coordinates(int x, int y);
 
 
 			class WindowManager
@@ -48,7 +48,6 @@ namespace wpl
 			public:
 				~WindowManager();
 
-				void Init();
 				void Cleanup();
 			};
 
@@ -84,7 +83,7 @@ namespace wpl
 			{	return container_.end();	}
 
 
-			inline unsigned int pack_coordinates(short x, short y)
+			inline unsigned int pack_coordinates(int x, int y)
 			{	return (unsigned short)x | ((unsigned int )(unsigned short)y << 16);	}
 
 			template <typename T>

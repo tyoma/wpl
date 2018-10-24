@@ -20,23 +20,26 @@
 
 #pragma once
 
-#include "types.h"
-
-#include <memory>
+#include "view.h"
 
 namespace wpl
 {
 	namespace ui
 	{
-		struct button;
-		struct link;
-		struct listview;
-		struct view_host;
+		struct text_container
+		{
+			virtual ~text_container() {	}
+			virtual void set_text(const std::wstring &text) = 0;
+		};
 
-		std::shared_ptr<listview> wrap_listview(HWND hwnd);
-		std::shared_ptr<view_host> wrap_view_host(HWND hwnd);
-		std::shared_ptr<listview> create_listview();
-		std::shared_ptr<button> create_button();
-		std::shared_ptr<link> create_link();
+		struct button : view, text_container
+		{
+			signal<void()> clicked;
+		};
+
+		struct link : view, text_container
+		{
+			signal<void(size_t item, const std::wstring &link_text)> clicked;
+		};
 	}
 }

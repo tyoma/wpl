@@ -48,9 +48,17 @@ namespace wpl
 
 				LRESULT reflection_wndproc(UINT message, WPARAM wparam, LPARAM lparam, const wpl::ui::window::original_handler_t &previous)
 				{
-					return WM_NOTIFY == message ?
-						::SendMessage(reinterpret_cast<NMHDR *>(lparam)->hwndFrom, OCM_NOTIFY, wparam, lparam)
-						: previous(message, wparam, lparam);
+					switch (message)
+					{
+					case WM_NOTIFY:
+						return ::SendMessage(reinterpret_cast<NMHDR *>(lparam)->hwndFrom, OCM_NOTIFY, wparam, lparam);
+
+					case WM_COMMAND:
+						return ::SendMessage(reinterpret_cast<HWND>(lparam), OCM_COMMAND, wparam, lparam);
+
+					default:
+						return previous(message, wparam, lparam);
+					}
 				}
 			}
 
@@ -110,13 +118,6 @@ namespace wpl
 			{
 				_windows.erase(remove(_windows.begin(), _windows.end(), hwnd), _windows.end());
 				::DestroyWindow(hwnd);
-			}
-
-			void WindowManager::Init()
-			{
-				INITCOMMONCONTROLSEX icc = { sizeof(INITCOMMONCONTROLSEX), ICC_LISTVIEW_CLASSES | ICC_STANDARD_CLASSES };
-
-				::InitCommonControlsEx(&icc);
 			}
 
 			void WindowManager::Cleanup()

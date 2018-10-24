@@ -20,8 +20,7 @@
 
 #include <wpl/ui/listview.h>
 
-#include <wpl/ui/win32/native_view.h>
-#include <wpl/ui/win32/window.h>
+#include "native_view.h"
 
 namespace wpl
 {
@@ -35,7 +34,7 @@ namespace wpl
 				reflector_host();
 				~reflector_host();
 
-				HWND get_window() throw();
+				HWND get_host_hwnd() throw();
 
 			private:
 				class reflector_class;
@@ -48,12 +47,11 @@ namespace wpl
 				HWND _hwnd;
 			};
 
-			class listview : public wpl::ui::listview, private native_view
+			class listview : reflector_host, public native_view<wpl::ui::listview>
 			{
 			public:
 				listview();
 				listview(HWND hwnd);
-				virtual ~listview();
 
 			private:
 				enum sort_direction	{	dir_none, dir_ascending, dir_descending	};
@@ -61,7 +59,7 @@ namespace wpl
 				typedef std::vector<tracked_item> selection_trackers;
 
 			private:
-				void wrap_init(HWND hwnd);
+				void init();
 
 				// listview interface
 				virtual void set_columns_model(std::shared_ptr<columns_model> cm);
@@ -74,13 +72,8 @@ namespace wpl
 
 				virtual void ensure_visible(index_type item);
 
-				// visual interface
-				virtual void resize(unsigned cx, unsigned cy, positioned_native_views &native_views);
-
-				// native_view interface
-				virtual HWND get_window() throw();
-
-				LRESULT wndproc(UINT message, WPARAM wparam, LPARAM lparam, const window::original_handler_t &previous);
+				virtual LRESULT on_message(UINT message, WPARAM wparam, LPARAM lparam,
+					const window::original_handler_t &previous);
 
 				void update_sort_order(columns_model::index_type new_ordering_column, bool ascending);
 				void invalidate_view(index_type new_count);
@@ -91,13 +84,13 @@ namespace wpl
 				void set_column_direction(index_type column, sort_direction direction) throw();
 
 			private:
-				std::auto_ptr<reflector_host> _reflector_parent;
-				HWND _hwnd_listview;
+//				std::auto_ptr<reflector_host> _reflector_parent;
+//				HWND _hwnd_listview;
 				bool _avoid_notifications;
 				std::wstring _text_buffer;
 				std::shared_ptr<columns_model> _columns_model;
 				std::shared_ptr<table_model> _model;
-				std::shared_ptr<window> _listview;
+//				std::shared_ptr<window> _listview;
 				std::shared_ptr<void> _invalidated_connection, _sort_order_changed_connection;
 				columns_model::index_type _sort_column;
 				std::shared_ptr<const trackable> _focused_item;

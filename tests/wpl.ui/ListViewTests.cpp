@@ -106,11 +106,6 @@ namespace wpl
 
 				WindowManager windowManager;
 
-				init( Init )
-				{
-					windowManager.Init();
-				}
-
 				teardown( Cleanup )
 				{
 					windowManager.Cleanup();
@@ -2156,8 +2151,8 @@ namespace wpl
 
 					// ACT
 					ListView_GetItemRect(hlv, 0, &rc, LVIR_SELECTBOUNDS);
- 					::PostMessage(hlv, WM_LBUTTONUP, 0, (rc.top << 16) | rc.left);
-					::SendMessage(hlv, WM_LBUTTONDOWN, 0, (rc.top << 16) | rc.left);
+ 					::PostMessage(hlv, WM_LBUTTONUP, 0, pack_coordinates(rc.left, rc.top));
+					::SendMessage(hlv, WM_LBUTTONDOWN, 0, pack_coordinates(rc.left, rc.top));
 
 					// ASSERT
 					listview::index_type reference1[] = { 0, };
@@ -2166,11 +2161,11 @@ namespace wpl
 
 					// ACT
 					ListView_GetItemRect(hlv, 2, &rc, LVIR_SELECTBOUNDS);
- 					::PostMessage(hlv, WM_LBUTTONUP, 0, (rc.top << 16) | rc.left);
-					::SendMessage(hlv, WM_LBUTTONDOWN, 0, (rc.top << 16) | rc.left);
+ 					::PostMessage(hlv, WM_LBUTTONUP, 0, pack_coordinates(rc.left, rc.top));
+					::SendMessage(hlv, WM_LBUTTONDOWN, 0, pack_coordinates(rc.left, rc.top));
 					ListView_GetItemRect(hlv, 1, &rc, LVIR_SELECTBOUNDS);
- 					::PostMessage(hlv, WM_LBUTTONUP, 0, (rc.top << 16) | rc.left);
-					::SendMessage(hlv, WM_LBUTTONDOWN, 0, (rc.top << 16) | rc.left);
+ 					::PostMessage(hlv, WM_LBUTTONUP, 0, pack_coordinates(rc.left, rc.top));
+					::SendMessage(hlv, WM_LBUTTONDOWN, 0, pack_coordinates(rc.left, rc.top));
 
 					// ASSERT
 					listview::index_type reference2[] = { 0, listview::npos, 2, listview::npos, 1, };

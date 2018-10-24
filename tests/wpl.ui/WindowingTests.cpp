@@ -56,11 +56,6 @@ namespace wpl
 
 				WindowManager windowManager;
 
-				init( Init )
-				{
-					windowManager.Init();
-				}
-
 				teardown( Cleanup )
 				{
 					windowManager.Cleanup();

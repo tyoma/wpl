@@ -45,6 +45,9 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="container.cpp" />
+    <ClCompile Include="win32\controls.cpp">
+      <DisableLanguageExtensions>false</DisableLanguageExtensions>
+    </ClCompile>
     <ClCompile Include="win32\form.cpp">
       <DisableLanguageExtensions>false</DisableLanguageExtensions>
     </ClCompile>
@@ -66,6 +69,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\wpl\ui\controls.h" />
     <ClInclude Include="..\..\wpl\ui\models.h" />
     <ClInclude Include="..\..\wpl\ui\container.h" />
     <ClInclude Include="..\..\wpl\ui\form.h" />
@@ -81,6 +85,7 @@
     <ClInclude Include="..\..\wpl\ui\win32\types.h" />
     <ClInclude Include="..\..\wpl\ui\win32\window.h" />
     <ClInclude Include="win32\listview.h" />
+    <ClInclude Include="win32\native_view.h" />
     <ClInclude Include="win32\view_host.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

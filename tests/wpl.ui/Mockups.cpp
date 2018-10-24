@@ -22,7 +22,7 @@ namespace wpl
 						~nv() {	}
 
 					private:
-						virtual HWND get_window() throw() { return 0; }
+						virtual HWND get_window() const throw() { return 0; }
 					} g_dummy;
 				}
 

@@ -34,6 +34,9 @@
     <ClCompile Include="win32\window.cpp">
       <Filter>Source Files\win32</Filter>
     </ClCompile>
+    <ClCompile Include="win32\controls.cpp">
+      <Filter>Source Files\win32</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\wpl\ui\win32\controls.h">
@@ -64,5 +67,9 @@
       <Filter>Source Files\win32</Filter>
     </ClInclude>
     <ClInclude Include="..\..\wpl\ui\models.h" />
+    <ClInclude Include="..\..\wpl\ui\controls.h" />
+    <ClInclude Include="win32\native_view.h">
+      <Filter>Source Files\win32</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

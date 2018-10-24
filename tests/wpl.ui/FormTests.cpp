@@ -35,7 +35,7 @@ namespace wpl
 							::DestroyWindow(_hwnd);
 					}
 
-					virtual HWND get_window()
+					virtual HWND get_window() const throw()
 					{	return _hwnd;	}
 
 				private:
@@ -69,7 +69,6 @@ namespace wpl
 
 				init( Init )
 				{
-					windowManager.Init();
 					windowManager.create_window();
 				}
 
