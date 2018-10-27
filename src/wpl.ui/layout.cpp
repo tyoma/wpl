@@ -63,5 +63,19 @@ namespace wpl
 				location += size + _spacing;
 			}
 		}
+
+
+		spacer::spacer(int space_x, int space_y)
+			: _space_x(space_x), _space_y(space_y)
+		{	}
+
+		void spacer::layout(unsigned width, unsigned height, container::positioned_view *views, size_t count) const
+		{
+			for (; count--; ++views)
+			{
+				views->location.left = _space_x, views->location.top = _space_y;
+				views->location.width = width - 2 * _space_x, views->location.height = height - 2 * _space_y;
+			}
+		}
 	}
 }

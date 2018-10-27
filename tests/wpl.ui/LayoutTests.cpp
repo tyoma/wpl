@@ -100,9 +100,9 @@ namespace wpl
 
 					// ASSERT
 					container::positioned_view reference1[] = {
-						{ 0, 0, 13, 15 },
-						{ 13, 0, 17, 15 },
-						{ 30, 0, 121, 15 },
+						{ { 0, 0, 13, 15 }, },
+						{ { 13, 0, 17, 15 }, },
+						{ { 30, 0, 121, 15 }, },
 					};
 
 					assert_equal(reference1[0], p[0]);
@@ -114,9 +114,9 @@ namespace wpl
 
 					// ASSERT
 					container::positioned_view reference2[] = {
-						{ 0, 0, 13, 19 },
-						{ 13, 0, 17, 19 },
-						{ 30, 0, 121, 19 },
+						{ { 0, 0, 13, 19 }, },
+						{ { 13, 0, 17, 19 }, },
+						{ { 30, 0, 121, 19 }, },
 					};
 
 					assert_equal(reference2[0], p[0]);
@@ -139,9 +139,9 @@ namespace wpl
 
 					// ASSERT
 					container::positioned_view reference1[] = {
-						{ 0, 0, 11, 13 },
-						{ 0, 13, 11, 17 },
-						{ 0, 30, 11, 121 },
+						{ { 0, 0, 11, 13 }, }, 
+						{ { 0, 13, 11, 17 }, },
+						{ { 0, 30, 11, 121 }, },
 					};
 
 					assert_equal(reference1[0], p[0]);
@@ -153,9 +153,9 @@ namespace wpl
 
 					// ASSERT
 					container::positioned_view reference2[] = {
-						{ 0, 0, 21, 13 },
-						{ 0, 13, 21, 17 },
-						{ 0, 30, 21, 121 },
+						{ { 0, 0, 21, 13 }, },
+						{ { 0, 13, 21, 17 }, },
+						{ { 0, 30, 21, 121 }, },
 					};
 
 					assert_equal(reference2[0], p[0]);
@@ -178,10 +178,10 @@ namespace wpl
 
 					// ASSERT
 					container::positioned_view reference1[] = {
-						{ 0, 0, 11, 13 },
-						{ 0, 18, 11, 17 },
-						{ 0, 40, 11, 121 },
-						{ 0, 166, 11, 71 },
+						{ { 0, 0, 11, 13 }, },
+						{ { 0, 18, 11, 17 }, },
+						{ { 0, 40, 11, 121 }, },
+						{ { 0, 166, 11, 71 }, },
 					};
 
 					assert_equal(reference1[0], p[0]);
@@ -207,8 +207,8 @@ namespace wpl
 
 					// ASSERT
 					container::positioned_view reference[] = {
-						{ 0, 0, 11, 15 },
-						{ 0, 0, 1103, 315 },
+						{ { 0, 0, 11, 15 }, },
+						{ { 0, 0, 1103, 315 }, },
 					};
 
 					assert_equal(reference[0], p1[0]);
@@ -232,13 +232,13 @@ namespace wpl
 
 					// ASSERT
 					container::positioned_view reference1[] = {
-						{ 0, 0, 19, 370 },
-						{ 0, 370, 19, 759 },
-						{ 0, 1129, 19, 185 },
+						{ { 0, 0, 19, 370 }, },
+						{ { 0, 370, 19, 759 }, },
+						{ { 0, 1129, 19, 185 }, },
 					};
 					container::positioned_view reference2[] = {
-						{ 0, 0, 31, 158 },
-						{ 0, 158, 31, 158 },
+						{ { 0, 0, 31, 158 }, },
+						{ { 0, 158, 31, 158 }, },
 					};
 
 					assert_equal(reference1[0], p1[0]);
@@ -266,13 +266,13 @@ namespace wpl
 
 					// ASSERT
 					container::positioned_view reference1[] = {
-						{ 0, 0, 19, 795 },
-						{ 0, 798, 19, 100 },
-						{ 0, 901, 19, 413 },
+						{ { 0, 0, 19, 795 }, },
+						{ { 0, 798, 19, 100 }, },
+						{ { 0, 901, 19, 413 }, },
 					};
 					container::positioned_view reference2[] = {
-						{ 0, 0, 31, 202 },
-						{ 0, 209, 31, 107 },
+						{ { 0, 0, 31, 202 }, },
+						{ { 0, 209, 31, 107 }, },
 					};
 
 					assert_equal(reference1[0], p1[0]);
@@ -282,7 +282,52 @@ namespace wpl
 					assert_equal(reference2[0], p2[0]);
 					assert_equal(reference2[1], p2[1]);
 				}
+			end_test_suite
 
+
+			begin_test_suite( SpacerLayoutTests )
+				test( AllViewsAreSpacedByCXAndCY )
+				{
+					// INIT
+					spacer rs1(5, 7);
+					layout_manager &s1 = rs1;
+					spacer rs2(3, 11);
+					layout_manager &s2 = rs2;
+					container::positioned_view p1[1];
+					container::positioned_view p2[2];
+
+					// ACT
+					s1.layout(100, 120, p1, _countof(p1));
+					s2.layout(100, 120, p2, _countof(p2));
+
+					// ASSERT
+					container::positioned_view reference1[] = {
+						{ { 5, 7, 90, 106 }, },
+					};
+					container::positioned_view reference2[] = {
+						{ { 3, 11, 94, 98 }, },
+						{ { 3, 11, 94, 98 }, },
+					};
+
+					assert_equal(reference1, p1);
+					assert_equal(reference2, p2);
+
+					// ACT
+					s1.layout(51, 91, p1, _countof(p1));
+					s2.layout(51, 91, p2, _countof(p2));
+
+					// ASSERT
+					container::positioned_view reference3[] = {
+						{ { 5, 7, 41, 77 }, },
+					};
+					container::positioned_view reference4[] = {
+						{ { 3, 11, 45, 69 }, },
+						{ { 3, 11, 45, 69 }, },
+					};
+
+					assert_equal(reference3, p1);
+					assert_equal(reference4, p2);
+				}
 			end_test_suite
 		}
 	}

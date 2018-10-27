@@ -49,5 +49,16 @@ namespace wpl
 			int _spacing;
 			bool _horizontal;
 		};
+
+		class spacer : public layout_manager
+		{
+		public:
+			spacer(int space_x, int space_y);
+
+			virtual void layout(unsigned width, unsigned height, container::positioned_view *views, size_t count) const;
+
+		private:
+			int _space_x, _space_y;
+		};
 	}
 }
