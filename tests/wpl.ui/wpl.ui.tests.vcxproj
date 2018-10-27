@@ -57,6 +57,9 @@
       <DisableLanguageExtensions>false</DisableLanguageExtensions>
     </ClCompile>
     <ClCompile Include="MockupsListView.cpp" />
+    <ClCompile Include="MockupsNative.cpp">
+      <DisableLanguageExtensions>false</DisableLanguageExtensions>
+    </ClCompile>
     <ClCompile Include="NativeControlsTests.cpp">
       <DisableLanguageExtensions>false</DisableLanguageExtensions>
     </ClCompile>
@@ -70,6 +73,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="MockupsListView.h" />
+    <ClInclude Include="MockupsNative.h" />
     <ClInclude Include="TestHelpers.h" />
     <ClInclude Include="Mockups.h" />
   </ItemGroup>

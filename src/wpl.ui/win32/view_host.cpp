@@ -222,7 +222,8 @@ namespace wpl
 
 					if (::GetParent(h) != _window->hwnd())
 					{
-						::SetWindowLong(h, GWL_STYLE, (::GetWindowLong(h, GWL_STYLE) | WS_CHILD) & ~(WS_POPUP | WS_OVERLAPPED));
+						::SetWindowLong(h, GWL_STYLE, (::GetWindowLong(h, GWL_STYLE) | WS_CHILD | WS_VISIBLE)
+							& ~(WS_POPUP | WS_OVERLAPPED));
 						::SetParent(h, _window->hwnd());
 						::SendMessage(h, WM_SETFONT, ::SendMessage(_window->hwnd(), WM_GETFONT, 0, 0), 0);
 					}

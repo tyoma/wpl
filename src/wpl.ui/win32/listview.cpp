@@ -37,7 +37,7 @@ namespace wpl
 			namespace
 			{
 				enum {
-					style = LVS_REPORT | LVS_SINGLESEL | LVS_SHOWSELALWAYS | LVS_OWNERDATA | WS_BORDER | WS_VISIBLE,
+					style = LVS_REPORT | LVS_SINGLESEL | LVS_SHOWSELALWAYS | LVS_OWNERDATA | WS_BORDER,
 					listview_style = LVS_EX_FULLROWSELECT | LVS_EX_DOUBLEBUFFER,
 				};
 				const TCHAR c_reflector_class[] = _T("wpl_reflector_class");

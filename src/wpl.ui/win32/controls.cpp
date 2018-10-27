@@ -67,7 +67,7 @@ namespace wpl
 
 			button_impl::button_impl()
 			{
-				init(::CreateWindow(WC_BUTTON, NULL, WS_VISIBLE | WS_POPUP, 0, 0, 100, 100, NULL, NULL, NULL, NULL), true);
+				init(::CreateWindow(WC_BUTTON, NULL, WS_POPUP, 0, 0, 100, 100, NULL, NULL, NULL, NULL), true);
 			}
 
 			LRESULT button_impl::on_message(UINT message, WPARAM wparam, LPARAM lparam,
@@ -87,7 +87,7 @@ namespace wpl
 
 			link_impl::link_impl()
 			{
-				init(::CreateWindow(WC_LINK, NULL, WS_VISIBLE | LWS_RIGHT | WS_POPUP, 0, 0, 100, 100, NULL, NULL, NULL,
+				init(::CreateWindow(WC_LINK, NULL, LWS_RIGHT | WS_POPUP, 0, 0, 100, 100, NULL, NULL, NULL,
 					NULL), true);
 			}
 

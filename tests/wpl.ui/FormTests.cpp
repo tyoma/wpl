@@ -2,6 +2,7 @@
 #include <wpl/ui/win32/native_view.h>
 
 #include "Mockups.h"
+#include "MockupsNative.h"
 #include "TestHelpers.h"
 
 #include <tchar.h>
@@ -841,6 +842,22 @@ namespace wpl
 					assert_equal(2u, v->resize_log.size());
 					assert_equal(rc.right, v->resize_log[1].first);
 					assert_equal(rc.bottom, v->resize_log[1].second);
+				}
+
+
+				test( NativeControlParentedBecomesVisible )
+				{
+					// INIT
+					form_and_handle f(create_form_with_handle());
+					shared_ptr<mocks::native_control> n(new mocks::native_control);
+
+					::ShowWindow(f.second, SW_SHOW);
+
+					// ACT
+					f.first->set_view(n);
+
+					// ASSERT
+					assert_is_true(!!::IsWindowVisible(n->get_window()));
 				}
 			end_test_suite
 		}
