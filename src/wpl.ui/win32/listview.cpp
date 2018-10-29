@@ -20,10 +20,11 @@
 
 #include "listview.h"
 
-#include <commctrl.h>
-#include <atlstr.h>
 #include <algorithm>
+#include <commctrl.h>
 #include <iterator>
+#include <tchar.h>
+#include <olectl.h>
 
 using namespace std;
 using namespace placeholders;
@@ -36,11 +37,25 @@ namespace wpl
 		{
 			namespace
 			{
+				typedef basic_string<TCHAR> tstring;
+
 				enum {
 					style = LVS_REPORT | LVS_SINGLESEL | LVS_SHOWSELALWAYS | LVS_OWNERDATA | WS_BORDER,
 					listview_style = LVS_EX_FULLROWSELECT | LVS_EX_DOUBLEBUFFER,
 				};
 				const TCHAR c_reflector_class[] = _T("wpl_reflector_class");
+
+				void convert_cp(wstring &to, const wstring &from)
+				{	to = from;	}
+
+				void convert_cp(string &to, const wstring &from)
+				{
+					size_t n = wcstombs(0, from.c_str(), 0);
+					vector<char> buffer(n != static_cast<size_t>(-1) ? n + 1 : 1);
+
+					wcstombs(&buffer[0], from.c_str(), buffer.size());
+					to = &buffer[0];
+				}
 			}
 
 
@@ -122,7 +137,7 @@ namespace wpl
 
 			void listview::set_columns_model(shared_ptr<columns_model> cm)
 			{
-				CString caption;
+				tstring caption;
 				LVCOLUMN lvcolumn = { 0 };
 				columns_model::column c;
 
@@ -131,9 +146,9 @@ namespace wpl
 				for (columns_model::index_type i = 0, count = cm->get_count(); i != count; ++i)
 				{
 					cm->get_column(i, c);
-					caption = c.caption.c_str();
+					convert_cp(caption, c.caption);
 					lvcolumn.mask = LVCF_SUBITEM | LVCF_TEXT | LVCF_WIDTH;
-					lvcolumn.pszText = (LPTSTR)(LPCTSTR)caption;
+					lvcolumn.pszText = (LPTSTR)caption.c_str();
 					lvcolumn.iSubItem = i;
 					lvcolumn.cx = c.width;
 					ListView_InsertColumn(get_window(), i, &lvcolumn);

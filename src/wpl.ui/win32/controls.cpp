@@ -87,7 +87,7 @@ namespace wpl
 
 			link_impl::link_impl()
 			{
-				init(::CreateWindow(WC_LINK, NULL, LWS_RIGHT | WS_POPUP, 0, 0, 100, 100, NULL, NULL, NULL,
+				init(::CreateWindow(_T("SysLink32"), NULL, LWS_RIGHT | WS_POPUP, 0, 0, 100, 100, NULL, NULL, NULL,
 					NULL), true);
 			}
 
