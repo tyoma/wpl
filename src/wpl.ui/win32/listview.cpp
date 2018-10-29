@@ -43,7 +43,6 @@ namespace wpl
 					style = LVS_REPORT | LVS_SINGLESEL | LVS_SHOWSELALWAYS | LVS_OWNERDATA | WS_BORDER,
 					listview_style = LVS_EX_FULLROWSELECT | LVS_EX_DOUBLEBUFFER,
 				};
-				const TCHAR c_reflector_class[] = _T("wpl_reflector_class");
 
 				void convert_cp(wstring &to, const wstring &from)
 				{	to = from;	}
@@ -56,67 +55,39 @@ namespace wpl
 					wcstombs(&buffer[0], from.c_str(), buffer.size());
 					to = &buffer[0];
 				}
-			}
 
-
-			class reflector_host::reflector_class : WNDCLASS
-			{
-			public:
-				reflector_class(WNDPROC wndproc)
+				LRESULT passthrough(UINT message, WPARAM wparam, LPARAM lparam, const window::original_handler_t &handler)
 				{
-					WNDCLASS zero = {};
+					switch (message)
+					{
+					case WM_NOTIFY:
+						return SendMessage(reinterpret_cast<const NMHDR*>(lparam)->hwndFrom, OCM_NOTIFY, wparam, lparam);
 
-					*static_cast<WNDCLASS *>(this) = zero;
-					style = WS_OVERLAPPED;
-					lpfnWndProc = wndproc;
-					lpszClassName = c_reflector_class;
- 					_id = ::RegisterClass(this);
+					default:
+						return handler(message, wparam, lparam);
+					}
 				}
-
-				~reflector_class()
-				{	::UnregisterClass(reinterpret_cast<LPCTSTR>(_id), NULL);	}
-
-			private:
-				ATOM _id;
-			};
-
-
-			reflector_host::reflector_class reflector_host::_class(&reflector_host::windowproc_proxy);
+			}
 
 
 			reflector_host::reflector_host()
-				: _hwnd(::CreateWindowEx(WS_EX_TOOLWINDOW, c_reflector_class, NULL, WS_POPUP, 0, 0, 10, 10, NULL, NULL,
-					NULL, NULL))
-			{	SetWindowLongPtr(_hwnd, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(this));	}
+				: _window(window::attach(::CreateWindowEx(WS_EX_TOOLWINDOW, WC_STATIC, NULL, WS_POPUP, 0, 0, 10, 10,
+					NULL, NULL, NULL, NULL), &passthrough))
+			{	}
 
 			reflector_host::~reflector_host()
 			{
-				if (_hwnd)
-					::DestroyWindow(_hwnd);
+				if (HWND hwnd = get_host_hwnd())
+					::DestroyWindow(hwnd);
 			}
 
 			HWND reflector_host::get_host_hwnd() throw()
-			{	return _hwnd;	}
-
-			LRESULT CALLBACK reflector_host::windowproc_proxy(HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam)
-			{
-				switch (message)
-				{
-				case WM_NOTIFY:
-					return SendMessage(reinterpret_cast<const NMHDR*>(lparam)->hwndFrom, OCM_NOTIFY, wparam, lparam);
-
-				case WM_NCDESTROY:
-					reinterpret_cast<reflector_host *>(GetWindowLongPtr(hwnd, GWLP_USERDATA))->_hwnd = NULL;
-
-				default:
-					return ::DefWindowProc(hwnd, message, wparam, lparam);
-				}
-			}
+			{	return _window->hwnd();	}
 
 
 			listview::listview()
 			{
-				native_view<wpl::ui::listview>::init(::CreateWindow(WC_LISTVIEW, NULL, WS_POPUP | style, 0, 0, 1, 1,
+				native_view<wpl::ui::listview>::init(::CreateWindow(WC_LISTVIEW, NULL, WS_CHILD | style, 0, 0, 1, 1,
 					get_host_hwnd(), NULL, NULL, NULL), true);
 				ListView_SetExtendedListViewStyle(get_window(),
 					listview_style | ListView_GetExtendedListViewStyle(get_window()));

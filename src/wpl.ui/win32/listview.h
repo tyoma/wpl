@@ -37,14 +37,7 @@ namespace wpl
 				HWND get_host_hwnd() throw();
 
 			private:
-				class reflector_class;
-
-			private:
-				static LRESULT CALLBACK windowproc_proxy(HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam);
-
-			private:
-				static reflector_class _class;
-				HWND _hwnd;
+				const std::shared_ptr<window> _window;
 			};
 
 			class listview : reflector_host, public native_view<wpl::ui::listview>
