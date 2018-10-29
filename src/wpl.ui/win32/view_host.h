@@ -36,6 +36,7 @@ namespace wpl
 				~view_host();
 
 				virtual void set_view(const std::shared_ptr<view> &v);
+				virtual void set_background_color(agge::color color);
 
 			private:
 				LRESULT wndproc(UINT message, WPARAM wparam, LPARAM lparam, const window::original_handler_t &previous);
@@ -51,6 +52,7 @@ namespace wpl
 				gcontext::renderer_type _renderer;
 				std::vector<slot_connection> _connections;
 				std::vector<visual::positioned_native_view> _positioned_views;
+				agge::color _background_color;
 				bool _mouse_in : 1;
 			};
 		}

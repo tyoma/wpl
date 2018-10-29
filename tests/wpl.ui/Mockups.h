@@ -1,5 +1,8 @@
 #pragma once
 
+#include "TestHelpers.h"
+
+#include <agge/color.h>
 #include <agge/filling_rules.h>
 #include <agge/figures.h>
 #include <agge/path.h>
@@ -39,9 +42,11 @@ namespace wpl
 
 				public:
 					mutable int min_x, min_y, max_x, max_y;
+					mutable bool has_uniform_color;
+					mutable gcontext::pixel_type uniform_color;
 
 				private:
-					mutable bool _empty;
+					mutable bool _empty, _unicolor_set;
 				};
 
 
@@ -53,6 +58,7 @@ namespace wpl
 					mutable std::vector< std::pair<int /*cx*/, int /*cy*/> > surface_size_log;
 					mutable std::vector<agge::rect_i> update_area_log;
 					mutable std::vector<gcontext::rasterizer_type *> rasterizers_log;
+					mutable std::vector< std::pair<gcontext::pixel_type, bool> > background_color;
 
 				private:
 					virtual void draw(gcontext &ctx, gcontext::rasterizer_ptr &rasterizer) const;
@@ -109,28 +115,6 @@ namespace wpl
 
 
 
-				inline blender::blender()
-					: _empty(true)
-				{	}
-
-				inline void blender::operator ()(const gcontext::pixel_type * /*buffer*/, int x, int y, agge::count_t count,
-					const cover_type * /*covers*/) const
-				{
-					if (_empty)
-					{
-						min_x = x, max_x = x + count, max_y = min_y = y;
-						_empty = false;
-					}
-					else
-					{
-						min_x = (std::min)(min_x, x);
-						min_y = (std::min)(min_y, y);
-						max_x = (std::max)(max_x, x + (int)count);
-						max_y = (std::max)(max_y, y);
-					}
-				}
-
-
 				template <typename BaseT>
 				inline void logging_visual<BaseT>::draw(gcontext &ctx, gcontext::rasterizer_ptr &rasterizer) const
 				{
@@ -142,6 +126,7 @@ namespace wpl
 					surface_size_log.push_back(std::make_pair(b.max_x - b.min_x, b.max_y - b.min_y + 1));
 					update_area_log.push_back(ctx.update_area());
 					rasterizers_log.push_back(rasterizer.get());
+					background_color.push_back(std::make_pair(b.uniform_color, b.has_uniform_color));
 				}
 
 				template <typename BaseT>

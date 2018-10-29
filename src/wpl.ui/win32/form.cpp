@@ -41,6 +41,7 @@ namespace wpl
 
 			private:
 				virtual void set_view(const shared_ptr<view> &v);
+				virtual void set_background_color(agge::color color);
 				virtual void set_visible(bool value);
 				virtual void set_caption(const std::wstring &caption);
 
@@ -65,6 +66,9 @@ namespace wpl
 
 			void form::set_view(const shared_ptr<view> &v)
 			{	_host->set_view(v);	}
+
+			void form::set_background_color(agge::color /*color*/)
+			{	}
 
 			void form::set_visible(bool value)
 			{

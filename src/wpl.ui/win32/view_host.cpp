@@ -20,6 +20,8 @@
 
 #include "view_host.h"
 
+#include <agge/blenders.h>
+#include <agge/blenders_simd.h>
 #include <wpl/ui/win32/controls.h>
 #include <wpl/ui/win32/native_view.h>
 
@@ -110,6 +112,12 @@ namespace wpl
 				v->force_layout();
 			}
 
+			void view_host::set_background_color(agge::color color)
+			{
+				_background_color = color;
+				::InvalidateRect(_window->hwnd(), NULL, TRUE);
+			}
+
 			LRESULT view_host::wndproc(UINT message, WPARAM wparam, LPARAM lparam, const window::original_handler_t &previous)
 			{
 				switch (message)
@@ -148,9 +156,14 @@ namespace wpl
 					case WM_PAINT:
 						paint_sequence ps(_window->hwnd());
 						rect_i update_area = { ps.rcPaint.left, ps.rcPaint.top, ps.rcPaint.right, ps.rcPaint.bottom };
+						rect_i update_size = { 0, 0, update_area.x2 - update_area.x1, update_area.y2 - update_area.y1 };
 
 						_surface.resize(ps.width(), ps.height());
+						fill(_surface, update_size,
+							blender_solid_color<simd::blender_solid_color, order_bgra>(_background_color));
+
 						gcontext ctx(_surface, _renderer, update_area);
+
 						_rasterizer->reset();
 						_view->draw(ctx, _rasterizer);
 						_surface.blit(ps.hdc, update_area.x1, update_area.y1, ps.width(), ps.height());

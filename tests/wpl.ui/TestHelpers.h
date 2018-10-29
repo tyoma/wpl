@@ -1,8 +1,8 @@
 #pragma once
 
-#include <agge/types.h>
 #include <wpl/base/concepts.h>
 #include <wpl/ui/types.h>
+#include <wpl/ui/visual.h>
 
 #include <algorithm>
 #include <iterator>
@@ -13,6 +13,11 @@
 
 typedef struct HWND__ *HWND;	// stolen from windows.h
 typedef struct tagRECT RECT;
+
+namespace agge
+{
+	struct color;
+}
 
 namespace wpl
 {
@@ -98,6 +103,8 @@ namespace wpl
 				view_location p = { x, y, width, height };
 				return p;
 			}
+			
+			gcontext::pixel_type make_pixel(const agge::color& color);
 		}
 
 		inline bool operator ==(const view_location &lhs, const view_location &rhs)
@@ -105,8 +112,13 @@ namespace wpl
 	}
 }
 
-template <typename T>
-inline bool operator ==(const agge::rect<T> &lhs, const agge::rect<T> &rhs)
-{	return lhs.x1 == rhs.x1 && lhs.y1 == rhs.y1 && lhs.x2 == rhs.x2 && lhs.y2 == rhs.y2;	}
+namespace agge
+{
+	bool operator ==(const wpl::ui::gcontext::pixel_type &lhs, const wpl::ui::gcontext::pixel_type &rhs);
+
+	template <typename T>
+	inline bool operator ==(const rect<T> &lhs, const rect<T> &rhs)
+	{	return lhs.x1 == rhs.x1 && lhs.y1 == rhs.y1 && lhs.x2 == rhs.x2 && lhs.y2 == rhs.y2;	}
+}
 
 bool operator ==(const RECT &lhs, const RECT &rhs);

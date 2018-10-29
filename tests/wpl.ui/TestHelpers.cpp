@@ -1,5 +1,6 @@
 #include "TestHelpers.h"
 
+#include <agge/color.h>
 #include <wpl/ui/win32/window.h>
 
 #include <algorithm>
@@ -8,15 +9,13 @@
 #include <tchar.h>
 #include <windows.h>
 
+using namespace agge;
 using namespace std;
 
 namespace wpl
 {
 	namespace ui
 	{
-		class container;
-		struct widget;
-
 		namespace tests
 		{
 			namespace
@@ -177,11 +176,29 @@ namespace wpl
 				}
 				return result;
 			}
+
+			gcontext::pixel_type make_pixel(const agge::color& color)
+			{
+				gcontext::pixel_type p;
+
+				p.components[order_bgra::R] = color.r;
+				p.components[order_bgra::G] = color.g;
+				p.components[order_bgra::B] = color.b;
+				p.components[order_bgra::A] = color.a;
+				return p;
+			}
 		}
 	}
+}
+
+namespace agge
+{
+	bool operator ==(const wpl::ui::gcontext::pixel_type &lhs, const wpl::ui::gcontext::pixel_type &rhs)
+	{	return !memcmp(&lhs, &rhs, sizeof(wpl::ui::gcontext::pixel_type));	}
 }
 
 bool operator ==(const RECT &lhs, const RECT &rhs)
 {
 	return lhs.left == rhs.left && lhs.top == rhs.top && lhs.right == rhs.right && lhs.bottom == rhs.bottom;
 }
+

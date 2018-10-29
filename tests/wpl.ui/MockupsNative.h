@@ -3,7 +3,6 @@
 #include <wpl/base/concepts.h>
 #include <wpl/ui/view.h>
 #include <wpl/ui/win32/native_view.h>
-#include <wpl/ui/win32/types.h>
 
 namespace wpl
 {
@@ -13,18 +12,31 @@ namespace wpl
 		{
 			namespace mocks
 			{
-				class native_control : public view, native_view, noncopyable
+				class native_view_window : public wpl::ui::native_view, noncopyable
 				{
 				public:
-					native_control();
-					~native_control();
-
-					virtual void resize(unsigned cx, unsigned cy, positioned_native_views &native_views);
+					native_view_window();
+					~native_view_window();
 
 					virtual HWND get_window() const throw();
 
 				private:
 					const HWND _hwnd;
+				};
+
+				class native_view : public view
+				{
+				public:
+					typedef std::vector< std::pair<std::shared_ptr<native_view_window>, view_location> > response_t;
+
+				public:
+					native_view();
+
+					virtual void resize(unsigned cx, unsigned cy, visual::positioned_native_views &nviews);
+
+				public:
+					response_t response;
+					bool container_was_dirty;
 				};
 			}
 		}
