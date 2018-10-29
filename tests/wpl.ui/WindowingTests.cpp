@@ -50,6 +50,14 @@ namespace wpl
 
 				LRESULT passthrough(UINT message, WPARAM wparam, LPARAM lparam, const window::original_handler_t &previous)
 				{	return previous(message, lparam, wparam);	}
+
+				LRESULT reset_on_ncdestroy(shared_ptr<window> &w, UINT message, WPARAM wparam, LPARAM lparam,
+					const window::original_handler_t &previous)
+				{
+					if (WM_NCDESTROY == message)
+						w.reset();
+					return previous(message, wparam, lparam);
+				}
 			}
 
 			begin_test_suite( WindowingTests )
@@ -393,6 +401,32 @@ namespace wpl
 					// ASSERT
 					assert_null(w->hwnd());
 				}
+
+
+				test( WindowDetachOnDestroyReleasesWindowObject )
+				{
+					// INIT
+					HWND hwnd[] = { windowManager.create_window(), windowManager.create_window(), };
+					shared_ptr<window> w[2];
+
+					w[0] = window::attach(hwnd[0], bind(&reset_on_ncdestroy, ref(w[0]), _1, _2, _3, _4));
+					w[1] = window::attach(hwnd[1], bind(&reset_on_ncdestroy, ref(w[1]), _1, _2, _3, _4));
+
+					weak_ptr<window> ww[2] = { w[0], w[1], };
+
+					// ACT / ASSERT (must not crash)
+					::DestroyWindow(hwnd[0]);
+
+					// ASSERT
+					assert_is_true(ww[0].expired());
+
+					// ACT / ASSERT (must not crash)
+					::DestroyWindow(hwnd[1]);
+
+					// ASSERT
+					assert_is_true(ww[1].expired());
+				}
+
 			end_test_suite
 		}
 	}

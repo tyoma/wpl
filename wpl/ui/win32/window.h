@@ -62,7 +62,7 @@ namespace wpl
 		private:
 			static mt::tls<windows_map> _windows;
 			HWND _hwnd;
-			LONG_PTR _wndproc;
+			WNDPROC _wndproc;
 			user_handler_t _user_handler;
 		};
 	}

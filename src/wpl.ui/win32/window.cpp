@@ -20,8 +20,6 @@
 
 #include <wpl/ui/win32/window.h>
 
-#include <wpl/base/concepts.h>
-
 #include <stdexcept>
 
 using namespace std;
@@ -37,6 +35,14 @@ namespace wpl
 
 			size_t knuth_hash(unsigned long long int key) throw()
 			{	return static_cast<size_t>(key * 0x7FFFFFFFFFFFFFFF);	}
+
+			WNDPROC set_wndproc(HWND hwnd, WNDPROC value)
+			{
+				return reinterpret_cast<WNDPROC>(::SetWindowLongPtr(hwnd, GWLP_WNDPROC, reinterpret_cast<LONG_PTR>(value)));
+			}
+
+			WNDPROC get_wndproc(HWND hwnd)
+			{	return reinterpret_cast<WNDPROC>(::GetWindowLongPtr(hwnd, GWLP_WNDPROC));	}
 		}
 
 		mt::tls< unordered_map<HWND, window *, window::hwnd_hash> > window::_windows;
@@ -66,7 +72,7 @@ namespace wpl
 		{	return _hwnd;	}
 
 		LRESULT window::operator ()(UINT message, WPARAM wparam, LPARAM lparam) const
-		{	return ::CallWindowProc(reinterpret_cast<WNDPROC>(_wndproc), _hwnd, message, wparam, lparam);	}
+		{	return ::CallWindowProc(_wndproc, _hwnd, message, wparam, lparam);	}
 
 		LRESULT CALLBACK window::windowproc_proxy(HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam)
 		{
@@ -101,7 +107,7 @@ namespace wpl
 				mm->insert(make_pair(hwnd, w));
 				_windows.set(mm.release());
 			}
-			w->_wndproc = ::SetWindowLongPtr(hwnd, GWLP_WNDPROC, reinterpret_cast<LONG_PTR>(&windowproc_proxy));
+			w->_wndproc = set_wndproc(hwnd, &windowproc_proxy);
 		}
 
 		window *window::get_window(HWND hwnd) throw()
@@ -116,21 +122,25 @@ namespace wpl
 			return 0;
 		}
 
-		bool window::unmap(HWND hwnd, bool f) throw()
+		bool window::unmap(HWND hwnd, bool force) throw()
 		{
-			windows_map *m = _windows.get();
-			windows_map::const_iterator i = m->find(hwnd);
-
-			if (!f && &windowproc_proxy != reinterpret_cast<WNDPROC>(::GetWindowLongPtr(i->second->_hwnd, GWLP_WNDPROC)))
-				return false;
-			::SetWindowLongPtr(hwnd, GWLP_WNDPROC, i->second->_wndproc);
-			m->erase(i);
-			if (m->empty())
+			if (windows_map *m = _windows.get())
 			{
-				_windows.set(0);
-				delete m;
+				const windows_map::const_iterator i = m->find(hwnd);
+
+				if (i != m->end() && (force || &windowproc_proxy == get_wndproc(i->second->_hwnd)))
+				{
+					set_wndproc(hwnd, i->second->_wndproc);
+					m->erase(i);
+					if (m->empty())
+					{
+						_windows.set(0);
+						delete m;
+					}
+					return true;
+				}
 			}
-			return true;
+			return false;
 		}
 
 		void window::detach(window *w)
