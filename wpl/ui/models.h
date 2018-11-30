@@ -34,7 +34,7 @@ namespace wpl
 		{
 			typedef size_t index_type;
 
-			static const index_type npos = static_cast<index_type>(-1);
+			static const index_type npos;
 		};
 
 		struct trackable : destructible, index_traits

@@ -33,6 +33,9 @@ namespace wpl
 {
 	namespace ui
 	{
+		const index_traits::index_type index_traits::npos = static_cast<index_traits::index_type>(-1);
+		const listview::columns_model::index_type listview::columns_model::npos = static_cast<listview::columns_model::index_type>(-1);
+
 		namespace win32
 		{
 			namespace
