@@ -33,9 +33,6 @@ namespace wpl
 {
 	namespace ui
 	{
-		const index_traits::index_type index_traits::npos = static_cast<index_traits::index_type>(-1);
-		const listview::columns_model::index_type listview::columns_model::npos = static_cast<listview::columns_model::index_type>(-1);
-
 		namespace win32
 		{
 			namespace
@@ -106,7 +103,7 @@ namespace wpl
 			void listview::init()
 			{
 				_avoid_notifications = false,
-				_sort_column = columns_model::npos;
+				_sort_column = columns_model::npos();
 			}
 
 			void listview::set_columns_model(shared_ptr<columns_model> cm)
@@ -130,7 +127,7 @@ namespace wpl
 
 				pair<columns_model::index_type, bool> sort_order = cm->get_sort_order();
 
-				if (columns_model::npos != sort_order.first)
+				if (columns_model::npos() != sort_order.first)
 				{
 					if (_model)
 						_model->set_order(sort_order.first, sort_order.second);
@@ -149,7 +146,7 @@ namespace wpl
 				{
 					pair<columns_model::index_type, bool> sort_order = _columns_model->get_sort_order();
 
-					if (columns_model::npos != sort_order.first)
+					if (columns_model::npos() != sort_order.first)
 						model->set_order(sort_order.first, sort_order.second);
 				}
 				_invalidated_connection = model ?
@@ -264,7 +261,7 @@ namespace wpl
 			{
 				if (_model)
 					_model->set_order(new_ordering_column, ascending);
-				if (columns_model::npos != _sort_column)
+				if (columns_model::npos() != _sort_column)
 					set_column_direction(_sort_column, dir_none);
 				set_column_direction(new_ordering_column, ascending ? dir_ascending : dir_descending);
 				_sort_column = new_ordering_column;
@@ -290,8 +287,8 @@ namespace wpl
 				{
 					index_type new_focus = _focused_item->index();
 
-					ListView_SetItemState(get_window(), new_focus, npos != new_focus ? LVIS_FOCUSED : 0, LVIS_FOCUSED);
-					if (npos == new_focus)
+					ListView_SetItemState(get_window(), new_focus, npos() != new_focus ? LVIS_FOCUSED : 0, LVIS_FOCUSED);
+					if (npos() == new_focus)
 						_focused_item.reset();
 				}
 			}
@@ -303,7 +300,7 @@ namespace wpl
 				for (int i = -1; i = ListView_GetNextItem(get_window(), i, LVNI_ALL | LVNI_SELECTED), i != -1; )
 					selection_before.push_back(i);
 				for (selection_trackers::iterator i = _selected_items.begin(); i != _selected_items.end(); )
-					if (!i->second || (i->first = i->second->index()) != npos)
+					if (!i->second || (i->first = i->second->index()) != npos())
 						selection_after.push_back(i->first), ++i;
 					else
 						i = _selected_items.erase(i);

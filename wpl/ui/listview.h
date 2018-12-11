@@ -51,7 +51,7 @@ namespace wpl
 
 			struct column;
 
-			const static index_type npos;
+			static index_type npos();
 
 			virtual index_type get_count() const throw() = 0;
 			virtual void get_column(index_type index, column &column) const = 0;
@@ -71,6 +71,10 @@ namespace wpl
 			short int width;
 		};
 
+
+
+		inline listview::columns_model::index_type listview::columns_model::npos()
+		{	return -1;	}
 
 
 		inline listview::columns_model::column::column()

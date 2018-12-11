@@ -31,7 +31,7 @@ namespace wpl
 				{
 					column columns[] = { column(caption, width), };
 
-					return create(columns, npos, false);
+					return create(columns, npos(), false);
 				}
 
 				void listview_columns_model::set_sort_order(index_type column, bool ascending)

@@ -61,7 +61,7 @@ namespace wpl
 						listview::columns_model::column(L"", 100),
 						listview::columns_model::column(L"", 50),
 					};
-					mocks::columns_model_ptr cm(mocks::listview_columns_model::create(columns, listview::columns_model::npos, false));
+					mocks::columns_model_ptr cm(mocks::listview_columns_model::create(columns, listview::columns_model::npos(), false));
 					mocks::model_ptr m(new mocks::listview_model(3, 3));
 
 					lv->set_columns_model(cm);
@@ -88,7 +88,7 @@ namespace wpl
 					::SendMessage(hlv, WM_LBUTTONDOWN, 0, pack_coordinates(rc.left, rc.top));
 
 					// ASSERT
-					listview::index_type reference2[] = { 0, listview::npos, 2, listview::npos, 1, };
+					listview::index_type reference2[] = { 0, listview::npos(), 2, listview::npos(), 1, };
 
 					assert_equal(reference2, selections);
 				}

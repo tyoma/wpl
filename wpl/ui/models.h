@@ -34,7 +34,7 @@ namespace wpl
 		{
 			typedef size_t index_type;
 
-			static const index_type npos;
+			static index_type npos();
 		};
 
 		struct trackable : destructible, index_traits
@@ -53,6 +53,10 @@ namespace wpl
 			signal<void (index_type new_count)> invalidated;
 		};
 
+
+
+		inline index_traits::index_type index_traits::npos()
+		{	return static_cast<index_type>(-1);	}
 
 
 		inline void table_model::precache(index_type /*from*/, index_type /*count*/) const
