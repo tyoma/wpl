@@ -23,6 +23,7 @@
 #include <stdexcept>
 
 using namespace std;
+using namespace std::placeholders;
 
 namespace wpl
 {
@@ -45,7 +46,8 @@ namespace wpl
 			{	return reinterpret_cast<WNDPROC>(::GetWindowLongPtr(hwnd, GWLP_WNDPROC));	}
 		}
 
-		mt::tls< unordered_map<HWND, window *, window::hwnd_hash> > window::_windows;
+		shared_ptr< mt::tls< unordered_map<HWND, window *, window::hwnd_hash> > >
+			window::_windows_s(new mt::tls< unordered_map<HWND, window *, window::hwnd_hash> >);
 
 
 		size_t window::hwnd_hash::operator ()(HWND hwnd) const
@@ -53,7 +55,7 @@ namespace wpl
 
 
 		window::window(HWND hwnd, const user_handler_t &user_handler)
-			: _hwnd(hwnd), _wndproc(0), _user_handler(user_handler)
+			: _hwnd(hwnd), _wndproc(0), _user_handler(user_handler), _windows(_windows_s)
 		{	}
 
 		shared_ptr<window> window::attach(HWND hwnd, const user_handler_t &user_handler)
@@ -62,8 +64,8 @@ namespace wpl
 			{
 				auto_ptr<window> w(new window(hwnd, user_handler));
 
-				map(hwnd, w.get());
-				return shared_ptr<window>(w.release(), &window::detach);
+				w->map();
+				return shared_ptr<window>(w.release(), bind(&window::detach, _1));
 			}
 			throw invalid_argument("");
 		}
@@ -79,7 +81,7 @@ namespace wpl
 			window *w = get_window(hwnd);
 
 			if (WM_NCDESTROY == message)
-				unmap(hwnd, true);
+				w->unmap(true);
 
 			LRESULT result = w->_user_handler ? w->_user_handler(message, wparam, lparam, *w) : (*w)(message, wparam, lparam);
 
@@ -92,27 +94,27 @@ namespace wpl
 			return result;
 		}
 
-		void window::map(HWND hwnd, window *w)
+		void window::map()
 		{
-			if (windows_map *m = _windows.get())
+			if (windows_map *m = _windows->get())
 			{
-				if (get_window(hwnd))
+				if (get_window(_hwnd))
 					throw logic_error("A window is already subclassed!");
-				m->insert(make_pair(hwnd, w));
+				m->insert(make_pair(_hwnd, this));
 			}
 			else
 			{
 				auto_ptr<windows_map> mm(new windows_map);
 
-				mm->insert(make_pair(hwnd, w));
-				_windows.set(mm.release());
+				mm->insert(make_pair(_hwnd, this));
+				_windows->set(mm.release());
 			}
-			w->_wndproc = set_wndproc(hwnd, &windowproc_proxy);
+			_wndproc = set_wndproc(_hwnd, &windowproc_proxy);
 		}
 
 		window *window::get_window(HWND hwnd) throw()
 		{
-			if (windows_map *m = _windows.get())
+			if (windows_map *m = _windows_s->get())
 			{
 				windows_map::const_iterator i = m->find(hwnd);
 
@@ -122,19 +124,19 @@ namespace wpl
 			return 0;
 		}
 
-		bool window::unmap(HWND hwnd, bool force) throw()
+		bool window::unmap(bool force) throw()
 		{
-			if (windows_map *m = _windows.get())
+			if (windows_map *m = _windows->get())
 			{
-				const windows_map::const_iterator i = m->find(hwnd);
+				const windows_map::const_iterator i = m->find(_hwnd);
 
 				if (i != m->end() && (force || &windowproc_proxy == get_wndproc(i->second->_hwnd)))
 				{
-					set_wndproc(hwnd, i->second->_wndproc);
+					set_wndproc(_hwnd, i->second->_wndproc);
 					m->erase(i);
 					if (m->empty())
 					{
-						_windows.set(0);
+						_windows->set(0);
 						delete m;
 					}
 					return true;
@@ -143,11 +145,11 @@ namespace wpl
 			return false;
 		}
 
-		void window::detach(window *w)
+		void window::detach()
 		{
-			w->_user_handler = window::user_handler_t();
-			if (!w->_hwnd || unmap(w->_hwnd, false))
-				delete w;
+			_user_handler = window::user_handler_t();
+			if (!_hwnd || unmap(false))
+				delete this;
 		}
 	}
 }

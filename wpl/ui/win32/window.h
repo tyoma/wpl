@@ -54,16 +54,17 @@ namespace wpl
 			const window &operator =(const window &rhs);
 
 			static LRESULT CALLBACK windowproc_proxy(HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam);
-			static void map(HWND hwnd, window *w);
+			void map();
 			static window *get_window(HWND hwnd) throw();
-			static bool unmap(HWND hwnd, bool force) throw();
-			static void detach(window *w);
+			bool unmap(bool force) throw();
+			void detach();
 
 		private:
-			static mt::tls<windows_map> _windows;
+			static std::shared_ptr< mt::tls<windows_map> > _windows_s;
 			HWND _hwnd;
 			WNDPROC _wndproc;
 			user_handler_t _user_handler;
+			std::shared_ptr< mt::tls<windows_map> > _windows;
 		};
 	}
 }
