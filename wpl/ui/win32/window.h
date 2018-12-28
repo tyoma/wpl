@@ -20,8 +20,6 @@
 
 #pragma once
 
-#include "../../mt/thread.h"
-
 #include <functional>
 #include <memory>
 #include <unordered_map>
@@ -46,6 +44,8 @@ namespace wpl
 
 		private:
 			struct hwnd_hash { size_t operator ()(HWND hwnd) const; };
+			template <typename T>
+			struct tls;
 			typedef std::unordered_map<HWND, window *, hwnd_hash> windows_map;
 
 		private:
@@ -60,11 +60,11 @@ namespace wpl
 			void detach();
 
 		private:
-			static std::shared_ptr< mt::tls<windows_map> > _windows_s;
+			static std::shared_ptr< tls<windows_map> > _windows_s;
 			HWND _hwnd;
 			WNDPROC _wndproc;
 			user_handler_t _user_handler;
-			std::shared_ptr< mt::tls<windows_map> > _windows;
+			std::shared_ptr< tls<windows_map> > _windows;
 		};
 	}
 }

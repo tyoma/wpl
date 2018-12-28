@@ -31,6 +31,26 @@ namespace wpl
 	{
 		namespace
 		{
+			class tls_base
+			{
+			protected:
+				tls_base()
+					: _index(::TlsAlloc())
+				{	}
+
+				~tls_base()
+				{	::TlsFree(_index);	}
+
+				void *get() const
+				{	return ::TlsGetValue(_index);	}
+
+				void set(void *value)
+				{	::TlsSetValue(_index, value); }
+
+			private:
+				unsigned int _index;
+			};
+
 			size_t knuth_hash(unsigned int key) throw()
 			{	return key * 2654435761;	}
 
@@ -46,8 +66,20 @@ namespace wpl
 			{	return reinterpret_cast<WNDPROC>(::GetWindowLongPtr(hwnd, GWLP_WNDPROC));	}
 		}
 
-		shared_ptr< mt::tls< unordered_map<HWND, window *, window::hwnd_hash> > >
-			window::_windows_s(new mt::tls< unordered_map<HWND, window *, window::hwnd_hash> >);
+
+		template <typename T>
+		struct window::tls : private tls_base
+		{
+			T *get() const
+			{	return static_cast<T *>(tls_base::get());	}
+
+			void set(T *value)
+			{	return tls_base::set(value);	}
+		};
+
+
+		shared_ptr< window::tls< unordered_map<HWND, window *, window::hwnd_hash> > >
+			window::_windows_s(new window::tls< unordered_map<HWND, window *, window::hwnd_hash> >);
 
 
 		size_t window::hwnd_hash::operator ()(HWND hwnd) const
