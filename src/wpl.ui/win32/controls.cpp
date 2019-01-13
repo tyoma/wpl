@@ -75,12 +75,13 @@ namespace wpl
 			{
 				switch (message)
 				{
+				default:
+					return handler(message, wparam, lparam);
+
 				case OCM_COMMAND:
 					if (HIWORD(wparam) == BN_CLICKED)
 						clicked();
-
-				default:
-					return handler(message, wparam, lparam);
+					return 0;
 				}
 			}
 

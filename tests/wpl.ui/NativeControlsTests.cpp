@@ -37,6 +37,10 @@ namespace wpl
 				template <typename T>
 				void push_back(vector<T> &container, const T &value)
 				{	container.push_back(value);	}
+
+				template <typename T>
+				void reset(shared_ptr<T> &ptr)
+				{	ptr.reset();	}
 			}
 
 			begin_test_suite( ButtonTests )
@@ -116,6 +120,21 @@ namespace wpl
 					// ASSERT
 					assert_equal(L"Let's go...", get_window_text(hbutton));
 				}
+
+
+				test( SelfDestructIsOK )
+				{
+					// INIT
+					shared_ptr<button> b = create_button();
+					HWND hbutton = get_window_and_resize(*b, 100, 20);
+					slot_connection c = b->clicked += bind(&reset<button>, ref(b));
+
+					// ACT
+					::SendMessage(hbutton, OCM_COMMAND, BN_CLICKED << 16, 0);
+
+					// ASSERT
+					assert_null(b);
+				}
 			end_test_suite
 
 
@@ -162,7 +181,7 @@ namespace wpl
 					vector<size_t> log_ids;
 					vector<wstring> log_links;
 					shared_ptr<link> l = create_link();
-					HWND hbutton = get_window_and_resize(*l, 100, 20);
+					HWND hlink = get_window_and_resize(*l, 100, 20);
 					slot_connection c1 = l->clicked += std::bind(&push_back<size_t>, ref(log_ids), _1);
 					slot_connection c2 = l->clicked += std::bind(&push_back<wstring>, ref(log_links), _2);
 					NMLINK nmlink = {};
@@ -172,7 +191,7 @@ namespace wpl
 					wcscpy(nmlink.item.szUrl, L"Test #1");
 										
 					// ACT
-					::SendMessage(hbutton, OCM_NOTIFY, 0, reinterpret_cast<LPARAM>(&nmlink));
+					::SendMessage(hlink, OCM_NOTIFY, 0, reinterpret_cast<LPARAM>(&nmlink));
 
 					// ASSERT
 					size_t reference_ids1[] = { 0u, };
@@ -186,7 +205,7 @@ namespace wpl
 					wcscpy(nmlink.item.szUrl, L"https://github.com");
 
 					// ACT
-					::SendMessage(hbutton, OCM_NOTIFY, 0, reinterpret_cast<LPARAM>(&nmlink));
+					::SendMessage(hlink, OCM_NOTIFY, 0, reinterpret_cast<LPARAM>(&nmlink));
 
 					// ASSERT
 					size_t reference_ids2[] = { 0u, 3u, };
@@ -201,19 +220,38 @@ namespace wpl
 				{
 					// INIT
 					shared_ptr<link> l = create_link();
-					HWND hbutton = get_window_and_resize(*l, 100, 20);
+					HWND hlink = get_window_and_resize(*l, 100, 20);
 
 					// ACT
 					l->set_text(L"Launch!");
 
 					// ASSERT
-					assert_equal(L"Launch!", get_window_text(hbutton));
+					assert_equal(L"Launch!", get_window_text(hlink));
 
 					// ACT
 					l->set_text(L"Let's <a href=\"zz\">go</a>...");
 
 					// ASSERT
-					assert_equal(L"Let's <a href=\"zz\">go</a>...", get_window_text(hbutton));
+					assert_equal(L"Let's <a href=\"zz\">go</a>...", get_window_text(hlink));
+				}
+
+
+				test( SelfDestructIsOK )
+				{
+					// INIT
+					shared_ptr<link> l = create_link();
+					HWND hlink = get_window_and_resize(*l, 100, 20);
+					slot_connection c = l->clicked += bind(&reset<link>, ref(l));
+					NMLINK nmlink = {};
+
+					nmlink.hdr.code = NM_CLICK;
+					nmlink.item.iLink = 0;
+										
+					// ACT
+					::SendMessage(hlink, OCM_NOTIFY, 0, reinterpret_cast<LPARAM>(&nmlink));
+
+					// ASSERT
+					assert_null(l);
 				}
 			end_test_suite
 		}
