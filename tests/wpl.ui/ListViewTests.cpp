@@ -120,20 +120,6 @@ namespace wpl
 						WS_CHILD | WS_VISIBLE | LVS_REPORT | LVS_OWNERDATA, 0);
 				}
 
-				//test( CreateListView )
-				//{
-				//	// INIT
-				//	shared_ptr<form> f = form::create();
-				//	window_tracker wt(L"SysListView32");
-
-				//	// ACT
-				//	shared_ptr<listview> lv = static_pointer_cast<listview>(create_widget(wt, *f->get_root_container(), L"listview", L"1"));
-
-				//	// ASSERT
-				//	assert_not_null(lv);
-				//	assert_equal(1u, wt.created.size());
-				//	assert_equal((LVS_REPORT | LVS_OWNERDATA), ((LVS_REPORT | LVS_OWNERDATA) & ::GetWindowLong(wt.created[0], GWL_STYLE)));
-				//}
 
 				test( WrongWrappingLeadsToException )
 				{

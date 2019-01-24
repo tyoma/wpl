@@ -1,5 +1,6 @@
 #include <wpl/ui/form.h>
 #include <wpl/ui/win32/native_view.h>
+#include <wpl/ui/win32/form.h>
 
 #include "Mockups.h"
 #include "MockupsNative.h"
@@ -23,10 +24,10 @@ namespace wpl
 			{
 				typedef pair<shared_ptr<form>, HWND> form_and_handle;
 
-				form_and_handle create_form_with_handle()
+				form_and_handle create_form_with_handle(HWND howner = 0)
 				{
 					window_tracker wt(L"#32770");
-					shared_ptr<form> f(form::create());
+					shared_ptr<form> f(create_form(howner));
 
 					wt.checkpoint();
 
@@ -65,7 +66,7 @@ namespace wpl
 					window_tracker wt(L"#32770");
 
 					// ACT
-					shared_ptr<form> f1 = form::create();
+					shared_ptr<form> f1 = create_form();
 
 					// ASSERT
 					wt.checkpoint();
@@ -74,8 +75,8 @@ namespace wpl
 					assert_is_empty(wt.destroyed);
 
 					// ACT
-					shared_ptr<form> f2 = form::create();
-					shared_ptr<form> f3 = form::create();
+					shared_ptr<form> f2 = create_form();
+					shared_ptr<form> f3 = create_form();
 
 					// ASSERT
 					wt.checkpoint();
@@ -88,15 +89,15 @@ namespace wpl
 				test( FormConstructionReturnsNonNullObject )
 				{
 					// INIT / ACT / ASSERT
-					assert_not_null(form::create());
+					assert_not_null(create_form());
 				}
 
 
 				test( FormDestructionDestroysItsWindow )
 				{
 					// INIT
-					shared_ptr<form> f1 = form::create();
-					shared_ptr<form> f2 = form::create();
+					shared_ptr<form> f1 = create_form();
+					shared_ptr<form> f2 = create_form();
 					window_tracker wt(L"#32770");
 
 					// ACT
@@ -220,6 +221,23 @@ namespace wpl
 
 					assert_equal(2u, v->resize_log.size());
 					assert_equal(make_pair((int)rc.right, (int)rc.bottom), v->resize_log[1]);
+				}
+
+
+				test( FormIsOwnedIfOwnerIsSpecified )
+				{
+					// INIT
+					form_and_handle owner1(create_form_with_handle()), owner2(create_form_with_handle());
+
+					// ACT
+					form_and_handle owned1(create_form_with_handle(owner1.second));
+					form_and_handle owned2(create_form_with_handle(owner2.second));
+
+					// ASSERT
+					assert_equal(0, WS_CHILD & ::GetWindowLong(owned1.second, GWL_STYLE));
+					assert_equal(owner1.second, ::GetWindow(owned1.second, GW_OWNER));
+					assert_equal(0, WS_CHILD & ::GetWindowLong(owned2.second, GWL_STYLE));
+					assert_equal(owner2.second, ::GetWindow(owned2.second, GW_OWNER));
 				}
 
 			end_test_suite

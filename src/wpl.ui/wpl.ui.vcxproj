@@ -76,6 +76,7 @@
     <ClInclude Include="..\..\wpl\ui\view_host.h" />
     <ClInclude Include="..\..\wpl\ui\visual.h" />
     <ClInclude Include="..\..\wpl\ui\win32\controls.h" />
+    <ClInclude Include="..\..\wpl\ui\win32\form.h" />
     <ClInclude Include="..\..\wpl\ui\win32\native_view.h" />
     <ClInclude Include="..\..\wpl\ui\win32\types.h" />
     <ClInclude Include="..\..\wpl\ui\win32\window.h" />

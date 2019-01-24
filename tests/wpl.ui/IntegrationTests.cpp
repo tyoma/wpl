@@ -2,6 +2,7 @@
 #include <wpl/ui/form.h>
 
 #include <wpl/ui/win32/controls.h>
+#include <wpl/ui/win32/form.h>
 
 #include "MockupsListView.h"
 #include "TestHelpers.h"
@@ -27,7 +28,7 @@ namespace wpl
 				form_and_handle create_form_with_handle()
 				{
 					window_tracker wt(L"#32770");
-					shared_ptr<form> f(form::create());
+					shared_ptr<form> f(create_form());
 
 					wt.checkpoint();
 

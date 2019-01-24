@@ -36,7 +36,7 @@ namespace wpl
 			class form : public wpl::ui::form
 			{
 			public:
-				form();
+				form(HWND howner);
 				~form();
 
 			private:
@@ -54,8 +54,9 @@ namespace wpl
 
 
 
-			form::form()
-				: _hwnd(::CreateWindow(_T("#32770"), 0, WS_OVERLAPPEDWINDOW | WS_CLIPCHILDREN, 0, 0, 100, 20, 0, 0, 0, 0))
+			form::form(HWND howner)
+				: _hwnd(::CreateWindow(_T("#32770"), 0, WS_OVERLAPPEDWINDOW | WS_CLIPCHILDREN, 0, 0, 100, 20, howner, 0, 0,
+					0))
 			{	_host.reset(new win32::view_host(_hwnd, bind(&form::wndproc, this, _1, _2, _3, _4)));	}
 
 			form::~form()
@@ -98,7 +99,7 @@ namespace wpl
 			}
 		}
 
-		shared_ptr<form> form::create()
-		{	return shared_ptr<form>(new win32::form());	}
+		shared_ptr<form> create_form(HWND howner)
+		{	return shared_ptr<form>(new win32::form(howner));	}
 	}
 }

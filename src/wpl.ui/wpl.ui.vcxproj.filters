@@ -71,5 +71,8 @@
     <ClInclude Include="win32\native_view.h">
       <Filter>Source Files\win32</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\wpl\ui\win32\form.h">
+      <Filter>win32</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

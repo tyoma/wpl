@@ -20,22 +20,16 @@
 
 #pragma once
 
-#include "view_host.h"
+#include "types.h"
 
-#include "../base/signals.h"
-
-#include <string>
+#include <memory>
 
 namespace wpl
 {
 	namespace ui
 	{
-		struct form : view_host
-		{
-			virtual void set_visible(bool value) = 0;
-			virtual void set_caption(const std::wstring &caption) = 0;
+		struct form;
 
-			signal<void()> close;
-		};
+		std::shared_ptr<form> create_form(HWND howner = 0);
 	}
 }
