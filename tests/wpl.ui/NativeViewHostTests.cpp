@@ -484,12 +484,8 @@ namespace wpl
 
 					// ASSERT
 					assert_is_false(v->container_was_dirty);
-					assert_equal(f.hwnd, ::GetParent(v->response[0].first->get_window()));
-					assert_equal(0u, WS_POPUP & ::GetWindowLong(v->response[0].first->get_window(), GWL_STYLE));
-					assert_equal(WS_CHILD, WS_CHILD & ::GetWindowLong(v->response[0].first->get_window(), GWL_STYLE));
-					assert_equal(f.hwnd, ::GetParent(v->response[1].first->get_window()));
-					assert_equal(0u, WS_POPUP & ::GetWindowLong(v->response[1].first->get_window(), GWL_STYLE));
-					assert_equal(WS_CHILD, WS_CHILD & ::GetWindowLong(v->response[1].first->get_window(), GWL_STYLE));
+					assert_equal(f.hwnd, ::GetParent(v->response[0].first->hwnd()));
+					assert_equal(f.hwnd, ::GetParent(v->response[1].first->hwnd()));
 
 					// ACT
 					::MoveWindow(f.hwnd, 0, 0, 101, 51, TRUE);
@@ -517,8 +513,8 @@ namespace wpl
 					::MoveWindow(f.hwnd, 0, 0, 100, 50, TRUE);
 
 					// ASSERT
-					assert_equal(rect(10, 17, 100, 134), get_window_rect(children[0]->get_window()));
-					assert_equal(rect(100, 1, 91, 200), get_window_rect(children[1]->get_window()));
+					assert_equal(rect(10, 17, 100, 134), get_window_rect(children[0]->hwnd()));
+					assert_equal(rect(100, 1, 91, 200), get_window_rect(children[1]->hwnd()));
 
 					// INIT
 					v->response[0].second = l3;
@@ -528,8 +524,8 @@ namespace wpl
 					::MoveWindow(f.hwnd, 0, 0, 101, 51, TRUE);
 
 					// ASSERT
-					assert_equal(rect(10, 10, 100, 200), get_window_rect(children[0]->get_window()));
-					assert_equal(rect(100, 1, 91, 200), get_window_rect(children[1]->get_window()));
+					assert_equal(rect(10, 10, 100, 200), get_window_rect(children[0]->hwnd()));
+					assert_equal(rect(100, 1, 91, 200), get_window_rect(children[1]->hwnd()));
 				}
 
 
@@ -597,15 +593,15 @@ namespace wpl
 					v->response.push_back(make_pair(children[1], l2));
 					f.host->set_view(v);
 					::MoveWindow(f.hwnd, 0, 0, 100, 100, TRUE);
-					::MoveWindow(children[0]->get_window(), 0, 0, 1, 1, TRUE);
-					::MoveWindow(children[1]->get_window(), 0, 0, 1, 1, TRUE);
+					::MoveWindow(children[0]->hwnd(), 0, 0, 1, 1, TRUE);
+					::MoveWindow(children[1]->hwnd(), 0, 0, 1, 1, TRUE);
 
 					// ACT
 					v->force_layout();
 
 					// ASSERT
-					assert_equal(rect(10, 17, 100, 134), get_window_rect(children[0]->get_window()));
-					assert_equal(rect(100, 1, 91, 200), get_window_rect(children[1]->get_window()));
+					assert_equal(rect(10, 17, 100, 134), get_window_rect(children[0]->hwnd()));
+					assert_equal(rect(100, 1, 91, 200), get_window_rect(children[1]->hwnd()));
 				}
 
 
@@ -639,26 +635,6 @@ namespace wpl
 					assert_equal(2u, v->resize_log.size());
 					assert_equal(rc.right, v->resize_log[1].first);
 					assert_equal(rc.bottom, v->resize_log[1].second);
-				}
-
-
-				test( NativeControlParentedBecomesVisible )
-				{
-					// INIT
-					hosting_window f;
-					shared_ptr<mocks::native_view_window> nw(new mocks::native_view_window);
-					shared_ptr<mocks::native_view> nv(new mocks::native_view);
-					view_location l = { 10, 17, 100, 134 };
-
-					nv->response.push_back(make_pair(nw, l));
-
-					::ShowWindow(f.hwnd, SW_SHOW);
-
-					// ACT
-					f.host->set_view(nv);
-
-					// ASSERT
-					assert_is_true(!!::IsWindowVisible(nw->get_window()));
 				}
 
 

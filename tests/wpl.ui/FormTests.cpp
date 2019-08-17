@@ -120,18 +120,14 @@ namespace wpl
 				}
 
 
-				test( FormWindowIsHasPopupStyleAndInvisibleAtConstruction )
+				test( FormWindowHasPopupStyleAndInvisibleAtConstruction )
 				{
 					// INIT / ACT
 					form_and_handle f(create_form_with_handle());
 
 					// ASSERT
-					DWORD style = ::GetWindowLong(f.second, GWL_STYLE);
-
-					assert_is_false(!!(WS_VISIBLE & style));
-					assert_is_true(!!(WS_THICKFRAME & style));
-					assert_is_true(!!(WS_CAPTION & style));
-					assert_is_true(!!(WS_CLIPCHILDREN & style));
+					assert_is_true(has_style(f.second, WS_CAPTION | WS_THICKFRAME | WS_CLIPCHILDREN));
+					assert_is_true(has_no_style(f.second, WS_VISIBLE));
 				}
 
 
@@ -144,13 +140,13 @@ namespace wpl
 					f.first->set_visible(true);
 
 					// ASSERT
-					assert_is_true(!!(WS_VISIBLE & ::GetWindowLong(f.second, GWL_STYLE)));
+					assert_is_true(has_style(f.second, WS_VISIBLE));
 
 					// ACT
 					f.first->set_visible(false);
 
 					// ASSERT
-					assert_is_false(!!(WS_VISIBLE & ::GetWindowLong(f.second, GWL_STYLE)));
+					assert_is_true(has_no_style(f.second, WS_VISIBLE));
 				}
 
 
@@ -234,9 +230,9 @@ namespace wpl
 					form_and_handle owned2(create_form_with_handle(owner2.second));
 
 					// ASSERT
-					assert_equal(0, WS_CHILD & ::GetWindowLong(owned1.second, GWL_STYLE));
+					assert_is_true(has_no_style(owned1.second, WS_CHILD));
 					assert_equal(owner1.second, ::GetWindow(owned1.second, GW_OWNER));
-					assert_equal(0, WS_CHILD & ::GetWindowLong(owned2.second, GWL_STYLE));
+					assert_is_true(has_no_style(owned2.second, WS_CHILD));
 					assert_equal(owner2.second, ::GetWindow(owned2.second, GW_OWNER));
 				}
 

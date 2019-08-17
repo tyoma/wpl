@@ -29,7 +29,7 @@ namespace wpl
 		class native_view
 		{
 		public:
-			virtual HWND get_window() const throw() = 0;
+			virtual HWND get_window(HWND hparent_for) = 0;
 
 		protected:
 			~native_view() throw() {	}

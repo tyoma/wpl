@@ -7,10 +7,12 @@ namespace wpl
 	struct keyboard_input
 	{
 		enum modifier_keys {
-			shift = 1 << 0,
-			control = 1 << 1,
-			command = 1 << 2,
-			alt = 3 << 2,
+			base = 1,
+			shift = base << 0,
+			control = base << 1,
+			command = base << 2,
+			alt = base << 3,
+			next = base << 4,
 		};
 
 		virtual ~keyboard_input() {	}
@@ -25,9 +27,10 @@ namespace wpl
 	struct mouse_input
 	{
 		enum mouse_buttons {
-			left = 1 << 0,
-			middle = 1 << 1,
-			right = 1 << 2,
+			base = keyboard_input::next,
+			left = base << 0,
+			middle = base << 1,
+			right = base << 2,
 		};
 
 		virtual ~mouse_input() {	}

@@ -123,8 +123,10 @@ namespace wpl
 				switch (message)
 				{
 				case WM_COMMAND:
-					::SendMessage(reinterpret_cast<HWND>(lparam), OCM_COMMAND, wparam, lparam);
-					return 0;
+					return ::SendMessage(reinterpret_cast<HWND>(lparam), OCM_COMMAND, wparam, lparam);
+
+				case WM_NOTIFY:
+					return SendMessage(reinterpret_cast<const NMHDR*>(lparam)->hwndFrom, OCM_NOTIFY, wparam, lparam);
 
 				case WM_ERASEBKGND:
 					return 1;
@@ -226,20 +228,14 @@ namespace wpl
 			{
 				_view->resize(cx, cy, _positioned_views);
 
+				const HWND hwnd = _window->hwnd();
 				HDWP hdwp = ::BeginDeferWindowPos(static_cast<int>(_positioned_views.size()));
 
 				for (visual::positioned_native_views::const_iterator i = _positioned_views.begin();
 					i != _positioned_views.end(); ++i)
 				{
-					HWND h = i->get_view().get_window();
+					HWND h = i->get_view().get_window(hwnd);
 
-					if (::GetParent(h) != _window->hwnd())
-					{
-						::SetWindowLong(h, GWL_STYLE, (::GetWindowLong(h, GWL_STYLE) | WS_CHILD | WS_VISIBLE)
-							& ~(WS_POPUP | WS_OVERLAPPED));
-						::SetParent(h, _window->hwnd());
-						::SendMessage(h, WM_SETFONT, ::SendMessage(_window->hwnd(), WM_GETFONT, 0, 0), 0);
-					}
 					hdwp = ::DeferWindowPos(hdwp, h, NULL, i->location.left, i->location.top,
 						i->location.width, i->location.height, SWP_NOZORDER);
 				}

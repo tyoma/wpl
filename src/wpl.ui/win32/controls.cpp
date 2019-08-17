@@ -48,6 +48,7 @@ namespace wpl
 				button_impl();
 
 			private:
+				virtual HWND materialize(HWND hparent);
 				virtual LRESULT on_message(UINT message, WPARAM wparam, LPARAM lparam,
 					const window::original_handler_t &handler);
 			};
@@ -59,6 +60,7 @@ namespace wpl
 				link_impl();
 
 			private:
+				virtual HWND materialize(HWND hparent);
 				virtual LRESULT on_message(UINT message, WPARAM wparam, LPARAM lparam,
 					const window::original_handler_t &handler);
 			};
@@ -66,8 +68,11 @@ namespace wpl
 
 
 			button_impl::button_impl()
+			{	}
+
+			HWND button_impl::materialize(HWND hparent)
 			{
-				init(::CreateWindow(WC_BUTTON, NULL, WS_POPUP, 0, 0, 100, 100, NULL, NULL, NULL, NULL), true);
+				return ::CreateWindow(WC_BUTTON, NULL, WS_CHILD | WS_VISIBLE, 0, 0, 100, 100, hparent, NULL, NULL, NULL);
 			}
 
 			LRESULT button_impl::on_message(UINT message, WPARAM wparam, LPARAM lparam,
@@ -87,9 +92,12 @@ namespace wpl
 
 
 			link_impl::link_impl()
+			{	}
+
+			HWND link_impl::materialize(HWND hparent)
 			{
-				init(::CreateWindow(_T("SysLink"), NULL, LWS_RIGHT | WS_POPUP, 0, 0, 100, 100, NULL, NULL, NULL,
-					NULL), true);
+				return ::CreateWindow(_T("SysLink"), NULL, WS_CHILD | WS_VISIBLE | LWS_RIGHT, 0, 0, 100, 100, hparent, NULL,
+					NULL, NULL);
 			}
 
 			LRESULT link_impl::on_message(UINT message, WPARAM wparam, LPARAM lparam,

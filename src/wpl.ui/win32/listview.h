@@ -28,19 +28,7 @@ namespace wpl
 	{
 		namespace win32
 		{
-			class reflector_host : noncopyable
-			{
-			public:
-				reflector_host();
-				~reflector_host();
-
-				HWND get_host_hwnd() throw();
-
-			private:
-				const std::shared_ptr<window> _window;
-			};
-
-			class listview : reflector_host, public native_view<wpl::ui::listview>
+			class listview : public native_view<wpl::ui::listview>
 			{
 			public:
 				listview();
@@ -65,25 +53,27 @@ namespace wpl
 
 				virtual void ensure_visible(index_type item);
 
+				virtual HWND materialize(HWND hparent_for);
 				virtual LRESULT on_message(UINT message, WPARAM wparam, LPARAM lparam,
 					const window::original_handler_t &previous);
 
+				static void setup_columns(HWND hlistview, const columns_model &cm);
+				static void setup_data(HWND hlistview, index_type item_count);
+				static void setup_selection(HWND hlistview, const selection_trackers &selection);
 				void update_sort_order(columns_model::index_type new_ordering_column, bool ascending);
 				void invalidate_view(index_type new_count);
 				void update_focus();
 				void update_selection();
 				void ensure_tracked_visibility();
 				bool is_item_visible(index_type item) const throw();
-				void set_column_direction(index_type column, sort_direction direction) throw();
+				static void set_column_direction(HWND hlistview, columns_model::index_type column,
+					sort_direction direction) throw();
 
 			private:
-//				std::auto_ptr<reflector_host> _reflector_parent;
-//				HWND _hwnd_listview;
 				bool _avoid_notifications;
 				std::wstring _text_buffer;
 				std::shared_ptr<columns_model> _columns_model;
 				std::shared_ptr<table_model> _model;
-//				std::shared_ptr<window> _listview;
 				std::shared_ptr<void> _invalidated_connection, _sort_order_changed_connection;
 				columns_model::index_type _sort_column;
 				std::shared_ptr<const trackable> _focused_item;

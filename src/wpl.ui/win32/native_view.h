@@ -33,19 +33,24 @@ namespace wpl
 		namespace win32
 		{
 			template <typename BaseT>
-			class native_view : public BaseT, wpl::ui::native_view
+			class native_view : public BaseT, public wpl::ui::native_view
 			{
 			public:
 				native_view();
 				~native_view();
 
-				void init(HWND hwnd, bool own);
+				void attach(HWND hwnd);
+				HWND get_window() const throw();
 
 			protected:
+				// visual methods
 				virtual void resize(unsigned cx, unsigned cy, visual::positioned_native_views &native_views);
-				virtual HWND get_window() const throw();
+
+				// native_view methods
+				virtual HWND get_window(HWND hparent_for);
 
 			private:
+				virtual HWND materialize(HWND hparent) = 0;
 				virtual LRESULT on_message(UINT message, WPARAM wparam, LPARAM lparam,
 					const window::original_handler_t &handler) = 0;
 
@@ -70,12 +75,16 @@ namespace wpl
 			}
 
 			template <typename BaseT>
-			inline void native_view<BaseT>::init(HWND hwnd, bool own)
+			inline void native_view<BaseT>::attach(HWND hwnd)
 			{
 				using namespace std::placeholders;
 				_window = window::attach(hwnd, std::bind(&native_view::on_message, this, _1, _2, _3, _4));
-				_own = own;
+				_own = false;
 			}
+
+			template <typename BaseT>
+			inline HWND native_view<BaseT>::get_window() const throw()
+			{	return _window ? _window->hwnd() : 0;	}
 
 			template <typename BaseT>
 			inline void native_view<BaseT>::resize(unsigned cx, unsigned cy, visual::positioned_native_views &native_views)
@@ -85,8 +94,21 @@ namespace wpl
 			}
 
 			template <typename BaseT>
-			inline HWND native_view<BaseT>::get_window() const throw()
-			{	return _window->hwnd();	}
+			inline HWND native_view<BaseT>::get_window(HWND hparent_for)
+			{
+				using namespace std::placeholders;
+
+				if (_window && hparent_for == ::GetParent(_window->hwnd()))
+					return _window->hwnd();
+
+				HWND hwnd = materialize(hparent_for);
+
+				if (_window)
+					::DestroyWindow(_window->hwnd());
+				_window = window::attach(hwnd, std::bind(&native_view::on_message, this, _1, _2, _3, _4));
+				_own = true;
+				return hwnd;
+			}
 		}
 	}
 }

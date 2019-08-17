@@ -52,11 +52,12 @@ namespace wpl
 					vector<listview::index_type> selections;
 					slot_connection c =
 						lv->selection_changed += bind(&push_back<listview::index_type>, ref(selections), _1);
+					RECT rc;
 
 					wt.checkpoint();
+					wt.created.clear();
+					f.first->set_visible(true);
 
-					RECT rc;
-					HWND hlv = wt.find_created(WC_LISTVIEW)[0];
 					listview::columns_model::column columns[] = {
 						listview::columns_model::column(L"", 100),
 						listview::columns_model::column(L"", 100),
@@ -67,13 +68,22 @@ namespace wpl
 
 					lv->set_columns_model(cm);
 					lv->set_model(m);
-					f.first->set_view(lv);
-					::MoveWindow(f.second, 0, 0, 300, 200, TRUE);
 
 					// ACT
+					f.first->set_view(lv);
+
+					// ASSERT
+					wt.checkpoint();
+
+					assert_equal(1u, wt.find_created(WC_LISTVIEW).size());
+
+					// INIT
+					HWND hlv = wt.find_created(WC_LISTVIEW)[0];
+
+					// ACT
+					::MoveWindow(f.second, 0, 0, 300, 200, TRUE);
 					ListView_GetItemRect(hlv, 0, &rc, LVIR_SELECTBOUNDS);
- 					::PostMessage(hlv, WM_LBUTTONUP, 0, pack_coordinates(rc.left, rc.top));
-					::SendMessage(hlv, WM_LBUTTONDOWN, 0, pack_coordinates(rc.left, rc.top));
+					emulate_click(hlv, rc.left, rc.top, mouse_input::left, 0);
 
 					// ASSERT
 					listview::index_type reference1[] = { 0, };
@@ -82,11 +92,9 @@ namespace wpl
 
 					// ACT
 					ListView_GetItemRect(hlv, 2, &rc, LVIR_SELECTBOUNDS);
- 					::PostMessage(hlv, WM_LBUTTONUP, 0, pack_coordinates(rc.left, rc.top));
-					::SendMessage(hlv, WM_LBUTTONDOWN, 0, pack_coordinates(rc.left, rc.top));
+					emulate_click(hlv, rc.left, rc.top, mouse_input::left, 0);
 					ListView_GetItemRect(hlv, 1, &rc, LVIR_SELECTBOUNDS);
- 					::PostMessage(hlv, WM_LBUTTONUP, 0, pack_coordinates(rc.left, rc.top));
-					::SendMessage(hlv, WM_LBUTTONDOWN, 0, pack_coordinates(rc.left, rc.top));
+					emulate_click(hlv, rc.left, rc.top, mouse_input::left, 0);
 
 					// ASSERT
 					listview::index_type reference2[] = { 0, listview::npos(), 2, listview::npos(), 1, };

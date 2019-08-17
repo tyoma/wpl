@@ -26,12 +26,12 @@ namespace wpl
 				void increment(int *value)
 				{	++*value;	}
 
-				static HWND get_window_and_resize(visual &v, int cx, int cy)
+				static HWND get_window_and_resize(HWND hparent, visual &v, int cx, int cy)
 				{
 					visual::positioned_native_views nviews;
 					v.resize(cx, cy, nviews);
 					assert_is_true(1u <= nviews.size());
-					return nviews[0].get_view().get_window();
+					return nviews[0].get_view().get_window(hparent);
 				}
 
 				template <typename T>
@@ -45,38 +45,37 @@ namespace wpl
 
 			begin_test_suite( ButtonTests )
 
-				test( ButtonCreatesNativeButton )
+				WindowManager wmanager;
+				HWND parent;
+
+				init( CreateParent )
 				{
-					// INIT
-					window_tracker wt;
-
-					// INIT / ACT
-					shared_ptr<button> b = create_button();
-
-					// ASSERT
-					wt.checkpoint();
-
-					assert_not_null(b);
-					assert_equal(1u, wt.find_created(WC_BUTTON).size());
+					parent = wmanager.create_visible_window();
 				}
 
 
-				test( ButtonControlIsNativeView )
+				test( ButtonControlIsANativeView )
 				{
 					// INIT
-					window_tracker wt;
 					shared_ptr<button> b = create_button();
+					window_tracker wt;
 
 					// ACT
-					HWND hwnd = get_window_and_resize(*b, 100, 20);
+					HWND hwnd = get_window_and_resize(parent, *b, 100, 20);
 
 					// ASSERT
 					wt.checkpoint();
 
 					assert_equal(wt.find_created(WC_BUTTON)[0], hwnd);
+					assert_equal(parent, ::GetParent(hwnd));
 
 					// ACT / ASSERT (happens in get_window_and_resize)
-					get_window_and_resize(*b, 19, 7);
+					assert_equal(hwnd, get_window_and_resize(parent, *b, 19, 7));
+
+					// ASSERT
+					wt.checkpoint();
+
+					assert_equal(1u, wt.created.size());
 				}
 
 
@@ -85,7 +84,7 @@ namespace wpl
 					// INIT
 					int clicks = 0;
 					shared_ptr<button> b = create_button();
-					HWND hbutton = get_window_and_resize(*b, 100, 100);
+					HWND hbutton = get_window_and_resize(parent, *b, 100, 100);
 					slot_connection c = b->clicked += bind(&increment, &clicks);
 										
 					// ACT
@@ -106,7 +105,7 @@ namespace wpl
 				{
 					// INIT
 					shared_ptr<button> b = create_button();
-					HWND hbutton = get_window_and_resize(*b, 100, 20);
+					HWND hbutton = get_window_and_resize(parent, *b, 100, 20);
 
 					// ACT
 					b->set_text(L"Launch!");
@@ -126,7 +125,7 @@ namespace wpl
 				{
 					// INIT
 					shared_ptr<button> b = create_button();
-					HWND hbutton = get_window_and_resize(*b, 100, 20);
+					HWND hbutton = get_window_and_resize(parent, *b, 100, 20);
 					slot_connection c = b->clicked += bind(&reset<button>, ref(b));
 
 					// ACT
@@ -140,38 +139,37 @@ namespace wpl
 
 			begin_test_suite( LinkTests )
 
-				test( LinkCreatesNativeLink )
+				WindowManager wmanager;
+				HWND parent;
+
+				init( CreateParent )
 				{
-					// INIT
-					window_tracker wt;
-
-					// INIT / ACT
-					shared_ptr<link> l = create_link();
-
-					// ASSERT
-					wt.checkpoint();
-
-					assert_not_null(l);
-					assert_equal(1u, wt.find_created(WC_LINK).size());
+					parent = wmanager.create_visible_window();
 				}
 
 
-				test( ButtonControlIsNativeView )
+				test( LinkControlIsANativeView )
 				{
 					// INIT
+					shared_ptr<link> b = create_link();
 					window_tracker wt;
-					shared_ptr<button> b = create_button();
 
 					// ACT
-					HWND hwnd = get_window_and_resize(*b, 100, 20);
+					HWND hwnd = get_window_and_resize(parent, *b, 100, 20);
 
 					// ASSERT
 					wt.checkpoint();
 
-					assert_equal(wt.find_created(WC_BUTTON)[0], hwnd);
+					assert_equal(wt.find_created(L"SysLink")[0], hwnd);
+					assert_equal(parent, ::GetParent(hwnd));
 
 					// ACT / ASSERT (happens in get_window_and_resize)
-					get_window_and_resize(*b, 19, 7);
+					assert_equal(hwnd, get_window_and_resize(parent, *b, 19, 7));
+
+					// ASSERT
+					wt.checkpoint();
+
+					assert_equal(1u, wt.created.size());
 				}
 
 
@@ -181,7 +179,7 @@ namespace wpl
 					vector<size_t> log_ids;
 					vector<wstring> log_links;
 					shared_ptr<link> l = create_link();
-					HWND hlink = get_window_and_resize(*l, 100, 20);
+					HWND hlink = get_window_and_resize(parent, *l, 100, 20);
 					slot_connection c1 = l->clicked += std::bind(&push_back<size_t>, ref(log_ids), _1);
 					slot_connection c2 = l->clicked += std::bind(&push_back<wstring>, ref(log_links), _2);
 					NMLINK nmlink = {};
@@ -220,7 +218,7 @@ namespace wpl
 				{
 					// INIT
 					shared_ptr<link> l = create_link();
-					HWND hlink = get_window_and_resize(*l, 100, 20);
+					HWND hlink = get_window_and_resize(parent, *l, 100, 20);
 
 					// ACT
 					l->set_text(L"Launch!");
@@ -240,7 +238,7 @@ namespace wpl
 				{
 					// INIT
 					shared_ptr<link> l = create_link();
-					HWND hlink = get_window_and_resize(*l, 100, 20);
+					HWND hlink = get_window_and_resize(parent, *l, 100, 20);
 					slot_connection c = l->clicked += bind(&reset<link>, ref(l));
 					NMLINK nmlink = {};
 

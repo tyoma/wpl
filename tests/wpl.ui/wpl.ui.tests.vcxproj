@@ -66,6 +66,9 @@
     <ClCompile Include="NativeViewHostTests.cpp">
       <DisableLanguageExtensions>false</DisableLanguageExtensions>
     </ClCompile>
+    <ClCompile Include="NativeViewTests.cpp">
+      <DisableLanguageExtensions>false</DisableLanguageExtensions>
+    </ClCompile>
     <ClCompile Include="TestHelpers.cpp">
       <DisableLanguageExtensions>false</DisableLanguageExtensions>
     </ClCompile>

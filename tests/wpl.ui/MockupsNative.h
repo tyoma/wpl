@@ -18,10 +18,13 @@ namespace wpl
 					native_view_window();
 					~native_view_window();
 
-					virtual HWND get_window() const throw();
+					HWND hwnd() const throw();
 
 				private:
-					const HWND _hwnd;
+					virtual HWND get_window(HWND hparent_for);
+
+				private:
+					HWND _hparent, _hwnd;
 				};
 
 				class native_view : public view

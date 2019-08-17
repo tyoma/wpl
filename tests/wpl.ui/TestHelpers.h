@@ -1,6 +1,7 @@
 #pragma once
 
 #include <wpl/base/concepts.h>
+#include <wpl/ui/input.h>
 #include <wpl/ui/types.h>
 #include <wpl/ui/visual.h>
 
@@ -33,8 +34,11 @@ namespace wpl
 			RECT get_window_rect(HWND hwnd);
 			RECT rect(int left, int top, int width, int height);
 			std::wstring get_window_text(HWND hwnd);
+			bool has_style(HWND hwnd, int style);
+			bool has_no_style(HWND hwnd, int style);
 			unsigned int pack_coordinates(int x, int y);
-
+			void emulate_click(HWND hwnd, int x, int y, mouse_input::mouse_buttons button,
+				int /*mouse_buttons | modifier_keys*/ depressed);
 
 			class WindowManager
 			{

@@ -7,6 +7,7 @@
 #include <commctrl.h>
 #include <olectl.h>
 #include <tchar.h>
+#include <ut/assert.h>
 #include <windows.h>
 
 using namespace agge;
@@ -85,6 +86,29 @@ namespace wpl
 
 				::GetWindowText(hwnd, &text[0], static_cast<int>(text.size()));
 				return t2w(tstring(&text[0]));
+			}
+
+			bool has_style(HWND hwnd, int style)
+			{	return style == (style & ::GetWindowLong(hwnd, GWL_STYLE));	}
+
+			bool has_no_style(HWND hwnd, int style)
+			{	return !(style & ::GetWindowLong(hwnd, GWL_STYLE));	}
+
+			void emulate_click(HWND hwnd, int x, int y, mouse_input::mouse_buttons button,
+				int /*mouse_buttons | modifier_keys*/ /*depressed*/)
+			{
+				int message_down, message_up;
+				MSG msg;
+
+				switch (button)
+				{
+				case mouse_input::left: message_down = WM_LBUTTONDOWN, message_up = WM_LBUTTONUP; break;
+				default: throw 0;
+				}
+				::PostMessage(hwnd, message_up, 0, pack_coordinates(x, y));
+				::SendMessage(hwnd, message_down, 0, pack_coordinates(x, y));
+				while (::PeekMessage(&msg, hwnd, 0, 0, PM_REMOVE))
+					::DispatchMessage(&msg);
 			}
 
 
