@@ -105,6 +105,7 @@ namespace wpl
 
 				if (_window)
 					::DestroyWindow(_window->hwnd());
+				::SendMessage(hwnd, WM_SETFONT, ::SendMessage(hparent_for, WM_GETFONT, 0, 0), 0);
 				_window = window::attach(hwnd, std::bind(&native_view::on_message, this, _1, _2, _3, _4));
 				_own = true;
 				return hwnd;

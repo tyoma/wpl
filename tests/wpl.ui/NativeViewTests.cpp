@@ -2,6 +2,7 @@
 
 #include "TestHelpers.h"
 
+#include <tchar.h>
 #include <ut/assert.h>
 #include <ut/test.h>
 
@@ -134,6 +135,36 @@ namespace wpl
 
 					tracker.checkpoint();
 					assert_equal(destroyed, tracker.destroyed);
+				}
+
+
+				test( ParentFontIsSetOnMaterialize )
+				{
+					// INIT
+					shared_ptr<void> f[] = {
+						shared_ptr<void>(::CreateFont(0, 0, 0, 0, FW_DONTCARE, FALSE, FALSE, FALSE, ANSI_CHARSET,
+							OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH, _T("Arial")),
+							&::DeleteObject),
+						shared_ptr<void>(::CreateFont(0, 0, 0, 0, FW_DONTCARE, FALSE, FALSE, FALSE, ANSI_CHARSET,
+							OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH, _T("Arial")),
+							&::DeleteObject),
+					};
+					HWND parents[] = { wmanager.create_visible_window(), wmanager.create_visible_window(), };
+					shared_ptr<mocks::windowed_view> wv[] = {
+						shared_ptr<mocks::windowed_view>(new mocks::windowed_view),
+						shared_ptr<mocks::windowed_view>(new mocks::windowed_view),
+					};
+
+					SendMessage(parents[0], WM_SETFONT, (WPARAM)f[0].get(), TRUE);
+					SendMessage(parents[1], WM_SETFONT, (WPARAM)f[1].get(), TRUE);
+
+					// ACT
+					static_cast<native_view &>(*wv[0]).get_window(parents[0]);
+					static_cast<native_view &>(*wv[1]).get_window(parents[1]);
+
+					// ASSERT
+					assert_equal(f[0].get(), (void *)SendMessage(wv[0]->get_window(), WM_GETFONT, 0, 0));
+					assert_equal(f[1].get(), (void *)SendMessage(wv[1]->get_window(), WM_GETFONT, 0, 0));
 				}
 
 

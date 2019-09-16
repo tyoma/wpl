@@ -38,7 +38,13 @@ namespace wpl
 			class text_container_impl : public BaseT
 			{
 				virtual void set_text(const wstring &text)
-				{	::SetWindowTextW(get_window(), text.c_str());	}
+				{
+					_text = text;
+					::SetWindowTextW(get_window(), _text.c_str());
+				}
+
+			protected:
+				wstring _text;
 			};
 
 
@@ -72,7 +78,8 @@ namespace wpl
 
 			HWND button_impl::materialize(HWND hparent)
 			{
-				return ::CreateWindow(WC_BUTTON, NULL, WS_CHILD | WS_VISIBLE, 0, 0, 100, 100, hparent, NULL, NULL, NULL);
+				return ::CreateWindow(WC_BUTTON, _text.c_str(), WS_CHILD | WS_VISIBLE, 0, 0, 100, 100, hparent, NULL, NULL,
+					NULL);
 			}
 
 			LRESULT button_impl::on_message(UINT message, WPARAM wparam, LPARAM lparam,
@@ -96,8 +103,8 @@ namespace wpl
 
 			HWND link_impl::materialize(HWND hparent)
 			{
-				return ::CreateWindow(_T("SysLink"), NULL, WS_CHILD | WS_VISIBLE | LWS_RIGHT, 0, 0, 100, 100, hparent, NULL,
-					NULL, NULL);
+				return ::CreateWindow(WC_LINK, _text.c_str(), WS_CHILD | WS_VISIBLE | LWS_RIGHT, 0, 0, 100, 100, hparent,
+					NULL, NULL, NULL);
 			}
 
 			LRESULT link_impl::on_message(UINT message, WPARAM wparam, LPARAM lparam,

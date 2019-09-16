@@ -121,6 +121,23 @@ namespace wpl
 				}
 
 
+				test( TextSetIsPreservedBeforeTheMaterialization )
+				{
+					// INIT
+					shared_ptr<button> b[] = { create_button(), create_button(), };
+
+					// ACT
+					b[0]->set_text(L"Launch!");
+					b[1]->set_text(L"Stop...");
+					HWND hbutton1 = get_window_and_resize(parent, *b[0], 100, 20);
+					HWND hbutton2 = get_window_and_resize(parent, *b[1], 100, 20);
+
+					// ASSERT
+					assert_equal(L"Launch!", get_window_text(hbutton1));
+					assert_equal(L"Stop...", get_window_text(hbutton2));
+				}
+
+
 				test( SelfDestructIsOK )
 				{
 					// INIT
@@ -231,6 +248,23 @@ namespace wpl
 
 					// ASSERT
 					assert_equal(L"Let's <a href=\"zz\">go</a>...", get_window_text(hlink));
+				}
+
+
+				test( TextSetIsPreservedBeforeTheMaterialization )
+				{
+					// INIT
+					shared_ptr<link> l[] = { create_link(), create_link(), };
+
+					// ACT
+					l[0]->set_text(L"Launch <a>the rocket</a>!");
+					l[1]->set_text(L"Stop...");
+					HWND hlink1 = get_window_and_resize(parent, *l[0], 100, 20);
+					HWND hlink2 = get_window_and_resize(parent, *l[1], 100, 20);
+
+					// ASSERT
+					assert_equal(L"Launch <a>the rocket</a>!", get_window_text(hlink1));
+					assert_equal(L"Stop...", get_window_text(hlink2));
 				}
 
 
