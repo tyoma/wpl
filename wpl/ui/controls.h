@@ -22,6 +22,8 @@
 
 #include "view.h"
 
+#include <string>
+
 namespace wpl
 {
 	namespace ui
