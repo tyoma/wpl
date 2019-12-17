@@ -33,6 +33,17 @@ namespace wpl
 	{
 		namespace win32
 		{
+			namespace
+			{
+				void set_icon(HWND hwnd, const gcontext::surface_type &icon, int type)
+				{
+					ICONINFO ii = { TRUE, 0, 0, icon.native(), icon.native() };
+					HICON hicon = ::CreateIconIndirect(&ii);
+
+					::SendMessage(hwnd, WM_SETICON, type, reinterpret_cast<LPARAM>(hicon));
+				}
+			}
+
 			class form : public wpl::ui::form
 			{
 			public:
@@ -44,6 +55,8 @@ namespace wpl
 				virtual void set_background_color(agge::color color);
 				virtual void set_visible(bool value);
 				virtual void set_caption(const std::wstring &caption);
+				virtual void set_caption_icon(const gcontext::surface_type &icon);
+				virtual void set_task_icon(const gcontext::surface_type &icon);
 
 				LRESULT wndproc(UINT message, WPARAM wparam, LPARAM lparam, const window::original_handler_t &previous);
 
@@ -82,6 +95,12 @@ namespace wpl
 				if (_hwnd)
 					::SetWindowTextW(_hwnd, caption.c_str());
 			}
+
+			void form::set_caption_icon(const gcontext::surface_type &icon)
+			{	set_icon(_hwnd, icon, ICON_SMALL);	}
+
+			void form::set_task_icon(const gcontext::surface_type &icon)
+			{	set_icon(_hwnd, icon, ICON_BIG);	}
 
 			LRESULT form::wndproc(UINT message, WPARAM wparam, LPARAM lparam, const window::original_handler_t &previous)
 			{

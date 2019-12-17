@@ -6,6 +6,8 @@
 #include <wpl/ui/layout.h>
 #include <wpl/ui/listview.h>
 
+#include <wpl/ui/win32/form.h>
+
 using namespace std;
 using namespace wpl;
 using namespace wpl::ui;
@@ -36,7 +38,7 @@ private:
 
 int main()
 {
-	shared_ptr<form> f = form::create();
+	shared_ptr<form> f = create_form();
 	shared_ptr<container> cc[] = {
 		shared_ptr<container>(new view_fill<container>),
 		shared_ptr<container>(new view_fill<container>),

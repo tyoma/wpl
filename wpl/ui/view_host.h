@@ -33,7 +33,7 @@ namespace wpl
 		{
 			virtual ~view_host() {	}
 			virtual void set_view(const std::shared_ptr<view> &v) = 0;
-			virtual void set_background_color(agge::color color) = 0;
+			virtual void set_background_color(agge::color color_) = 0;
 		};
 	}
 }

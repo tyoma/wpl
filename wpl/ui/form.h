@@ -21,6 +21,7 @@
 #pragma once
 
 #include "view_host.h"
+#include "visual.h"
 
 #include "../base/signals.h"
 
@@ -34,6 +35,8 @@ namespace wpl
 		{
 			virtual void set_visible(bool value) = 0;
 			virtual void set_caption(const std::wstring &caption) = 0;
+			virtual void set_caption_icon(const gcontext::surface_type &icon) = 0;
+			virtual void set_task_icon(const gcontext::surface_type &icon) = 0;
 
 			signal<void()> close;
 		};

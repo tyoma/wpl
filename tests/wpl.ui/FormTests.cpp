@@ -14,6 +14,25 @@
 using namespace std;
 using namespace std::placeholders;
 
+namespace agge
+{
+	template <typename PixelT, typename RawBitmapT>
+	bool operator ==(const bitmap<PixelT, RawBitmapT> &lhs, const bitmap<PixelT, RawBitmapT> &rhs)
+	{
+		if (lhs.width() != rhs.width() || lhs.height() != rhs.height())
+			return false;
+		for (count_t y = 0; y != lhs.height(); ++y)
+		{
+			for (count_t x = 0; x != lhs.width(); ++x)
+			{
+				if (memcmp(lhs.row_ptr(y) + x, rhs.row_ptr(y) + x, sizeof(pixel32)))
+					return false;
+			}
+		}
+		return true;
+	}
+}
+
 namespace wpl
 {
 	namespace ui
@@ -44,6 +63,31 @@ namespace wpl
 
 				void increment(int *counter)
 				{	++*counter;	}
+
+				shared_ptr<gcontext::surface_type> get_icon(HWND hwnd, bool big)
+				{
+					ICONINFO ii = {};
+					HICON hicon = (HICON)::SendMessage(hwnd, WM_GETICON, big ? ICON_BIG : ICON_SMALL, 0);
+					shared_ptr<void> hdc(::CreateCompatibleDC(NULL), &::DeleteDC);
+					BITMAP b = {};
+
+					::GetIconInfo(hicon, &ii);
+					::GetObject(ii.hbmColor, sizeof(b), &b);
+
+					assert_equal(32, b.bmBitsPixel);
+
+					unique_ptr<byte[]> buffer(new byte[b.bmHeight * b.bmWidthBytes]);
+					BITMAPINFO bi = {};
+
+					bi.bmiHeader.biSize = sizeof(bi.bmiHeader);
+					::GetDIBits(static_cast<HDC>(hdc.get()), ii.hbmColor, 0, b.bmHeight, NULL, &bi, DIB_RGB_COLORS);
+					bi.bmiHeader.biHeight = -bi.bmiHeader.biHeight;
+					::GetDIBits(static_cast<HDC>(hdc.get()), ii.hbmColor, 0, b.bmHeight, buffer.get(), &bi, DIB_RGB_COLORS);
+
+					shared_ptr<gcontext::surface_type> s(new gcontext::surface_type(b.bmWidth, b.bmHeight, 0));
+					memcpy(s->row_ptr(0), buffer.get(), b.bmHeight * b.bmWidthBytes);
+					return s;
+				}
 			}
 
 			begin_test_suite( FormTests )
@@ -234,6 +278,46 @@ namespace wpl
 					assert_equal(owner1.second, ::GetWindow(owned1.second, GW_OWNER));
 					assert_is_true(has_no_style(owned2.second, WS_CHILD));
 					assert_equal(owner2.second, ::GetWindow(owned2.second, GW_OWNER));
+				}
+
+
+				test( SettingTaskIconMakesItAvailableToTheSystem )
+				{
+					// INIT
+					form_and_handle f1(create_form_with_handle()), f2(create_form_with_handle());
+					gcontext::surface_type s1(30, 30, 0), s2(32, 32, 0);
+
+					(s1.row_ptr(1) + 2)->components[0] = 0x12;
+					(s1.row_ptr(3) + 7)->components[1] = 0x24;
+					(s2.row_ptr(10) + 20)->components[3] = 0x71;
+
+					// ACT
+					f1.first->set_task_icon(s1);
+					f2.first->set_task_icon(s2);
+
+					// ASSERT
+					assert_equal(s1, *get_icon(f1.second, true));
+					assert_equal(s2, *get_icon(f2.second, true));
+				}
+
+
+				test( SettingCaptionIconMakesItAvailableToTheSystem )
+				{
+					// INIT
+					form_and_handle f1(create_form_with_handle()), f2(create_form_with_handle());
+					gcontext::surface_type s1(10, 10, 0), s2(16, 16, 0);
+
+					(s1.row_ptr(1) + 2)->components[0] = 0x12;
+					(s1.row_ptr(3) + 7)->components[1] = 0x54;
+					(s2.row_ptr(10) + 8)->components[3] = 0xF1;
+
+					// ACT
+					f1.first->set_caption_icon(s1);
+					f2.first->set_caption_icon(s2);
+
+					// ASSERT
+					assert_equal(s1, *get_icon(f1.second, false));
+					assert_equal(s2, *get_icon(f2.second, false));
 				}
 
 			end_test_suite

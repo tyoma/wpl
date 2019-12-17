@@ -39,14 +39,9 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\src\wpl.mt\wpl.mt.vcxproj">
-      <Project>{4db355c8-12f1-4bbd-842c-f8d085b52f8c}</Project>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
     <ClCompile Include="SynchronizationTests.cpp" />
     <ClCompile Include="ThreadTests.cpp">
-		<DisableLanguageExtensions>false</DisableLanguageExtensions>
+      <DisableLanguageExtensions>false</DisableLanguageExtensions>
     </ClCompile>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

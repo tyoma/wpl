@@ -19,7 +19,7 @@ class view_fill : public BaseT
 
 		ras->reset();
 		add_path(*ras, rectangle((real_t)rc.x1, (real_t)rc.y1, (real_t)rc.x2, (real_t)rc.y2));
-		ctx(ras, blender_t(10, 20, 40, 255), winding<>());
+		ctx(ras, blender_t(agge::color::make(10, 20, 40, 255)), winding<>());
 		BaseT::draw(ctx, ras);
 	}
 };

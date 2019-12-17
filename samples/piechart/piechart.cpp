@@ -64,7 +64,7 @@ namespace wpl
 					0.6f * _base_radius, (1.0f + i->aline.get_value()) * _base_radius,
 					angle, angle + d));
 				ras->close_polygon();
-				ctx(ras, blender_t(i->clr.r, i->clr.g, i->clr.b, i->clr.a), winding<>());
+				ctx(ras, blender_t(agge::color::make(i->clr.r, i->clr.g, i->clr.b, i->clr.a)), winding<>());
 				angle += d;
 			}
 		}
