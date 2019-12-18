@@ -320,6 +320,84 @@ namespace wpl
 					assert_equal(s2, *get_icon(f2.second, false));
 				}
 
+
+				test( CreatedChildFormIsOwnedByTheCreatorForm )
+				{
+					// INIT
+					form_and_handle f1(create_form_with_handle()), f2(create_form_with_handle());
+					window_tracker wt(L"#32770");
+
+					// ACT
+					shared_ptr<form> cf1 = f1.first->create_child();
+					wt.checkpoint();
+
+					// ASSERT
+					assert_equal(1u, wt.created.size());
+					assert_equal(f1.second, GetWindow(wt.created[0], GW_OWNER));
+
+					// ACT
+					shared_ptr<form> cf2 = f2.first->create_child();
+					wt.checkpoint();
+					shared_ptr<form> cf3 = f1.first->create_child();
+					wt.checkpoint();
+
+					// ASSERT
+					assert_equal(3u, wt.created.size());
+					assert_equal(f2.second, GetWindow(wt.created[1], GW_OWNER));
+					assert_equal(f1.second, GetWindow(wt.created[2], GW_OWNER));
+				}
+
+
+				test( SettingLocationMovesWindow )
+				{
+					// INIT
+					form_and_handle f(create_form_with_handle());
+					view_location l = { 10, 11, 200, 91 };
+					RECT rc;
+
+					// ACT
+					f.first->set_location(l);
+
+					// ASSERT
+					RECT reference1 = { 10, 11, 10 + 200, 11 + 91 };
+
+					::GetWindowRect(f.second, &rc);
+					assert_equal(reference1, rc);
+
+					// ACT
+					l.left = 201, l.top = 60, l.width = 400, l.height = 250;
+					f.first->set_location(l);
+
+					// ASSERT
+					RECT reference2 = { 201, 60, 201 + 400, 60 + 250 };
+
+					::GetWindowRect(f.second, &rc);
+					assert_equal(reference2, rc);
+				}
+
+
+				test( CurrentLocationIsReturned )
+				{
+					// INIT
+					form_and_handle f(create_form_with_handle());
+
+					// ACT
+					::MoveWindow(f.second, 107, 51, 231, 157, TRUE);
+
+					// ASSERT
+					view_location reference1 = { 107, 51, 231, 157 };
+
+					assert_equal(reference1, f.first->get_location());
+
+					// ACT
+					::MoveWindow(f.second, 519, 151, 500, 321, TRUE);
+
+					// ASSERT
+					view_location reference2 = { 519, 151, 500, 321 };
+
+					assert_equal(reference2, f.first->get_location());
+				}
+
 			end_test_suite
 		}
 	}

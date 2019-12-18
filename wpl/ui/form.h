@@ -33,10 +33,13 @@ namespace wpl
 	{
 		struct form : view_host
 		{
+			virtual view_location get_location() const = 0;
+			virtual void set_location(const view_location &location) = 0;
 			virtual void set_visible(bool value) = 0;
 			virtual void set_caption(const std::wstring &caption) = 0;
 			virtual void set_caption_icon(const gcontext::surface_type &icon) = 0;
 			virtual void set_task_icon(const gcontext::surface_type &icon) = 0;
+			virtual std::shared_ptr<form> create_child() = 0;
 
 			signal<void()> close;
 		};

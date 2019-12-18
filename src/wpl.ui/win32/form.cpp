@@ -51,12 +51,18 @@ namespace wpl
 				~form();
 
 			private:
+				// view_host methods
 				virtual void set_view(const shared_ptr<view> &v);
 				virtual void set_background_color(agge::color color);
+
+				// form methods
+				virtual view_location get_location() const;
+				virtual void set_location(const view_location &location);
 				virtual void set_visible(bool value);
-				virtual void set_caption(const std::wstring &caption);
+				virtual void set_caption(const wstring &caption);
 				virtual void set_caption_icon(const gcontext::surface_type &icon);
 				virtual void set_task_icon(const gcontext::surface_type &icon);
+				virtual shared_ptr<ui::form> create_child();
 
 				LRESULT wndproc(UINT message, WPARAM wparam, LPARAM lparam, const window::original_handler_t &previous);
 
@@ -84,13 +90,25 @@ namespace wpl
 			void form::set_background_color(agge::color /*color*/)
 			{	}
 
+			view_location form::get_location() const
+			{
+				RECT rc;
+
+				::GetWindowRect(_hwnd, &rc);
+				view_location l = { rc.left, rc.top, rc.right - rc.left, rc.bottom - rc.top };
+				return l;
+			}
+
+			void form::set_location(const view_location &location)
+			{	::MoveWindow(_hwnd, location.left, location.top, location. width, location.height, TRUE);	}
+
 			void form::set_visible(bool value)
 			{
 				if (_hwnd)
 					::ShowWindow(_hwnd, value ? SW_SHOW : SW_HIDE);
 			}
 
-			void form::set_caption(const std::wstring &caption)
+			void form::set_caption(const wstring &caption)
 			{
 				if (_hwnd)
 					::SetWindowTextW(_hwnd, caption.c_str());
@@ -101,6 +119,9 @@ namespace wpl
 
 			void form::set_task_icon(const gcontext::surface_type &icon)
 			{	set_icon(_hwnd, icon, ICON_BIG);	}
+
+			shared_ptr<ui::form> form::create_child()
+			{	return shared_ptr<form>(new form(_hwnd));	}
 
 			LRESULT form::wndproc(UINT message, WPARAM wparam, LPARAM lparam, const window::original_handler_t &previous)
 			{
