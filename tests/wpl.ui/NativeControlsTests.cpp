@@ -190,6 +190,66 @@ namespace wpl
 				}
 
 
+				test( LinkControlAlignmentCanBeChangedBeforeTheWindowIsCreated )
+				{
+					// INIT
+					shared_ptr<link> b = create_link();
+
+					// ACT
+					b->set_align(text_container::left);
+					HWND hlink = get_window_and_resize(parent, *b, 100, 20);
+
+					// ASSERT
+					assert_equal(0, LWS_RIGHT & ::GetWindowLong(hlink, GWL_STYLE));
+
+					// ACT
+					b = create_link();
+					b->set_align(text_container::right);
+					hlink = get_window_and_resize(parent, *b, 100, 20);
+
+					// ASSERT
+					assert_equal(LWS_RIGHT, LWS_RIGHT & ::GetWindowLong(hlink, GWL_STYLE));
+				}
+
+
+				test( LinkControlAlignmentCanBeChanged )
+				{
+					// INIT
+					shared_ptr<link> b = create_link();
+					window_tracker wt;
+
+					// ACT
+					HWND hlink = get_window_and_resize(parent, *b, 100, 20);
+
+					// ASSERT
+					assert_equal(0, LWS_RIGHT & ::GetWindowLong(hlink, GWL_STYLE));
+					
+					// ACT
+					b->set_align(text_container::center);
+
+					// ASSERT
+					assert_equal(0, LWS_RIGHT & ::GetWindowLong(hlink, GWL_STYLE));
+
+					// ACT
+					b->set_align(text_container::right);
+
+					// ASSERT
+					assert_equal(LWS_RIGHT, LWS_RIGHT & ::GetWindowLong(hlink, GWL_STYLE));
+
+					// ACT
+					b->set_align(text_container::center);
+
+					// ASSERT
+					assert_equal(LWS_RIGHT, LWS_RIGHT & ::GetWindowLong(hlink, GWL_STYLE));
+
+					// ACT
+					b->set_align(text_container::left);
+
+					// ASSERT
+					assert_equal(0, LWS_RIGHT & ::GetWindowLong(hlink, GWL_STYLE));
+				}
+
+
 				test( ClickingALinkRaisesClickedSignal )
 				{
 					// INIT

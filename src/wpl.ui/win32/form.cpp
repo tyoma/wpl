@@ -35,6 +35,32 @@ namespace wpl
 		{
 			namespace
 			{
+				//const DWORD style = DS_SETFONT | WS_MINIMIZEBOX | WS_MAXIMIZEBOX | WS_POPUP | WS_CLIPCHILDREN | WS_CAPTION
+				//	| WS_SYSMENU | WS_THICKFRAME;
+
+				const DWORD style = DS_SETFONT | WS_OVERLAPPEDWINDOW | WS_CLIPCHILDREN;
+
+				HWND create_dialog_window(HWND howner)
+				{
+#pragma pack(push, 1)
+					struct local
+					{
+						DLGTEMPLATE dlgtemplate;
+						unsigned short hmenu, dlg_classname, title, text_size;
+						wchar_t text_typeface[100];
+
+						static INT_PTR CALLBACK passthrough(HWND, UINT, WPARAM, LPARAM)
+						{	return 0;	}
+					} t = {
+						{ style, 0, 0, 0, 0, 100, 20, },
+						0, 0, 0, 9,
+						L"MS Shell Dlg"
+					};
+#pragma pack(pop)
+
+					return ::CreateDialogIndirect(NULL, &t.dlgtemplate, howner, &local::passthrough);
+				}
+
 				void set_icon(HWND hwnd, const gcontext::surface_type &icon, int type)
 				{
 					ICONINFO ii = { TRUE, 0, 0, icon.native(), icon.native() };
@@ -74,9 +100,14 @@ namespace wpl
 
 
 			form::form(HWND howner)
-				: _hwnd(::CreateWindow(_T("#32770"), 0, WS_OVERLAPPEDWINDOW | WS_CLIPCHILDREN, 0, 0, 100, 20, howner, 0, 0,
-					0))
-			{	_host.reset(new win32::view_host(_hwnd, bind(&form::wndproc, this, _1, _2, _3, _4)));	}
+				: _hwnd(create_dialog_window(howner))
+			{
+				const COLORREF back_color_win32 = ::GetSysColor(COLOR_BTNFACE);
+
+				_host.reset(new win32::view_host(_hwnd, bind(&form::wndproc, this, _1, _2, _3, _4)));
+				_host->set_background_color(agge::color::make(GetRValue(back_color_win32), GetGValue(back_color_win32),
+					GetBValue(back_color_win32)));
+			}
 
 			form::~form()
 			{

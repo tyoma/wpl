@@ -44,7 +44,15 @@ namespace wpl
 				}
 
 			protected:
+				typedef text_container_impl text_container;
+
+			protected:
+				virtual void set_align(ui::text_container::halign value)
+				{	_halign = value;	}
+
+			protected:
 				wstring _text;
+				ui::text_container::halign _halign;
 			};
 
 
@@ -69,6 +77,8 @@ namespace wpl
 				virtual HWND materialize(HWND hparent);
 				virtual LRESULT on_message(UINT message, WPARAM wparam, LPARAM lparam,
 					const window::original_handler_t &handler);
+
+				virtual void set_align(halign value);
 			};
 
 
@@ -99,12 +109,12 @@ namespace wpl
 
 
 			link_impl::link_impl()
-			{	}
+			{	_halign = ui::text_container::left;	}
 
 			HWND link_impl::materialize(HWND hparent)
 			{
-				return ::CreateWindow(WC_LINK, _text.c_str(), WS_CHILD | WS_VISIBLE | LWS_RIGHT, 0, 0, 100, 100, hparent,
-					NULL, NULL, NULL);
+				return ::CreateWindow(WC_LINK, _text.c_str(), WS_CHILD | WS_VISIBLE
+					| (ui::text_container::right == _halign ? LWS_RIGHT : 0), 0, 0, 100, 100, hparent, NULL, NULL, NULL);
 			}
 
 			LRESULT link_impl::on_message(UINT message, WPARAM wparam, LPARAM lparam,
@@ -121,6 +131,21 @@ namespace wpl
 					if (NM_CLICK == nmlink->hdr.code)
 						clicked(nmlink->item.iLink, nmlink->item.szUrl);
 					return 0;
+				}
+			}
+
+			void link_impl::set_align(halign value)
+			{
+				text_container::set_align(value);
+				switch (value)
+				{
+				case ui::text_container::left:
+					SetWindowLong(get_window(), GWL_STYLE, ~LWS_RIGHT & GetWindowLong(get_window(), GWL_STYLE));
+					break;
+
+				case ui::text_container::right:
+					SetWindowLong(get_window(), GWL_STYLE, LWS_RIGHT | GetWindowLong(get_window(), GWL_STYLE));
+					break;
 				}
 			}
 		}
