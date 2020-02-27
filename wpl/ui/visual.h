@@ -8,6 +8,7 @@
 #include <agge/platform/bitmap.h>
 #include <agge/rasterizer.h>
 #include <agge/renderer_parallel.h>
+#include <string>
 
 namespace wpl
 {
@@ -41,6 +42,12 @@ namespace wpl
 			surface_type &_surface;
 			renderer_type &_renderer;
 			const agge::rect_i _window;
+		};
+
+		struct font
+		{
+			std::wstring typeface;
+			int height; // em height in points.
 		};
 
 		struct visual

@@ -29,6 +29,11 @@ namespace wpl
 
 		namespace tests
 		{
+#ifdef UNICODE
+			typedef std::basic_string<wchar_t> tstring;
+#else
+			typedef std::basic_string<char> tstring;
+#endif
 			class window_tracker;
 
 			RECT get_window_rect(HWND hwnd);

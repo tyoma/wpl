@@ -35,31 +35,7 @@ namespace wpl
 		{
 			namespace
 			{
-				//const DWORD style = DS_SETFONT | WS_MINIMIZEBOX | WS_MAXIMIZEBOX | WS_POPUP | WS_CLIPCHILDREN | WS_CAPTION
-				//	| WS_SYSMENU | WS_THICKFRAME;
-
-				const DWORD style = DS_SETFONT | WS_OVERLAPPEDWINDOW | WS_CLIPCHILDREN;
-
-				HWND create_dialog_window(HWND howner)
-				{
-#pragma pack(push, 1)
-					struct local
-					{
-						DLGTEMPLATE dlgtemplate;
-						unsigned short hmenu, dlg_classname, title, text_size;
-						wchar_t text_typeface[100];
-
-						static INT_PTR CALLBACK passthrough(HWND, UINT, WPARAM, LPARAM)
-						{	return 0;	}
-					} t = {
-						{ style, 0, 0, 0, 0, 100, 20, },
-						0, 0, 0, 9,
-						L"MS Shell Dlg"
-					};
-#pragma pack(pop)
-
-					return ::CreateDialogIndirect(NULL, &t.dlgtemplate, howner, &local::passthrough);
-				}
+				const DWORD style = WS_OVERLAPPEDWINDOW | WS_CLIPCHILDREN | WS_SYSMENU;
 
 				void set_icon(HWND hwnd, const gcontext::surface_type &icon, int type)
 				{
@@ -68,6 +44,9 @@ namespace wpl
 
 					::SendMessage(hwnd, WM_SETICON, type, reinterpret_cast<LPARAM>(hicon));
 				}
+
+				void update_flag(long &styles, bool enable, long flag)
+				{	styles = enable ? (styles | flag) : (styles & ~flag);	}
 			}
 
 			class form : public wpl::ui::form
@@ -89,18 +68,21 @@ namespace wpl
 				virtual void set_caption_icon(const gcontext::surface_type &icon);
 				virtual void set_task_icon(const gcontext::surface_type &icon);
 				virtual shared_ptr<ui::form> create_child();
+				virtual void set_style(unsigned /*styles*/ style);
+				virtual void set_font(const font &font_);
 
 				LRESULT wndproc(UINT message, WPARAM wparam, LPARAM lparam, const window::original_handler_t &previous);
 
 			private:
 				HWND _hwnd;
 				shared_ptr<win32::view_host> _host;
+				shared_ptr<void> _font;
 			};
 
 
 
 			form::form(HWND howner)
-				: _hwnd(create_dialog_window(howner))
+				: _hwnd(::CreateWindow(_T("#32770"), 0, style, 0, 0, 100, 20, howner, 0, 0, 0))
 			{
 				const COLORREF back_color_win32 = ::GetSysColor(COLOR_BTNFACE);
 
@@ -154,6 +136,25 @@ namespace wpl
 			shared_ptr<ui::form> form::create_child()
 			{	return shared_ptr<form>(new form(_hwnd));	}
 
+			void form::set_style(unsigned /*styles*/ new_style)
+			{
+				long style = ::GetWindowLong(_hwnd, GWL_STYLE);
+
+				update_flag(style, !!(new_style & resizeable), WS_SIZEBOX);
+				update_flag(style, !!(new_style & has_minimize), WS_MINIMIZEBOX);
+				update_flag(style, !!(new_style & has_maximize), WS_MAXIMIZEBOX);
+				::SetWindowLong(_hwnd, GWL_STYLE, style);
+			}
+
+			void form::set_font(const font &fd)
+			{
+				const shared_ptr<void> hdc(::CreateCompatibleDC(NULL), &::DeleteDC);
+				const int height = -::MulDiv(fd.height, ::GetDeviceCaps(static_cast<HDC>(hdc.get()), LOGPIXELSY), 72);
+
+				_font.reset(::CreateFontW(height, 0, 0, 0, FW_NORMAL, 0, 0, 0, DEFAULT_CHARSET, OUT_DEFAULT_PRECIS,
+					CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, FF_DONTCARE, fd.typeface.c_str()), &::DeleteObject);				
+			}
+
 			LRESULT form::wndproc(UINT message, WPARAM wparam, LPARAM lparam, const window::original_handler_t &previous)
 			{
 				switch (message)
@@ -165,6 +166,9 @@ namespace wpl
 				case WM_DESTROY:
 					_hwnd = NULL;
 					break;
+
+				case WM_GETFONT:
+					return reinterpret_cast<LRESULT>(_font.get());
 				}
 				return previous(message, wparam, lparam);
 			}

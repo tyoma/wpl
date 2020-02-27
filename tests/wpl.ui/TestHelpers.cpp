@@ -21,7 +21,6 @@ namespace wpl
 		{
 			namespace
 			{
-				typedef basic_string<TCHAR> tstring;
 #ifdef UNICODE
 				wstring t2w(const wstring &text)
 				{	return text;	}

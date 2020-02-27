@@ -88,6 +88,18 @@ namespace wpl
 					memcpy(s->row_ptr(0), buffer.get(), b.bmHeight * b.bmWidthBytes);
 					return s;
 				}
+
+				font create_font(const wstring &typeface, int height)
+				{
+					font f = { typeface, height };
+					return f;
+				}
+
+				int convert_font_height(int height)
+				{
+					const shared_ptr<void> hdc(::CreateCompatibleDC(NULL), &::DeleteDC);
+					return -::MulDiv(height, ::GetDeviceCaps(static_cast<HDC>(hdc.get()), LOGPIXELSY), 72);
+				}
 			}
 
 			begin_test_suite( FormTests )
@@ -396,6 +408,80 @@ namespace wpl
 					view_location reference2 = { 519, 151, 500, 321 };
 
 					assert_equal(reference2, f.first->get_location());
+				}
+
+
+				test( SetFormStyleAffectsWindowStyleFlags )
+				{
+					const int mask = WS_SIZEBOX | WS_MINIMIZEBOX | WS_MAXIMIZEBOX;
+
+					// INIT
+					form_and_handle f(create_form_with_handle());
+
+					// ACT
+					f.first->set_style(0);
+
+					// ASSERT
+					assert_equal(0, mask & ::GetWindowLong(f.second, GWL_STYLE));
+
+					// ACT
+					f.first->set_style(form::resizeable);
+
+					// ASSERT
+					assert_equal(WS_SIZEBOX, mask & ::GetWindowLong(f.second, GWL_STYLE));
+
+					// ACT
+					f.first->set_style(form::resizeable | form::has_minimize);
+
+					// ASSERT
+					assert_equal(WS_SIZEBOX | WS_MINIMIZEBOX, mask & ::GetWindowLong(f.second, GWL_STYLE));
+
+					// ACT
+					f.first->set_style(form::has_minimize);
+
+					// ASSERT
+					assert_equal(WS_MINIMIZEBOX, mask & ::GetWindowLong(f.second, GWL_STYLE));
+
+					// ACT
+					f.first->set_style(form::has_maximize);
+
+					// ASSERT
+					assert_equal(WS_MAXIMIZEBOX, mask & ::GetWindowLong(f.second, GWL_STYLE));
+
+					// ACT
+					f.first->set_style(form::resizeable | form::has_maximize | form::has_minimize);
+
+					// ASSERT
+					assert_equal(WS_SIZEBOX | WS_MINIMIZEBOX | WS_MAXIMIZEBOX,
+						mask & ::GetWindowLong(f.second, GWL_STYLE));
+				}
+
+
+				test( RequestedFontIsUnderlyingWindow )
+				{
+					// INIT
+					form_and_handle f(create_form_with_handle());
+
+					// ACT
+					f.first->set_font(create_font(L"Arial", 10));
+
+					// ASSERT
+					HFONT hfont = reinterpret_cast<HFONT>(::SendMessage(f.second, WM_GETFONT, 0, 0));
+					LOGFONT lf = {};
+
+					::GetObject(hfont, sizeof(lf), &lf);
+					assert_equal(_T("Arial"), tstring(lf.lfFaceName));
+					assert_equal(convert_font_height(10), lf.lfHeight);
+
+					// ACT
+					f.first->set_font(create_font(L"Times New Roman", 20));
+
+					// ASSERT
+					hfont = reinterpret_cast<HFONT>(::SendMessage(f.second, WM_GETFONT, 0, 0));
+
+					::GetObject(hfont, sizeof(lf), &lf);
+					assert_equal(_T("Times New Roman"), tstring(lf.lfFaceName));
+					assert_equal(convert_font_height(20), lf.lfHeight);
 				}
 
 			end_test_suite
