@@ -35,7 +35,7 @@ namespace wpl
 		{
 			namespace
 			{
-				const DWORD style = WS_OVERLAPPEDWINDOW | WS_CLIPCHILDREN | WS_SYSMENU;
+				const DWORD c_form_style = WS_OVERLAPPEDWINDOW | WS_CLIPCHILDREN | WS_SYSMENU;
 
 				void set_icon(HWND hwnd, const gcontext::surface_type &icon, int type)
 				{
@@ -82,7 +82,7 @@ namespace wpl
 
 
 			form::form(HWND howner)
-				: _hwnd(::CreateWindow(_T("#32770"), 0, style, 0, 0, 100, 20, howner, 0, 0, 0))
+				: _hwnd(::CreateWindow(_T("#32770"), 0, c_form_style, 0, 0, 100, 20, howner, 0, 0, 0))
 			{
 				const COLORREF back_color_win32 = ::GetSysColor(COLOR_BTNFACE);
 
