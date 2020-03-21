@@ -1,6 +1,6 @@
 #include "piechart.h"
 
-#include "timer.h"
+#include <samples/common/timer.h>
 
 #include <agge/blenders.h>
 #include <agge/blenders_simd.h>

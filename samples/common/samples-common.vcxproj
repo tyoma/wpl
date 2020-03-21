@@ -18,12 +18,9 @@
       <Platform>x64</Platform>
     </ProjectConfiguration>
   </ItemGroup>
-  <PropertyGroup Label="Globals">
-    <ProjectGuid>{28031D00-3D0B-EC08-E699-80B31EE58488}</ProjectGuid>
-  </PropertyGroup>
   <Import Project="$(SolutionDir)build.props\platform.props" />
   <PropertyGroup Label="Configuration">
-    <ConfigurationType>Application</ConfigurationType>
+    <ConfigurationType>StaticLibrary</ConfigurationType>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="PropertySheets">
@@ -33,24 +30,16 @@
   </ImportGroup>
   <ItemDefinitionGroup>
     <ClCompile>
+      <DisableLanguageExtensions>false</DisableLanguageExtensions>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\src\wpl.ui\wpl.ui.vcxproj">
-      <Project>{2423f23a-b689-f3f7-a864-a1729ec337c9}</Project>
-    </ProjectReference>
-    <ProjectReference Include="..\common\samples-common.vcxproj">
-      <Project>{0939ee39-a722-3638-385b-c3656b191b84}</Project>
-    </ProjectReference>
+    <ClCompile Include="platform.cpp" />
+    <ClCompile Include="timer.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="main.cpp" />
-    <ClCompile Include="piechart.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="animation.h" />
-    <ClInclude Include="piechart.h" />
-    <ClInclude Include="view_fill.h" />
+    <ClInclude Include="platform.h" />
+    <ClInclude Include="timer.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
 </Project>

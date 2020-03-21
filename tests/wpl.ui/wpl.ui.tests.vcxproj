@@ -42,6 +42,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="ComboboxTests.cpp" />
     <ClCompile Include="ContainerTests.cpp" />
     <ClCompile Include="FormTests.cpp">
       <DisableLanguageExtensions>false</DisableLanguageExtensions>

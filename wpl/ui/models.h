@@ -37,12 +37,21 @@ namespace wpl
 			static index_type npos();
 		};
 
-		struct trackable : destructible, index_traits
+		struct trackable : index_traits
 		{
 			virtual index_type index() const = 0;
 		};
 
-		struct table_model : destructible, index_traits
+		struct list_model : index_traits
+		{
+			virtual index_type get_count() const throw() = 0;
+			virtual void get_text(index_type index, std::wstring &text) const = 0;
+			// virtual std::shared_ptr<const trackable> track(index_type row) const;
+
+			signal<void (index_type new_count)> invalidated;
+		};
+
+		struct table_model : index_traits
 		{
 			virtual index_type get_count() const throw() = 0;
 			virtual void get_text(index_type row, index_type column, std::wstring &text) const = 0;

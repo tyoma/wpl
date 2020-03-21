@@ -5,3 +5,4 @@
 *.cache
 _*
 ipch
+!*.tests.vcxproj.user

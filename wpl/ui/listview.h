@@ -45,7 +45,7 @@ namespace wpl
 			signal<void (index_type /*item*/, bool /*became selected*/)> selection_changed;
 		};
 
-		struct listview::columns_model : destructible
+		struct listview::columns_model
 		{
 			typedef short int index_type;
 

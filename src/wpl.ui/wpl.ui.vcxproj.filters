@@ -74,5 +74,6 @@
     <ClInclude Include="..\..\wpl\ui\win32\form.h">
       <Filter>win32</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\wpl\ui\combobox.h" />
   </ItemGroup>
 </Project>

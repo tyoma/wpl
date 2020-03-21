@@ -77,12 +77,16 @@ namespace wpl
 					assert_equal(32, b.bmBitsPixel);
 
 					unique_ptr<byte[]> buffer(new byte[b.bmHeight * b.bmWidthBytes]);
-					BITMAPINFO bi = {};
+					union
+					{
+						BITMAPINFO bi;
+						char space[sizeof(BITMAPINFO) + 3 * sizeof(DWORD)];
+					} bi = {};
 
-					bi.bmiHeader.biSize = sizeof(bi.bmiHeader);
-					::GetDIBits(static_cast<HDC>(hdc.get()), ii.hbmColor, 0, b.bmHeight, NULL, &bi, DIB_RGB_COLORS);
-					bi.bmiHeader.biHeight = -bi.bmiHeader.biHeight;
-					::GetDIBits(static_cast<HDC>(hdc.get()), ii.hbmColor, 0, b.bmHeight, buffer.get(), &bi, DIB_RGB_COLORS);
+					bi.bi.bmiHeader.biSize = sizeof(bi.bi.bmiHeader);
+					::GetDIBits(static_cast<HDC>(hdc.get()), ii.hbmColor, 0, b.bmHeight, NULL, &bi.bi, DIB_RGB_COLORS);
+					bi.bi.bmiHeader.biHeight = -bi.bi.bmiHeader.biHeight;
+					::GetDIBits(static_cast<HDC>(hdc.get()), ii.hbmColor, 0, b.bmHeight, buffer.get(), &bi.bi, DIB_RGB_COLORS);
 
 					shared_ptr<gcontext::surface_type> s(new gcontext::surface_type(b.bmWidth, b.bmHeight, 0));
 					memcpy(s->row_ptr(0), buffer.get(), b.bmHeight * b.bmWidthBytes);

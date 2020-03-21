@@ -1,20 +1,18 @@
 #include "piechart.h"
 #include "view_fill.h"
 
+#include <samples/common/platform.h>
 #include <wpl/ui/container.h>
 #include <wpl/ui/form.h>
 #include <wpl/ui/layout.h>
 #include <wpl/ui/listview.h>
 
 #include <wpl/ui/win32/form.h>
+#include <wpl/ui/win32/controls.h>
 
 using namespace std;
 using namespace wpl;
 using namespace wpl::ui;
-
-void run_message_loop();
-void exit_message_loop();
-shared_ptr<listview> create_listview();
 
 class spacer_layout : public layout_manager
 {
