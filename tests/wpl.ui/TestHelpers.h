@@ -96,6 +96,10 @@ namespace wpl
 			inline typename Container::iterator end(Container &container_)
 			{	return container_.end();	}
 
+			template <typename T, size_t n>
+			inline std::vector<T> mkvector(T (&data)[n])
+			{	return std::vector<T>(data, data + n);	}
+
 
 			inline unsigned int pack_coordinates(int x, int y)
 			{	return (unsigned short)x | ((unsigned int )(unsigned short)y << 16);	}

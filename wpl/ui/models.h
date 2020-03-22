@@ -48,7 +48,7 @@ namespace wpl
 			virtual void get_text(index_type index, std::wstring &text) const = 0;
 			// virtual std::shared_ptr<const trackable> track(index_type row) const;
 
-			signal<void (index_type new_count)> invalidated;
+			signal<void ()> invalidated;
 		};
 
 		struct table_model : index_traits

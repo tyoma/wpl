@@ -29,6 +29,7 @@ namespace wpl
 	namespace ui
 	{
 		struct button;
+		struct combobox;
 		struct link;
 		struct listview;
 		struct view_host;
@@ -37,6 +38,7 @@ namespace wpl
 		std::shared_ptr<view_host> wrap_view_host(HWND hwnd);
 		std::shared_ptr<listview> create_listview();
 		std::shared_ptr<button> create_button();
+		std::shared_ptr<combobox> create_combobox();
 		std::shared_ptr<link> create_link();
 	}
 }

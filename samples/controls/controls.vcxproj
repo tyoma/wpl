@@ -18,57 +18,30 @@
       <Platform>x64</Platform>
     </ProjectConfiguration>
   </ItemGroup>
-  <PropertyGroup Label="Globals">
-    <ProjectGuid>{685F6A5E-B74A-4ACF-873F-A5A6FB6AC8C9}</ProjectGuid>
-  </PropertyGroup>
   <Import Project="$(SolutionDir)build.props\platform.props" />
   <PropertyGroup Label="Configuration">
-    <ConfigurationType>DynamicLibrary</ConfigurationType>
-    <CharacterSet>Unicode</CharacterSet>
+    <ConfigurationType>Application</ConfigurationType>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="PropertySheets">
-    <Import Project="$(SolutionDir)build.props\config.tests.props" Condition="exists('$(SolutionDir)build.props\config.tests.props')" />
+    <Import Project="$(SolutionDir)build.props\config.props" Condition="exists('$(SolutionDir)build.props\config.props')" />
     <Import Project="$(SolutionDir)build.props\agge.include.props" Condition="exists('$(SolutionDir)build.props\agge.include.props')" />
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <ItemDefinitionGroup>
     <ClCompile>
-      <AdditionalIncludeDirectories>$(MSBuildThisFileDirectory)..\..;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <DisableLanguageExtensions>false</DisableLanguageExtensions>
     </ClCompile>
-    <Link>
-      <SubSystem>Console</SubSystem>
-      <AdditionalManifestDependencies>type='win32' name='Microsoft.Windows.Common-Controls' version='6.0.0.0' processorArchitecture='*' publicKeyToken='6595b64144ccf1df' language='*'</AdditionalManifestDependencies>
-    </Link>
   </ItemDefinitionGroup>
-  <ItemGroup>
-    <ClCompile Include="ComboboxTests.cpp" />
-    <ClCompile Include="ContainerTests.cpp" />
-    <ClCompile Include="FormTests.cpp" />
-    <ClCompile Include="IntegrationTests.cpp" />
-    <ClCompile Include="LayoutTests.cpp" />
-    <ClCompile Include="ListViewTests.cpp" />
-    <ClCompile Include="main.cpp" />
-    <ClCompile Include="MockupsListView.cpp" />
-    <ClCompile Include="MockupsNative.cpp" />
-    <ClCompile Include="NativeControlsTests.cpp" />
-    <ClCompile Include="NativeViewHostTests.cpp" />
-    <ClCompile Include="NativeViewTests.cpp" />
-    <ClCompile Include="TestHelpers.cpp" />
-    <ClCompile Include="Mockups.cpp" />
-    <ClCompile Include="WindowingTests.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="MockupsListView.h" />
-    <ClInclude Include="MockupsNative.h" />
-    <ClInclude Include="TestHelpers.h" />
-    <ClInclude Include="Mockups.h" />
-  </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\src\wpl.ui\wpl.ui.vcxproj">
       <Project>{2423f23a-b689-f3f7-a864-a1729ec337c9}</Project>
     </ProjectReference>
+    <ProjectReference Include="..\common\samples-common.vcxproj">
+      <Project>{0939ee39-a722-3638-385b-c3656b191b84}</Project>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="main.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
 </Project>

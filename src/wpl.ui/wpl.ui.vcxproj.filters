@@ -37,6 +37,9 @@
     <ClCompile Include="win32\controls.cpp">
       <Filter>Source Files\win32</Filter>
     </ClCompile>
+    <ClCompile Include="win32\comboxbox.cpp">
+      <Filter>Source Files\win32</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\wpl\ui\win32\controls.h">
@@ -75,5 +78,8 @@
       <Filter>win32</Filter>
     </ClInclude>
     <ClInclude Include="..\..\wpl\ui\combobox.h" />
+    <ClInclude Include="win32\combobox.h">
+      <Filter>Source Files\win32</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
