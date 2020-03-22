@@ -5,6 +5,7 @@
 #include <wpl/ui/win32/form.h>
 
 #include <samples/common/platform.h>
+#include <samples/common/timer.h>
 
 using namespace std;
 using namespace wpl;
@@ -14,6 +15,17 @@ namespace
 {
 	struct my_model : list_model
 	{
+		my_model()
+		{
+			_timer = create_timer(20, [this] (int elapsed) {
+				wchar_t buffer[100];
+
+				swprintf(buffer, sizeof(buffer), L"Dynamic: %d", elapsed);
+				_dynamic_item = buffer;
+				invalidated();
+			});
+		}
+
 		virtual index_type get_count() const throw()
 		{	return 4;	}
 
@@ -22,11 +34,14 @@ namespace
 			switch (index)
 			{
 			case 0: text = L"foo"; break;
-			case 1: text = L"bar"; break;
+			case 1: text = _dynamic_item; break;
 			case 2: text = L"baz"; break;
 			case 3: text = L"doodle"; break;
 			}
 		}
+
+		shared_ptr<void> _timer;
+		wstring _dynamic_item;
 	};
 }
 

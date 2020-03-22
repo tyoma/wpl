@@ -38,13 +38,9 @@ namespace wpl
 			{
 				static wstring get_item_text(HWND hcombobox, unsigned index)
 				{
-					COMBOBOXINFO cbi = { sizeof(COMBOBOXINFO),  };
-
-					::GetComboBoxInfo(hcombobox, &cbi);
-					assert_not_null(cbi.hwndList);
-					const size_t length = ::SendMessage(cbi.hwndList, LB_GETTEXTLEN, index, 0);
+					const size_t length = ComboBox_GetLBTextLen(hcombobox, index);
 					vector<TCHAR> buffer(length + 1);
-					::SendMessage(cbi.hwndList, LB_GETTEXT, index, reinterpret_cast<LPARAM>(&buffer[0]));
+					ComboBox_GetLBText(hcombobox, index, &buffer[0]);
 					return wstring(buffer.begin(), buffer.end() - 1);
 				}
 
@@ -80,8 +76,8 @@ namespace wpl
 					// ASSERT
 					wt.checkpoint();
 
-					assert_equal(1u, wt.find_created(WC_COMBOBOX).size());
-					assert_equal(wt.find_created(WC_COMBOBOX)[0], hwnd);
+					assert_equal(1u, wt.find_created(WC_COMBOBOXEX).size());
+					assert_equal(wt.find_created(WC_COMBOBOXEX)[0], hwnd);
 					assert_equal(parent, ::GetParent(hwnd));
 
 					// INIT
@@ -100,7 +96,7 @@ namespace wpl
 				test( ComboboxControlHasRequestStyles )
 				{
 					// INIT
-					const unsigned required_style = CBS_HASSTRINGS | CBS_DROPDOWNLIST;
+					const unsigned required_style = CBS_DROPDOWNLIST;
 					shared_ptr<combobox> cb = create_combobox();
 					window_tracker wt;
 
@@ -342,6 +338,43 @@ namespace wpl
 					combobox::index_type reference3[] = { 3u, 1u, combobox::npos() };
 
 					assert_equal(reference3, selection_log);
+				}
+
+
+				test( RecreationOfComboboxPreservesSelectionIfWasChangedByUser )
+				{
+					// INIT
+					vector<combobox::index_type> selection_log;
+					wstring items[] = { L"1", L"2", L"3", L"4", L"5", };
+					shared_ptr<mocks::list_model> m(new mocks::list_model);
+					shared_ptr<combobox> cb = create_combobox();
+					HWND hwnd = get_window_and_resize(parent, *cb, 100, 20);
+
+					m->items = mkvector(items);
+					cb->set_model(m);
+					ComboBox_SetCurSel(hwnd, 3);
+					::SendMessage(parent, WM_COMMAND, CBN_SELCHANGE << 16, reinterpret_cast<LPARAM>(hwnd));
+					wmanager.Cleanup();
+					parent = wmanager.create_visible_window();
+					wmanager.enable_reflection(parent);
+
+					// ACT
+					hwnd = get_window_and_resize(parent, *cb, 100, 20);
+
+					// ASSERT
+					assert_equal(3, ComboBox_GetCurSel(hwnd));
+
+					//INIT
+					ComboBox_SetCurSel(hwnd, 1);
+					::SendMessage(parent, WM_COMMAND, CBN_SELCHANGE << 16, reinterpret_cast<LPARAM>(hwnd));
+					wmanager.Cleanup();
+					parent = wmanager.create_visible_window();
+
+					// ACT
+					hwnd = get_window_and_resize(parent, *cb, 100, 20);
+
+					// ASSERT
+					assert_equal(1, ComboBox_GetCurSel(hwnd));
 				}
 
 			end_test_suite

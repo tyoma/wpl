@@ -49,7 +49,6 @@
     <ClCompile Include="IntegrationTests.cpp" />
     <ClCompile Include="LayoutTests.cpp" />
     <ClCompile Include="ListViewTests.cpp" />
-    <ClCompile Include="main.cpp" />
     <ClCompile Include="MockupsListView.cpp" />
     <ClCompile Include="MockupsNative.cpp" />
     <ClCompile Include="NativeControlsTests.cpp" />

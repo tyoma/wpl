@@ -52,8 +52,9 @@ namespace wpl
 
 			HWND combobox_impl::materialize(HWND hparent)
 			{
-				HWND hwnd = ::CreateWindow(WC_COMBOBOX, NULL, WS_CHILD | WS_VISIBLE | CBS_HASSTRINGS | CBS_DROPDOWNLIST,
-					0, 0, 100, 100, hparent, NULL, NULL, NULL);
+				HWND hwnd = ::CreateWindow(WC_COMBOBOXEX, NULL, WS_CHILD | WS_VISIBLE | CBS_DROPDOWNLIST, 0, 0, 100, 100,
+					hparent, NULL, NULL, NULL);
+
 				if (_model)
 				{
 					update(hwnd, _model.get());
@@ -70,19 +71,30 @@ namespace wpl
 				case OCM_COMMAND:
 					switch (HIWORD(wparam))
 					{
-					default:
-						break;
-
 					case CBN_SELCHANGE:
 						const int selected_item = ComboBox_GetCurSel(reinterpret_cast<HWND>(lparam));
 
-						selection_changed(selected_item != CB_ERR ? selected_item : npos());
+						_selected_item = selected_item != CB_ERR ? selected_item : npos();
+						selection_changed(_selected_item);
 						return 0;
 					}
+					break;
 
-				default:
-					return handler(message, wparam, lparam);
+				case OCM_NOTIFY:
+					switch (reinterpret_cast<const NMHDR *>(lparam)->code)
+					{
+					case CBEN_GETDISPINFO:
+						NMCOMBOBOXEX *cb_item = reinterpret_cast<NMCOMBOBOXEX *>(lparam);
+
+						_model->get_text(cb_item->ceItem.iItem, _text_buffer);
+						wcsncpy(cb_item->ceItem.pszText, _text_buffer.c_str(), cb_item->ceItem.cchTextMax - 1);
+						cb_item->ceItem.pszText[cb_item->ceItem.cchTextMax - 1] = 0;
+						cb_item->ceItem.mask = CBEIF_TEXT;
+						return 0;
+					}
+					break;
 				}
+				return handler(message, wparam, lparam);
 			}
 
 			void combobox_impl::on_invalidated(const list_model *model)
@@ -91,13 +103,18 @@ namespace wpl
 			void combobox_impl::update(HWND hcombobox, const list_model *model) const
 			{
 				const index_type count = model ? model->get_count() : 0u;
+				const index_type previous_count = ComboBox_GetCount(hcombobox);
+				const COMBOBOXEXITEM new_item = { CBEIF_TEXT, -1, LPSTR_TEXTCALLBACK, };
+				const HWND hchild = reinterpret_cast<HWND>(::SendMessage(hcombobox, CBEM_GETCOMBOCONTROL, 0, 0));
+				COMBOBOXINFO cbi = { sizeof(COMBOBOXINFO), };
 
-				ComboBox_ResetContent(hcombobox);
-				for (index_type i = 0; i != count; ++i)
-				{
-					model->get_text(i, _text_buffer);
-					ComboBox_AddString(hcombobox, _text_buffer.c_str());
-				}
+				for (index_type i = previous_count; i < count; ++i)
+					::SendMessage(hcombobox, CBEM_INSERTITEM, 0, reinterpret_cast<LPARAM>(&new_item));
+				for (index_type i = count; i < previous_count; ++i)
+					::SendMessage(hcombobox, CBEM_DELETEITEM, count, 0);
+				::GetComboBoxInfo(hchild, &cbi);
+				::InvalidateRect(cbi.hwndList, NULL, FALSE);
+				::InvalidateRect(hcombobox, NULL, FALSE);
 			}
 
 			void combobox_impl::update_selection(HWND hcombobox, index_type selected_item)
