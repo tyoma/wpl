@@ -8,6 +8,7 @@ set(WPL_UI_SOURCES
 
 if(WIN32)
 	set(WPL_UI_SOURCES ${WPL_UI_SOURCES}
+		win32/comboxbox.cpp
 		win32/controls.cpp
 		win32/form.cpp
 		win32/listview.cpp
