@@ -5,6 +5,7 @@
 
 #include "TestHelpers.h"
 
+#include<list>
 #include <windows.h>
 #include <commctrl.h>
 #include <olectl.h>
@@ -22,15 +23,34 @@ namespace wpl
 		{
 			namespace mocks
 			{
+				struct trackable : wpl::ui::trackable
+				{
+					virtual index_type index() const
+					{	return index_;	}
+
+					index_type index_;
+				};
+
 				struct list_model : wpl::ui::list_model
 				{
 					virtual index_type get_count() const throw()
 					{	return items.size();	}
 
-					virtual void get_text(index_type index, std::wstring &text) const
+					virtual void get_text(index_type index, wstring &text) const
 					{	text = items[index];	}
 
+					virtual shared_ptr<const wpl::ui::trackable> track(index_type row) const
+					{
+						assert_is_true(0 <= row && row < get_count());
+
+						list<trackable>::iterator i = trackables.insert(trackables.end(), trackable());
+
+						i->index_ = row;
+						return shared_ptr<wpl::ui::trackable>(&*i, [i, this] (...) { trackables.erase(i); });
+					}
+
 					vector<wstring> items;
+					mutable list<trackable> trackables;
 				};
 			}
 
@@ -232,6 +252,25 @@ namespace wpl
 				}
 
 
+				test( SelectionIsImpossibleIfNoModelIsSet )
+				{
+					// INIT
+					shared_ptr<combobox> cb = create_combobox();
+
+					// ACT / ASSERT
+					assert_throws(cb->select(0), logic_error);
+
+					// INIT
+					HWND hwnd =  get_window_and_resize(parent, *cb, 100, 20);
+
+					// ACT / ASSERT
+					assert_throws(cb->select(0), logic_error);
+
+					// ASSERT
+					assert_equal(CB_ERR, ComboBox_GetCurSel(hwnd));
+				}
+
+
 				test( SelectingAnItemChangesNativeSelection )
 				{
 					// INIT
@@ -375,6 +414,144 @@ namespace wpl
 
 					// ASSERT
 					assert_equal(1, ComboBox_GetCurSel(hwnd));
+				}
+
+
+				test( TrackableIsAcquiredOnSelection )
+				{
+					// INIT
+					shared_ptr<mocks::list_model> m(new mocks::list_model);
+					shared_ptr<combobox> cb = create_combobox();
+
+					get_window_and_resize(parent, *cb, 100, 20);
+					m->items.resize(5);
+					cb->set_model(m);
+
+					// ACT
+					cb->select(2);
+
+					// ASSERT
+					assert_equal(1u, m->trackables.size());
+					assert_equal(2u, m->trackables.begin()->index_);
+
+					// ACT
+					cb->select(list_model::npos());
+
+					// ASSERT
+					assert_is_empty(m->trackables);
+				}
+
+
+				test( TrackableIsAcquiredOnNativeSelection )
+				{
+					// INIT
+					shared_ptr<mocks::list_model> m(new mocks::list_model);
+					shared_ptr<combobox> cb = create_combobox();
+					HWND hwnd = get_window_and_resize(parent, *cb, 100, 20);
+
+					m->items.resize(5);
+
+					// ACT
+					cb->set_model(m);
+
+					// ASSERT
+					assert_is_empty(m->trackables);
+
+					// ACT
+					ComboBox_SetCurSel(hwnd, 3);
+					::SendMessage(parent, WM_COMMAND, CBN_SELCHANGE << 16, reinterpret_cast<LPARAM>(hwnd));
+
+					// INIT / ASSERT
+					assert_equal(1u, m->trackables.size());
+					assert_equal(3u, m->trackables.begin()->index_);
+				}
+
+
+				test( SelectionIsChangingOnTrackablesChange )
+				{
+					// INIT
+					shared_ptr<mocks::list_model> m(new mocks::list_model);
+					shared_ptr<combobox> cb = create_combobox();
+					HWND hwnd = get_window_and_resize(parent, *cb, 100, 20);
+
+					m->items.resize(5);
+					cb->set_model(m);
+					ComboBox_SetCurSel(hwnd, 4);
+					::SendMessage(parent, WM_COMMAND, CBN_SELCHANGE << 16, reinterpret_cast<LPARAM>(hwnd));
+
+					// ACT
+					m->trackables.begin()->index_ = 1;
+					m->invalidated();
+
+					// ASSERT
+					assert_equal(1, ComboBox_GetCurSel(hwnd));
+
+					// ACT
+					m->trackables.begin()->index_ = 2;
+					m->invalidated();
+
+					// ASSERT
+					assert_equal(2, ComboBox_GetCurSel(hwnd));
+				}
+
+
+				test( SelectionIsResetAndTrackableIsReleasedOnNposIndex )
+				{
+					// INIT
+					shared_ptr<mocks::list_model> m(new mocks::list_model);
+					shared_ptr<combobox> cb = create_combobox();
+					HWND hwnd = get_window_and_resize(parent, *cb, 100, 20);
+
+					m->items.resize(5);
+					cb->set_model(m);
+					ComboBox_SetCurSel(hwnd, 4);
+					::SendMessage(parent, WM_COMMAND, CBN_SELCHANGE << 16, reinterpret_cast<LPARAM>(hwnd));
+
+					// ACT
+					m->trackables.begin()->index_ = trackable::npos();
+					m->invalidated();
+
+					// ASSERT
+					assert_equal(CB_ERR, ComboBox_GetCurSel(hwnd));
+					assert_is_empty(m->trackables);
+				}
+
+
+				test( ChangingModelReleasesTrackable )
+				{
+					// INIT
+					shared_ptr<mocks::list_model> m(new mocks::list_model);
+					shared_ptr<mocks::list_model> m2(new mocks::list_model);
+					shared_ptr<combobox> cb = create_combobox();
+					HWND hwnd = get_window_and_resize(parent, *cb, 100, 20);
+
+					m->items.resize(5);
+					m2->items.resize(6);
+					cb->set_model(m);
+					ComboBox_SetCurSel(hwnd, 4);
+					::SendMessage(parent, WM_COMMAND, CBN_SELCHANGE << 16, reinterpret_cast<LPARAM>(hwnd));
+
+					// ACT
+					cb->set_model(m2);
+
+					// ASSERT
+					assert_is_empty(m->trackables);
+					assert_is_empty(m2->trackables);
+					assert_equal(CB_ERR, ComboBox_GetCurSel(hwnd));
+
+					// ACT
+					ComboBox_SetCurSel(hwnd, 0);
+					::SendMessage(parent, WM_COMMAND, CBN_SELCHANGE << 16, reinterpret_cast<LPARAM>(hwnd));
+
+					// ASSERT
+					assert_equal(1u, m2->trackables.size());
+					assert_equal(0u, m2->trackables.begin()->index_);
+
+					// ACT
+					cb->set_model(shared_ptr<list_model>());
+
+					// ASSERT
+					assert_is_empty(m2->trackables);
 				}
 
 			end_test_suite

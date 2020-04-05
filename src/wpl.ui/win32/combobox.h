@@ -43,13 +43,13 @@ namespace wpl
 
 				void on_invalidated(const list_model *model);
 				void update(HWND hcombobox, const list_model *model) const;
-				static void update_selection(HWND hcombobox, index_type selected_item);
+				static void update_selection(HWND hcombobox, std::shared_ptr<const trackable> &selected_item);
 
 			private:
 				mutable std::wstring _text_buffer;
 				std::shared_ptr<list_model> _model;
 				std::shared_ptr<void> _invalidated_connection;
-				index_type _selected_item;
+				std::shared_ptr<const trackable> _selected_item;
 			};
 		}
 	}

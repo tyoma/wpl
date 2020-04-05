@@ -36,18 +36,24 @@ namespace wpl
 			void combobox_impl::set_model(const shared_ptr<list_model> &model)
 			{
 				_model = model;
+				_selected_item.reset();
 				_invalidated_connection = model
 					? model->invalidated += bind(&combobox_impl::on_invalidated, this, model.get())
 					: shared_ptr<void>();
 				if (const HWND hcombobox = get_window())
+				{
 					update(hcombobox, model.get());
+					update_selection(hcombobox, _selected_item);
+				}
 			}
 
 			void combobox_impl::select(index_type index)
 			{
-				_selected_item = index;
+				if (!_model)
+					throw logic_error("Model is required to perform select!");
+				_selected_item = npos() == index ? shared_ptr<trackable>() : _model->track(index);
 				if (const HWND hcombobox = get_window())
-					update_selection(hcombobox, index);
+					update_selection(hcombobox, _selected_item);
 			}
 
 			HWND combobox_impl::materialize(HWND hparent)
@@ -74,8 +80,9 @@ namespace wpl
 					case CBN_SELCHANGE:
 						const int selected_item = ComboBox_GetCurSel(reinterpret_cast<HWND>(lparam));
 
-						_selected_item = selected_item != CB_ERR ? selected_item : npos();
-						selection_changed(_selected_item);
+						_selected_item = _model && selected_item != CB_ERR ? _model->track(selected_item)
+							: shared_ptr<trackable>();
+						selection_changed(_selected_item ? selected_item : npos());
 						return 0;
 					}
 					break;
@@ -98,7 +105,10 @@ namespace wpl
 			}
 
 			void combobox_impl::on_invalidated(const list_model *model)
-			{	update(get_window(), model);	}
+			{
+				update(get_window(), model);
+				update_selection(get_window(), _selected_item);
+			}
 
 			void combobox_impl::update(HWND hcombobox, const list_model *model) const
 			{
@@ -117,8 +127,17 @@ namespace wpl
 				::InvalidateRect(hcombobox, NULL, FALSE);
 			}
 
-			void combobox_impl::update_selection(HWND hcombobox, index_type selected_item)
-			{	ComboBox_SetCurSel(hcombobox, selected_item != npos() ? selected_item : -1);	}
+			void combobox_impl::update_selection(HWND hcombobox, shared_ptr<const trackable> &selected_item)
+			{
+				const index_type i = selected_item ? selected_item->index() : trackable::npos();
+				const int selection = i == trackable::npos() ? selected_item.reset(), CB_ERR : static_cast<int>(i);
+				const HWND hchild = reinterpret_cast<HWND>(::SendMessage(hcombobox, CBEM_GETCOMBOCONTROL, 0, 0));
+				COMBOBOXINFO cbi = { sizeof(COMBOBOXINFO), };
+
+				::GetComboBoxInfo(hchild, &cbi);
+				if (!::IsWindowVisible(cbi.hwndList))
+					ComboBox_SetCurSel(hcombobox, selection);
+			}
 		}
 
 		shared_ptr<combobox> create_combobox()

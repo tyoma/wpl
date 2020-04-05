@@ -46,7 +46,7 @@ namespace wpl
 		{
 			virtual index_type get_count() const throw() = 0;
 			virtual void get_text(index_type index, std::wstring &text) const = 0;
-			// virtual std::shared_ptr<const trackable> track(index_type row) const;
+			virtual std::shared_ptr<const trackable> track(index_type row) const = 0;
 
 			signal<void ()> invalidated;
 		};
