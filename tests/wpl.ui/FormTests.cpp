@@ -488,6 +488,78 @@ namespace wpl
 					assert_equal(convert_font_height(20), lf.lfHeight);
 				}
 
+
+				test( TheWholeWindowIsInvalidatedOnSettingBackgroundColor )
+				{
+					// INIT
+					form_and_handle f(create_form_with_handle());
+					view_location l = { 10, 11, 200, 91 };
+
+					f.first->set_location(l);
+					f.first->set_visible(true);
+					::ValidateRect(f.second, NULL);
+
+					// ACT
+					f.first->set_background_color(agge::color::make(200, 150, 100));
+
+					// ASSERT
+					RECT reference, invalid;
+
+					::GetClientRect(f.second, &reference);
+					assert_is_true(!!::GetUpdateRect(f.second, &invalid, FALSE));
+					assert_equal(reference, invalid);
+
+					// INIT
+					l.width++, l.height = 250;
+					f.first->set_location(l);
+					::ValidateRect(f.second, NULL);
+
+					// ACT
+					f.first->set_background_color(agge::color::make(200, 150, 100));
+
+					// ASSERT
+					::GetClientRect(f.second, &reference);
+					assert_is_true(!!::GetUpdateRect(f.second, &invalid, FALSE));
+					assert_equal(reference, invalid);
+				}
+
+
+				test( BackgroundIsFilledWithPresetColor )
+				{
+					// INIT
+					form_and_handle f(create_form_with_handle());
+					shared_ptr< mocks::logging_visual<view> > v(new mocks::logging_visual<view>);
+					view_location l = { 100, 100, 200, 150 };
+
+					f.first->set_location(l);
+					f.first->set_view(v);
+					f.first->set_visible(true);
+					::ValidateRect(f.second, NULL);
+
+					// ACT
+					f.first->set_background_color(agge::color::make(200, 150, 100));
+					::RedrawWindow(f.second, NULL, NULL, RDW_UPDATENOW);
+
+					// ASSERT
+					pair<gcontext::pixel_type, bool> reference1[] = {
+						make_pair(make_pixel(agge::color::make(200, 150, 100, 255)), true),
+					};
+
+					assert_equal(reference1, v->background_color);
+
+					// ACT
+					f.first->set_background_color(agge::color::make(100, 0, 200));
+					::RedrawWindow(f.second, NULL, NULL, RDW_UPDATENOW);
+
+					// ASSERT
+					pair<gcontext::pixel_type, bool> reference2[] = {
+						make_pair(make_pixel(agge::color::make(200, 150, 100, 255)), true),
+						make_pair(make_pixel(agge::color::make(100, 0, 200, 255)), true),
+					};
+
+					assert_equal(reference2, v->background_color);
+				}
+
 			end_test_suite
 		}
 	}

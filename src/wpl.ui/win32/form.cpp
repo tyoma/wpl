@@ -47,6 +47,12 @@ namespace wpl
 
 				void update_flag(long &styles, bool enable, long flag)
 				{	styles = enable ? (styles | flag) : (styles & ~flag);	}
+
+				agge::color get_system_color(int index)
+				{
+					const COLORREF c = ::GetSysColor(index);
+					return agge::color::make(GetRValue(c), GetGValue(c), GetBValue(c));
+				}
 			}
 
 			class form : public wpl::ui::form
@@ -84,11 +90,9 @@ namespace wpl
 			form::form(HWND howner)
 				: _hwnd(::CreateWindow(_T("#32770"), 0, c_form_style, 0, 0, 100, 20, howner, 0, 0, 0))
 			{
-				const COLORREF back_color_win32 = ::GetSysColor(COLOR_BTNFACE);
-
 				_host.reset(new win32::view_host(_hwnd, bind(&form::wndproc, this, _1, _2, _3, _4)));
-				_host->set_background_color(agge::color::make(GetRValue(back_color_win32), GetGValue(back_color_win32),
-					GetBValue(back_color_win32)));
+
+				set_background_color(get_system_color(COLOR_BTNFACE));
 			}
 
 			form::~form()
@@ -100,8 +104,8 @@ namespace wpl
 			void form::set_view(const shared_ptr<view> &v)
 			{	_host->set_view(v);	}
 
-			void form::set_background_color(agge::color /*color*/)
-			{	}
+			void form::set_background_color(agge::color color)
+			{	_host->set_background_color(color);	}
 
 			view_location form::get_location() const
 			{

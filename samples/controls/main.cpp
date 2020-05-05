@@ -40,6 +40,19 @@ namespace
 			}
 		}
 
+		virtual shared_ptr<const trackable> track(index_type row) const
+		{
+			shared_ptr<my_trackable> t(new my_trackable);
+			t->_index = row;
+			return t;
+		}
+
+		struct my_trackable : wpl::ui::trackable
+		{
+			virtual index_type index() const {	return _index;	}
+			index_type _index;
+		};
+
 		shared_ptr<void> _timer;
 		wstring _dynamic_item;
 	};

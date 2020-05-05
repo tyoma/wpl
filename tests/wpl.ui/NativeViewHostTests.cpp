@@ -638,6 +638,39 @@ namespace wpl
 				}
 
 
+				test( TheWholeWindowIsInvalidatedOnSettingBackgroundColor )
+				{
+					// INIT
+					hosting_window f;
+					shared_ptr< mocks::logging_visual<view> > v(new mocks::logging_visual<view>);
+
+					f.host->set_view(v);
+					::ValidateRect(f.hwnd, NULL);
+
+					// ACT
+					f.host->set_background_color(color::make(200, 150, 100));
+
+					// ASSERT
+					RECT reference1 = { 0, 0, 100, 70 }, invalid;
+
+					assert_is_true(!!::GetUpdateRect(f.hwnd, &invalid, FALSE));
+					assert_equal(reference1, invalid);
+
+					// INIT
+					::MoveWindow(f.hwnd, 0, 0, 200, 150, FALSE);
+					::ValidateRect(f.hwnd, NULL);
+
+					// ACT
+					f.host->set_background_color(color::make(100, 100, 100));
+
+					// ASSERT
+					RECT reference2 = { 0, 0, 200, 150 };
+
+					assert_is_true(!!::GetUpdateRect(f.hwnd, &invalid, FALSE));
+					assert_equal(reference2, invalid);
+				}
+
+
 				test( BackgroundIsFilledWithPresetColor )
 				{
 					// INIT
