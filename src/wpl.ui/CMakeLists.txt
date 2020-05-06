@@ -3,6 +3,7 @@ cmake_minimum_required(VERSION 2.8)
 set(WPL_UI_SOURCES
 	container.cpp
 	layout.cpp
+	scroller.cpp
 	visual.cpp
 )
 

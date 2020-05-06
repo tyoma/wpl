@@ -1,5 +1,8 @@
 #include <wpl/ui/combobox.h>
+#include <wpl/ui/container.h>
 #include <wpl/ui/form.h>
+#include <wpl/ui/layout.h>
+#include <wpl/ui/scroller.h>
 
 #include <wpl/ui/win32/controls.h>
 #include <wpl/ui/win32/form.h>
@@ -56,6 +59,31 @@ namespace
 		shared_ptr<void> _timer;
 		wstring _dynamic_item;
 	};
+
+	struct my_scroll_model : scroll_model
+	{
+		my_scroll_model()
+			: _window(0, 7)
+		{	}
+
+		virtual pair<double /*range_min*/, double /*range_width*/> get_range() const
+		{	return make_pair(0, 100);	}
+
+		virtual pair<double /*window_min*/, double /*window_width*/> get_window() const
+		{	return _window;	}
+
+		virtual void moving(bool /*begins*/)
+		{	}
+
+		virtual void move_window(double window_min, double window_width)
+		{
+			_window = make_pair(window_min, window_width);
+			invalidated();
+		}
+
+	private:
+		pair<double, double> _window;
+	};
 }
 
 int main()
@@ -64,12 +92,24 @@ int main()
 	view_location l = { 100, 100, 300, 200 };
 	shared_ptr<form> f = create_form();
 	slot_connection c = f->close += &exit_message_loop;
+	shared_ptr<container> root(new container);
+	shared_ptr<stack> root_layout(new stack(5, false));
 	shared_ptr<combobox> cb = create_combobox();
+	shared_ptr<scroller> scrl(new scroller(scroller::horizontal));
+
+	root->set_layout(root_layout);
+
+	root_layout->add(40);
+	root->add_view(cb);
+
+	root_layout->add(20);
+	root->add_view(scrl);
 
 	cb->set_model(shared_ptr<my_model>(new my_model));
+	scrl->set_model(shared_ptr<my_scroll_model>(new my_scroll_model));
 
 	f->set_font(fnt);
-	f->set_view(cb);
+	f->set_view(root);
 	f->set_location(l);
 	f->set_visible(true);
 	run_message_loop();

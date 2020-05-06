@@ -40,6 +40,9 @@
     <ClCompile Include="win32\comboxbox.cpp">
       <Filter>Source Files\win32</Filter>
     </ClCompile>
+    <ClCompile Include="scroller.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\wpl\ui\win32\controls.h">
@@ -81,5 +84,6 @@
     <ClInclude Include="win32\combobox.h">
       <Filter>Source Files\win32</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\wpl\ui\scroller.h" />
   </ItemGroup>
 </Project>

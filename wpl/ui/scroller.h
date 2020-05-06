@@ -1,0 +1,70 @@
+//	Copyright (c) 2011-2020 by Artem A. Gevorkyan (gevorkyan.org)
+//
+//	Permission is hereby granted, free of charge, to any person obtaining a copy
+//	of this software and associated documentation files (the "Software"), to deal
+//	in the Software without restriction, including without limitation the rights
+//	to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+//	copies of the Software, and to permit persons to whom the Software is
+//	furnished to do so, subject to the following conditions:
+//
+//	The above copyright notice and this permission notice shall be included in
+//	all copies or substantial portions of the Software.
+//
+//	THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+//	IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+//	FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+//	AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+//	LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+//	OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+//	THE SOFTWARE.
+
+#pragma once
+
+#include "../base/concepts.h"
+#include "models.h"
+#include "view.h"
+
+#include <agge/stroke.h>
+
+namespace wpl
+{
+	namespace ui
+	{
+		class scroller : public view, noncopyable
+		{
+		public:
+			enum orientation { vertical, horizontal };
+
+			struct thumb
+			{
+				agge::real_t width, lbound, ubound;
+			};
+
+		public:
+			explicit scroller(orientation orientation_);
+
+			void set_model(std::shared_ptr<scroll_model> model);
+
+			thumb get_thumb() const;
+
+			virtual void mouse_down(mouse_buttons button, int depressed, int x, int y);
+
+			virtual void draw(gcontext &ctx, gcontext::rasterizer_ptr &rasterizer) const;
+			virtual void resize(unsigned cx, unsigned cy, positioned_native_views &native_views);
+
+		private:
+			void page_less();
+			void page_more();
+			agge::real_t to_screen(const std::pair<double, double> &range, double c) const;
+			double to_domain(const std::pair<double, double> &range, int c) const;
+
+		private:
+			const orientation _orientation;
+			std::shared_ptr<scroll_model> _model;
+			double _rextent;
+			agge::real_t _width;
+			mutable agge::stroke _thumb_style;
+			slot_connection _underlying_invalidate;
+		};
+	}
+}

@@ -48,7 +48,7 @@ namespace wpl
 				{	::TlsSetValue(_index, value); }
 
 			private:
-				unsigned int _index;
+				unsigned _index;
 			};
 
 			size_t knuth_hash(unsigned int key) throw()

@@ -54,6 +54,7 @@
     <ClCompile Include="NativeControlsTests.cpp" />
     <ClCompile Include="NativeViewHostTests.cpp" />
     <ClCompile Include="NativeViewTests.cpp" />
+    <ClCompile Include="ScrollerTests.cpp" />
     <ClCompile Include="TestHelpers.cpp" />
     <ClCompile Include="Mockups.cpp" />
     <ClCompile Include="WindowingTests.cpp" />
@@ -61,6 +62,7 @@
   <ItemGroup>
     <ClInclude Include="MockupsListView.h" />
     <ClInclude Include="MockupsNative.h" />
+    <ClInclude Include="MockupsScroller.h" />
     <ClInclude Include="TestHelpers.h" />
     <ClInclude Include="Mockups.h" />
   </ItemGroup>

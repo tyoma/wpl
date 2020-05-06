@@ -15,6 +15,7 @@ set(WPL_UI_TEST_SOURCES
 	NativeControlsTests.cpp
 	NativeViewHostTests.cpp
 	NativeViewTests.cpp
+	ScrollerTests.cpp
 	TestHelpers.cpp
 	WindowingTests.cpp
 )

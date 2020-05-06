@@ -42,6 +42,16 @@ namespace wpl
 			virtual index_type index() const = 0;
 		};
 
+		struct scroll_model
+		{
+			virtual std::pair<double /*range_min*/, double /*range_width*/> get_range() const = 0;
+			virtual std::pair<double /*window_min*/, double /*window_width*/> get_window() const = 0;
+			virtual void moving(bool begins) = 0;
+			virtual void move_window(double window_min, double window_width) = 0;
+
+			signal<void ()> invalidated;
+		};
+
 		struct list_model : index_traits
 		{
 			virtual index_type get_count() const throw() = 0;
