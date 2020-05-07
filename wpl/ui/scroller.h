@@ -48,6 +48,8 @@ namespace wpl
 			thumb get_thumb() const;
 
 			virtual void mouse_down(mouse_buttons button, int depressed, int x, int y);
+			virtual void mouse_move(int depressed, int x, int y);
+			virtual void mouse_up(mouse_buttons button, int depressed, int x, int y);
 
 			virtual void draw(gcontext &ctx, gcontext::rasterizer_ptr &rasterizer) const;
 			virtual void resize(unsigned cx, unsigned cy, positioned_native_views &native_views);
@@ -56,7 +58,6 @@ namespace wpl
 			void page_less();
 			void page_more();
 			agge::real_t to_screen(const std::pair<double, double> &range, double c) const;
-			double to_domain(const std::pair<double, double> &range, int c) const;
 
 		private:
 			const orientation _orientation;
@@ -65,6 +66,10 @@ namespace wpl
 			agge::real_t _width;
 			mutable agge::stroke _thumb_style;
 			slot_connection _underlying_invalidate;
+
+			std::shared_ptr<void> _capture;
+			int _captured_point;
+			std::pair<double, double> _captured_window;
 		};
 	}
 }

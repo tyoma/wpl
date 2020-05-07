@@ -72,10 +72,10 @@ namespace
 		virtual pair<double /*window_min*/, double /*window_width*/> get_window() const
 		{	return _window;	}
 
-		virtual void moving(bool /*begins*/)
+		virtual void scrolling(bool /*begins*/)
 		{	}
 
-		virtual void move_window(double window_min, double window_width)
+		virtual void scroll_window(double window_min, double window_width)
 		{
 			_window = make_pair(window_min, window_width);
 			invalidated();
@@ -96,6 +96,7 @@ int main()
 	shared_ptr<stack> root_layout(new stack(5, false));
 	shared_ptr<combobox> cb = create_combobox();
 	shared_ptr<scroller> scrl(new scroller(scroller::horizontal));
+	shared_ptr<scroller> scrl2(new scroller(scroller::horizontal));
 
 	root->set_layout(root_layout);
 
@@ -105,8 +106,15 @@ int main()
 	root_layout->add(20);
 	root->add_view(scrl);
 
+	root_layout->add(30);
+	root->add_view(scrl2);
+
 	cb->set_model(shared_ptr<my_model>(new my_model));
-	scrl->set_model(shared_ptr<my_scroll_model>(new my_scroll_model));
+
+	shared_ptr<my_scroll_model> scrl_model(new my_scroll_model);
+
+	scrl->set_model(scrl_model);
+	scrl2->set_model(scrl_model);
 
 	f->set_font(fnt);
 	f->set_view(root);

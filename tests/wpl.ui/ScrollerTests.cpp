@@ -52,9 +52,34 @@ namespace wpl
 
 					double tolerance;
 				};
+
+
+				class capture_provider
+				{
+				public:
+					void add_view(view &v)
+					{
+						_views[&v] = v.capture += [this, &v] (shared_ptr<void> &ch) {
+							vector< pair<view *, bool> > &log_ = this->log;
+							view &v2 = v;
+
+							log_.push_back(make_pair(&v, true));
+							ch.reset(new bool, [&log_, &v2] (bool *p) {
+								delete p;
+								log_.push_back(make_pair(&v2, false));
+							});
+						};
+					}
+
+				public:
+					vector< pair<view *, bool> > log;
+
+				private:
+					map<view *, slot_connection> _views;
+				};
 			}
 
-			begin_test_suite( ScrollerTests )
+			begin_test_suite( AScrollerTests )
 				typedef vector< pair<bool, agge::rect_i> > invalidations_log;
 
 				wpl::ui::view::positioned_native_views dummy_nviews;
@@ -66,7 +91,7 @@ namespace wpl
 				{	return bind(&invalidate_cb, &log, _1);	}
 
 
-				test( ModellessScrollerDoesNothingOnViewEvents )
+				test( ModellessScrollerDoesNothingOnVisualEvents )
 				{
 					// INIT / ACT
 					scroller s(scroller::horizontal);
@@ -86,6 +111,24 @@ namespace wpl
 					s.resize(100, 0, dummy_nviews);
 					s.resize(0, 100, dummy_nviews);
 					s.resize(0, 0, dummy_nviews);
+				}
+
+
+				test( ModellessScrollerDoesNothingOnMouseEvents )
+				{
+					// INIT / ACT
+					scroller s(scroller::horizontal);
+					slot_connection c = s.capture += [] (shared_ptr<void> &) { assert_is_true(false); };
+
+					s.resize(100, 10, dummy_nviews);
+
+					// ACT / ASSERT (no crashes)
+					s.mouse_down(mouse_input::left, 0, 0, 5);
+					s.mouse_up(mouse_input::left, 0, 0, 5);
+					s.mouse_down(mouse_input::left, 0, 50, 5);
+					s.mouse_up(mouse_input::left, 0, 50, 5);
+					s.mouse_down(mouse_input::left, 0, 99, 5);
+					s.mouse_up(mouse_input::left, 0, 99, 5);
 				}
 
 
@@ -218,8 +261,8 @@ namespace wpl
 
 					m->range = make_pair(0, 500);
 					m->window = make_pair(50, 27);
-					m->on_moving = [] (bool) { assert_is_true(false); };
-					m->on_move = [&] (double m, double w) { log.push_back(make_pair(m, w)); };
+					m->on_scrolling = [] (bool) { assert_is_true(false); };
+					m->on_scroll = [&] (double m, double w) { log.push_back(make_pair(m, w)); };
 
 					sh.resize(100, 10, dummy_nviews);
 					sh.set_model(m);
@@ -344,7 +387,7 @@ namespace wpl
 
 					m->range = make_pair(110.7, 150.1);
 					m->window = make_pair(125, 20);
-					m->on_move = [&] (double m, double w) { log.push_back(make_pair(m, w)); };
+					m->on_scroll = [&] (double m, double w) { log.push_back(make_pair(m, w)); };
 
 					s.resize(100, 10, dummy_nviews);
 					s.set_model(m);
@@ -402,6 +445,180 @@ namespace wpl
 
 					// ASSERT
 					assert_equal(2u, ilog.size());
+				}
+
+
+				test( LButtonCycleWithinThumbCapturesReleasesMouse )
+				{
+					// INIT
+					capture_provider cp;
+					invalidations_log ilog;
+					shared_ptr<mocks::scroll_model> m(new mocks::scroll_model);
+					scroller sh(scroller::horizontal), sv(scroller::vertical);
+					bool scrolling = false;
+
+					m->range = make_pair(0, 500);
+					m->window = make_pair(50, 40);
+					m->on_scrolling = [&] (bool begins) {
+						scrolling = begins;
+						assert_is_empty(cp.log); // must get called before the mouse is captured.
+					};
+					m->on_scroll = [&] (double, double) { assert_is_true(false); };
+
+					sh.resize(100, 10, dummy_nviews);
+					sh.set_model(m);
+					sv.resize(30, 250, dummy_nviews);
+					sv.set_model(m);
+
+					cp.add_view(sh);
+					cp.add_view(sv);
+
+					// ACT
+					sh.mouse_down(mouse_input::left, 0, 10, 5);
+
+					// ASSERT
+					pair<view *, bool> reference1[] = { make_pair(&sh, true), };
+
+					assert_is_true(scrolling);
+					assert_equal(reference1, cp.log);
+
+					// INIT
+					cp.log.clear();
+					scrolling = false;
+
+					// ACT
+					sv.mouse_down(mouse_input::left, 0, 15, 25);
+
+					// ASSERT
+					pair<view *, bool> reference2[] = { make_pair(&sv, true), };
+
+					assert_is_true(scrolling);
+					assert_equal(reference2, cp.log);
+
+					// INIT
+					m->on_scrolling = [&] (bool begins) {
+						scrolling = begins;
+						if (!begins)
+						{
+							assert_is_false(cp.log.empty());
+							assert_is_false(cp.log.back().second);
+						}
+					};
+
+					// ACT
+					sh.mouse_up(mouse_input::left, 0, 10, 5);
+
+					// ASSERT
+					pair<view *, bool> reference3[] = { make_pair(&sv, true), make_pair(&sh, false), };
+
+					assert_is_false(scrolling);
+					assert_equal(reference3, cp.log);
+
+					// INIT
+					scrolling = true;
+
+					// ACT
+					sv.mouse_up(mouse_input::left, 0, 15, 25);
+
+					// ASSERT
+					pair<view *, bool> reference4[] = {
+						make_pair(&sv, true), make_pair(&sh, false), make_pair(&sv, false),
+					};
+
+					assert_is_false(scrolling);
+					assert_equal(reference4, cp.log);
+				}
+
+
+				test( MovingMouseWhileNotCapturedDoesNothing )
+				{
+					// INIT
+					vector< pair<double, double> > log;
+					shared_ptr<mocks::scroll_model> m(new mocks::scroll_model);
+					scroller s(scroller::horizontal);
+
+					m->range = make_pair(10, 101);
+					m->window = make_pair(50, 20);
+					m->on_scroll = [&] (double, double) { assert_is_true(false); };
+
+					s.resize(100, 10, dummy_nviews);
+					s.set_model(m);
+
+					// ACT / ASSERT
+					s.mouse_move(mouse_input::left, 49, 100);
+					s.mouse_move(mouse_input::left, 51, 100);
+				}
+
+
+				test( MovingMouseWhileCapturedMovesTheWindow )
+				{
+					// INIT
+					capture_provider cp;
+					vector< pair<double, double> > log;
+					shared_ptr<mocks::scroll_model> m(new mocks::scroll_model);
+					scroller sh(scroller::horizontal), sv(scroller::vertical);
+
+					m->range = make_pair(10, 101);
+					m->window = make_pair(50, 20);
+					m->on_scroll = [&] (double m, double w) { log.push_back(make_pair(m, w)); };
+
+					sh.resize(100, 10, dummy_nviews);
+					cp.add_view(sh);
+					sh.set_model(m);
+					sv.resize(10, 300, dummy_nviews);
+					cp.add_view(sv);
+					sv.set_model(m);
+
+					sh.mouse_down(mouse_input::left, 0, 50, 5);
+					sv.mouse_down(mouse_input::left, 0, 5, 150);
+
+					assert_equal(2u, cp.log.size());
+
+					// ACT
+					m->window = make_pair(52, 21); // try to spoil the results - make sure the initial window is stored.
+					sh.mouse_move(mouse_input::left, 49, 100);
+
+					// ASSERT
+					pair<double, double> reference1[] = { make_pair(50 - 1.01, 20), };
+
+					assert_equal_pred(reference1, log, eq());
+
+					// ACT
+					m->window = make_pair(12, 1);
+					sh.mouse_move(mouse_input::left, 40, 100);
+
+					// ASSERT
+					pair<double, double> reference2[] = {
+						make_pair(50 - 1.01, 20),
+						make_pair(50 - 10.1, 20),
+					};
+
+					assert_equal_pred(reference2, log, eq());
+
+					// ACT
+					sh.mouse_move(mouse_input::left, 61, -10);
+
+					// ASSERT
+					pair<double, double> reference3[] = {
+						make_pair(50 - 1.01, 20),
+						make_pair(50 - 10.1, 20),
+						make_pair(50 + 1.01 * 11, 20),
+					};
+
+					assert_equal_pred(reference3, log, eq());
+
+					// ACT
+					sv.mouse_move(mouse_input::left, 5, 152);
+
+					// ASSERT
+					pair<double, double> reference4[] = {
+						make_pair(50 - 1.01, 20),
+						make_pair(50 - 10.1, 20),
+						make_pair(50 + 1.01 * 11, 20),
+						make_pair(50 + 2.0 / 300.0 * 101.0, 20),
+					};
+
+					assert_equal_pred(reference4, log, eq());
 				}
 
 			end_test_suite

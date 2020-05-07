@@ -88,28 +88,63 @@ namespace wpl
 
 		void scroller::mouse_down(mouse_buttons /*button*/, int /*depressed*/, int x, int y)
 		{
-			const thumb t =  get_thumb();
-			const int c = _orientation == horizontal ? x : y;
+			if (_model)
+			{
+				const thumb t =  get_thumb();
+				const int c = _orientation == horizontal ? x : y;
 
-			if (c < static_cast<int>(t.lbound))
-				page_less();
-			else if (c >= static_cast<int>(ceilf(t.ubound)))
-				page_more();
+				if (c < static_cast<int>(t.lbound))
+				{
+					page_less();
+				}
+				else if (c >= static_cast<int>(ceilf(t.ubound)))
+				{
+					page_more();
+				}
+				else
+				{
+					_model->scrolling(true);
+					_captured_point = c;
+					_captured_window = _model->get_window();
+					capture(_capture);
+				}
+			}
+		}
+
+		void scroller::mouse_move(int /*depressed*/, int x, int y)
+		{
+			if (_capture)
+			{
+				const int c = _orientation == horizontal ? x : y;
+				const pair<double, double> r(_model->get_range()), w = _captured_window;
+				const double delta = (c - _captured_point) * _rextent * r.second;
+
+				_model->scroll_window(w.first + delta, w.second);
+			}
+		}
+
+		void scroller::mouse_up(mouse_buttons /*button*/, int /*depressed*/, int /*x*/, int /*y*/)
+		{
+			if (_model)
+			{
+				_capture.reset();
+				_model->scrolling(false);
+			}
 		}
 
 		void scroller::draw(gcontext &ctx, gcontext::rasterizer_ptr &rasterizer_) const
 		{
-			if (!_model)
-				return;
+			if (_model)
+			{
+				const bool horz = _orientation == horizontal;
+				const thumb t = get_thumb();
+				line l(horz ? t.lbound : 0.5f * _width, horz ? 0.5f * _width : t.lbound,
+					horz ? t.ubound : 0.5f * _width, horz ? 0.5f * _width : t.ubound);
+				const color clr = { 64, 64, 64, 240 };
 
-			const bool horz = _orientation == horizontal;
-			const thumb t = get_thumb();
-			line l(horz ? t.lbound : 0.5f * _width, horz ? 0.5f * _width : t.lbound,
-				horz ? t.ubound : 0.5f * _width, horz ? 0.5f * _width : t.ubound);
-			const color clr = { 64, 64, 64, 240 };
-
-			add_path(*rasterizer_, assist(l, _thumb_style));
-			ctx(rasterizer_, blender_t(clr), winding<>());
+				add_path(*rasterizer_, assist(l, _thumb_style));
+				ctx(rasterizer_, blender_t(clr), winding<>());
+			}
 		}
 
 		void scroller::resize(unsigned cx, unsigned cy, positioned_native_views &/*native_views*/)
@@ -131,7 +166,7 @@ namespace wpl
 			pair<double, double> r(_model->get_range()), w(_model->get_window());
 
 			w.first = (max)(r.first, w.first - w.second);
-			_model->move_window(w.first, w.second);
+			_model->scroll_window(w.first, w.second);
 		}
 
 		void scroller::page_more()
@@ -139,13 +174,10 @@ namespace wpl
 			pair<double, double> r(_model->get_range()), w(_model->get_window());
 
 			w.first = (min)(r.first + r.second - w.second, w.first + w.second);
-			_model->move_window(w.first, w.second);
+			_model->scroll_window(w.first, w.second);
 		}
 
 		real_t scroller::to_screen(const pair<double, double> &range, double c) const
 		{	return static_cast<real_t>((c - range.first) / (range.second * _rextent));	}
-
-		double scroller::to_domain(const pair<double, double> &range, int c) const
-		{	return range.second * _rextent * c + range.first;	}
 	}
 }
