@@ -5,20 +5,27 @@
 using namespace std;
 using namespace placeholders;
 
-#define FOR_EACH(iterator_type, iterator_name, container)\
-	for (iterator_type iterator_name = container.begin(); iterator_name != container.end(); ++iterator_name)\
-
 namespace wpl
 {
 	namespace ui
 	{
+		namespace
+		{
+			unsigned npos = static_cast<unsigned>(-1);
+		}
+
+		container::container()
+			: _capture_target(npos)
+		{	}
+
 		void container::add_view(const shared_ptr<view> &child)
 		{
 			positioned_view c = {
 				0, 0, 0, 0,
 				child,
 				child->invalidate += bind(&container::on_invalidate, this, static_cast<unsigned>(_children.size()), _1),
-				child->force_layout += bind(&container::on_force_layout, this)
+				child->force_layout += bind(&container::on_force_layout, this),
+				child->capture += bind(&container::on_capture, this, static_cast<unsigned>(_children.size()), _1),
 			};
 
 			_children.push_back(c);
@@ -32,7 +39,7 @@ namespace wpl
 
 		void container::draw(gcontext &ctx, gcontext::rasterizer_ptr &rasterizer) const
 		{
-			FOR_EACH(views_t::const_iterator, i, _children)
+			for (auto i = _children.begin(); i != _children.end(); ++i)
 			{
 				gcontext child_ctx = ctx.transform(i->location.left, i->location.top);
 				i->child->draw(child_ctx, rasterizer);
@@ -43,7 +50,7 @@ namespace wpl
 		{
 			if (!_children.empty())
 				_layout->layout(cx, cy, &_children[0], _children.size());
-			FOR_EACH(views_t::const_iterator, i, _children)
+			for (auto i = _children.begin(); i != _children.end(); ++i)
 			{
 				size_t j = nviews.size();
 
@@ -56,7 +63,7 @@ namespace wpl
 		void container::mouse_leave()
 		{
 			if (!_mouse_over)
-				return;			
+				return;
 			_mouse_over->mouse_leave();
 			_mouse_over.reset();
 		}
@@ -99,9 +106,29 @@ namespace wpl
 		void container::on_force_layout()
 		{	force_layout();	}
 
+		void container::on_capture(unsigned index, shared_ptr<void> &capture_handle)
+		{
+			shared_ptr< shared_ptr<void> > upstream_handle(new shared_ptr<void>);
+
+			capture(*upstream_handle);
+			capture_handle.reset(new bool, [this, index, upstream_handle] (bool *p) {
+				_capture_target = npos;
+				delete p;
+			});
+			_capture_target = index;
+		}
+
 		shared_ptr<view> container::child_from_point(int &x, int &y) const
 		{
-			FOR_EACH(views_t::const_iterator, i, _children)
+			if (npos != _capture_target)
+			{
+				const positioned_view &v = _children[_capture_target];
+
+				x -= v.location.left, y -= v.location.top;
+				return v.child;
+			}
+
+			for (auto i = _children.rbegin(); i != _children.rend(); ++i)
 			{
 				int x2 = x - i->location.left, y2 = y - i->location.top;
 

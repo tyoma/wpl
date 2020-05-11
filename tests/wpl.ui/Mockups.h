@@ -6,6 +6,7 @@
 #include <agge/filling_rules.h>
 #include <agge/figures.h>
 #include <agge/path.h>
+#include <map>
 #include <wpl/ui/view.h>
 #include <wpl/ui/layout.h>
 #include <ut/assert.h>
@@ -26,6 +27,35 @@ namespace wpl
 					mouse_input::mouse_buttons button;
 					int already_depressed;
 					int x, y;
+				};
+
+
+				class capture_provider
+				{
+				public:
+					void add_view(view &v)
+					{
+						_views[&v] = v.capture += [this, &v] (std::shared_ptr<void> &ch) {
+							std::vector< std::pair<view *, bool> > &log_ = this->log;
+							std::map< view *, std::weak_ptr<void> > &log2_ = this->log2;
+							view &v2 = v;
+
+							log_.push_back(std::make_pair(&v, true));
+							ch.reset(new bool, [&log_, &log2_, &v2] (bool *p) {
+								delete p;
+								log_.push_back(std::make_pair(&v2, false));
+								log2_.erase(&v2);
+							});
+							log2_[&v] = ch;
+						};
+					}
+
+				public:
+					std::vector< std::pair<view *, bool> > log;
+					std::map<view *, std::weak_ptr<void> > log2;
+
+				private:
+					std::map<view *, slot_connection> _views;
 				};
 
 

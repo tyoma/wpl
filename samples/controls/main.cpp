@@ -94,11 +94,14 @@ int main()
 	slot_connection c = f->close += &exit_message_loop;
 	shared_ptr<container> root(new container);
 	shared_ptr<stack> root_layout(new stack(5, false));
+	shared_ptr<container> fill(new container);
+	shared_ptr<stack> fill_layout(new stack(5, true));
 	shared_ptr<combobox> cb = create_combobox();
 	shared_ptr<scroller> scrl(new scroller(scroller::horizontal));
-	shared_ptr<scroller> scrl2(new scroller(scroller::horizontal));
+	shared_ptr<scroller> scrl2(new scroller(scroller::vertical));
 
 	root->set_layout(root_layout);
+	fill->set_layout(fill_layout);
 
 	root_layout->add(40);
 	root->add_view(cb);
@@ -106,8 +109,10 @@ int main()
 	root_layout->add(20);
 	root->add_view(scrl);
 
-	root_layout->add(30);
-	root->add_view(scrl2);
+	root_layout->add(-100);
+	root->add_view(fill);
+		fill_layout->add(15);
+		fill->add_view(scrl2);
 
 	cb->set_model(shared_ptr<my_model>(new my_model));
 

@@ -583,6 +583,212 @@ namespace wpl
 					assert_equal(make_position(910 + 91, 145 + 45, 100, 100), nviews[4].location);
 				}
 
+
+				test( MouseEventsAreDispatchedInReversedZOrder )
+				{
+					// INIT
+					shared_ptr<mocks::logging_layout_manager> lm(new mocks::logging_layout_manager);
+					shared_ptr<container> c(new container);
+					shared_ptr< mocks::logging_mouse_input<view> > v1(new mocks::logging_mouse_input<view>());
+					shared_ptr< mocks::logging_mouse_input<view> > v2(new mocks::logging_mouse_input<view>());
+					shared_ptr< mocks::logging_mouse_input<view> > v3(new mocks::logging_mouse_input<view>());
+
+					c->set_layout(lm);
+					lm->positions.push_back(make_position(0, 0, 70, 50));
+					c->add_view(v1);
+					lm->positions.push_back(make_position(40, 30, 60, 40));
+					c->add_view(v2);
+					lm->positions.push_back(make_position(30, 35, 35, 20));
+					c->add_view(v3);
+					c->resize(200, 150, nviews);
+
+					// ACT
+					c->mouse_move(0, 43, 37);
+
+					// ASSERT
+					mocks::mouse_event reference1[] = {
+						mocks::me_enter(),
+						mocks::me_move(0, 13, 2),
+					};
+
+					assert_is_empty(v1->events_log);
+					assert_is_empty(v2->events_log);
+					assert_equal(reference1, v3->events_log);
+
+					// ACT
+					c->mouse_move(mouse_input::left, 69, 49);
+
+					// ASSERT
+					mocks::mouse_event reference2[] = {
+						mocks::me_enter(),
+						mocks::me_move(0, 13, 2),
+						mocks::me_leave(),
+					};
+					mocks::mouse_event reference3[] = {
+						mocks::me_enter(),
+						mocks::me_move(mouse_input::left, 29, 19),
+					};
+
+					assert_is_empty(v1->events_log);
+					assert_equal(reference3, v2->events_log);
+					assert_equal(reference2, v3->events_log);
+				}
+
+
+				test( MouseCaptureFromAChildIsPropogatedUpstream )
+				{
+					// INIT
+					mocks::capture_provider cp;
+					shared_ptr<mocks::logging_layout_manager> lm(new mocks::logging_layout_manager);
+					shared_ptr<container> c(new container);
+					shared_ptr< mocks::logging_mouse_input<view> > v1(new mocks::logging_mouse_input<view>());
+					shared_ptr< mocks::logging_mouse_input<view> > v2(new mocks::logging_mouse_input<view>());
+					shared_ptr<void> capture_handles[2];
+
+					cp.add_view(*c);
+					c->set_layout(lm);
+
+					lm->positions.push_back(make_position(0, 0, 100, 55));
+					c->add_view(v1);
+					lm->positions.push_back(make_position(70, 30, 80, 70));
+					c->add_view(v2);
+
+					// ACT
+					v1->capture(capture_handles[0]);
+
+					// ASSERT
+					assert_not_null(capture_handles[0]);
+					assert_not_null(cp.log2[c.get()].lock());
+					assert_not_equal(cp.log2[c.get()].lock(), capture_handles[0]);
+
+					// ACT
+					capture_handles[0].reset();
+
+					// ASSERT
+					pair<view *, bool> reference2[] = { make_pair(c.get(), true), make_pair(c.get(), false), };
+
+					assert_equal(reference2, cp.log);
+					assert_is_empty(cp.log2);
+
+					// ACT
+					v2->capture(capture_handles[1]);
+
+					// ASSERT
+					pair<view *, bool> reference3[] = {
+						make_pair(c.get(), true), make_pair(c.get(), false), make_pair(c.get(), true),
+					};
+
+					assert_equal(reference3, cp.log);
+					assert_not_null(capture_handles[1]);
+					assert_not_null(cp.log2[c.get()].lock());
+					assert_not_equal(cp.log2[c.get()].lock(), capture_handles[1]);
+				}
+
+
+				test( MouseEventsArePassedToCapturingViewRegardlessOfLocationAndZorder )
+				{
+					// INIT
+					mocks::capture_provider cp;
+					shared_ptr<mocks::logging_layout_manager> lm(new mocks::logging_layout_manager);
+					shared_ptr<container> c(new container);
+					shared_ptr< mocks::logging_mouse_input<view> > v1(new mocks::logging_mouse_input<view>());
+					shared_ptr< mocks::logging_mouse_input<view> > v2(new mocks::logging_mouse_input<view>());
+					shared_ptr< mocks::logging_mouse_input<view> > v3(new mocks::logging_mouse_input<view>());
+					shared_ptr<void> capture_handle;
+
+					cp.add_view(*c);
+					c->set_layout(lm);
+
+					lm->positions.push_back(make_position(0, 0, 100, 55));
+					c->add_view(v1);
+					lm->positions.push_back(make_position(70, 30, 80, 70));
+					c->add_view(v2);
+					lm->positions.push_back(make_position(0, 0, 150, 100));
+					c->add_view(v3);
+					c->resize(1000, 1000, nviews);
+
+					// ACT (point of all-intersection)
+					v1->capture(capture_handle);
+					c->mouse_down(mouse_input::left, mouse_input::right, 90, 35);
+
+					// ASSERT
+					mocks::mouse_event reference1[] = {
+						mocks::me_enter(),
+						mocks::me_down(mouse_input::left, mouse_input::right, 90, 35),
+					};
+
+					assert_equal(reference1, v1->events_log);
+					assert_is_empty(v2->events_log);
+					assert_is_empty(v3->events_log);
+
+					// ACT
+					c->mouse_move(mouse_input::left | mouse_input::right, 110, 60);
+
+					// ASSERT
+					mocks::mouse_event reference2[] = {
+						mocks::me_enter(),
+						mocks::me_down(mouse_input::left, mouse_input::right, 90, 35),
+						mocks::me_move(mouse_input::left | mouse_input::right, 110, 60),
+					};
+
+					assert_equal(reference2, v1->events_log);
+					assert_is_empty(v2->events_log);
+					assert_is_empty(v3->events_log);
+
+					// ACT
+					c->mouse_move(mouse_input::right, 10, -60);
+
+					// ASSERT
+					mocks::mouse_event reference3[] = {
+						mocks::me_enter(),
+						mocks::me_down(mouse_input::left, mouse_input::right, 90, 35),
+						mocks::me_move(mouse_input::left | mouse_input::right, 110, 60),
+						mocks::me_move(mouse_input::right, 10, -60),
+					};
+
+					assert_equal(reference3, v1->events_log);
+					assert_is_empty(v2->events_log);
+					assert_is_empty(v3->events_log);
+
+					// ACT
+					capture_handle.reset();
+
+					// ASSERT
+					assert_equal(reference3, v1->events_log);
+					assert_is_empty(v2->events_log);
+					assert_is_empty(v3->events_log);
+
+					// ACT
+					c->mouse_move(mouse_input::right, 9, -10);
+
+					// ASSERT
+					mocks::mouse_event reference4[] = {
+						mocks::me_enter(),
+						mocks::me_down(mouse_input::left, mouse_input::right, 90, 35),
+						mocks::me_move(mouse_input::left | mouse_input::right, 110, 60),
+						mocks::me_move(mouse_input::right, 10, -60),
+						mocks::me_leave(),
+					};
+
+					assert_equal(reference4, v1->events_log);
+					assert_is_empty(v2->events_log);
+					assert_is_empty(v3->events_log);
+
+					// ACT
+					v2->capture(capture_handle);
+					c->mouse_move(mouse_input::middle, 9, -10);
+
+					// ASSERT
+					mocks::mouse_event reference5[] = {
+						mocks::me_enter(),
+						mocks::me_move(mouse_input::middle, -61, -40),
+					};
+
+					assert_equal(reference4, v1->events_log);
+					assert_equal(reference5, v2->events_log);
+					assert_is_empty(v3->events_log);
+				}
+
 			end_test_suite
 		}
 	}

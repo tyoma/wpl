@@ -1,5 +1,6 @@
 #include <wpl/ui/scroller.h>
 
+#include "Mockups.h"
 #include "MockupsScroller.h"
 #include "TestHelpers.h"
 
@@ -52,34 +53,9 @@ namespace wpl
 
 					double tolerance;
 				};
-
-
-				class capture_provider
-				{
-				public:
-					void add_view(view &v)
-					{
-						_views[&v] = v.capture += [this, &v] (shared_ptr<void> &ch) {
-							vector< pair<view *, bool> > &log_ = this->log;
-							view &v2 = v;
-
-							log_.push_back(make_pair(&v, true));
-							ch.reset(new bool, [&log_, &v2] (bool *p) {
-								delete p;
-								log_.push_back(make_pair(&v2, false));
-							});
-						};
-					}
-
-				public:
-					vector< pair<view *, bool> > log;
-
-				private:
-					map<view *, slot_connection> _views;
-				};
 			}
 
-			begin_test_suite( AScrollerTests )
+			begin_test_suite( ScrollerTests )
 				typedef vector< pair<bool, agge::rect_i> > invalidations_log;
 
 				wpl::ui::view::positioned_native_views dummy_nviews;
@@ -451,7 +427,7 @@ namespace wpl
 				test( LButtonCycleWithinThumbCapturesReleasesMouse )
 				{
 					// INIT
-					capture_provider cp;
+					mocks::capture_provider cp;
 					invalidations_log ilog;
 					shared_ptr<mocks::scroll_model> m(new mocks::scroll_model);
 					scroller sh(scroller::horizontal), sv(scroller::vertical);
@@ -553,7 +529,7 @@ namespace wpl
 				test( MovingMouseWhileCapturedMovesTheWindow )
 				{
 					// INIT
-					capture_provider cp;
+					mocks::capture_provider cp;
 					vector< pair<double, double> > log;
 					shared_ptr<mocks::scroll_model> m(new mocks::scroll_model);
 					scroller sh(scroller::horizontal), sv(scroller::vertical);
