@@ -154,7 +154,7 @@ namespace wpl
 			_width = static_cast<real_t>(_orientation == horizontal ? cy : cx);
 			if (real_t w = 0.7f * _width)
 			{
-				_thumb_style.set_cap(caps::triangle(1.0f));
+				_thumb_style.set_cap(caps::round());
 				_thumb_style.width(w);
 			}
 			if (extent && _width)
