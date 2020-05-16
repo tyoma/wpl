@@ -10,12 +10,19 @@
 #include <samples/common/platform.h>
 #include <samples/common/timer.h>
 
+using namespace agge;
 using namespace std;
 using namespace wpl;
 using namespace wpl::ui;
 
 namespace
 {
+	color make_color(unsigned char r, unsigned char g, unsigned char b)
+	{
+		color c = { r, g, b, 255 };
+		return c;
+	}
+
 	struct my_model : list_model
 	{
 		my_model()
@@ -111,7 +118,7 @@ int main()
 
 	root_layout->add(-100);
 	root->add_view(fill);
-		fill_layout->add(15);
+		fill_layout->add(4);
 		fill->add_view(scrl2);
 
 	cb->set_model(shared_ptr<my_model>(new my_model));
@@ -125,5 +132,6 @@ int main()
 	f->set_view(root);
 	f->set_location(l);
 	f->set_visible(true);
+	f->set_background_color(make_color(8, 32, 64));
 	run_message_loop();
 }

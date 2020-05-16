@@ -63,7 +63,7 @@ namespace wpl
 			const orientation _orientation;
 			std::shared_ptr<scroll_model> _model;
 			double _rextent;
-			agge::real_t _width;
+			agge::real_t _width, _extent;
 			mutable agge::stroke _thumb_style;
 			slot_connection _underlying_invalidate;
 

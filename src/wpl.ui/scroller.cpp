@@ -138,20 +138,28 @@ namespace wpl
 			{
 				const bool horz = _orientation == horizontal;
 				const thumb t = get_thumb();
-				line l(horz ? t.lbound : 0.5f * _width, horz ? 0.5f * _width : t.lbound,
-					horz ? t.ubound : 0.5f * _width, horz ? 0.5f * _width : t.ubound);
-				const color clr = { 64, 64, 64, 240 };
+				const real_t hw = 0.5f * _width;
+				const pair<real_t, real_t> c(hw, _extent - hw);
+				line l_channel(horz ? c.first : hw, horz ? hw : c.first, horz ? c.second : hw, horz ? hw : c.second);
+				line l_thumb(horz ? t.lbound : hw, horz ? hw : t.lbound, horz ? t.ubound : hw, horz ? hw : t.ubound);
+				const color clr_channel = { 255, 255, 255, 192 };
+				const color clr_thumb = { 64, 64, 64, 128 };
 
-				add_path(*rasterizer_, assist(l, _thumb_style));
-				ctx(rasterizer_, blender_t(clr), winding<>());
+				add_path(*rasterizer_, assist(l_channel, _thumb_style));
+				ctx(rasterizer_, blender_t(clr_channel), winding<>());
+				add_path(*rasterizer_, assist(l_thumb, _thumb_style));
+				ctx(rasterizer_, blender_t(clr_thumb), winding<>());
 			}
 		}
 
 		void scroller::resize(unsigned cx, unsigned cy, positioned_native_views &/*native_views*/)
 		{
-			int extent = _orientation == horizontal ? cx : cy;
-			_rextent = 1.0 / extent;
-			_width = static_cast<real_t>(_orientation == horizontal ? cy : cx);
+			const int extent = _orientation == horizontal ? cx : cy;
+			const int width = _orientation == horizontal ? cy : cx;
+
+			_extent = static_cast<real_t>(extent);
+			_rextent = 1.0 / (extent - width);
+			_width = static_cast<real_t>(width);
 			if (real_t w = 0.7f * _width)
 			{
 				_thumb_style.set_cap(caps::round());
@@ -178,6 +186,6 @@ namespace wpl
 		}
 
 		real_t scroller::to_screen(const pair<double, double> &range, double c) const
-		{	return static_cast<real_t>((c - range.first) / (range.second * _rextent));	}
+		{	return static_cast<real_t>((c - range.first) / (range.second * _rextent)) + 0.5f * _width;	}
 	}
 }

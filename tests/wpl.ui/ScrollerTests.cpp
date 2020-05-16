@@ -208,22 +208,22 @@ namespace wpl
 					sv.set_model(m);
 
 					// ACT / ASSERT
-					assert_equal_pred(make_thumb(7, 37.53, 51.06), sh.get_thumb(), eq(0.0005));
-					assert_equal_pred(make_thumb(9.1, 77.45, 105.4), sv.get_thumb(), eq(0.0005));
+					assert_equal_pred(make_thumb(7, 38.53, 50.63), sh.get_thumb(), eq(0.0005));
+					assert_equal_pred(make_thumb(9.1, 78.76, 104.8), sv.get_thumb(), eq(0.0005));
 
 					// INIT
 					m->window = make_pair(10.1, 25);
 
 					// ACT / ASSERT
-					assert_equal_pred(make_thumb(7, 0, 23.34), sh.get_thumb(), eq(0.0005));
-					assert_equal_pred(make_thumb(9.1, 0, 48.16), sv.get_thumb(), eq(0.0005));
+					assert_equal_pred(make_thumb(7, 5, 25.85), sh.get_thumb(), eq(0.0005));
+					assert_equal_pred(make_thumb(9.1, 6.5, 51.44), sv.get_thumb(), eq(0.0005));
 
 					// INIT
 					m->range = make_pair(-100, 200);
 
 					// ACT / ASSERT
-					assert_equal_pred(make_thumb(7, 51.75, 63.5), sh.get_thumb(), eq(0.0005));
-					assert_equal_pred(make_thumb(9.1, 106.8, 131), sv.get_thumb(), eq(0.0005));
+					assert_equal_pred(make_thumb(7, 51.24, 61.74), sh.get_thumb(), eq(0.0005));
+					assert_equal_pred(make_thumb(9.1, 106.1, 128.8), sv.get_thumb(), eq(0.0005));
 				}
 
 
@@ -240,9 +240,9 @@ namespace wpl
 					m->on_scrolling = [] (bool) { assert_is_true(false); };
 					m->on_scroll = [&] (double m, double w) { log.push_back(make_pair(m, w)); };
 
-					sh.resize(100, 10, dummy_nviews);
+					sh.resize(110, 10, dummy_nviews);
 					sh.set_model(m);
-					sv.resize(1, 250, dummy_nviews);
+					sv.resize(1, 251, dummy_nviews);
 					sv.set_model(m);
 
 					slot_connection connections[] = {
@@ -266,7 +266,7 @@ namespace wpl
 					log.clear();
 
 					// ACT
-					sh.mouse_down(mouse_input::left, 0, 9, 0); // one page less
+					sh.mouse_down(mouse_input::left, 0, 9 - 5, 0); // one page less
 
 					// ASSERT
 					assert_equal_pred(reference1, log, eq());
@@ -275,7 +275,7 @@ namespace wpl
 					log.clear();
 
 					// ACT
-					sh.mouse_down(mouse_input::left, 0, 16, 0); // one page more
+					sh.mouse_down(mouse_input::left, 0, 16 + 5, 0); // one page more
 
 					// ASSERT
 					pair<double, double> reference2[] = { make_pair(77, 27), };
@@ -305,7 +305,7 @@ namespace wpl
 					log.clear();
 
 					// ACT
-					sv.mouse_down(mouse_input::left, 0, 0, 24); // one page less
+					sv.mouse_down(mouse_input::left, 0, 0, 24 - 1); // one page less
 
 					// ASSERT
 					assert_equal_pred(reference1, log, eq());
@@ -314,7 +314,7 @@ namespace wpl
 					log.clear();
 
 					// ACT
-					sv.mouse_down(mouse_input::left, 0, 0, 39); // one page more
+					sv.mouse_down(mouse_input::left, 0, 0, 39 + 1); // one page more
 
 					// ASSERT
 					assert_equal_pred(reference2, log, eq());
@@ -334,7 +334,7 @@ namespace wpl
 					log.clear();
 
 					// ACT
-					sh.mouse_down(mouse_input::left, 0, 14, -10); // one page less
+					sh.mouse_down(mouse_input::left, 0, 14 - 5, -10); // one page less
 
 					// ASSERT
 					pair<double, double> reference3[] = { make_pair(31.5, 20), };
@@ -345,7 +345,7 @@ namespace wpl
 					log.clear();
 
 					// ACT
-					sh.mouse_down(mouse_input::left, 0, 25, 10); // one page more
+					sh.mouse_down(mouse_input::left, 0, 25 + 5, 10); // one page more
 
 					// ASSERT
 					pair<double, double> reference4[] = { make_pair(71.5, 20), };
@@ -424,6 +424,9 @@ namespace wpl
 				}
 
 
+				// TODO: no capture is obtained if outside the thumb
+
+
 				test( LButtonCycleWithinThumbCapturesReleasesMouse )
 				{
 					// INIT
@@ -441,16 +444,16 @@ namespace wpl
 					};
 					m->on_scroll = [&] (double, double) { assert_is_true(false); };
 
-					sh.resize(100, 10, dummy_nviews);
+					sh.resize(110, 10, dummy_nviews);
 					sh.set_model(m);
-					sv.resize(30, 250, dummy_nviews);
+					sv.resize(30, 280, dummy_nviews);
 					sv.set_model(m);
 
 					cp.add_view(sh);
 					cp.add_view(sv);
 
 					// ACT
-					sh.mouse_down(mouse_input::left, 0, 10, 5);
+					sh.mouse_down(mouse_input::left, 0, 10 + 5 /*lower draggable*/, 5);
 
 					// ASSERT
 					pair<view *, bool> reference1[] = { make_pair(&sh, true), };
@@ -463,7 +466,7 @@ namespace wpl
 					scrolling = false;
 
 					// ACT
-					sv.mouse_down(mouse_input::left, 0, 15, 25);
+					sv.mouse_down(mouse_input::left, 0, 15, 25 + 15 /*lower draggable*/);
 
 					// ASSERT
 					pair<view *, bool> reference2[] = { make_pair(&sv, true), };
@@ -538,21 +541,21 @@ namespace wpl
 					m->window = make_pair(50, 20);
 					m->on_scroll = [&] (double m, double w) { log.push_back(make_pair(m, w)); };
 
-					sh.resize(100, 10, dummy_nviews);
+					sh.resize(110, 10, dummy_nviews);
 					cp.add_view(sh);
 					sh.set_model(m);
-					sv.resize(10, 300, dummy_nviews);
+					sv.resize(10, 310, dummy_nviews);
 					cp.add_view(sv);
 					sv.set_model(m);
 
-					sh.mouse_down(mouse_input::left, 0, 50, 5);
-					sv.mouse_down(mouse_input::left, 0, 5, 150);
+					sh.mouse_down(mouse_input::left, 0, 50 + 5, 5);
+					sv.mouse_down(mouse_input::left, 0, 5, 150 + 5);
 
 					assert_equal(2u, cp.log.size());
 
 					// ACT
 					m->window = make_pair(52, 21); // try to spoil the results - make sure the initial window is stored.
-					sh.mouse_move(mouse_input::left, 49, 100);
+					sh.mouse_move(mouse_input::left, 49 + 5, 100);
 
 					// ASSERT
 					pair<double, double> reference1[] = { make_pair(50 - 1.01, 20), };
@@ -561,7 +564,7 @@ namespace wpl
 
 					// ACT
 					m->window = make_pair(12, 1);
-					sh.mouse_move(mouse_input::left, 40, 100);
+					sh.mouse_move(mouse_input::left, 40 + 5, 100);
 
 					// ASSERT
 					pair<double, double> reference2[] = {
@@ -572,7 +575,7 @@ namespace wpl
 					assert_equal_pred(reference2, log, eq());
 
 					// ACT
-					sh.mouse_move(mouse_input::left, 61, -10);
+					sh.mouse_move(mouse_input::left, 61 + 5, -10);
 
 					// ASSERT
 					pair<double, double> reference3[] = {
@@ -584,7 +587,7 @@ namespace wpl
 					assert_equal_pred(reference3, log, eq());
 
 					// ACT
-					sv.mouse_move(mouse_input::left, 5, 152);
+					sv.mouse_move(mouse_input::left, 5, 152 + 5);
 
 					// ASSERT
 					pair<double, double> reference4[] = {
