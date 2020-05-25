@@ -34,7 +34,7 @@ namespace wpl
 					listview::index_type track_result;
 				};
 
-				class listview_columns_model : public listview::columns_model
+				class listview_columns_model : public columns_model
 				{
 				public:
 					template<size_t n>

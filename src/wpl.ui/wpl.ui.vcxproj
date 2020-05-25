@@ -45,6 +45,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="container.cpp" />
+    <ClCompile Include="controls\listview.cpp" />
     <ClCompile Include="scroller.cpp" />
     <ClCompile Include="win32\comboxbox.cpp">
       <DisableLanguageExtensions>false</DisableLanguageExtensions>
@@ -56,7 +57,7 @@
       <DisableLanguageExtensions>false</DisableLanguageExtensions>
     </ClCompile>
     <ClCompile Include="layout.cpp" />
-    <ClCompile Include="win32\listview.cpp">
+    <ClCompile Include="win32\listview_win32.cpp">
       <DisableLanguageExtensions>false</DisableLanguageExtensions>
     </ClCompile>
     <ClCompile Include="win32\view_host.cpp">
@@ -86,6 +87,7 @@
     <ClInclude Include="..\..\wpl\ui\win32\native_view.h" />
     <ClInclude Include="..\..\wpl\ui\win32\types.h" />
     <ClInclude Include="..\..\wpl\ui\win32\window.h" />
+    <ClInclude Include="..\..\wpl\ui\controls\listview.h" />
     <ClInclude Include="win32\combobox.h" />
     <ClInclude Include="win32\listview.h" />
     <ClInclude Include="win32\native_view.h" />

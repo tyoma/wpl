@@ -58,12 +58,12 @@ namespace wpl
 					wt.created.clear();
 					f.first->set_visible(true);
 
-					listview::columns_model::column columns[] = {
-						listview::columns_model::column(L"", 100),
-						listview::columns_model::column(L"", 100),
-						listview::columns_model::column(L"", 50),
+					columns_model::column columns[] = {
+						columns_model::column(L"", 100),
+						columns_model::column(L"", 100),
+						columns_model::column(L"", 50),
 					};
-					mocks::columns_model_ptr cm(mocks::listview_columns_model::create(columns, listview::columns_model::npos(), false));
+					mocks::columns_model_ptr cm(mocks::listview_columns_model::create(columns, columns_model::npos(), false));
 					mocks::model_ptr m(new mocks::listview_model(3, 3));
 
 					lv->set_columns_model(cm);

@@ -18,29 +18,47 @@
 //	OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //	THE SOFTWARE.
 
-#pragma once
+#include <wpl/ui/controls/listview.h>
 
-#include "models.h"
-#include "view.h"
+using namespace std;
 
 namespace wpl
 {
 	namespace ui
 	{
-		struct listview : view, index_traits
+		namespace controls
 		{
-			virtual void set_columns_model(std::shared_ptr<columns_model> cm) = 0;
-			virtual void set_model(std::shared_ptr<table_model> ds) = 0;
+			void listview_core::draw(gcontext &/*ctx*/, gcontext::rasterizer_ptr &/*rasterizer*/) const
+			{	}
 
-			virtual void adjust_column_widths() = 0;
+			void listview_core::resize(unsigned /*cx*/, unsigned /*cy*/, positioned_native_views &/*native_views*/)
+			{	}
 
-			virtual void select(index_type item, bool reset_previous) = 0;
-			virtual void clear_selection() = 0;
+			void listview_core::set_columns_model(shared_ptr<columns_model> /*cmodel*/)
+			{	}
 
-			virtual void ensure_visible(index_type item) = 0;
+			void listview_core::set_model(shared_ptr<table_model> /*model*/)
+			{	}
 
-			signal<void (index_type /*item*/)> item_activate;
-			signal<void (index_type /*item*/, bool /*became selected*/)> selection_changed;
-		};
+			void listview_core::adjust_column_widths()
+			{	}
+
+			void listview_core::select(index_type /*item*/, bool /*reset_previous*/)
+			{	}
+
+			void listview_core::clear_selection()
+			{	}
+
+			void listview_core::ensure_visible(index_type /*item*/)
+			{	}
+
+			void listview_core::draw_subitem_background(gcontext &/*ctx*/, gcontext::rasterizer_ptr &/*rasterizer*/,
+				const agge::rect_r &/*box*/, index_type /*item*/, unsigned /*state*/, index_type /*subitem*/)
+			{	}
+
+			void listview_core::draw_item(gcontext &/*ctx*/, gcontext::rasterizer_ptr &/*rasterizer*/,
+				const agge::rect_r &/*box*/, index_type /*item*/, unsigned /*state*/)
+			{	}
+		}
 	}
 }

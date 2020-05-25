@@ -11,6 +11,12 @@
     <Filter Include="Source Files\win32">
       <UniqueIdentifier>{c6e0779a-2551-4241-bdca-37edcbd1bc28}</UniqueIdentifier>
     </Filter>
+    <Filter Include="controls">
+      <UniqueIdentifier>{3af60512-c9fd-4204-a828-766c78bb0a1c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\controls">
+      <UniqueIdentifier>{d30c3096-0faf-4b46-ae36-26e34a4a23d4}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="layout.cpp">
@@ -23,9 +29,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="win32\form.cpp">
-      <Filter>Source Files\win32</Filter>
-    </ClCompile>
-    <ClCompile Include="win32\listview.cpp">
       <Filter>Source Files\win32</Filter>
     </ClCompile>
     <ClCompile Include="win32\view_host.cpp">
@@ -42,6 +45,12 @@
     </ClCompile>
     <ClCompile Include="scroller.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="controls\listview.cpp">
+      <Filter>Source Files\controls</Filter>
+    </ClCompile>
+    <ClCompile Include="win32\listview_win32.cpp">
+      <Filter>Source Files\win32</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -85,5 +94,8 @@
       <Filter>Source Files\win32</Filter>
     </ClInclude>
     <ClInclude Include="..\..\wpl\ui\scroller.h" />
+    <ClInclude Include="..\..\wpl\ui\controls\listview.h">
+      <Filter>controls</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

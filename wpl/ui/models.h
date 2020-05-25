@@ -37,10 +37,12 @@ namespace wpl
 			static index_type npos();
 		};
 
+
 		struct trackable : index_traits
 		{
 			virtual index_type index() const = 0;
 		};
+
 
 		struct scroll_model
 		{
@@ -52,6 +54,7 @@ namespace wpl
 			signal<void ()> invalidated;
 		};
 
+
 		struct list_model : index_traits
 		{
 			virtual index_type get_count() const throw() = 0;
@@ -60,6 +63,34 @@ namespace wpl
 
 			signal<void ()> invalidated;
 		};
+
+
+		struct columns_model
+		{
+			typedef short int index_type;
+
+			struct column;
+
+			static index_type npos();
+
+			virtual index_type get_count() const throw() = 0;
+			virtual void get_column(index_type index, column &column) const = 0;
+			virtual void update_column(index_type index, short int width) = 0;
+			virtual std::pair<index_type, bool> get_sort_order() const throw() = 0;
+			virtual void activate_column(index_type column) = 0;
+
+			signal<void (index_type /*new_ordering_column*/, bool /*ascending*/)> sort_order_changed;
+		};
+
+		struct columns_model::column
+		{
+			column();
+			explicit column(const std::wstring &caption, short int width = 0);
+
+			std::wstring caption;
+			short int width;
+		};
+
 
 		struct table_model : index_traits
 		{
@@ -76,6 +107,18 @@ namespace wpl
 
 		inline index_traits::index_type index_traits::npos()
 		{	return static_cast<index_type>(-1);	}
+
+
+		inline columns_model::index_type columns_model::npos()
+		{	return -1;	}
+
+
+		inline columns_model::column::column()
+		{	}
+
+		inline columns_model::column::column(const std::wstring &caption_, short int width_)
+			: caption(caption_), width(width_)
+		{	}
 
 
 		inline void table_model::precache(index_type /*from*/, index_type /*count*/) const

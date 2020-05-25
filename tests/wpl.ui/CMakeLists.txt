@@ -8,11 +8,11 @@ set(WPL_UI_TEST_SOURCES
 	FormTests.cpp
 	IntegrationTests.cpp
 	LayoutTests.cpp
-	ListViewTests.cpp
 	Mockups.cpp
 	MockupsListView.cpp
 	MockupsNative.cpp
 	NativeControlsTests.cpp
+	NativeListViewTests.cpp
 	NativeViewHostTests.cpp
 	NativeViewTests.cpp
 	ScrollerTests.cpp

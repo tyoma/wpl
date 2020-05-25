@@ -5,6 +5,8 @@ set(WPL_UI_SOURCES
 	layout.cpp
 	scroller.cpp
 	visual.cpp
+	
+	controls/listview.cpp
 )
 
 if(WIN32)
@@ -12,7 +14,7 @@ if(WIN32)
 		win32/comboxbox.cpp
 		win32/controls.cpp
 		win32/form.cpp
-		win32/listview.cpp
+		win32/listview_win32.cpp
 		win32/view_host.cpp
 		win32/window.cpp
 	)

@@ -118,7 +118,7 @@ int main()
 
 	root_layout->add(-100);
 	root->add_view(fill);
-		fill_layout->add(4);
+		fill_layout->add(8);
 		fill->add_view(scrl2);
 
 	cb->set_model(shared_ptr<my_model>(new my_model));
