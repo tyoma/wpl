@@ -1,9 +1,9 @@
 #include <wpl/ui/view_host.h>
 #include <wpl/ui/win32/controls.h>
 
+#include "helpers.h"
 #include "Mockups.h"
 #include "MockupsNative.h"
-#include "TestHelpers.h"
 
 #include <tchar.h>
 #include <ut/assert.h>

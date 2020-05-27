@@ -20,6 +20,7 @@
 
 #include <wpl/ui/controls/listview.h>
 
+using namespace agge;
 using namespace std;
 
 namespace wpl
@@ -28,17 +29,95 @@ namespace wpl
 	{
 		namespace controls
 		{
-			void listview_core::draw(gcontext &/*ctx*/, gcontext::rasterizer_ptr &/*rasterizer*/) const
-			{	}
+			struct listview_core::vertical_scroll_model : scroll_model
+			{
+				virtual pair<double /*range_min*/, double /*range_width*/> get_range() const
+				{
+					if (!owner || !owner->_model)
+						return make_pair(0, 0);
+					return make_pair(0, owner->_model->get_count());
+				}
 
-			void listview_core::resize(unsigned /*cx*/, unsigned /*cy*/, positioned_native_views &/*native_views*/)
-			{	}
+				virtual pair<double /*window_min*/, double /*window_width*/> get_window() const
+				{
+					if (!owner || !owner->get_item_height())
+						return make_pair(0, 0);
+					return make_pair(0, owner->_size.h / owner->get_item_height());
+				}
 
-			void listview_core::set_columns_model(shared_ptr<columns_model> /*cmodel*/)
-			{	}
+				virtual void scrolling(bool /*begins*/)
+				{	}
 
-			void listview_core::set_model(shared_ptr<table_model> /*model*/)
-			{	}
+				virtual void scroll_window(double window_min, double /*window_width*/)
+				{
+					if (owner)
+						owner->_first_visible = window_min;
+				}
+
+				listview_core *owner;
+			};
+
+
+			listview_core::listview_core()
+				: _first_visible(0), _vsmodel(new vertical_scroll_model)
+			{
+				_size.w = 0, _size.h = 0;
+				_vsmodel->owner = this;
+			}
+
+			listview_core::~listview_core()
+			{	_vsmodel->owner = 0;	}
+
+			shared_ptr<scroll_model> listview_core::get_vscroll_model()
+			{	return _vsmodel;	}
+
+			void listview_core::draw(gcontext &ctx, gcontext::rasterizer_ptr &ras) const
+			{
+				if (!_model | !_cmodel)
+					return;
+
+				const index_type rows = _model->get_count();
+				const columns_model::index_type columns = _cmodel->get_count();
+				const real_t item_height = get_item_height();
+				real_t total_width = 0.0f;
+				index_type r = (max)(0, static_cast<int>(_first_visible));
+				rect_r box = { 0.0f, item_height * static_cast<real_t>(r - _first_visible), 0.0f, 0.0f };
+
+				_widths.clear();
+				for (columns_model::index_type c = 0; c != columns; ++c)
+				{
+					_cmodel->get_column(c, _column_buffer);
+					_widths.push_back(static_cast<real_t>(_column_buffer.width));
+					total_width += static_cast<real_t>(_column_buffer.width);
+				}
+				for (; box.y2 = box.y1 + item_height, r != rows && box.y1 < _size.h; ++r, box.y1 = box.y2)
+				{
+					box.x1 = 0.0f, box.x2 = total_width;
+					draw_item_background(ctx, ras, box, r, 0);
+					for (columns_model::index_type c = 0; c != columns; box.x1 = box.x2, ++c)
+					{
+						box.x2 = box.x1 + _widths[c];
+						draw_subitem_background(ctx, ras, box, r, 0, c);
+					}
+					box.x1 = 0.0f, box.x2 = total_width;
+					draw_item(ctx, ras, box, r, 0);
+					for (columns_model::index_type c = 0; c != columns; box.x1 = box.x2, ++c)
+					{
+						_model->get_text(r, c, _text_buffer);
+						box.x2 = box.x1 + _widths[c];
+						draw_subitem(ctx, ras, box, r, 0, c, _text_buffer);
+					}
+				}
+			}
+
+			void listview_core::resize(unsigned cx, unsigned cy, positioned_native_views &/*native_views*/)
+			{	_size.w = static_cast<real_t>(cx), _size.h = static_cast<real_t>(cy);	}
+
+			void listview_core::set_columns_model(shared_ptr<columns_model> cmodel)
+			{	_cmodel = cmodel;	}
+
+			void listview_core::set_model(shared_ptr<table_model> model)
+			{	_model = model;	}
 
 			void listview_core::adjust_column_widths()
 			{	}
@@ -53,11 +132,11 @@ namespace wpl
 			{	}
 
 			void listview_core::draw_subitem_background(gcontext &/*ctx*/, gcontext::rasterizer_ptr &/*rasterizer*/,
-				const agge::rect_r &/*box*/, index_type /*item*/, unsigned /*state*/, index_type /*subitem*/)
+				const agge::rect_r &/*box*/, index_type /*item*/, unsigned /*state*/, index_type /*subitem*/) const
 			{	}
 
 			void listview_core::draw_item(gcontext &/*ctx*/, gcontext::rasterizer_ptr &/*rasterizer*/,
-				const agge::rect_r &/*box*/, index_type /*item*/, unsigned /*state*/)
+				const agge::rect_r &/*box*/, index_type /*item*/, unsigned /*state*/) const
 			{	}
 		}
 	}

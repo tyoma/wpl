@@ -1,6 +1,6 @@
 #pragma once
 
-#include "TestHelpers.h"
+#include "helpers.h"
 
 #include <agge/color.h>
 #include <agge/filling_rules.h>

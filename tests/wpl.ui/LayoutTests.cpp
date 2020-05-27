@@ -1,7 +1,7 @@
 #include <wpl/ui/layout.h>
 
+#include "helpers.h"
 #include "Mockups.h"
-#include "TestHelpers.h"
 
 #include <ut/assert.h>
 #include <ut/test.h>

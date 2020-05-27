@@ -6,6 +6,7 @@ set(WPL_UI_TEST_SOURCES
 	ComboboxTests.cpp
 	ContainerTests.cpp
 	FormTests.cpp
+	helpers.cpp
 	IntegrationTests.cpp
 	LayoutTests.cpp
 	Mockups.cpp
@@ -16,7 +17,6 @@ set(WPL_UI_TEST_SOURCES
 	NativeViewHostTests.cpp
 	NativeViewTests.cpp
 	ScrollerTests.cpp
-	TestHelpers.cpp
 	WindowingTests.cpp
 )
 

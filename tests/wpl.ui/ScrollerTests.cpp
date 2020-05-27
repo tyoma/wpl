@@ -1,8 +1,9 @@
 #include <wpl/ui/scroller.h>
 
+#include "helpers.h"
 #include "Mockups.h"
 #include "MockupsScroller.h"
-#include "TestHelpers.h"
+#include "predicates.h"
 
 #include <functional>
 #include <ut/assert.h>
@@ -26,32 +27,19 @@ namespace wpl
 					return t;
 				}
 
-				struct eq
+				struct eq2 : eq
 				{
-					eq(double tolerance_ = 0.0001)
-						: tolerance(tolerance_)
+					eq2(double tolerance = 0.0001)
+						: eq(tolerance)
 					{	}
 
-					bool operator ()(double lhs, double rhs) const
-					{
-						if (double e = 2 * (lhs - rhs))
-						{
-							e /= lhs + rhs;
-							return -tolerance <= e && e <= tolerance;
-						}
-						return true;
-					}
+					using eq::operator();
 
 					bool operator ()(scroller::thumb lhs, scroller::thumb rhs) const
 					{
 						return (*this)(lhs.width, rhs.width) && (*this)(lhs.lbound, rhs.lbound)
 							&& (*this)(lhs.ubound, rhs.ubound);
 					}
-
-					bool operator ()(pair<double, double> lhs, pair<double, double> rhs) const
-					{	return (*this)(lhs.first, rhs.first) && (*this)(lhs.second, rhs.second);	}
-
-					double tolerance;
 				};
 			}
 
@@ -208,22 +196,22 @@ namespace wpl
 					sv.set_model(m);
 
 					// ACT / ASSERT
-					assert_equal_pred(make_thumb(7, 38.53, 50.63), sh.get_thumb(), eq(0.0005));
-					assert_equal_pred(make_thumb(9.1, 78.76, 104.8), sv.get_thumb(), eq(0.0005));
+					assert_equal_pred(make_thumb(7, 38.53, 50.63), sh.get_thumb(), eq2(0.0005));
+					assert_equal_pred(make_thumb(9.1, 78.76, 104.8), sv.get_thumb(), eq2(0.0005));
 
 					// INIT
 					m->window = make_pair(10.1, 25);
 
 					// ACT / ASSERT
-					assert_equal_pred(make_thumb(7, 5, 25.85), sh.get_thumb(), eq(0.0005));
-					assert_equal_pred(make_thumb(9.1, 6.5, 51.44), sv.get_thumb(), eq(0.0005));
+					assert_equal_pred(make_thumb(7, 5, 25.85), sh.get_thumb(), eq2(0.0005));
+					assert_equal_pred(make_thumb(9.1, 6.5, 51.44), sv.get_thumb(), eq2(0.0005));
 
 					// INIT
 					m->range = make_pair(-100, 200);
 
 					// ACT / ASSERT
-					assert_equal_pred(make_thumb(7, 51.24, 61.74), sh.get_thumb(), eq(0.0005));
-					assert_equal_pred(make_thumb(9.1, 106.1, 128.8), sv.get_thumb(), eq(0.0005));
+					assert_equal_pred(make_thumb(7, 51.24, 61.74), sh.get_thumb(), eq2(0.0005));
+					assert_equal_pred(make_thumb(9.1, 106.1, 128.8), sv.get_thumb(), eq2(0.0005));
 				}
 
 
@@ -260,7 +248,7 @@ namespace wpl
 					pair<double, double> reference1[] = { make_pair(23, 27), };
 
 					assert_is_empty(ilog);
-					assert_equal_pred(reference1, log, eq());
+					assert_equal_pred(reference1, log, eq2());
 
 					// INIT
 					log.clear();
@@ -269,7 +257,7 @@ namespace wpl
 					sh.mouse_down(mouse_input::left, 0, 9 - 5, 0); // one page less
 
 					// ASSERT
-					assert_equal_pred(reference1, log, eq());
+					assert_equal_pred(reference1, log, eq2());
 
 					// INIT
 					log.clear();
@@ -280,7 +268,7 @@ namespace wpl
 					// ASSERT
 					pair<double, double> reference2[] = { make_pair(77, 27), };
 
-					assert_equal_pred(reference2, log, eq());
+					assert_equal_pred(reference2, log, eq2());
 
 					// INIT
 					log.clear();
@@ -289,7 +277,7 @@ namespace wpl
 					sh.mouse_down(mouse_input::left, 0, 99, 200 /*ignored*/); // one page more
 
 					// ASSERT
-					assert_equal_pred(reference2, log, eq());
+					assert_equal_pred(reference2, log, eq2());
 
 					// INIT
 					log.clear();
@@ -299,7 +287,7 @@ namespace wpl
 
 					// ASSERT
 					assert_is_empty(ilog);
-					assert_equal_pred(reference1, log, eq());
+					assert_equal_pred(reference1, log, eq2());
 
 					// INIT
 					log.clear();
@@ -308,7 +296,7 @@ namespace wpl
 					sv.mouse_down(mouse_input::left, 0, 0, 24 - 1); // one page less
 
 					// ASSERT
-					assert_equal_pred(reference1, log, eq());
+					assert_equal_pred(reference1, log, eq2());
 
 					// INIT
 					log.clear();
@@ -317,7 +305,7 @@ namespace wpl
 					sv.mouse_down(mouse_input::left, 0, 0, 39 + 1); // one page more
 
 					// ASSERT
-					assert_equal_pred(reference2, log, eq());
+					assert_equal_pred(reference2, log, eq2());
 
 					// INIT
 					log.clear();
@@ -326,7 +314,7 @@ namespace wpl
 					sv.mouse_down(mouse_input::left, 0, 100 /*ignored*/, 249); // one page more
 
 					// ASSERT
-					assert_equal_pred(reference2, log, eq());
+					assert_equal_pred(reference2, log, eq2());
 
 					// INIT
 					m->range = make_pair(21.5, 200);
@@ -339,7 +327,7 @@ namespace wpl
 					// ASSERT
 					pair<double, double> reference3[] = { make_pair(31.5, 20), };
 
-					assert_equal_pred(reference3, log, eq());
+					assert_equal_pred(reference3, log, eq2());
 
 					// INIT
 					log.clear();
@@ -350,7 +338,7 @@ namespace wpl
 					// ASSERT
 					pair<double, double> reference4[] = { make_pair(71.5, 20), };
 
-					assert_equal_pred(reference4, log, eq());
+					assert_equal_pred(reference4, log, eq2());
 				}
 
 
@@ -376,7 +364,7 @@ namespace wpl
 					// ASSERT
 					pair<double, double> reference1[] = { make_pair(110.7, 20), };
 
-					assert_equal_pred(reference1, log, eq());
+					assert_equal_pred(reference1, log, eq2());
 
 					// INIT
 					log.clear();
@@ -388,7 +376,7 @@ namespace wpl
 					// ASSERT
 					pair<double, double> reference2[] = { make_pair(239.8, 21), };
 
-					assert_equal_pred(reference2, log, eq());
+					assert_equal_pred(reference2, log, eq2());
 				}
 
 
@@ -560,7 +548,7 @@ namespace wpl
 					// ASSERT
 					pair<double, double> reference1[] = { make_pair(50 - 1.01, 20), };
 
-					assert_equal_pred(reference1, log, eq());
+					assert_equal_pred(reference1, log, eq2());
 
 					// ACT
 					m->window = make_pair(12, 1);
@@ -572,7 +560,7 @@ namespace wpl
 						make_pair(50 - 10.1, 20),
 					};
 
-					assert_equal_pred(reference2, log, eq());
+					assert_equal_pred(reference2, log, eq2());
 
 					// ACT
 					sh.mouse_move(mouse_input::left, 61 + 5, -10);
@@ -584,7 +572,7 @@ namespace wpl
 						make_pair(50 + 1.01 * 11, 20),
 					};
 
-					assert_equal_pred(reference3, log, eq());
+					assert_equal_pred(reference3, log, eq2());
 
 					// ACT
 					sv.mouse_move(mouse_input::left, 5, 152 + 5);
@@ -597,7 +585,7 @@ namespace wpl
 						make_pair(50 + 2.0 / 300.0 * 101.0, 20),
 					};
 
-					assert_equal_pred(reference4, log, eq());
+					assert_equal_pred(reference4, log, eq2());
 				}
 
 			end_test_suite

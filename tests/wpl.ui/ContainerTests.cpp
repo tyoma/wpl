@@ -1,6 +1,6 @@
 #include <wpl/ui/container.h>
 
-#include "TestHelpers.h"
+#include "helpers.h"
 #include "Mockups.h"
 
 #include <ut/assert.h>

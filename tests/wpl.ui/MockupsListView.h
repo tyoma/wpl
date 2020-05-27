@@ -1,7 +1,7 @@
 #pragma once
 
 #include <map>
-#include <wpl/ui/listview.h>
+#include <wpl/ui/models.h>
 
 namespace wpl
 {
@@ -25,13 +25,13 @@ namespace wpl
 					~listview_trackable();
 
 					template <typename Map>
-					static std::shared_ptr<listview_trackable> add(Map &m, listview::index_type index);
+					static std::shared_ptr<listview_trackable> add(Map &m, index_type index);
 
 				private:
-					virtual listview::index_type index() const;
+					virtual index_type index() const;
 
 				public:
-					listview::index_type track_result;
+					index_type track_result;
 				};
 
 				class listview_columns_model : public columns_model
@@ -90,7 +90,7 @@ namespace wpl
 				{	}
 
 				template <typename Map>
-				inline std::shared_ptr<listview_trackable> listview_trackable::add(Map &m, listview::index_type index)
+				inline std::shared_ptr<listview_trackable> listview_trackable::add(Map &m, index_type index)
 				{
 					std::shared_ptr<listview_trackable> t(new listview_trackable());
 
@@ -98,7 +98,7 @@ namespace wpl
 					return t;
 				}
 
-				inline listview::index_type listview_trackable::index() const
+				inline listview_trackable::index_type listview_trackable::index() const
 				{	return track_result;	}
 			}
 		}

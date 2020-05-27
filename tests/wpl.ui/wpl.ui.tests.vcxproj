@@ -48,6 +48,7 @@
     <ClCompile Include="FormTests.cpp" />
     <ClCompile Include="IntegrationTests.cpp" />
     <ClCompile Include="LayoutTests.cpp" />
+    <ClCompile Include="ListViewCoreTests.cpp" />
     <ClCompile Include="NativeListViewTests.cpp" />
     <ClCompile Include="MockupsListView.cpp" />
     <ClCompile Include="MockupsNative.cpp" />
@@ -55,7 +56,7 @@
     <ClCompile Include="NativeViewHostTests.cpp" />
     <ClCompile Include="NativeViewTests.cpp" />
     <ClCompile Include="ScrollerTests.cpp" />
-    <ClCompile Include="TestHelpers.cpp" />
+    <ClCompile Include="helpers.cpp" />
     <ClCompile Include="Mockups.cpp" />
     <ClCompile Include="WindowingTests.cpp" />
   </ItemGroup>
@@ -63,8 +64,9 @@
     <ClInclude Include="MockupsListView.h" />
     <ClInclude Include="MockupsNative.h" />
     <ClInclude Include="MockupsScroller.h" />
-    <ClInclude Include="TestHelpers.h" />
+    <ClInclude Include="helpers.h" />
     <ClInclude Include="Mockups.h" />
+    <ClInclude Include="predicates.h" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\src\wpl.ui\wpl.ui.vcxproj">

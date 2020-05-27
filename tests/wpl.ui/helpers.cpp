@@ -1,4 +1,4 @@
-#include "TestHelpers.h"
+#include "helpers.h"
 
 #include <agge/color.h>
 #include <wpl/ui/win32/window.h>

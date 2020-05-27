@@ -2,9 +2,9 @@
 #include <wpl/ui/win32/native_view.h>
 #include <wpl/ui/win32/form.h>
 
+#include "helpers.h"
 #include "Mockups.h"
 #include "MockupsNative.h"
-#include "TestHelpers.h"
 
 #include <tchar.h>
 #include <ut/assert.h>

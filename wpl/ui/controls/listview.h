@@ -28,9 +28,12 @@ namespace wpl
 	{
 		namespace controls
 		{
-			class listview_core : public listview
+			class listview_core : public listview, noncopyable
 			{
 			public:
+				listview_core();
+				~listview_core();
+
 				std::shared_ptr<scroll_model> get_vscroll_model();
 				std::shared_ptr<scroll_model> get_hscroll_model();
 
@@ -53,15 +56,29 @@ namespace wpl
 				enum item_state_flags {	hovered = 1, selected = 2, focused = 4,	};
 
 			private:
+				struct vertical_scroll_model;
+
+			private:
+				virtual agge::real_t get_item_height() const = 0;
 				virtual void draw_item_background(gcontext &ctx, gcontext::rasterizer_ptr &rasterizer,
-					const agge::rect_r &box, index_type item, unsigned /*item_state_flags*/ state) = 0;
+					const agge::rect_r &box, index_type item, unsigned /*item_state_flags*/ state) const = 0;
 				virtual void draw_subitem_background(gcontext &ctx, gcontext::rasterizer_ptr &rasterizer,
-					const agge::rect_r &box, index_type item, unsigned /*item_state_flags*/ state, index_type subitem);
+					const agge::rect_r &box, index_type item, unsigned /*item_state_flags*/ state, index_type subitem) const;
 				virtual void draw_item(gcontext &ctx, gcontext::rasterizer_ptr &rasterizer,
-					const agge::rect_r &box, index_type item, unsigned /*item_state_flags*/ state);
+					const agge::rect_r &box, index_type item, unsigned /*item_state_flags*/ state) const;
 				virtual void draw_subitem(gcontext &ctx, gcontext::rasterizer_ptr &rasterizer,
 					const agge::rect_r &box, index_type item, unsigned /*item_state_flags*/ state, index_type subitem,
-					const std::wstring &text) = 0;
+					const std::wstring &text) const = 0;
+
+			private:
+				std::shared_ptr<columns_model> _cmodel;
+				std::shared_ptr<table_model> _model;
+				std::shared_ptr<vertical_scroll_model> _vsmodel;
+				agge::box_r _size;
+				double _first_visible;
+				mutable std::vector<agge::real_t> _widths;
+				mutable columns_model::column _column_buffer;
+				mutable std::wstring _text_buffer;
 			};
 		}
 	}

@@ -1,6 +1,6 @@
 #include <src/wpl.ui/win32/native_view.h>
 
-#include "TestHelpers.h"
+#include "helpers.h"
 
 #include <tchar.h>
 #include <ut/assert.h>

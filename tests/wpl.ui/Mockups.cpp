@@ -1,6 +1,6 @@
 #include "Mockups.h"
 
-#include "TestHelpers.h"
+#include "helpers.h"
 
 #include <wpl/ui/win32/native_view.h>
 

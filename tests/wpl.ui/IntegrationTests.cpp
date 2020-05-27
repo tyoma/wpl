@@ -4,8 +4,8 @@
 #include <wpl/ui/win32/controls.h>
 #include <wpl/ui/win32/form.h>
 
+#include "helpers.h"
 #include "MockupsListView.h"
-#include "TestHelpers.h"
 
 #include <windows.h>
 #include <commctrl.h>
