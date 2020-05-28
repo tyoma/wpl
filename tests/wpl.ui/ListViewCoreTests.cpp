@@ -580,6 +580,9 @@ namespace wpl
 					sm->scroll_window(10.3 /*first visible*/, 0 /*we don't care yet*/);
 					lv.draw(*ctx, ras);
 
+					// ACT / ASSERT
+					assert_equal(10.3, sm->get_window().first);
+
 					// ASSERT
 					tracking_listview::drawing_event reference1[] = {
 						tracking_listview::drawing_event(item_self, *ctx, ras, make_rect(0, -3, 100, 7), 10, 0),
@@ -599,6 +602,9 @@ namespace wpl
 					sm->scroll_window(-3.1, 0);
 					lv.draw(*ctx, ras);
 
+					// ACT / ASSERT
+					assert_equal(-3.1, sm->get_window().first);
+
 					// ASSERT
 					tracking_listview::drawing_event reference2[] = {
 						tracking_listview::drawing_event(item_self, *ctx, ras, make_rect(0.0, 23.25, 100.0, 30.75), 0, 0),
@@ -608,6 +614,133 @@ namespace wpl
 
 					assert_equal_pred(reference2, lv.events, rect_eq());
 				}
+
+
+				test( ListViewIsInvalidatedOnModelInvalidation )
+				{
+					// INIT
+					auto invalidations = 0;
+					tracking_listview lv;
+					mocks::model_ptr m(new mocks::listview_model(1000, 1));
+
+					lv.item_height = 10;
+					lv.reported_events = item_self;
+					lv.resize(100, 40, nviews);
+					lv.set_columns_model(mocks::listview_columns_model::create(L"", 100));
+					lv.set_model(m);
+
+					auto c = lv.invalidate += [&] (const void *r) { assert_null(r); invalidations++; };
+
+					// ACT
+					m->invalidated(10);
+
+					// ASSERT
+					assert_equal(1, invalidations);
+
+					// ACT
+					lv.set_model(shared_ptr<table_model>());
+					m->invalidated(100);
+
+					// ASSERT
+					assert_equal(1, invalidations);
+				}
+
+
+				test( VerticalScrollModelIsInvalidatedOnlyWhenModelCountChanges )
+				{
+					// INIT
+					auto invalidations = 0;
+					tracking_listview lv;
+					auto sm = lv.get_vscroll_model();
+					mocks::model_ptr m(new mocks::listview_model(1000, 1));
+
+					lv.item_height = 10;
+					lv.reported_events = item_self;
+					lv.resize(100, 40, nviews);
+					lv.set_columns_model(mocks::listview_columns_model::create(L"", 100));
+
+					auto c = sm->invalidated += [&] { invalidations++; };
+
+					lv.set_model(m);
+
+					// ACT
+					m->invalidated(1000);
+
+					// ASSERT
+					assert_equal(0, invalidations);
+
+					// ACT
+					m->invalidated(100);
+
+					// ASSERT
+					assert_equal(1, invalidations);
+
+					// ACT
+					m->invalidated(100);
+
+					// ASSERT
+					assert_equal(1, invalidations);
+				}
+
+
+				test( ScrollModelsAndListViewAreInvalidatedOnResize )
+				{
+					// INIT
+					auto invalidations = 0;
+					auto scroll_invalidations = 0;
+					tracking_listview lv;
+					auto sm = lv.get_vscroll_model();
+
+					lv.item_height = 10;
+					lv.reported_events = item_self;
+					lv.resize(100, 40, nviews);
+					lv.set_columns_model(mocks::listview_columns_model::create(L"", 100));
+					lv.set_model(mocks::model_ptr(new mocks::listview_model(1000, 1)));
+
+					auto c1 = lv.invalidate += [&] (const void *) { invalidations++; };
+					auto c2 = sm->invalidated += [&] { scroll_invalidations++; };
+
+					// ACT
+					lv.resize(100, 40, nviews);
+
+					// ASSERT
+					assert_equal(1, invalidations);
+					assert_equal(1, scroll_invalidations);
+				}
+
+
+				test( ScrollingInvalidatesScrollModel )
+				{
+					// INIT
+					auto invalidations = 0;
+					auto scroll_invalidations = 0;
+					tracking_listview lv;
+					auto sm = lv.get_vscroll_model();
+
+					lv.item_height = 10;
+					lv.reported_events = item_self;
+					lv.resize(100, 40, nviews);
+					lv.set_columns_model(mocks::listview_columns_model::create(L"", 100));
+					lv.set_model(mocks::model_ptr(new mocks::listview_model(1000, 1)));
+
+					auto c1 = lv.invalidate += [&] (const void *) { invalidations++; };
+					auto c2 = sm->invalidated += [&] { scroll_invalidations++; };
+
+					// ACT
+					sm->scroll_window(10, 0);
+
+					// ASSERT
+					assert_equal(1, invalidations);
+					assert_equal(1, scroll_invalidations);
+
+					// ACT
+					sm->scroll_window(100, 0);
+
+					// ASSERT
+					assert_equal(2, invalidations);
+					assert_equal(2, scroll_invalidations);
+				}
+
 			end_test_suite
 		}
 	}

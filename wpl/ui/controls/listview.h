@@ -73,7 +73,9 @@ namespace wpl
 			private:
 				std::shared_ptr<columns_model> _cmodel;
 				std::shared_ptr<table_model> _model;
+				table_model::index_type _item_count;
 				std::shared_ptr<vertical_scroll_model> _vsmodel;
+				slot_connection _model_invalidation;
 				agge::box_r _size;
 				double _first_visible;
 				mutable std::vector<agge::real_t> _widths;

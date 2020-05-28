@@ -42,7 +42,7 @@ namespace wpl
 				{
 					if (!owner || !owner->get_item_height())
 						return make_pair(0, 0);
-					return make_pair(0, owner->_size.h / owner->get_item_height());
+					return make_pair(owner->_first_visible, owner->_size.h / owner->get_item_height());
 				}
 
 				virtual void scrolling(bool /*begins*/)
@@ -50,8 +50,11 @@ namespace wpl
 
 				virtual void scroll_window(double window_min, double /*window_width*/)
 				{
-					if (owner)
-						owner->_first_visible = window_min;
+					if (!owner)
+						return;
+					owner->_first_visible = window_min;
+					owner->invalidate(0);
+					invalidated();
 				}
 
 				listview_core *owner;
@@ -111,13 +114,26 @@ namespace wpl
 			}
 
 			void listview_core::resize(unsigned cx, unsigned cy, positioned_native_views &/*native_views*/)
-			{	_size.w = static_cast<real_t>(cx), _size.h = static_cast<real_t>(cy);	}
+			{
+				_size.w = static_cast<real_t>(cx);
+				_size.h = static_cast<real_t>(cy);
+				invalidate(0);
+				_vsmodel->invalidated();
+			}
 
 			void listview_core::set_columns_model(shared_ptr<columns_model> cmodel)
 			{	_cmodel = cmodel;	}
 
 			void listview_core::set_model(shared_ptr<table_model> model)
-			{	_model = model;	}
+			{
+				_model_invalidation = model ? model->invalidated += [this] (index_type count) {
+					if (_item_count != count)
+						_vsmodel->invalidated(), _item_count = count;
+					invalidate(0);
+				} : slot_connection();
+				_item_count = model ? model->get_count() : 0u;
+				_model = model;
+			}
 
 			void listview_core::adjust_column_widths()
 			{	}
