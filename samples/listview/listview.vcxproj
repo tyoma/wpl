@@ -19,12 +19,11 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{0939EE39-A722-3638-385B-C3656B191B84}</ProjectGuid>
-    <ProjectName>wpl-samples-common</ProjectName>
+    <ProjectGuid>{C36AB923-3985-1D6C-69AA-4177787B7A9C}</ProjectGuid>
   </PropertyGroup>
   <Import Project="$(SolutionDir)build.props\platform.props" />
   <PropertyGroup Label="Configuration">
-    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <ConfigurationType>Application</ConfigurationType>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="PropertySheets">
@@ -34,16 +33,24 @@
   </ImportGroup>
   <ItemDefinitionGroup>
     <ClCompile>
-      <DisableLanguageExtensions>false</DisableLanguageExtensions>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="platform.cpp" />
-    <ClCompile Include="timer.cpp" />
+    <ProjectReference Include="..\..\libraries\agge\src\agge.text\agge.text.vcxproj">
+      <Project>{4b446510-fa62-ad02-51ba-9bde9564ff26}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\..\libraries\agge\samples\common\src\samples-common.vcxproj">
+      <Project>{D89A569E-5C54-22B2-A9D4-52E907C821AD}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\..\src\wpl.ui\wpl.ui.vcxproj">
+      <Project>{2423f23a-b689-f3f7-a864-a1729ec337c9}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\common\samples-common.vcxproj">
+      <Project>{0939ee39-a722-3638-385b-c3656b191b84}</Project>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="platform.h" />
-    <ClInclude Include="timer.h" />
+    <ClCompile Include="main.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
 </Project>

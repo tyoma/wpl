@@ -35,7 +35,7 @@ namespace wpl
 				{
 					if (!owner || !owner->_model)
 						return make_pair(0, 0);
-					return make_pair(0, owner->_model->get_count());
+					return make_pair(0, static_cast<double>(owner->_model->get_count()));
 				}
 
 				virtual pair<double /*window_min*/, double /*window_width*/> get_window() const
