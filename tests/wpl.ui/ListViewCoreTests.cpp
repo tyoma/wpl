@@ -43,6 +43,8 @@ namespace wpl
 						wstring text;
 					};
 
+					using controls::listview_core::item_state_flags;
+
 				public:
 					tracking_listview()
 						: item_height(0), reported_events(item_background | subitem_background | item_self | subitem_self)
@@ -87,6 +89,8 @@ namespace wpl
 							events.push_back(drawing_event(subitem_self, ctx, rasterizer, box, item, state, subitem, text));
 					}
 				};
+
+				typedef tracking_listview::item_state_flags item_state;
 
 				struct rect_eq : eq
 				{
@@ -741,6 +745,193 @@ namespace wpl
 					assert_equal(2, scroll_invalidations);
 				}
 
+			end_test_suite
+
+
+			begin_test_suite( AListViewCoreTests )
+				shared_ptr<gcontext::surface_type> surface;
+				shared_ptr<gcontext::renderer_type> ren;
+				shared_ptr<gcontext> ctx;
+				gcontext::rasterizer_ptr ras;
+				wpl::ui::view::positioned_native_views nviews;
+
+				vector< pair<table_model::index_type, unsigned /*state*/> > get_selection_raw(tracking_listview &lv)
+				{
+					vector< pair<table_model::index_type, unsigned /*state*/> > selection;
+
+					lv.draw(*ctx, ras);
+					for (auto i = lv.events.begin(); i != lv.events.end(); ++i)
+					{
+						if (i->state)
+							selection.push_back(make_pair(i->item, i->state));
+					}
+					return selection;
+				}
+
+				vector< pair<table_model::index_type, unsigned /*state*/> > get_selection(tracking_listview &lv)
+				{
+					lv.events.clear();
+					lv.item_height = 1;
+					lv.reported_events = item_self;
+					lv.resize(1, 1000, nviews);
+					return get_selection_raw(lv);
+				}
+
+				init( Init )
+				{
+					surface.reset(new gcontext::surface_type(1000, 1000, 0));
+					ren.reset(new gcontext::renderer_type(1));
+					ctx.reset(new gcontext(*surface, *ren, make_rect(0, 0, 1000, 1000)));
+					ras.reset(new gcontext::rasterizer_type);
+				}
+
+
+				test( SelectedElementsHaveCorrespondingStateOnDraw )
+				{
+					// INIT
+					tracking_listview lv;
+
+					lv.item_height = 1;
+					lv.reported_events = item_background | subitem_background | item_self | subitem_self;
+					lv.resize(1, 4, nviews);
+					lv.set_columns_model(mocks::listview_columns_model::create(L"", 1));
+					lv.set_model(mocks::model_ptr(new mocks::listview_model(1000, 1)));
+
+					// ACT
+					lv.select(2, true);
+					lv.draw(*ctx, ras);
+
+					// ASSERT
+					tracking_listview::drawing_event reference1[] = {
+						tracking_listview::drawing_event(item_background, *ctx, ras, make_rect(0, 0, 1, 1), 0, 0),
+						tracking_listview::drawing_event(subitem_background, *ctx, ras, make_rect(0, 0, 1, 1), 0, 0),
+						tracking_listview::drawing_event(item_self, *ctx, ras, make_rect(0, 0, 1, 1), 0, 0),
+						tracking_listview::drawing_event(subitem_self, *ctx, ras, make_rect(0, 0, 1, 1), 0, 0),
+
+						tracking_listview::drawing_event(item_background, *ctx, ras, make_rect(0, 1, 1, 2), 1, 0),
+						tracking_listview::drawing_event(subitem_background, *ctx, ras, make_rect(0, 1, 1, 2), 1, 0),
+						tracking_listview::drawing_event(item_self, *ctx, ras, make_rect(0, 1, 1, 2), 1, 0),
+						tracking_listview::drawing_event(subitem_self, *ctx, ras, make_rect(0, 1, 1, 2), 1, 0),
+
+						tracking_listview::drawing_event(item_background, *ctx, ras, make_rect(0, 2, 1, 3), 2, controls::listview_core::selected),
+						tracking_listview::drawing_event(subitem_background, *ctx, ras, make_rect(0, 2, 1, 3), 2, controls::listview_core::selected),
+						tracking_listview::drawing_event(item_self, *ctx, ras, make_rect(0, 2, 1, 3), 2, controls::listview_core::selected),
+						tracking_listview::drawing_event(subitem_self, *ctx, ras, make_rect(0, 2, 1, 3), 2, controls::listview_core::selected),
+
+						tracking_listview::drawing_event(item_background, *ctx, ras, make_rect(0, 3, 1, 4), 3, 0),
+						tracking_listview::drawing_event(subitem_background, *ctx, ras, make_rect(0, 3, 1, 4), 3, 0),
+						tracking_listview::drawing_event(item_self, *ctx, ras, make_rect(0, 3, 1, 4), 3, 0),
+						tracking_listview::drawing_event(subitem_self, *ctx, ras, make_rect(0, 3, 1, 4), 3, 0),
+					};
+
+					assert_equal_pred(reference1, lv.events, rect_eq());
+
+					// INIT
+					lv.events.clear();
+					lv.reported_events = item_self;
+
+					// ACT
+					lv.select(0, true);
+
+					// ASSERT
+					pair<table_model::index_type, unsigned /*state*/> reference2[] = {
+						make_pair(0, controls::listview_core::selected),
+					};
+
+					assert_equal(reference2, get_selection(lv));
+
+					// INIT
+					lv.events.clear();
+
+					// ACT
+					lv.select(1, false);
+
+					// ASSERT
+					pair<table_model::index_type, unsigned /*state*/> reference3[] = {
+						make_pair(0, controls::listview_core::selected),
+						make_pair(1, controls::listview_core::selected),
+					};
+
+					assert_equal(reference3, get_selection(lv));
+				}
+
+
+				test( InvalidationIsCalledWhenSelectionIsMade )
+				{
+					// INIT
+					tracking_listview lv;
+					int invalidated = 0;
+
+					lv.item_height = 1;
+					lv.reported_events = item_self;
+					lv.resize(1, 4, nviews);
+					lv.set_columns_model(mocks::listview_columns_model::create(L"", 1));
+					lv.set_model(mocks::model_ptr(new mocks::listview_model(1000, 1)));
+
+					auto conn = lv.invalidate += [&] (const void *) {
+
+						// ASSERT
+						invalidated++;
+
+						pair<table_model::index_type, unsigned /*state*/> reference[] = {
+							make_pair(3, controls::listview_core::selected),
+						};
+
+						assert_equal(reference, get_selection_raw(lv));
+					};
+
+					// ACT
+					lv.select(3, true);
+
+					// ASSERT
+					assert_equal(1, invalidated);
+				}
+
+
+				test( SelectionIsChangedOnArrowKeys )
+				{
+					// INIT
+					tracking_listview lv;
+
+					lv.set_columns_model(mocks::listview_columns_model::create(L"", 1));
+					lv.set_model(mocks::model_ptr(new mocks::listview_model(1000, 1)));
+
+					// ACT
+					lv.key_down(keyboard_input::down, 0);
+
+					// ASSERT
+					pair<table_model::index_type, unsigned /*state*/> reference1[] = {
+						make_pair(0, controls::listview_core::selected),
+					};
+
+					assert_equal(reference1, get_selection(lv));
+
+					// ACT
+					lv.key_down(keyboard_input::down, 0);
+
+					// ASSERT
+					pair<table_model::index_type, unsigned /*state*/> reference2[] = {
+						make_pair(1, controls::listview_core::selected),
+					};
+
+					assert_equal(reference2, get_selection(lv));
+
+					// ACT
+					lv.key_down(keyboard_input::down, 0);
+
+					// ASSERT
+					pair<table_model::index_type, unsigned /*state*/> reference3[] = {
+						make_pair(2, controls::listview_core::selected),
+					};
+
+					assert_equal(reference3, get_selection(lv));
+
+					// ACT
+					lv.key_down(keyboard_input::up, 0);
+
+					// ASSERT
+					assert_equal(reference2, get_selection(lv));
+				}
 			end_test_suite
 		}
 	}

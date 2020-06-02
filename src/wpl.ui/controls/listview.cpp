@@ -62,7 +62,7 @@ namespace wpl
 
 
 			listview_core::listview_core()
-				: _first_visible(0), _vsmodel(new vertical_scroll_model)
+				: _first_visible(0), _vsmodel(new vertical_scroll_model), _focus_item(npos())
 			{
 				_size.w = 0, _size.h = 0;
 				_vsmodel->owner = this;
@@ -73,6 +73,15 @@ namespace wpl
 
 			shared_ptr<scroll_model> listview_core::get_vscroll_model()
 			{	return _vsmodel;	}
+
+			void listview_core::key_down(unsigned code, int /*modifiers*/)
+			{
+				if (down == code)
+					_focus_item++;
+				else if (up == code)
+					_focus_item--;
+				select(_focus_item, true);
+			}
 
 			void listview_core::draw(gcontext &ctx, gcontext::rasterizer_ptr &ras) const
 			{
@@ -95,20 +104,22 @@ namespace wpl
 				}
 				for (; box.y2 = box.y1 + item_height, r != rows && box.y1 < _size.h; ++r, box.y1 = box.y2)
 				{
+					const unsigned state = _selected_items.count(r) ? selected : 0;
+
 					box.x1 = 0.0f, box.x2 = total_width;
-					draw_item_background(ctx, ras, box, r, 0);
+					draw_item_background(ctx, ras, box, r, state);
 					for (columns_model::index_type c = 0; c != columns; box.x1 = box.x2, ++c)
 					{
 						box.x2 = box.x1 + _widths[c];
-						draw_subitem_background(ctx, ras, box, r, 0, c);
+						draw_subitem_background(ctx, ras, box, r, state, c);
 					}
 					box.x1 = 0.0f, box.x2 = total_width;
-					draw_item(ctx, ras, box, r, 0);
+					draw_item(ctx, ras, box, r, state);
 					for (columns_model::index_type c = 0; c != columns; box.x1 = box.x2, ++c)
 					{
 						_model->get_text(r, c, _text_buffer);
 						box.x2 = box.x1 + _widths[c];
-						draw_subitem(ctx, ras, box, r, 0, c, _text_buffer);
+						draw_subitem(ctx, ras, box, r, state, c, _text_buffer);
 					}
 				}
 			}
@@ -138,8 +149,13 @@ namespace wpl
 			void listview_core::adjust_column_widths()
 			{	}
 
-			void listview_core::select(index_type /*item*/, bool /*reset_previous*/)
-			{	}
+			void listview_core::select(index_type item, bool reset_previous)
+			{
+				if (reset_previous)
+					_selected_items.clear();
+				_selected_items.insert(item);
+				invalidate(0);
+			}
 
 			void listview_core::clear_selection()
 			{	}

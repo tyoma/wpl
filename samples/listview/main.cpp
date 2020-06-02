@@ -8,6 +8,7 @@
 
 #include <agge/blenders.h>
 #include <agge/blenders_simd.h>
+#include <agge/figures.h>
 #include <agge/filling_rules.h>
 #include <samples/common/font_loader.h>
 #include <samples/common/platform.h>
@@ -29,29 +30,37 @@ namespace
 	public:
 		my_listview()
 			: _font_loader(new native_font_loader), _text_engine(new text_engine_t(*_font_loader, 4)),
-				_font(_text_engine->create_font(L"Segoe UI", 13, false, false, agge::font::key::gf_vertical)),
+				_font(_text_engine->create_font(L"segoe ui", 13, false, false, agge::font::key::gf_vertical)),
 				_border_width(1.0f)
 		{
 			agge::font::metrics m = _font->get_metrics();
 
 			_item_height = real_t(int(1.0f * (m.leading + m.ascent + m.descent) + _border_width));
-			_baseline_offset = real_t(int(0.5f * (_item_height + m.ascent - m.descent + _border_width)));
+			_baseline_offset = real_t(int(0.5f * (_item_height + m.ascent - m.descent)));
 		}
 
 	private:
 		virtual real_t get_item_height() const
 		{	return _item_height;	}
 
-		virtual void draw_item_background(gcontext &/*ctx*/, gcontext::rasterizer_ptr &/*ras*/, const rect_r &/*b*/,
-			index_type /*item*/, unsigned /*state*/) const
-		{	}
+		virtual void draw_item_background(gcontext &ctx, gcontext::rasterizer_ptr &ras, const rect_r &b,
+			index_type /*item*/, unsigned state) const
+		{
+			if (state & selected)
+			{
+				add_path(*ras, rectangle(b.x1, b.y1, b.x2, b.y2 - _border_width));
+				ctx(ras, blender_t(color::make(32, 208, 255)), winding<>());
+			}
+		}
 
 		virtual void draw_subitem(gcontext &ctx, gcontext::rasterizer_ptr &ras, const rect_r &b, index_type /*item*/,
-			unsigned /*state*/, index_type /*subitem*/, const wstring &text) const
+			unsigned state, index_type /*subitem*/, const wstring &text) const
 		{
+			const color text_color = state & selected ? color::make(0, 0, 0) : color::make(255, 255, 255);
+
 			_text_engine->render_string(*ras, *_font, text.c_str(), layout::near, b.x1, b.y1 + _baseline_offset, b.x2 - b.x1);
 //			ras->sort(true);
-			ctx(ras, blender_t(color::make(255, 255, 255)), winding<>());
+			ctx(ras, blender_t(text_color), winding<>());
 		}
 
 	private:

@@ -22,6 +22,8 @@
 
 #include "../listview.h"
 
+#include <set>
+
 namespace wpl
 {
 	namespace ui
@@ -31,11 +33,17 @@ namespace wpl
 			class listview_core : public listview, noncopyable
 			{
 			public:
+				enum item_state_flags {	hovered = 1, selected = 2, focused = 4,	};
+
+			public:
 				listview_core();
 				~listview_core();
 
 				std::shared_ptr<scroll_model> get_vscroll_model();
 				std::shared_ptr<scroll_model> get_hscroll_model();
+
+				// keyboard_input methods
+				virtual void key_down(unsigned code, int modifiers);
 
 				// visual methods
 				virtual void draw(gcontext &ctx, gcontext::rasterizer_ptr &rasterizer) const;
@@ -51,9 +59,6 @@ namespace wpl
 				virtual void clear_selection();
 
 				virtual void ensure_visible(index_type item);
-
-			protected:
-				enum item_state_flags {	hovered = 1, selected = 2, focused = 4,	};
 
 			private:
 				struct vertical_scroll_model;
@@ -81,6 +86,9 @@ namespace wpl
 				mutable std::vector<agge::real_t> _widths;
 				mutable columns_model::column _column_buffer;
 				mutable std::wstring _text_buffer;
+
+				table_model::index_type _focus_item;
+				std::set<index_type> _selected_items;
 			};
 		}
 	}
