@@ -469,6 +469,135 @@ namespace wpl
 				}
 
 
+				test( KeyMessagesGetKeyInputCallbacksCalled )
+				{
+					// INIT
+					shared_ptr< mocks::logging_key_input<view> > v(new mocks::logging_key_input<view>());
+					hosting_window f;
+
+					f.host->set_view(v);
+
+					// ACT
+					::SendMessage(f.hwnd, WM_KEYDOWN, VK_LEFT, 0);
+
+					// ASSERT
+					mocks::keyboard_event reference1[] = {
+						{ mocks::keyboard_event::keydown, keyboard_input::left, 0 },
+					};
+
+					assert_equal(reference1, v->events);
+
+					// ACT
+					::SendMessage(f.hwnd, WM_KEYUP, VK_RIGHT, 0);
+					::SendMessage(f.hwnd, WM_KEYDOWN, VK_UP, 0);
+					::SendMessage(f.hwnd, WM_KEYUP, VK_DOWN, 0);
+
+					// ASSERT
+					mocks::keyboard_event reference2[] = {
+						{ mocks::keyboard_event::keydown, keyboard_input::left, 0 },
+						{ mocks::keyboard_event::keyup, keyboard_input::right, 0 },
+						{ mocks::keyboard_event::keydown, keyboard_input::up, 0 },
+						{ mocks::keyboard_event::keyup, keyboard_input::down, 0 },
+					};
+
+					assert_equal(reference2, v->events);
+				}
+
+
+				test( ControlAndShiftAreNotDeliveredAsKeyDownAndKeyUp )
+				{
+					// INIT
+					shared_ptr< mocks::logging_key_input<view> > v(new mocks::logging_key_input<view>());
+					hosting_window f;
+
+					f.host->set_view(v);
+
+					// ACT
+					::SendMessage(f.hwnd, WM_KEYDOWN, VK_CONTROL, 0);
+					::SendMessage(f.hwnd, WM_KEYUP, VK_SHIFT, 0);
+
+					// ASSERT
+					assert_is_empty(v->events);
+				}
+
+
+				test( KeyMessageIsAccompaniedWithShiftAndControl )
+				{
+					// INIT
+					shared_ptr< mocks::logging_key_input<view> > v(new mocks::logging_key_input<view>());
+					hosting_window f;
+
+					f.host->set_view(v);
+
+					// ACT
+					::SendMessage(f.hwnd, WM_KEYDOWN, VK_CONTROL, 0);
+					::SendMessage(f.hwnd, WM_KEYDOWN, 'A', 0);
+					::SendMessage(f.hwnd, WM_KEYUP, VK_LEFT, 0);
+
+					// ASSERT
+					mocks::keyboard_event reference1[] = {
+						{ mocks::keyboard_event::keydown, 'A', keyboard_input::control },
+						{ mocks::keyboard_event::keyup, keyboard_input::left, keyboard_input::control },
+					};
+
+					assert_equal(reference1, v->events);
+
+					// ACT
+					::SendMessage(f.hwnd, WM_KEYDOWN, VK_SHIFT, 0);
+					::SendMessage(f.hwnd, WM_KEYDOWN, 'B', 0);
+					::SendMessage(f.hwnd, WM_KEYUP, 'N', 0);
+
+					// ASSERT
+					mocks::keyboard_event reference2[] = {
+						{ mocks::keyboard_event::keydown, 'A', keyboard_input::control },
+						{ mocks::keyboard_event::keyup, keyboard_input::left, keyboard_input::control },
+						{ mocks::keyboard_event::keydown, 'B', keyboard_input::control | keyboard_input::shift },
+						{ mocks::keyboard_event::keyup, 'N', keyboard_input::control | keyboard_input::shift },
+					};
+
+					assert_equal(reference2, v->events);
+				}
+
+
+				test( KeyMessageIsNotAccompaniedWithShiftAndControlAfterShiftAndControlAreReleased )
+				{
+					// INIT
+					shared_ptr< mocks::logging_key_input<view> > v(new mocks::logging_key_input<view>());
+					hosting_window f;
+
+					f.host->set_view(v);
+
+					::SendMessage(f.hwnd, WM_KEYDOWN, VK_CONTROL, 0);
+					::SendMessage(f.hwnd, WM_KEYDOWN, VK_SHIFT, 0);
+
+					// ACT
+					::SendMessage(f.hwnd, WM_KEYUP, VK_CONTROL, 0);
+					::SendMessage(f.hwnd, WM_KEYDOWN, 'T', 0);
+					::SendMessage(f.hwnd, WM_KEYUP, VK_TAB, 0);
+
+					// ASSERT
+					mocks::keyboard_event reference1[] = {
+						{ mocks::keyboard_event::keydown, 'T', keyboard_input::shift },
+						{ mocks::keyboard_event::keyup, keyboard_input::tab, keyboard_input::shift },
+					};
+
+					assert_equal(reference1, v->events);
+
+					// ACT
+					::SendMessage(f.hwnd, WM_KEYUP, VK_SHIFT, 0);
+					::SendMessage(f.hwnd, WM_KEYDOWN, VK_RETURN, 0);
+
+					// ASSERT
+					mocks::keyboard_event reference2[] = {
+						{ mocks::keyboard_event::keydown, 'T', keyboard_input::shift },
+						{ mocks::keyboard_event::keyup, keyboard_input::tab, keyboard_input::shift },
+						{ mocks::keyboard_event::keydown, keyboard_input::enter, 0 },
+					};
+
+					assert_equal(reference2, v->events);
+				}
+
+
 				test( NativeViewWindowsAreReparented )
 				{
 					// INIT

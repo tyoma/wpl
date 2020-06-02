@@ -76,7 +76,7 @@ namespace wpl
 
 			view_host::view_host(HWND hwnd, const window::user_handler_t &user_handler)
 				: _user_handler(user_handler), _surface(1, 1, 0), _rasterizer(new gcontext::rasterizer_type), _renderer(1),
-					_mouse_in(false)
+					_mouse_in(false), _input_modifiers(0)
 			{
 				_window = window::attach(hwnd, bind(&view_host::wndproc, this, _1, _2, _3, _4));
 			}
@@ -144,6 +144,11 @@ namespace wpl
 						resize_view(LOWORD(lparam), HIWORD(lparam));
 						break;
 
+					case WM_KEYDOWN:
+					case WM_KEYUP:
+						dispatch_key(message, wparam, lparam);
+						break;
+
 					case WM_LBUTTONDOWN:
 					case WM_LBUTTONUP:
 					case WM_LBUTTONDBLCLK:
@@ -173,6 +178,39 @@ namespace wpl
 					}
 				}
 				return _user_handler(message, wparam, lparam, previous);
+			}
+
+			void view_host::dispatch_key(UINT message, WPARAM wparam, LPARAM /*lparam*/)
+			{
+				int code = 0;
+
+				switch (wparam)
+				{
+				case VK_CONTROL: update_modifier(message, keyboard_input::control); return;
+				case VK_SHIFT: update_modifier(message, keyboard_input::shift); return;
+
+				case VK_LEFT: code = keyboard_input::left; break;
+				case VK_RIGHT: code = keyboard_input::right; break;
+				case VK_UP: code = keyboard_input::up; break;
+				case VK_DOWN: code = keyboard_input::down; break;
+				case VK_TAB: code = keyboard_input::tab; break;
+				case VK_RETURN: code = keyboard_input::enter; break;
+
+				default: code = static_cast<int>(wparam); break;
+				}
+				switch (message)
+				{
+				case WM_KEYDOWN: _view->key_down(code, _input_modifiers); break;
+				case WM_KEYUP: _view->key_up(code, _input_modifiers); break;
+				}
+			}
+
+			void view_host::update_modifier(UINT message, unsigned code)
+			{
+				if (WM_KEYDOWN == message)
+					_input_modifiers |= code;
+				else if (WM_KEYUP == message)
+					_input_modifiers &= ~code;
 			}
 
 			void view_host::dispatch_mouse(UINT message, WPARAM /*wparam*/, LPARAM lparam)

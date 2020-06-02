@@ -6,6 +6,10 @@ namespace wpl
 {
 	struct keyboard_input
 	{
+		enum special_keys {
+			left, up, right, down, enter, tab,
+		};
+
 		enum modifier_keys {
 			base = 1,
 			shift = base << 0,

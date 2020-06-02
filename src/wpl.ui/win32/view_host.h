@@ -40,6 +40,8 @@ namespace wpl
 
 			private:
 				LRESULT wndproc(UINT message, WPARAM wparam, LPARAM lparam, const window::original_handler_t &previous);
+				void dispatch_key(UINT message, WPARAM wparam, LPARAM lparam);
+				void update_modifier(UINT message, unsigned code);
 				void dispatch_mouse(UINT message, WPARAM wparam, LPARAM lparam);
 				void resize_view(unsigned cx, unsigned cy) throw();
 
@@ -53,6 +55,7 @@ namespace wpl
 				std::vector<slot_connection> _connections;
 				std::vector<visual::positioned_native_view> _positioned_views;
 				agge::color _background_color;
+				unsigned _input_modifiers;
 				bool _mouse_in : 1;
 			};
 		}

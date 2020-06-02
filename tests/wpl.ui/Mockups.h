@@ -30,6 +30,16 @@ namespace wpl
 				};
 
 
+				struct keyboard_event
+				{
+					enum event_type { focusin, focusout, keydown, keyup, key_char, };
+
+					event_type type;
+					int /*keyboard_input::special_keys*/ key_code;
+					int /*keyboard_input::modifier_keys*/ modifiers;
+				};
+
+
 				class capture_provider
 				{
 				public:
@@ -124,6 +134,24 @@ namespace wpl
 				};
 
 
+				template <typename BaseT>
+				class logging_key_input : public BaseT
+				{
+				public:
+					logging_key_input();
+
+				public:
+					std::vector<keyboard_event> events;
+
+				private:
+					virtual void got_focus();
+					virtual void key_down(unsigned code, int modifiers);
+					virtual void character(wchar_t symbol, unsigned repeats, int modifiers);
+					virtual void key_up(unsigned code, int modifiers);
+					virtual void lost_focus();
+				};
+
+
 
 				class logging_layout_manager : public wpl::ui::layout_manager
 				{
@@ -206,6 +234,9 @@ namespace wpl
 						&& lhs.x == rhs.x && lhs.y == rhs.y;
 				}
 
+				inline bool operator ==(const keyboard_event &lhs, const keyboard_event &rhs)
+				{	return lhs.type == rhs.type && lhs.key_code == rhs.key_code && lhs.modifiers == rhs.modifiers;	}
+
 
 				template <typename BaseT>
 				inline logging_mouse_input<BaseT>::logging_mouse_input()
@@ -239,6 +270,32 @@ namespace wpl
 				template <typename BaseT>
 				inline void logging_mouse_input<BaseT>::lost_capture()
 				{	++capture_lost;	}
+
+
+				template <typename BaseT>
+				inline logging_key_input<BaseT>::logging_key_input()
+				{	}
+
+				template <typename BaseT>
+				inline void logging_key_input<BaseT>::got_focus()
+				{	}
+
+				template <typename BaseT>
+				inline void logging_key_input<BaseT>::key_down(unsigned code, int modifiers)
+				{	keyboard_event e = { keyboard_event::keydown, code, modifiers }; events.push_back(e);	}
+
+				template <typename BaseT>
+				inline void logging_key_input<BaseT>::character(wchar_t /*symbol*/, unsigned /*repeats*/, int /*modifiers*/)
+				{	}
+
+				template <typename BaseT>
+				inline void logging_key_input<BaseT>::key_up(unsigned code, int modifiers)
+				{	keyboard_event e = { keyboard_event::keyup, code, modifiers }; events.push_back(e);	}
+
+				template <typename BaseT>
+				inline void logging_key_input<BaseT>::lost_focus()
+				{	}
+
 			}
 		}
 	}
