@@ -8,8 +8,11 @@
 
 #include <agge/blenders.h>
 #include <agge/blenders_simd.h>
+#include <agge/dash.h>
 #include <agge/figures.h>
 #include <agge/filling_rules.h>
+#include <agge/stroke.h>
+#include <agge/stroke_features.h>
 #include <samples/common/font_loader.h>
 #include <samples/common/platform.h>
 #include <samples/common/timer.h>
@@ -30,13 +33,18 @@ namespace
 	public:
 		my_listview()
 			: _font_loader(new native_font_loader), _text_engine(new text_engine_t(*_font_loader, 4)),
-				_font(_text_engine->create_font(L"segoe ui", 13, false, false, agge::font::key::gf_vertical)),
+				_font(_text_engine->create_font(L"cambria", 15, false, false, agge::font::key::gf_vertical)),
 				_border_width(1.0f)
 		{
 			agge::font::metrics m = _font->get_metrics();
 
 			_item_height = real_t(int(1.0f * (m.leading + m.ascent + m.descent) + _border_width));
 			_baseline_offset = real_t(int(0.5f * (_item_height + m.ascent - m.descent)));
+
+			_stroke.set_cap(agge::caps::butt());
+			_stroke.set_join(agge::joins::bevel());
+			_stroke.width(1.0f);
+			_dash.add_dash(1.0f, 1.0f);
 		}
 
 	private:
@@ -50,6 +58,11 @@ namespace
 			{
 				add_path(*ras, rectangle(b.x1, b.y1, b.x2, b.y2 - _border_width));
 				ctx(ras, blender_t(color::make(32, 208, 255)), winding<>());
+			}
+			if (state & focused)
+			{
+				add_path(*ras, assist(assist(rectangle(b.x1 + 0.25f, b.y1 + 0.5f, b.x2 - 0.25f, b.y2 - _border_width - 0.5f), _dash), _stroke));
+				ctx(ras, blender_t(color::make(255, 255, 255)), winding<>());
 			}
 		}
 
@@ -68,13 +81,15 @@ namespace
 		shared_ptr<text_engine_base::loader> _font_loader;
 		shared_ptr<text_engine_t> _text_engine;
 		shared_ptr<agge::font> _font;
+		mutable agge::stroke _stroke;
+		mutable agge::dash _dash;
 	};
 
 
 	class my_columns : public columns_model
 	{
-		virtual index_type get_count() const throw() {	return 50u;	}
-		virtual void get_column(index_type /*index*/, column &column) const { column.width = 45; }
+		virtual index_type get_count() const throw() {	return 20u;	}
+		virtual void get_column(index_type /*index*/, column &column) const { column.width = 60; }
 		virtual void update_column(index_type /*index*/, short int /*width*/) {	}
 		virtual std::pair<index_type, bool> get_sort_order() const throw() { return make_pair(npos(), false); }
 		virtual void activate_column(index_type /*column*/) {	}
@@ -129,5 +144,6 @@ int main()
 	f->set_location(l);
 	f->set_visible(true);
 	f->set_background_color(color::make(8, 32, 64));
+	lv->select(1, true);
 	run_message_loop();
 }

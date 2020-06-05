@@ -20,6 +20,9 @@
 
 #include <wpl/ui/controls/listview.h>
 
+#include <algorithm>
+#include <cmath>
+
 using namespace agge;
 using namespace std;
 
@@ -74,14 +77,31 @@ namespace wpl
 			shared_ptr<scroll_model> listview_core::get_vscroll_model()
 			{	return _vsmodel;	}
 
-			void listview_core::key_down(unsigned code, int /*modifiers*/)
+			void listview_core::key_down(unsigned code, int modifiers)
 			{
 				if (down == code)
+				{
 					_focus_item++;
+				}
 				else if (up == code)
-					_focus_item--;
+				{
+					if (npos() != _focus_item)
+						_focus_item--;
+				}
+				if (!(control & modifiers))
+					select(_focus_item, true);
+			}
+
+			void listview_core::mouse_down(mouse_buttons /*button*/, int /*buttons*/, int /*x*/, int y)
+			{
+				const real_t item_height = get_item_height();
+
+				_focus_item = static_cast<index_type>((static_cast<real_t>(y) + 0.5f) / item_height);
 				select(_focus_item, true);
 			}
+
+			void listview_core::mouse_up(mouse_buttons /*button*/, int /*buttons*/, int /*x*/, int /*y*/)
+			{	}
 
 			void listview_core::draw(gcontext &ctx, gcontext::rasterizer_ptr &ras) const
 			{
@@ -104,7 +124,7 @@ namespace wpl
 				}
 				for (; box.y2 = box.y1 + item_height, r != rows && box.y1 < _size.h; ++r, box.y1 = box.y2)
 				{
-					const unsigned state = _selected_items.count(r) ? selected : 0;
+					const unsigned state = (_selected_items.count(r) ? selected : 0) | (_focus_item == r ? focused : 0);
 
 					box.x1 = 0.0f, box.x2 = total_width;
 					draw_item_background(ctx, ras, box, r, state);

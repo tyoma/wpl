@@ -45,6 +45,10 @@ namespace wpl
 				// keyboard_input methods
 				virtual void key_down(unsigned code, int modifiers);
 
+				// mouse_input methods
+				virtual void mouse_down(mouse_buttons button, int buttons, int x, int y);
+				virtual void mouse_up(mouse_buttons button, int buttons, int x, int y);
+
 				// visual methods
 				virtual void draw(gcontext &ctx, gcontext::rasterizer_ptr &rasterizer) const;
 				virtual void resize(unsigned cx, unsigned cy, positioned_native_views &native_views);
