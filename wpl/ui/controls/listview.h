@@ -79,6 +79,9 @@ namespace wpl
 					const agge::rect_r &box, index_type item, unsigned /*item_state_flags*/ state, index_type subitem,
 					const std::wstring &text) const = 0;
 
+				index_type get_item(int y) const;
+				void toggle_selection(index_type item);
+
 			private:
 				std::shared_ptr<columns_model> _cmodel;
 				std::shared_ptr<table_model> _model;

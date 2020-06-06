@@ -1125,6 +1125,116 @@ namespace wpl
 
 					assert_equal(reference9, s9);
 				}
+
+
+				test( ClickingOnItemWithControlSwitchesItsSelection )
+				{
+					// INIT
+					tracking_listview lv;
+
+					lv.set_columns_model(mocks::listview_columns_model::create(L"", 1));
+					lv.set_model(mocks::model_ptr(new mocks::listview_model(1000, 1)));
+
+					lv.item_height = 5;
+					lv.reported_events = item_self;
+					lv.resize(100, 25, nviews);
+
+					// ACT
+					lv.mouse_down(mouse_input::left, keyboard_input::control, 10, 2);
+					auto s1 = get_selection_raw(lv);
+
+					// ASSERT
+					assert_is_empty(s1);
+
+					// ACT
+					lv.mouse_up(mouse_input::left, keyboard_input::control, 10, 2);
+					auto s2 = get_selection_raw(lv);
+
+					// ASSERT
+					pair<table_model::index_type, unsigned /*state*/> reference2[] = {
+						make_pair(0, controls::listview_core::selected | controls::listview_core::focused),
+					};
+
+					assert_equal(reference2, s2);
+
+					// ACT
+					lv.mouse_down(mouse_input::left, keyboard_input::control, 10, 2);
+					auto s3 = get_selection_raw(lv);
+
+					// ASSERT
+					assert_equal(reference2, s3);
+
+					// ACT
+					lv.mouse_up(mouse_input::left, keyboard_input::control, 10, 2);
+					auto s4 = get_selection_raw(lv);
+
+					// ASSERT
+					pair<table_model::index_type, unsigned /*state*/> reference4[] = {
+						make_pair(0, controls::listview_core::focused),
+					};
+
+					assert_equal(reference4, s4);
+
+					// ACT
+					lv.mouse_down(mouse_input::left, keyboard_input::control, 10, 10);
+					auto s5 = get_selection_raw(lv);
+
+					// ASSERT
+					assert_equal(reference4, s5);
+
+					// ACT
+					lv.mouse_up(mouse_input::left, keyboard_input::control, 10, 10);
+					auto s6 = get_selection_raw(lv);
+
+					// ASSERT
+					pair<table_model::index_type, unsigned /*state*/> reference6[] = {
+						make_pair(2, controls::listview_core::selected | controls::listview_core::focused),
+					};
+					assert_equal(reference6, s6);
+				}
+
+
+				test( MultipleItemsAreSelectedWhenClickedWithControl )
+				{
+					// INIT
+					tracking_listview lv;
+
+					lv.set_columns_model(mocks::listview_columns_model::create(L"", 1));
+					lv.set_model(mocks::model_ptr(new mocks::listview_model(1000, 1)));
+
+					lv.item_height = 5;
+					lv.reported_events = item_self;
+					lv.resize(100, 25, nviews);
+
+					// ACT
+					lv.mouse_down(mouse_input::left, keyboard_input::control, 10, 2);
+					lv.mouse_up(mouse_input::left, keyboard_input::control, 10, 2);
+					lv.mouse_down(mouse_input::left, keyboard_input::control, 11, 12);
+					lv.mouse_up(mouse_input::left, keyboard_input::control, 11, 12);
+					auto s1 = get_selection_raw(lv);
+
+					// ASSERT
+					pair<table_model::index_type, unsigned /*state*/> reference1[] = {
+						make_pair(0, controls::listview_core::selected),
+						make_pair(2, controls::listview_core::selected | controls::listview_core::focused),
+					};
+
+					assert_equal(reference1, s1);
+
+					// ACT
+					lv.mouse_down(mouse_input::left, keyboard_input::control, 11, 16);
+					lv.mouse_up(mouse_input::left, keyboard_input::control, 11, 16);
+					auto s2 = get_selection_raw(lv);
+
+					// ASSERT
+					pair<table_model::index_type, unsigned /*state*/> reference2[] = {
+						make_pair(0, controls::listview_core::selected),
+						make_pair(2, controls::listview_core::selected),
+						make_pair(3, controls::listview_core::selected | controls::listview_core::focused),
+					};
+
+					assert_equal(reference2, s2);
+				}
 			end_test_suite
 		}
 	}

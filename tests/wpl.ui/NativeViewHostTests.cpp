@@ -318,6 +318,46 @@ namespace wpl
 				}
 
 
+				test( MouseEventsAreDispatchedCorrespondinglyWithModifiers )
+				{
+					// INIT
+					shared_ptr< mocks::logging_mouse_input<view> > v(new mocks::logging_mouse_input<view>());
+					hosting_window f;
+
+					f.host->set_view(v);
+
+					::MoveWindow(f.hwnd, 0, 0, 100, 50, TRUE);
+
+					// ACT
+					::SendMessage(f.hwnd, WM_KEYDOWN, VK_CONTROL, 0);
+					::SendMessage(f.hwnd, WM_LBUTTONDOWN, 0, pack_coordinates(0, 0));
+					::SendMessage(f.hwnd, WM_LBUTTONUP, 0, pack_coordinates(0, 0));
+					::SendMessage(f.hwnd, WM_LBUTTONDBLCLK, 0, pack_coordinates(0, 0));
+					::SendMessage(f.hwnd, WM_RBUTTONDOWN, 0, pack_coordinates(0, 0));
+					::SendMessage(f.hwnd, WM_RBUTTONUP, 0, pack_coordinates(0, 0));
+					::SendMessage(f.hwnd, WM_RBUTTONDBLCLK, 0, pack_coordinates(0, 0));
+					::SendMessage(f.hwnd, WM_KEYDOWN, VK_SHIFT, 0);
+					::SendMessage(f.hwnd, WM_LBUTTONDOWN, 0, pack_coordinates(0, 0));
+					::SendMessage(f.hwnd, WM_KEYUP, VK_CONTROL, 0);
+					::SendMessage(f.hwnd, WM_KEYUP, VK_SHIFT, 0);
+					::SendMessage(f.hwnd, WM_LBUTTONUP, 0, pack_coordinates(0, 0));
+
+					// ASSERT
+					mocks::mouse_event reference[] = {
+						mocks::me_down(mouse_input::left, keyboard_input::control, 0, 0),
+						mocks::me_up(mouse_input::left, keyboard_input::control, 0, 0),
+						mocks::me_double_click(mouse_input::left, keyboard_input::control, 0, 0),
+						mocks::me_down(mouse_input::right, keyboard_input::control, 0, 0),
+						mocks::me_up(mouse_input::right, keyboard_input::control, 0, 0),
+						mocks::me_double_click(mouse_input::right, keyboard_input::control, 0, 0),
+						mocks::me_down(mouse_input::left, keyboard_input::control | keyboard_input::shift, 0, 0),
+						mocks::me_up(mouse_input::left, 0, 0, 0),
+					};
+
+					assert_equal(reference, v->events_log);
+				}
+
+
 				test( RequestingCaptureSetsHandleAndSetsUnderlyingCapture )
 				{
 					// INIT

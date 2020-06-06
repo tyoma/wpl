@@ -44,6 +44,7 @@ namespace wpl
 				void update_modifier(UINT message, unsigned code);
 				void dispatch_mouse(UINT message, WPARAM wparam, LPARAM lparam);
 				void resize_view(unsigned cx, unsigned cy) throw();
+				static mouse_input::mouse_buttons get_button(UINT message);
 
 			private:
 				window::user_handler_t _user_handler;

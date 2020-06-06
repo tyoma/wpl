@@ -92,16 +92,17 @@ namespace wpl
 					select(_focus_item, true);
 			}
 
-			void listview_core::mouse_down(mouse_buttons /*button*/, int /*buttons*/, int /*x*/, int y)
+			void listview_core::mouse_down(mouse_buttons /*button*/, int buttons, int /*x*/, int y)
 			{
-				const real_t item_height = get_item_height();
-
-				_focus_item = static_cast<index_type>((static_cast<real_t>(y) + 0.5f) / item_height);
-				select(_focus_item, true);
+				if (!(buttons & keyboard_input::control))
+					select(_focus_item = get_item(y), true);
 			}
 
-			void listview_core::mouse_up(mouse_buttons /*button*/, int /*buttons*/, int /*x*/, int /*y*/)
-			{	}
+			void listview_core::mouse_up(mouse_buttons /*button*/, int buttons, int /*x*/, int y)
+			{
+				if (buttons & keyboard_input::control)
+					toggle_selection(_focus_item = get_item(y));
+			}
 
 			void listview_core::draw(gcontext &ctx, gcontext::rasterizer_ptr &ras) const
 			{
@@ -190,6 +191,21 @@ namespace wpl
 			void listview_core::draw_item(gcontext &/*ctx*/, gcontext::rasterizer_ptr &/*rasterizer*/,
 				const agge::rect_r &/*box*/, index_type /*item*/, unsigned /*state*/) const
 			{	}
+
+			listview_core::index_type listview_core::get_item(int y) const
+			{
+				const real_t item_height = get_item_height();
+
+				return static_cast<index_type>((static_cast<real_t>(y) + 0.5f) / item_height);
+			}
+
+			void listview_core::toggle_selection(index_type item)
+			{
+				pair<set<index_type>::iterator, bool> i = _selected_items.insert(item);
+
+				if (!i.second)
+					_selected_items.erase(i.first);
+			}
 		}
 	}
 }

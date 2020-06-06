@@ -237,27 +237,18 @@ namespace wpl
 					break;
 
 				case WM_LBUTTONDOWN:
-					_view->mouse_down(mouse_input::left, 0, x, y);
+				case WM_RBUTTONDOWN:
+					_view->mouse_down(get_button(message), _input_modifiers, x, y);
 					break;
 
 				case WM_LBUTTONUP:
-					_view->mouse_up(mouse_input::left, 0, x, y);
+				case WM_RBUTTONUP:
+					_view->mouse_up(get_button(message), _input_modifiers, x, y);
 					break;
 
 				case WM_LBUTTONDBLCLK:
-					_view->mouse_double_click(mouse_input::left, 0, x, y);
-					break;
-
-				case WM_RBUTTONDOWN:
-					_view->mouse_down(mouse_input::right, 0, x, y);
-					break;
-
-				case WM_RBUTTONUP:
-					_view->mouse_up(mouse_input::right, 0, x, y);
-					break;
-
 				case WM_RBUTTONDBLCLK:
-					_view->mouse_double_click(mouse_input::right, 0, x, y);
+					_view->mouse_double_click(get_button(message), _input_modifiers, x, y);
 					break;
 				}
 			}
@@ -279,6 +270,16 @@ namespace wpl
 				}
 				::EndDeferWindowPos(hdwp);
 				_positioned_views.clear();
+			}
+
+			mouse_input::mouse_buttons view_host::get_button(UINT message)
+			{
+				switch(message)
+				{
+				case WM_LBUTTONDOWN: case WM_LBUTTONUP: case WM_LBUTTONDBLCLK: return mouse_input::left;
+				case WM_RBUTTONDOWN: case WM_RBUTTONUP: case WM_RBUTTONDBLCLK: return mouse_input::right;
+				default: return mouse_input::base;
+				}
 			}
 		}
 
