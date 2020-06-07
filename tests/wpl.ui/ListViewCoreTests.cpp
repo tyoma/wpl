@@ -755,7 +755,7 @@ namespace wpl
 				gcontext::rasterizer_ptr ras;
 				wpl::ui::view::positioned_native_views nviews;
 
-				vector< pair<table_model::index_type, unsigned /*state*/> > get_selection_raw(tracking_listview &lv)
+				vector< pair<table_model::index_type, unsigned /*state*/> > get_states_raw(tracking_listview &lv)
 				{
 					vector< pair<table_model::index_type, unsigned /*state*/> > selection;
 
@@ -769,13 +769,13 @@ namespace wpl
 					return selection;
 				}
 
-				vector< pair<table_model::index_type, unsigned /*state*/> > get_selection(tracking_listview &lv)
+				vector< pair<table_model::index_type, unsigned /*state*/> > get_states(tracking_listview &lv)
 				{
 					lv.events.clear();
 					lv.item_height = 1;
 					lv.reported_events = item_self;
 					lv.resize(1, 1000, nviews);
-					return get_selection_raw(lv);
+					return get_states_raw(lv);
 				}
 
 				init( Init )
@@ -839,7 +839,7 @@ namespace wpl
 						make_pair(0, controls::listview_core::selected),
 					};
 
-					assert_equal(reference2, get_selection(lv));
+					assert_equal(reference2, get_states(lv));
 
 					// INIT
 					lv.events.clear();
@@ -853,7 +853,7 @@ namespace wpl
 						make_pair(1, controls::listview_core::selected),
 					};
 
-					assert_equal(reference3, get_selection(lv));
+					assert_equal(reference3, get_states(lv));
 				}
 
 
@@ -878,7 +878,7 @@ namespace wpl
 							make_pair(3, controls::listview_core::selected),
 						};
 
-						assert_equal(reference, get_selection_raw(lv));
+						assert_equal(reference, get_states_raw(lv));
 					};
 
 					// ACT
@@ -905,7 +905,7 @@ namespace wpl
 						make_pair(0, controls::listview_core::selected | controls::listview_core::focused),
 					};
 
-					assert_equal(reference1, get_selection(lv));
+					assert_equal(reference1, get_states(lv));
 
 					// ACT
 					lv.key_down(keyboard_input::down, 0);
@@ -915,7 +915,7 @@ namespace wpl
 						make_pair(1, controls::listview_core::selected | controls::listview_core::focused),
 					};
 
-					assert_equal(reference2, get_selection(lv));
+					assert_equal(reference2, get_states(lv));
 
 					// ACT
 					lv.key_down(keyboard_input::down, 0);
@@ -925,17 +925,17 @@ namespace wpl
 						make_pair(2, controls::listview_core::selected | controls::listview_core::focused),
 					};
 
-					assert_equal(reference3, get_selection(lv));
+					assert_equal(reference3, get_states(lv));
 
 					// ACT
 					lv.key_down(keyboard_input::up, 0);
 
 					// ASSERT
-					assert_equal(reference2, get_selection(lv));
+					assert_equal(reference2, get_states(lv));
 				}
 
 
-				test( SelectionIsChangedOnArrowKeys2 )
+				test( SelectionIsNotChangedOnGoingLowerThanZero )
 				{
 					// INIT
 					tracking_listview lv;
@@ -945,9 +945,66 @@ namespace wpl
 
 					// ACT
 					lv.key_down(keyboard_input::up, 0);
+					lv.key_up(keyboard_input::up, 0);
 
 					// ASSERT
-					assert_is_empty(get_selection(lv));
+					assert_is_empty(get_states(lv));
+
+					// ACT
+					lv.key_down(keyboard_input::down, 0);
+					lv.key_up(keyboard_input::down, 0);
+					lv.key_down(keyboard_input::up, 0);
+					lv.key_up(keyboard_input::up, 0);
+
+					// ASSERT
+					pair<table_model::index_type, unsigned /*state*/> reference[] = {
+						make_pair(0, controls::listview_core::selected | controls::listview_core::focused),
+					};
+
+					assert_equal(reference, get_states(lv));
+				}
+
+
+				test( SelectionIsNotChangedOnGoingAboiveItemCount )
+				{
+					// INIT
+					tracking_listview lv;
+					mocks::model_ptr m(new mocks::listview_model(3, 1));
+
+					lv.set_columns_model(mocks::listview_columns_model::create(L"", 1));
+					lv.set_model(m);
+
+					lv.key_down(keyboard_input::down, 0);
+					lv.key_up(keyboard_input::down, 0);
+					lv.key_down(keyboard_input::down, 0);
+					lv.key_up(keyboard_input::down, 0);
+					lv.key_down(keyboard_input::down, 0);
+					lv.key_up(keyboard_input::down, 0);
+
+					// ACT
+					lv.key_down(keyboard_input::down, 0);
+					lv.key_up(keyboard_input::down, 0);
+
+					// ASSERT
+					pair<table_model::index_type, unsigned /*state*/> reference1[] = {
+						make_pair(2, controls::listview_core::selected | controls::listview_core::focused),
+					};
+
+					assert_equal(reference1, get_states(lv));
+
+					// INIT
+					m->items.resize(4, vector<wstring>(1)); // we don't invalidate the model - get_count() is used instead.
+
+					// ACT
+					lv.key_down(keyboard_input::down, 0);
+					lv.key_up(keyboard_input::down, 0);
+
+					// ASSERT
+					pair<table_model::index_type, unsigned /*state*/> reference2[] = {
+						make_pair(3, controls::listview_core::selected | controls::listview_core::focused),
+					};
+
+					assert_equal(reference2, get_states(lv));
 				}
 
 
@@ -969,7 +1026,7 @@ namespace wpl
 						make_pair(1, controls::listview_core::selected),
 					};
 
-					assert_equal(reference1, get_selection(lv));
+					assert_equal(reference1, get_states(lv));
 
 					// ACT
 					lv.key_down(keyboard_input::down, keyboard_input::control);
@@ -979,7 +1036,7 @@ namespace wpl
 						make_pair(1, controls::listview_core::selected | controls::listview_core::focused),
 					};
 
-					assert_equal(reference2, get_selection(lv));
+					assert_equal(reference2, get_states(lv));
 
 					// ACT
 					lv.key_down(keyboard_input::down, keyboard_input::control);
@@ -990,13 +1047,13 @@ namespace wpl
 						make_pair(2, controls::listview_core::focused),
 					};
 
-					assert_equal(reference3, get_selection(lv));
+					assert_equal(reference3, get_states(lv));
 
 					// ACT
 					lv.key_down(keyboard_input::up, keyboard_input::control);
 
 					// ASSERT
-					assert_equal(reference2, get_selection(lv));
+					assert_equal(reference2, get_states(lv));
 				}
 
 
@@ -1017,7 +1074,7 @@ namespace wpl
 						make_pair(0, controls::listview_core::selected),
 					};
 
-					assert_equal(reference, get_selection(lv));
+					assert_equal(reference, get_states(lv));
 				}
 
 
@@ -1036,7 +1093,7 @@ namespace wpl
 					// ACT
 					lv.mouse_down(mouse_input::left, 0, 10, 0);
 					lv.mouse_up(mouse_input::left, 0, 10, 0);
-					auto s1 = get_selection_raw(lv);
+					auto s1 = get_states_raw(lv);
 
 					// ASSERT
 					pair<table_model::index_type, unsigned /*state*/> reference1[] = {
@@ -1048,7 +1105,7 @@ namespace wpl
 					// ACT
 					lv.mouse_down(mouse_input::left, 0, 10, 4);
 					lv.mouse_up(mouse_input::left, 0, 10, 4);
-					auto s2 = get_selection_raw(lv);
+					auto s2 = get_states_raw(lv);
 
 					// ASSERT
 					assert_equal(reference1, s2);
@@ -1056,7 +1113,7 @@ namespace wpl
 					// ACT
 					lv.mouse_down(mouse_input::left, 0, 99, 5);
 					lv.mouse_up(mouse_input::left, 0, 99, 5);
-					auto s3 = get_selection_raw(lv);
+					auto s3 = get_states_raw(lv);
 
 					// ASSERT
 					pair<table_model::index_type, unsigned /*state*/> reference3[] = {
@@ -1068,7 +1125,7 @@ namespace wpl
 					// ACT
 					lv.mouse_down(mouse_input::left, 0, 1, 19);
 					lv.mouse_up(mouse_input::left, 0, 99, 19);
-					auto s4 = get_selection_raw(lv);
+					auto s4 = get_states_raw(lv);
 
 					// ASSERT
 					pair<table_model::index_type, unsigned /*state*/> reference4[] = {
@@ -1084,7 +1141,7 @@ namespace wpl
 					// ACT
 					lv.mouse_down(mouse_input::left, 0, 0, 0);
 					lv.mouse_up(mouse_input::left, 0, 0, 0);
-					auto s5 = get_selection_raw(lv);
+					auto s5 = get_states_raw(lv);
 
 					// ASSERT
 					assert_equal(reference1, s5);
@@ -1092,7 +1149,7 @@ namespace wpl
 					// ACT
 					lv.mouse_down(mouse_input::left, 0, 19, 3);
 					lv.mouse_up(mouse_input::left, 0, 19, 3);
-					auto s6 = get_selection_raw(lv);
+					auto s6 = get_states_raw(lv);
 
 					// ASSERT
 					assert_equal(reference1, s6);
@@ -1100,7 +1157,7 @@ namespace wpl
 					// ACT
 					lv.mouse_down(mouse_input::left, 0, 19, 4);
 					lv.mouse_up(mouse_input::left, 0, 19, 4);
-					auto s7 = get_selection_raw(lv);
+					auto s7 = get_states_raw(lv);
 
 					// ASSERT
 					assert_equal(reference3, s7);
@@ -1108,7 +1165,7 @@ namespace wpl
 					// ACT
 					lv.mouse_down(mouse_input::left, 0, 19, 8);
 					lv.mouse_up(mouse_input::left, 0, 19, 8);
-					auto s8 = get_selection_raw(lv);
+					auto s8 = get_states_raw(lv);
 
 					// ASSERT
 					assert_equal(reference3, s8);
@@ -1116,7 +1173,7 @@ namespace wpl
 					// ACT
 					lv.mouse_down(mouse_input::left, 0, 19, 9);
 					lv.mouse_up(mouse_input::left, 0, 19, 9);
-					auto s9 = get_selection_raw(lv);
+					auto s9 = get_states_raw(lv);
 
 					// ASSERT
 					pair<table_model::index_type, unsigned /*state*/> reference9[] = {
@@ -1124,6 +1181,66 @@ namespace wpl
 					};
 
 					assert_equal(reference9, s9);
+				}
+
+
+				test( MouseTranslationIsAffectedByScrollWindow )
+				{
+					// INIT
+					tracking_listview lv;
+					auto sm = lv.get_vscroll_model();
+
+					lv.set_columns_model(mocks::listview_columns_model::create(L"", 1));
+					lv.set_model(mocks::model_ptr(new mocks::listview_model(1000, 1)));
+
+					lv.item_height = 4.3;
+					lv.reported_events = item_self;
+					lv.resize(100, 25, nviews);
+					sm->scroll_window(3.8, 0);
+
+					// ACT
+					lv.mouse_down(mouse_input::left, 0, 10, 0);
+					lv.mouse_up(mouse_input::left, 0, 10, 0);
+					auto s1 = get_states_raw(lv);
+
+					// ASSERT
+					pair<table_model::index_type, unsigned /*state*/> reference1[] = {
+						make_pair(3, controls::listview_core::selected | controls::listview_core::focused),
+					};
+
+					assert_equal(reference1, s1);
+
+					// ACT
+					lv.mouse_down(mouse_input::left, 0, 10, 1);
+					lv.mouse_up(mouse_input::left, 0, 10, 1);
+					auto s2 = get_states_raw(lv);
+
+					// ASSERT
+					pair<table_model::index_type, unsigned /*state*/> reference2[] = {
+						make_pair(4, controls::listview_core::selected | controls::listview_core::focused),
+					};
+
+					assert_equal(reference2, s2);
+
+					// ACT
+					lv.mouse_down(mouse_input::left, 0, 10, 4);
+					lv.mouse_up(mouse_input::left, 0, 10, 4);
+					auto s3 = get_states_raw(lv);
+
+					// ASSERT
+					assert_equal(reference2, s3);
+
+					// ACT
+					lv.mouse_down(mouse_input::left, 0, 10, 5);
+					lv.mouse_up(mouse_input::left, 0, 10, 5);
+					auto s4 = get_states_raw(lv);
+
+					// ASSERT
+					pair<table_model::index_type, unsigned /*state*/> reference4[] = {
+						make_pair(5, controls::listview_core::selected | controls::listview_core::focused),
+					};
+
+					assert_equal(reference4, s4);
 				}
 
 
@@ -1141,14 +1258,14 @@ namespace wpl
 
 					// ACT
 					lv.mouse_down(mouse_input::left, keyboard_input::control, 10, 2);
-					auto s1 = get_selection_raw(lv);
+					auto s1 = get_states_raw(lv);
 
 					// ASSERT
 					assert_is_empty(s1);
 
 					// ACT
 					lv.mouse_up(mouse_input::left, keyboard_input::control, 10, 2);
-					auto s2 = get_selection_raw(lv);
+					auto s2 = get_states_raw(lv);
 
 					// ASSERT
 					pair<table_model::index_type, unsigned /*state*/> reference2[] = {
@@ -1159,14 +1276,14 @@ namespace wpl
 
 					// ACT
 					lv.mouse_down(mouse_input::left, keyboard_input::control, 10, 2);
-					auto s3 = get_selection_raw(lv);
+					auto s3 = get_states_raw(lv);
 
 					// ASSERT
 					assert_equal(reference2, s3);
 
 					// ACT
 					lv.mouse_up(mouse_input::left, keyboard_input::control, 10, 2);
-					auto s4 = get_selection_raw(lv);
+					auto s4 = get_states_raw(lv);
 
 					// ASSERT
 					pair<table_model::index_type, unsigned /*state*/> reference4[] = {
@@ -1177,14 +1294,14 @@ namespace wpl
 
 					// ACT
 					lv.mouse_down(mouse_input::left, keyboard_input::control, 10, 10);
-					auto s5 = get_selection_raw(lv);
+					auto s5 = get_states_raw(lv);
 
 					// ASSERT
 					assert_equal(reference4, s5);
 
 					// ACT
 					lv.mouse_up(mouse_input::left, keyboard_input::control, 10, 10);
-					auto s6 = get_selection_raw(lv);
+					auto s6 = get_states_raw(lv);
 
 					// ASSERT
 					pair<table_model::index_type, unsigned /*state*/> reference6[] = {
@@ -1211,7 +1328,7 @@ namespace wpl
 					lv.mouse_up(mouse_input::left, keyboard_input::control, 10, 2);
 					lv.mouse_down(mouse_input::left, keyboard_input::control, 11, 12);
 					lv.mouse_up(mouse_input::left, keyboard_input::control, 11, 12);
-					auto s1 = get_selection_raw(lv);
+					auto s1 = get_states_raw(lv);
 
 					// ASSERT
 					pair<table_model::index_type, unsigned /*state*/> reference1[] = {
@@ -1224,7 +1341,7 @@ namespace wpl
 					// ACT
 					lv.mouse_down(mouse_input::left, keyboard_input::control, 11, 16);
 					lv.mouse_up(mouse_input::left, keyboard_input::control, 11, 16);
-					auto s2 = get_selection_raw(lv);
+					auto s2 = get_states_raw(lv);
 
 					// ASSERT
 					pair<table_model::index_type, unsigned /*state*/> reference2[] = {

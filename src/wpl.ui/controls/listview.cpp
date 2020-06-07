@@ -79,15 +79,19 @@ namespace wpl
 
 			void listview_core::key_down(unsigned code, int modifiers)
 			{
-				if (down == code)
+				switch (code)
 				{
-					_focus_item++;
-				}
-				else if (up == code)
-				{
-					if (npos() != _focus_item)
+				case down:
+					if (_focus_item + 1 < _model->get_count())
+						_focus_item++;
+					break;
+
+				case up:
+					if (npos() != _focus_item && _focus_item)
 						_focus_item--;
+					break;
 				}
+
 				if (!(control & modifiers))
 					select(_focus_item, true);
 			}
@@ -194,9 +198,9 @@ namespace wpl
 
 			listview_core::index_type listview_core::get_item(int y) const
 			{
-				const real_t item_height = get_item_height();
+				const double item_height = get_item_height();
 
-				return static_cast<index_type>((static_cast<real_t>(y) + 0.5f) / item_height);
+				return static_cast<index_type>((y + _first_visible * item_height + 0.5) / item_height);
 			}
 
 			void listview_core::toggle_selection(index_type item)
