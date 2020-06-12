@@ -6,8 +6,10 @@ namespace wpl
 {
 	struct keyboard_input
 	{
+		typedef std::pair< int /*tab index*/, std::shared_ptr<keyboard_input> > tabbed_control;
+
 		enum special_keys {
-			left, up, right, down, enter, tab,
+			left, up, right, down, enter, tab, home, end,
 		};
 
 		enum modifier_keys {
@@ -21,11 +23,16 @@ namespace wpl
 
 		virtual ~keyboard_input() {	}
 
-		virtual void got_focus();
+		virtual void get_tabbed_controls(std::vector<tabbed_control> &tabbed_controls, bool do_clear = true);
+
 		virtual void key_down(unsigned code, int modifiers);
 		virtual void character(wchar_t symbol, unsigned repeats, int modifiers);
 		virtual void key_up(unsigned code, int modifiers);
+
+		virtual void got_focus();
 		virtual void lost_focus();
+
+		signal<void (const std::shared_ptr<keyboard_input> &view)> request_focus;
 	};
 
 	struct mouse_input
@@ -55,19 +62,22 @@ namespace wpl
 
 
 
-	void inline keyboard_input::got_focus()
+	inline void keyboard_input::get_tabbed_controls(std::vector<tabbed_control> &/*tabbed_controls*/, bool /*do_clear*/)
 	{	}
 
-	void inline keyboard_input::key_down(unsigned /*code*/, int /*modifiers*/)
+	inline void keyboard_input::key_down(unsigned /*code*/, int /*modifiers*/)
 	{	}
 
-	void inline keyboard_input::character(wchar_t /*symbol*/, unsigned /*repeats*/, int /*modifiers*/)
+	inline void keyboard_input::character(wchar_t /*symbol*/, unsigned /*repeats*/, int /*modifiers*/)
 	{	}
 
-	void inline keyboard_input::key_up(unsigned /*code*/, int /*modifiers*/)
+	inline void keyboard_input::key_up(unsigned /*code*/, int /*modifiers*/)
 	{	}
 
-	void inline keyboard_input::lost_focus()
+	inline void keyboard_input::got_focus()
+	{	}
+
+	inline void keyboard_input::lost_focus()
 	{	}
 
 

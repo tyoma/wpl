@@ -789,6 +789,84 @@ namespace wpl
 					assert_is_empty(v3->events_log);
 				}
 
+
+				test( FirstLevelChildrenInputsAreProvidedByRequest )
+				{
+					shared_ptr<mocks::logging_layout_manager> lm(new mocks::logging_layout_manager);
+					shared_ptr<container> c(new container);
+					shared_ptr<view> v1(new view());
+					shared_ptr<view> v2(new view());
+					shared_ptr<view> v3(new view());
+					vector<keyboard_input::tabbed_control> actual;
+
+					// INIT / ACT
+					c->add_view(v1, 10);
+					c->add_view(v2, 3);
+
+					// ACT
+					c->get_tabbed_controls(actual);
+
+					// ASSERT
+					keyboard_input::tabbed_control reference1[] = {
+						make_pair(10, v1), make_pair(3, v2),
+					};
+
+					assert_equal(reference1, actual);
+
+					// INIT / ACT
+					c->add_view(v1);
+					c->add_view(v3, -171919);
+					c->add_view(v1);
+
+					// ACT
+					c->get_tabbed_controls(actual);
+
+					// ASSERT
+					keyboard_input::tabbed_control reference2[] = {
+						make_pair(10, v1), make_pair(3, v2), make_pair(-171919, v3),
+					};
+
+					assert_equal(reference2, actual);
+				}
+
+
+				test( SecondLevelChildrenInputsAreProvidedByRequest )
+				{
+					shared_ptr<mocks::logging_layout_manager> lm(new mocks::logging_layout_manager);
+					shared_ptr<container> c1(new container);
+					shared_ptr<container> c21(new container);
+					shared_ptr<container> c22(new container);
+					shared_ptr<view> v1(new view());
+					shared_ptr<view> v2(new view());
+					shared_ptr<view> v3(new view());
+					shared_ptr<view> v4(new view());
+					shared_ptr<view> v5(new view());
+					vector<keyboard_input::tabbed_control> actual;
+
+					// INIT / ACT
+					c1->add_view(v1, 1);
+					c1->add_view(c21);
+						c21->add_view(v3, 2);
+						c21->add_view(v4, 3);
+					c1->add_view(v2,4 );
+					c1->add_view(c22);
+						c22->add_view(v5, 7);
+
+					// ACT
+					c1->get_tabbed_controls(actual);
+
+					// ASSERT
+					keyboard_input::tabbed_control reference[] = {
+						make_pair(1, v1),
+						make_pair(2, v3),
+						make_pair(3, v4),
+						make_pair(4, v2),
+						make_pair(7, v5),
+					};
+
+					assert_equal(reference, actual);
+				}
+
 			end_test_suite
 		}
 	}

@@ -40,9 +40,13 @@ namespace wpl
 
 			private:
 				LRESULT wndproc(UINT message, WPARAM wparam, LPARAM lparam, const window::original_handler_t &previous);
+				
 				void dispatch_key(UINT message, WPARAM wparam, LPARAM lparam);
 				void update_modifier(UINT message, unsigned code);
+				void dispatch_tab();
+
 				void dispatch_mouse(UINT message, WPARAM wparam, LPARAM lparam);
+
 				void resize_view(unsigned cx, unsigned cy) throw();
 				static mouse_input::mouse_buttons get_button(UINT message);
 
@@ -50,6 +54,9 @@ namespace wpl
 				window::user_handler_t _user_handler;
 				std::shared_ptr<window> _window;
 				std::shared_ptr<view> _view;
+				std::vector<keyboard_input::tabbed_control> _tabbed_controls;
+				std::vector<keyboard_input::tabbed_control>::const_iterator _focus_i;
+				std::shared_ptr<keyboard_input> _focus;
 				gcontext::surface_type _surface;
 				gcontext::rasterizer_ptr _rasterizer;
 				gcontext::renderer_type _renderer;

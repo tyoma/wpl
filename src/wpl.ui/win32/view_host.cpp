@@ -87,9 +87,13 @@ namespace wpl
 			void view_host::set_view(const shared_ptr<view> &v)
 			{
 				_view = v;
+				_focus = v;
 				_connections.clear();
 				if (!v)
 					return;
+				v->get_tabbed_controls(_tabbed_controls);
+				sort(_tabbed_controls.begin(), _tabbed_controls.end());
+				_focus_i = _tabbed_controls.end();
 				_connections.push_back(v->invalidate += [this] (const agge::rect_i *rc) {
 					RECT rc2;
 
@@ -186,6 +190,7 @@ namespace wpl
 
 				switch (wparam)
 				{
+				case VK_TAB: if (message == WM_KEYDOWN) dispatch_tab(); return;
 				case VK_CONTROL: update_modifier(message, keyboard_input::control); return;
 				case VK_SHIFT: update_modifier(message, keyboard_input::shift); return;
 
@@ -193,15 +198,20 @@ namespace wpl
 				case VK_RIGHT: code = keyboard_input::right; break;
 				case VK_UP: code = keyboard_input::up; break;
 				case VK_DOWN: code = keyboard_input::down; break;
-				case VK_TAB: code = keyboard_input::tab; break;
+				case VK_HOME: code = keyboard_input::home; break;
+				case VK_END: code = keyboard_input::end; break;
 				case VK_RETURN: code = keyboard_input::enter; break;
 
 				default: code = static_cast<int>(wparam); break;
 				}
+
+				if (!_focus)
+					return;
+
 				switch (message)
 				{
-				case WM_KEYDOWN: _view->key_down(code, _input_modifiers); break;
-				case WM_KEYUP: _view->key_up(code, _input_modifiers); break;
+				case WM_KEYDOWN: _focus->key_down(code, _input_modifiers); break;
+				case WM_KEYUP: _focus->key_up(code, _input_modifiers); break;
 				}
 			}
 
@@ -211,6 +221,22 @@ namespace wpl
 					_input_modifiers |= code;
 				else if (WM_KEYUP == message)
 					_input_modifiers &= ~code;
+			}
+
+			void view_host::dispatch_tab()
+			{
+				if (_tabbed_controls.empty())
+				{
+					_focus = nullptr;
+					return;
+				}
+
+				if (_focus)
+					_focus->lost_focus();
+				if (_focus_i == _tabbed_controls.end() || ++_focus_i == _tabbed_controls.end())
+					_focus_i = _tabbed_controls.begin();
+				_focus = _focus_i->second;
+				_focus->got_focus();
 			}
 
 			void view_host::dispatch_mouse(UINT message, WPARAM /*wparam*/, LPARAM lparam)

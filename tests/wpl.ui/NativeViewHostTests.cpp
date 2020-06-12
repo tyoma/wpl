@@ -613,12 +613,12 @@ namespace wpl
 					// ACT
 					::SendMessage(f.hwnd, WM_KEYUP, VK_CONTROL, 0);
 					::SendMessage(f.hwnd, WM_KEYDOWN, 'T', 0);
-					::SendMessage(f.hwnd, WM_KEYUP, VK_TAB, 0);
+					::SendMessage(f.hwnd, WM_KEYUP, VK_HOME, 0);
 
 					// ASSERT
 					mocks::keyboard_event reference1[] = {
 						{ mocks::keyboard_event::keydown, 'T', keyboard_input::shift },
-						{ mocks::keyboard_event::keyup, keyboard_input::tab, keyboard_input::shift },
+						{ mocks::keyboard_event::keyup, keyboard_input::home, keyboard_input::shift },
 					};
 
 					assert_equal(reference1, v->events);
@@ -626,12 +626,14 @@ namespace wpl
 					// ACT
 					::SendMessage(f.hwnd, WM_KEYUP, VK_SHIFT, 0);
 					::SendMessage(f.hwnd, WM_KEYDOWN, VK_RETURN, 0);
+					::SendMessage(f.hwnd, WM_KEYDOWN, VK_END, 0);
 
 					// ASSERT
 					mocks::keyboard_event reference2[] = {
 						{ mocks::keyboard_event::keydown, 'T', keyboard_input::shift },
-						{ mocks::keyboard_event::keyup, keyboard_input::tab, keyboard_input::shift },
+						{ mocks::keyboard_event::keyup, keyboard_input::home, keyboard_input::shift },
 						{ mocks::keyboard_event::keydown, keyboard_input::enter, 0 },
+						{ mocks::keyboard_event::keydown, keyboard_input::end, 0 },
 					};
 
 					assert_equal(reference2, v->events);
@@ -872,6 +874,138 @@ namespace wpl
 
 					assert_equal(reference2, v->background_color);
 				}
+
+
+				test( KeyboardInputIsRedirectedToTheFirstControlInOrderOnTab )
+				{
+					// INIT
+					hosting_window f;
+					shared_ptr<container> c(new container);
+					shared_ptr< mocks::logging_key_input<view> > v1(new mocks::logging_key_input<view>);
+					shared_ptr< mocks::logging_key_input<view> > v2(new mocks::logging_key_input<view>);
+					shared_ptr< mocks::logging_key_input<view> > v3(new mocks::logging_key_input<view>);
+					shared_ptr<stack> s(new stack(0, true));
+
+					c->set_layout(s);
+					c->add_view(v1, 5), s->add(10);
+					c->add_view(v2, 2), s->add(10);
+					c->add_view(v3, 1000), s->add(10);
+					f.host->set_view(c);
+					::ValidateRect(f.hwnd, NULL);
+
+					// ACT
+					::SendMessage(f.hwnd, WM_KEYDOWN, VK_TAB, 0);
+
+					// ASSERT
+					mocks::keyboard_event reference1[] = {
+						{ mocks::keyboard_event::focusin, 0, 0 },
+					};
+
+					assert_is_empty(v1->events);
+					assert_equal(reference1, v2->events);
+					assert_is_empty(v3->events);
+
+					// INIT
+					v2->events.clear();
+
+					// ACT
+					::SendMessage(f.hwnd, WM_KEYUP, VK_TAB, 0);
+					::SendMessage(f.hwnd, WM_KEYDOWN, 'Z', 0);
+					::SendMessage(f.hwnd, WM_KEYDOWN, VK_SHIFT, 0);
+					::SendMessage(f.hwnd, WM_KEYDOWN, 'A', 0);
+					::SendMessage(f.hwnd, WM_KEYUP, 'Z', 0);
+
+					// ASSERT
+					mocks::keyboard_event reference2[] = {
+						{ mocks::keyboard_event::keydown, 'Z', 0 },
+						{ mocks::keyboard_event::keydown, 'A', keyboard_input::shift },
+						{ mocks::keyboard_event::keyup, 'Z', keyboard_input::shift },
+					};
+
+					assert_is_empty(v1->events);
+					assert_equal(reference2, v2->events);
+					assert_is_empty(v3->events);
+				}
+
+
+				test( KeyboardInputIsRedirectedToNullIfNoTabbedControls )
+				{
+					// INIT
+					hosting_window f;
+					shared_ptr< mocks::logging_key_input<view> > v(new mocks::logging_key_input<view>);
+
+					f.host->set_view(v);
+					::ValidateRect(f.hwnd, NULL);
+
+					// ACT
+					::SendMessage(f.hwnd, WM_KEYDOWN, VK_TAB, 0);
+					::SendMessage(f.hwnd, WM_KEYUP, VK_TAB, 0);
+					::SendMessage(f.hwnd, WM_KEYDOWN, 'Z', 0);
+					::SendMessage(f.hwnd, WM_KEYUP, 'Z', 0);
+
+					// ASSERT
+					assert_is_empty(v->events);
+				}
+
+
+				test( FocusIsCycledAccordinglyToTabOrder )
+				{
+					// INIT
+					hosting_window f;
+					shared_ptr<container> c(new container);
+					shared_ptr< mocks::logging_key_input<view> > v1(new mocks::logging_key_input<view>);
+					shared_ptr< mocks::logging_key_input<view> > v2(new mocks::logging_key_input<view>);
+					shared_ptr< mocks::logging_key_input<view> > v3(new mocks::logging_key_input<view>);
+					shared_ptr<stack> s(new stack(0, true));
+
+					c->set_layout(s);
+					c->add_view(v1, 5), s->add(10);
+					c->add_view(v2, 2), s->add(10);
+					c->add_view(v3, 1000), s->add(10);
+					f.host->set_view(c);
+					::ValidateRect(f.hwnd, NULL);
+
+					// ACT
+					::SendMessage(f.hwnd, WM_KEYDOWN, VK_TAB, 0);
+					::SendMessage(f.hwnd, WM_KEYUP, VK_TAB, 0);
+					::SendMessage(f.hwnd, WM_KEYDOWN, VK_TAB, 0);
+
+					// ASSERT
+					mocks::keyboard_event reference_in[] = {
+						{ mocks::keyboard_event::focusin, 0, 0 },
+					};
+					mocks::keyboard_event reference_inout[] = {
+						{ mocks::keyboard_event::focusin, 0, 0 },
+						{ mocks::keyboard_event::focusout, 0, 0 },
+					};
+
+					assert_equal(reference_in, v1->events);
+					assert_equal(reference_inout, v2->events);
+					assert_is_empty(v3->events);
+
+					// ACT
+					::SendMessage(f.hwnd, WM_KEYDOWN, VK_TAB, 0);
+
+					// ASSERT
+					assert_equal(reference_inout, v1->events);
+					assert_equal(reference_inout, v2->events);
+					assert_equal(reference_in, v3->events);
+
+					// ACT
+					::SendMessage(f.hwnd, WM_KEYDOWN, VK_TAB, 0);
+
+					// ASSERT
+					mocks::keyboard_event reference_inoutin[] = {
+						{ mocks::keyboard_event::focusin, 0, 0 },
+						{ mocks::keyboard_event::focusout, 0, 0 },
+						{ mocks::keyboard_event::focusin, 0, 0 },
+					};
+
+					assert_equal(reference_inout, v1->events);
+					assert_equal(reference_inoutin, v2->events);
+					assert_equal(reference_inout, v3->events);
+				}
+
 			end_test_suite
 		}
 	}

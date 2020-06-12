@@ -33,7 +33,7 @@ namespace
 	public:
 		my_listview()
 			: _font_loader(new native_font_loader), _text_engine(new text_engine_t(*_font_loader, 4)),
-				_font(_text_engine->create_font(L"cambria", 15, false, false, agge::font::key::gf_vertical)),
+				_font(_text_engine->create_font(L"segoe ui", 14, false, false, agge::font::key::gf_vertical)),
 				_border_width(1.0f)
 		{
 			agge::font::metrics m = _font->get_metrics();

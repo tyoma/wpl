@@ -18,11 +18,12 @@ namespace wpl
 			: _capture_target(npos)
 		{	}
 
-		void container::add_view(const shared_ptr<view> &child)
+		void container::add_view(const shared_ptr<view> &child, int tab_order)
 		{
 			positioned_view c = {
-				0, 0, 0, 0,
+				{ 0, 0, 0, 0 },
 				child,
+				tab_order,
 				child->invalidate += bind(&container::on_invalidate, this, static_cast<unsigned>(_children.size()), _1),
 				child->force_layout += bind(&container::on_force_layout, this),
 				child->capture += bind(&container::on_capture, this, static_cast<unsigned>(_children.size()), _1),
@@ -57,6 +58,18 @@ namespace wpl
 				i->child->resize(i->location.width, i->location.height, nviews);
 				for (const size_t k = nviews.size(); j < k; ++j)
 					nviews[j].location.left += i->location.left, nviews[j].location.top += i->location.top;
+			}
+		}
+
+		void container::get_tabbed_controls(std::vector<tabbed_control> &tabbed_controls, bool do_clear)
+		{
+			if (do_clear)
+				tabbed_controls.clear();
+			for (auto i = _children.begin(); i != _children.end(); ++i)
+			{
+				if (i->tab_order)
+					tabbed_controls.push_back(make_pair(i->tab_order, i->child));
+				i->child->get_tabbed_controls(tabbed_controls, false);
 			}
 		}
 

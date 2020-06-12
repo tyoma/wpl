@@ -144,10 +144,10 @@ namespace wpl
 					std::vector<keyboard_event> events;
 
 				private:
-					virtual void got_focus();
 					virtual void key_down(unsigned code, int modifiers);
 					virtual void character(wchar_t symbol, unsigned repeats, int modifiers);
 					virtual void key_up(unsigned code, int modifiers);
+					virtual void got_focus();
 					virtual void lost_focus();
 				};
 
@@ -277,10 +277,6 @@ namespace wpl
 				{	}
 
 				template <typename BaseT>
-				inline void logging_key_input<BaseT>::got_focus()
-				{	}
-
-				template <typename BaseT>
 				inline void logging_key_input<BaseT>::key_down(unsigned code, int modifiers)
 				{	keyboard_event e = { keyboard_event::keydown, code, modifiers }; events.push_back(e);	}
 
@@ -293,9 +289,12 @@ namespace wpl
 				{	keyboard_event e = { keyboard_event::keyup, code, modifiers }; events.push_back(e);	}
 
 				template <typename BaseT>
-				inline void logging_key_input<BaseT>::lost_focus()
-				{	}
+				inline void logging_key_input<BaseT>::got_focus()
+				{	keyboard_event e = { keyboard_event::focusin, 0, 0 }; events.push_back(e);	}
 
+				template <typename BaseT>
+				inline void logging_key_input<BaseT>::lost_focus()
+				{	keyboard_event e = { keyboard_event::focusout, 0, 0 }; events.push_back(e);	}
 			}
 		}
 	}
