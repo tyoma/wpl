@@ -1006,6 +1006,52 @@ namespace wpl
 					assert_equal(reference_inout, v3->events);
 				}
 
+
+				test( FocusIsCycledBackwardsAccordinglyToTabOrder )
+				{
+					// INIT
+					hosting_window f;
+					shared_ptr<container> c(new container);
+					shared_ptr< mocks::logging_key_input<view> > v1(new mocks::logging_key_input<view>);
+					shared_ptr< mocks::logging_key_input<view> > v2(new mocks::logging_key_input<view>);
+					shared_ptr< mocks::logging_key_input<view> > v3(new mocks::logging_key_input<view>);
+					shared_ptr<stack> s(new stack(0, true));
+
+					c->set_layout(s);
+					c->add_view(v1, 3), s->add(10);
+					c->add_view(v2, 2), s->add(10);
+					c->add_view(v3, 1), s->add(10);
+					f.host->set_view(c);
+					::ValidateRect(f.hwnd, NULL);
+
+					// ACT
+					::SendMessage(f.hwnd, WM_KEYDOWN, VK_SHIFT, 0);
+					::SendMessage(f.hwnd, WM_KEYDOWN, VK_TAB, 0);
+
+					// ASSERT
+					mocks::keyboard_event reference_in[] = {
+						{ mocks::keyboard_event::focusin, 0, 0 },
+					};
+
+					assert_equal(reference_in, v1->events);
+					assert_is_empty(v2->events);
+					assert_is_empty(v3->events);
+
+					// ACT
+					::SendMessage(f.hwnd, WM_KEYUP, VK_TAB, 0);
+					::SendMessage(f.hwnd, WM_KEYDOWN, VK_TAB, 0);
+					::SendMessage(f.hwnd, WM_KEYDOWN, VK_TAB, 0);
+
+					// ASSERT
+					mocks::keyboard_event reference_inout[] = {
+						{ mocks::keyboard_event::focusin, 0, 0 },
+						{ mocks::keyboard_event::focusout, 0, 0 },
+					};
+
+					assert_equal(reference_inout, v1->events);
+					assert_equal(reference_inout, v2->events);
+					assert_equal(reference_in, v3->events);
+				}
 			end_test_suite
 		}
 	}

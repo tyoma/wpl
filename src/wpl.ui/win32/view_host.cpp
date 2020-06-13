@@ -233,8 +233,17 @@ namespace wpl
 
 				if (_focus)
 					_focus->lost_focus();
-				if (_focus_i == _tabbed_controls.end() || ++_focus_i == _tabbed_controls.end())
-					_focus_i = _tabbed_controls.begin();
+				if (keyboard_input::shift & _input_modifiers)
+				{
+					if (_focus_i == _tabbed_controls.begin())
+						_focus_i = _tabbed_controls.end();
+					--_focus_i;
+				}
+				else
+				{
+					if (_focus_i == _tabbed_controls.end() || ++_focus_i == _tabbed_controls.end())
+						_focus_i = _tabbed_controls.begin();
+				}
 				_focus = _focus_i->second;
 				_focus->got_focus();
 			}
