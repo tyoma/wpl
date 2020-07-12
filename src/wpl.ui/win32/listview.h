@@ -28,7 +28,7 @@ namespace wpl
 	{
 		namespace win32
 		{
-			class listview : public native_view<wpl::ui::listview>
+			class listview : public wpl::ui::listview, public native_view<view>, public std::enable_shared_from_this<view>
 			{
 			public:
 				listview();
@@ -41,6 +41,9 @@ namespace wpl
 
 			private:
 				void init();
+
+				// control interface
+				std::shared_ptr<view> get_view();
 
 				// listview interface
 				virtual void set_columns_model(std::shared_ptr<columns_model> cm);

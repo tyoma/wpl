@@ -20,14 +20,14 @@
 
 #pragma once
 
+#include "control.h"
 #include "models.h"
-#include "view.h"
 
 namespace wpl
 {
 	namespace ui
 	{
-		struct listview : view, index_traits
+		struct listview : control, index_traits
 		{
 			virtual void set_columns_model(std::shared_ptr<columns_model> cm) = 0;
 			virtual void set_model(std::shared_ptr<table_model> ds) = 0;

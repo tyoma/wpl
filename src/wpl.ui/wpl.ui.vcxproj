@@ -45,7 +45,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="container.cpp" />
-    <ClCompile Include="controls\listview.cpp" />
+    <ClCompile Include="controls\listview_core.cpp" />
     <ClCompile Include="scroller.cpp" />
     <ClCompile Include="win32\comboxbox.cpp">
       <DisableLanguageExtensions>false</DisableLanguageExtensions>
@@ -70,7 +70,9 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\wpl\ui\combobox.h" />
+    <ClInclude Include="..\..\wpl\ui\control.h" />
     <ClInclude Include="..\..\wpl\ui\controls.h" />
+    <ClInclude Include="..\..\wpl\ui\controls\listview.h" />
     <ClInclude Include="..\..\wpl\ui\models.h" />
     <ClInclude Include="..\..\wpl\ui\container.h" />
     <ClInclude Include="..\..\wpl\ui\form.h" />
@@ -87,7 +89,7 @@
     <ClInclude Include="..\..\wpl\ui\win32\native_view.h" />
     <ClInclude Include="..\..\wpl\ui\win32\types.h" />
     <ClInclude Include="..\..\wpl\ui\win32\window.h" />
-    <ClInclude Include="..\..\wpl\ui\controls\listview.h" />
+    <ClInclude Include="..\..\wpl\ui\controls\listview_core.h" />
     <ClInclude Include="win32\combobox.h" />
     <ClInclude Include="win32\listview.h" />
     <ClInclude Include="win32\native_view.h" />

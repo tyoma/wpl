@@ -26,10 +26,10 @@ namespace wpl
 				void increment(int *value)
 				{	++*value;	}
 
-				static HWND get_window_and_resize(HWND hparent, visual &v, int cx, int cy)
+				static HWND get_window_and_resize(HWND hparent, control &ctl, int cx, int cy)
 				{
 					visual::positioned_native_views nviews;
-					v.resize(cx, cy, nviews);
+					ctl.get_view()->resize(cx, cy, nviews);
 					assert_is_true(1u <= nviews.size());
 					return nviews[0].get_view().get_window(hparent);
 				}

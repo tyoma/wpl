@@ -56,7 +56,7 @@ int main()
 	lm2->add(400);
 	cc[1]->add_view(charts[0]);
 	lm2->add(-100);
-	cc[1]->add_view(create_listview());
+	cc[1]->add_view(create_listview()->get_view());
 	lm2->add(400);
 	cc[1]->add_view(charts[2]);
 	f->set_view(cc[0]);

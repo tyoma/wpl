@@ -21,13 +21,13 @@
 #pragma once
 
 #include "models.h"
-#include "view.h"
+#include "control.h"
 
 namespace wpl
 {
 	namespace ui
 	{
-		struct combobox : view, index_traits
+		struct combobox : control, index_traits
 		{
 			virtual void set_model(const std::shared_ptr<list_model> &model) = 0;
 			virtual void select(index_type item) = 0;

@@ -35,7 +35,7 @@ namespace wpl
 		namespace win32
 		{
 			template <typename BaseT>
-			class text_container_impl : public BaseT
+			class text_container_impl : public BaseT, public native_view<view>
 			{
 				virtual void set_text(const wstring &text)
 				{
@@ -56,24 +56,28 @@ namespace wpl
 			};
 
 
-			class button_impl : public text_container_impl< native_view<button> >
+			class button_impl : public text_container_impl<button>, public enable_shared_from_this<button_impl>
 			{
 			public:
 				button_impl();
 
 			private:
+				virtual shared_ptr<view> get_view();
+
 				virtual HWND materialize(HWND hparent);
 				virtual LRESULT on_message(UINT message, WPARAM wparam, LPARAM lparam,
 					const window::original_handler_t &handler);
 			};
 
 
-			class link_impl : public text_container_impl< native_view<link> >
+			class link_impl : public text_container_impl<link>, public enable_shared_from_this<link_impl>
 			{
 			public:
 				link_impl();
 
 			private:
+				virtual shared_ptr<view> get_view();
+
 				virtual HWND materialize(HWND hparent);
 				virtual LRESULT on_message(UINT message, WPARAM wparam, LPARAM lparam,
 					const window::original_handler_t &handler);
@@ -85,6 +89,9 @@ namespace wpl
 
 			button_impl::button_impl()
 			{	}
+
+			shared_ptr<view> button_impl::get_view()
+			{	return shared_from_this();	}
 
 			HWND button_impl::materialize(HWND hparent)
 			{
@@ -110,6 +117,9 @@ namespace wpl
 
 			link_impl::link_impl()
 			{	_halign = ui::text_container::left;	}
+
+			shared_ptr<view> link_impl::get_view()
+			{	return shared_from_this();	}
 
 			HWND link_impl::materialize(HWND hparent)
 			{

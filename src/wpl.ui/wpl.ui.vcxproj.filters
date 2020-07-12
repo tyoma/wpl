@@ -46,11 +46,11 @@
     <ClCompile Include="scroller.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="controls\listview.cpp">
-      <Filter>Source Files\controls</Filter>
-    </ClCompile>
     <ClCompile Include="win32\listview_win32.cpp">
       <Filter>Source Files\win32</Filter>
+    </ClCompile>
+    <ClCompile Include="controls\listview_core.cpp">
+      <Filter>Source Files\controls</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -94,6 +94,10 @@
       <Filter>Source Files\win32</Filter>
     </ClInclude>
     <ClInclude Include="..\..\wpl\ui\scroller.h" />
+    <ClInclude Include="..\..\wpl\ui\control.h" />
+    <ClInclude Include="..\..\wpl\ui\controls\listview_core.h">
+      <Filter>controls</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\wpl\ui\controls\listview.h">
       <Filter>controls</Filter>
     </ClInclude>

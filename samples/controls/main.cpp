@@ -111,7 +111,7 @@ int main()
 	fill->set_layout(fill_layout);
 
 	root_layout->add(40);
-	root->add_view(cb);
+	root->add_view(cb->get_view());
 
 	root_layout->add(20);
 	root->add_view(scrl);

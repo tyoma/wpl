@@ -1,4 +1,4 @@
-#include <wpl/ui/controls/listview.h>
+#include <wpl/ui/controls/listview_core.h>
 
 #include "helpers.h"
 #include "MockupsListView.h"
@@ -119,7 +119,7 @@ namespace wpl
 				shared_ptr<gcontext::renderer_type> ren;
 				shared_ptr<gcontext> ctx;
 				gcontext::rasterizer_ptr ras;
-				wpl::ui::view::positioned_native_views nviews;
+				view::positioned_native_views nviews;
 
 				init( Init )
 				{
@@ -753,7 +753,7 @@ namespace wpl
 				shared_ptr<gcontext::renderer_type> ren;
 				shared_ptr<gcontext> ctx;
 				gcontext::rasterizer_ptr ras;
-				wpl::ui::view::positioned_native_views nviews;
+				view::positioned_native_views nviews;
 
 				vector< pair<table_model::index_type, unsigned /*state*/> > get_states_raw(tracking_listview &lv)
 				{

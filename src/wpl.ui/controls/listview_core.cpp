@@ -18,7 +18,7 @@
 //	OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //	THE SOFTWARE.
 
-#include <wpl/ui/controls/listview.h>
+#include <wpl/ui/controls/listview_core.h>
 
 #include <algorithm>
 #include <cmath>
@@ -92,7 +92,7 @@ namespace wpl
 					break;
 				}
 
-				if (!(control & modifiers))
+				if (!(keyboard_input::control & modifiers))
 					select(_focus_item, true);
 			}
 
@@ -156,6 +156,9 @@ namespace wpl
 				invalidate(0);
 				_vsmodel->invalidated();
 			}
+
+			shared_ptr<view> listview_core::get_view()
+			{	return shared_from_this();	}
 
 			void listview_core::set_columns_model(shared_ptr<columns_model> cmodel)
 			{	_cmodel = cmodel;	}

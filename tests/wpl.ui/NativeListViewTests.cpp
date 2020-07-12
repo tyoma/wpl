@@ -107,7 +107,7 @@ namespace wpl
 				{
 					visual::positioned_native_views pnv;
 
-					lv.resize(1, 1, pnv);
+					lv.get_view()->resize(1, 1, pnv);
 					assert_equal(1u, pnv.size());
 					return pnv[0].get_view().get_window(hparent);
 				}
@@ -2067,7 +2067,7 @@ namespace wpl
 					visual::positioned_native_views nviews;
 
 					// ACT
-					lv->resize(10, 11, nviews);
+					lv->get_view()->resize(10, 11, nviews);
 
 					// ASSERT
 					assert_equal(1u, nviews.size());
@@ -2075,7 +2075,7 @@ namespace wpl
 					assert_equal(make_position(0, 0, 10, 11), nviews[0].location);
 
 					// ACT
-					lv->resize(107, 1100, nviews);
+					lv->get_view()->resize(107, 1100, nviews);
 
 					// ASSERT
 					assert_equal(2u, nviews.size());
@@ -2110,7 +2110,7 @@ namespace wpl
 					visual::positioned_native_views pnv;
 
 					// ACT
-					lv->resize(100, 300, pnv);
+					lv->get_view()->resize(100, 300, pnv);
 
 					// ASSERT
 					assert_equal(1u, pnv.size());

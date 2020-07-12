@@ -46,7 +46,7 @@ namespace wpl
 			begin_test_suite( ScrollerTests )
 				typedef vector< pair<bool, agge::rect_i> > invalidations_log;
 
-				wpl::ui::view::positioned_native_views dummy_nviews;
+				view::positioned_native_views dummy_nviews;
 
 				static void invalidate_cb(invalidations_log *log, const agge::rect_i *w)
 				{	log->push_back(w ? make_pair(true, *w) : make_pair(false, agge::rect_i()));	}

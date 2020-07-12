@@ -1,7 +1,7 @@
 #include <wpl/ui/container.h>
 #include <wpl/ui/form.h>
 #include <wpl/ui/layout.h>
-#include <wpl/ui/controls/listview.h>
+#include <wpl/ui/controls/listview_core.h>
 
 #include <wpl/ui/win32/controls.h>
 #include <wpl/ui/win32/form.h>
@@ -140,7 +140,7 @@ int main()
 	lv->set_model(m);
 
 	f->set_font(fnt);
-	f->set_view(lv);
+	f->set_view(lv->get_view());
 	f->set_location(l);
 	f->set_visible(true);
 	f->set_background_color(color::make(8, 32, 64));

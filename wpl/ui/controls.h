@@ -20,7 +20,7 @@
 
 #pragma once
 
-#include "view.h"
+#include "control.h"
 
 #include <string>
 
@@ -37,12 +37,12 @@ namespace wpl
 			virtual void set_align(halign value) = 0;
 		};
 
-		struct button : view, text_container
+		struct button : control, text_container
 		{
 			signal<void()> clicked;
 		};
 
-		struct link : view, text_container
+		struct link : control, text_container
 		{
 			signal<void(size_t item, const std::wstring &link_text)> clicked;
 		};

@@ -20,9 +20,10 @@
 
 #pragma once
 
-#include "../listview.h"
-
-#include <set>
+#include "../container.h"
+#include "../layout.h"
+#include "../scroller.h"
+#include "listview_core.h"
 
 namespace wpl
 {
@@ -30,73 +31,53 @@ namespace wpl
 	{
 		namespace controls
 		{
-			class listview_core : public listview, noncopyable
+			template <typename ControlT>
+			std::shared_ptr<ControlT> create_listview()
 			{
-			public:
-				enum item_state_flags {	hovered = 1, selected = 2, focused = 4,	};
+				using namespace std;
 
-			public:
-				listview_core();
-				~listview_core();
+				class listview_complex : public layout_manager
+				{
+					virtual void layout(unsigned width, unsigned height, container::positioned_view *views, size_t count) const
+					{
+						const int scroller_width = 10;
+						const int header_height = 20;
+						const int height2 = height - header_height;
 
-				std::shared_ptr<scroll_model> get_vscroll_model();
-				std::shared_ptr<scroll_model> get_hscroll_model();
+						// listview core
+						if (count >= 1)
+							views[0].location.left = 0, views[0].location.top = header_height, views[0].location.width = width, views[0].location.height = height2;
 
-				// keyboard_input methods
-				virtual void key_down(unsigned code, int modifiers);
+						// horizontal scroller
+						if (count >= 3)
+							views[1].location.left = 0, views[1].location.top = height - scroller_width, views[1].location.width = width, views[1].location.height = scroller_width;
 
-				// mouse_input methods
-				virtual void mouse_down(mouse_buttons button, int buttons, int x, int y);
-				virtual void mouse_up(mouse_buttons button, int buttons, int x, int y);
+						// vertical scroller
+						if (count >= 2)
+							views[2].location.left = width - scroller_width, views[2].location.top = header_height, views[2].location.width = scroller_width, views[2].location.height = height2;
 
-				// visual methods
-				virtual void draw(gcontext &ctx, gcontext::rasterizer_ptr &rasterizer) const;
-				virtual void resize(unsigned cx, unsigned cy, positioned_native_views &native_views);
+						// header
+						if (count >= 4)
+							views[3].location.left = 0, views[3].location.top = 0, views[3].location.width = width, views[3].location.height = header_height;
+					}
+				};
 
-				// listview methods
-				virtual void set_columns_model(std::shared_ptr<columns_model> cmodel);
-				virtual void set_model(std::shared_ptr<table_model> model);
+				shared_ptr<listview_complex> layout(new listview_complex);
+				shared_ptr<container> composite(new container);
+				shared_ptr<CotnrolT> lv(new ControlT);
+				shared_ptr<scroller> hscroller(new scroller(scroller::vertical));
+				shared_ptr<scroller> vscroller(new scroller(scroller::vertical));
 
-				virtual void adjust_column_widths();
+				composite->set_layout(layout);
+				composite->add_view(lv);
 
-				virtual void select(index_type item, bool reset_previous);
-				virtual void clear_selection();
+				hscroller->set_model(lv->get_hscroll_model());
+				composite->add_view(hscroller);
 
-				virtual void ensure_visible(index_type item);
-
-			private:
-				struct vertical_scroll_model;
-
-			private:
-				virtual agge::real_t get_item_height() const = 0;
-				virtual void draw_item_background(gcontext &ctx, gcontext::rasterizer_ptr &rasterizer,
-					const agge::rect_r &box, index_type item, unsigned /*item_state_flags*/ state) const = 0;
-				virtual void draw_subitem_background(gcontext &ctx, gcontext::rasterizer_ptr &rasterizer,
-					const agge::rect_r &box, index_type item, unsigned /*item_state_flags*/ state, index_type subitem) const;
-				virtual void draw_item(gcontext &ctx, gcontext::rasterizer_ptr &rasterizer,
-					const agge::rect_r &box, index_type item, unsigned /*item_state_flags*/ state) const;
-				virtual void draw_subitem(gcontext &ctx, gcontext::rasterizer_ptr &rasterizer,
-					const agge::rect_r &box, index_type item, unsigned /*item_state_flags*/ state, index_type subitem,
-					const std::wstring &text) const = 0;
-
-				index_type get_item(int y) const;
-				void toggle_selection(index_type item);
-
-			private:
-				std::shared_ptr<columns_model> _cmodel;
-				std::shared_ptr<table_model> _model;
-				table_model::index_type _item_count;
-				std::shared_ptr<vertical_scroll_model> _vsmodel;
-				slot_connection _model_invalidation;
-				agge::box_r _size;
-				double _first_visible;
-				mutable std::vector<agge::real_t> _widths;
-				mutable columns_model::column _column_buffer;
-				mutable std::wstring _text_buffer;
-
-				table_model::index_type _focus_item;
-				std::set<index_type> _selected_items;
-			};
+				vscroller->set_model(lv->get_vscroll_model());
+				composite->add_view(vscroller);
+				return shared_ptr<ControlT>(lv.get(), [composite] (void *) { });
+			}
 		}
 	}
 }

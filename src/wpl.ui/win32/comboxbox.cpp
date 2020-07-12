@@ -33,6 +33,9 @@ namespace wpl
 	{
 		namespace win32
 		{
+			std::shared_ptr<view> combobox_impl::get_view()
+			{	return shared_from_this();	}
+
 			void combobox_impl::set_model(const shared_ptr<list_model> &model)
 			{
 				_model = model;
