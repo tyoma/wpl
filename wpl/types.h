@@ -20,20 +20,10 @@
 
 #pragma once
 
-#include <agge/color.h>
-#include <memory>
-
 namespace wpl
 {
-	namespace ui
+	struct view_location
 	{
-		struct view;
-
-		struct view_host
-		{
-			virtual ~view_host() {	}
-			virtual void set_view(const std::shared_ptr<view> &v) = 0;
-			virtual void set_background_color(agge::color color_) = 0;
-		};
-	}
+		int left, top, width, height;
+	};
 }

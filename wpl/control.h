@@ -20,19 +20,14 @@
 
 #pragma once
 
-#include "types.h"
+#include <memory>
 
 namespace wpl
 {
-	namespace ui
-	{
-		class native_view
-		{
-		public:
-			virtual HWND get_window(HWND hparent_for) = 0;
+	struct view;
 
-		protected:
-			~native_view() throw() {	}
-		};
-	}
+	struct control
+	{
+		virtual std::shared_ptr<view> get_view() = 0;
+	};
 }

@@ -60,6 +60,9 @@
     <ClCompile Include="win32\listview_win32.cpp">
       <DisableLanguageExtensions>false</DisableLanguageExtensions>
     </ClCompile>
+    <ClCompile Include="win32\native_view.cpp">
+      <DisableLanguageExtensions>false</DisableLanguageExtensions>
+    </ClCompile>
     <ClCompile Include="win32\view_host.cpp">
       <DisableLanguageExtensions>false</DisableLanguageExtensions>
     </ClCompile>
@@ -69,30 +72,32 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\wpl\ui\combobox.h" />
-    <ClInclude Include="..\..\wpl\ui\control.h" />
-    <ClInclude Include="..\..\wpl\ui\controls.h" />
-    <ClInclude Include="..\..\wpl\ui\controls\listview.h" />
-    <ClInclude Include="..\..\wpl\ui\models.h" />
-    <ClInclude Include="..\..\wpl\ui\container.h" />
-    <ClInclude Include="..\..\wpl\ui\form.h" />
-    <ClInclude Include="..\..\wpl\ui\input.h" />
-    <ClInclude Include="..\..\wpl\ui\layout.h" />
-    <ClInclude Include="..\..\wpl\ui\listview.h" />
-    <ClInclude Include="..\..\wpl\ui\scroller.h" />
-    <ClInclude Include="..\..\wpl\ui\types.h" />
-    <ClInclude Include="..\..\wpl\ui\view.h" />
-    <ClInclude Include="..\..\wpl\ui\view_host.h" />
-    <ClInclude Include="..\..\wpl\ui\visual.h" />
-    <ClInclude Include="..\..\wpl\ui\win32\controls.h" />
-    <ClInclude Include="..\..\wpl\ui\win32\form.h" />
-    <ClInclude Include="..\..\wpl\ui\win32\native_view.h" />
-    <ClInclude Include="..\..\wpl\ui\win32\types.h" />
-    <ClInclude Include="..\..\wpl\ui\win32\window.h" />
-    <ClInclude Include="..\..\wpl\ui\controls\listview_core.h" />
+    <ClInclude Include="..\..\wpl\combobox.h" />
+    <ClInclude Include="..\..\wpl\concepts.h" />
+    <ClInclude Include="..\..\wpl\container.h" />
+    <ClInclude Include="..\..\wpl\control.h" />
+    <ClInclude Include="..\..\wpl\controls.h" />
+    <ClInclude Include="..\..\wpl\controls\listview.h" />
+    <ClInclude Include="..\..\wpl\controls\listview_core.h" />
+    <ClInclude Include="..\..\wpl\controls\scroller.h" />
+    <ClInclude Include="..\..\wpl\form.h" />
+    <ClInclude Include="..\..\wpl\input.h" />
+    <ClInclude Include="..\..\wpl\layout.h" />
+    <ClInclude Include="..\..\wpl\listview.h" />
+    <ClInclude Include="..\..\wpl\models.h" />
+    <ClInclude Include="..\..\wpl\signals.h" />
+    <ClInclude Include="..\..\wpl\types.h" />
+    <ClInclude Include="..\..\wpl\view.h" />
+    <ClInclude Include="..\..\wpl\view_host.h" />
+    <ClInclude Include="..\..\wpl\visual.h" />
+    <ClInclude Include="..\..\wpl\win32\controls.h" />
+    <ClInclude Include="..\..\wpl\win32\form.h" />
+    <ClInclude Include="..\..\wpl\win32\native_view.h" />
+    <ClInclude Include="..\..\wpl\win32\types.h" />
+    <ClInclude Include="..\..\wpl\win32\window.h" />
     <ClInclude Include="win32\combobox.h" />
     <ClInclude Include="win32\listview.h" />
-    <ClInclude Include="win32\native_view.h" />
+    <ClInclude Include="win32\native_view.cpp" />
     <ClInclude Include="win32\view_host.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

@@ -1,10 +1,10 @@
-#include <wpl/ui/container.h>
-#include <wpl/ui/form.h>
-#include <wpl/ui/layout.h>
-#include <wpl/ui/controls/listview.h>
+#include <wpl/container.h>
+#include <wpl/form.h>
+#include <wpl/layout.h>
+#include <wpl/controls/listview.h>
 
-#include <wpl/ui/win32/controls.h>
-#include <wpl/ui/win32/form.h>
+#include <wpl/win32/controls.h>
+#include <wpl/win32/form.h>
 
 #include <agge/blenders.h>
 #include <agge/blenders_simd.h>
@@ -21,7 +21,6 @@
 using namespace agge;
 using namespace std;
 using namespace wpl;
-using namespace wpl::ui;
 
 namespace
 {
@@ -127,7 +126,7 @@ namespace
 
 int main()
 {
-	ui::font fnt = { L"", 8 };
+	wpl::font fnt = { L"", 8 };
 	view_location l = { 100, 100, 300, 200 };
 	shared_ptr<form> f = create_form();
 	slot_connection c = f->close += &exit_message_loop;

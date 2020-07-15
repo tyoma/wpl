@@ -20,45 +20,51 @@
 
 #pragma once
 
-#include "container.h"
-
-#include "../base/concepts.h"
+#include <functional>
+#include <memory>
+#include <unordered_map>
+#include <windows.h>
 
 namespace wpl
 {
-	namespace ui
+	namespace win32
 	{
-		struct layout_manager
-		{
-			virtual ~layout_manager() {	}
-
-			virtual void layout(unsigned width, unsigned height, container::positioned_view *views, size_t count) const = 0;
-		};
-
-
-		class stack : public layout_manager
+		class window
 		{
 		public:
-			explicit stack(int spacing, bool horizontal);
+			typedef window original_handler_t;
+			typedef std::function<LRESULT (UINT message, WPARAM wparam, LPARAM lparam, const original_handler_t &handler)> user_handler_t;
 
-			void add(int size);
-			virtual void layout(unsigned width, unsigned height, container::positioned_view *views, size_t count) const;
-
-		private:
-			std::vector<int> _sizes;
-			int _spacing;
-			bool _horizontal;
-		};
-
-		class spacer : public layout_manager
-		{
 		public:
-			spacer(int space_x, int space_y);
+			static std::shared_ptr<window> attach(HWND hwnd, const user_handler_t &user_handler);
 
-			virtual void layout(unsigned width, unsigned height, container::positioned_view *views, size_t count) const;
+			HWND hwnd() const throw();
+
+			LRESULT operator ()(UINT message, WPARAM wparam, LPARAM lparam) const;
 
 		private:
-			int _space_x, _space_y;
+			struct hwnd_hash { size_t operator ()(HWND hwnd) const; };
+			template <typename T>
+			struct tls;
+			typedef std::unordered_map<HWND, window *, hwnd_hash> windows_map;
+
+		private:
+			window(HWND hwnd, const user_handler_t &user_handler);
+
+			const window &operator =(const window &rhs);
+
+			static LRESULT CALLBACK windowproc_proxy(HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam);
+			void map();
+			static window *get_window(HWND hwnd) throw();
+			bool unmap(bool force) throw();
+			void detach();
+
+		private:
+			static std::shared_ptr< tls<windows_map> > _windows_s;
+			HWND _hwnd;
+			WNDPROC _wndproc;
+			user_handler_t _user_handler;
+			std::shared_ptr< tls<windows_map> > _windows;
 		};
 	}
 }

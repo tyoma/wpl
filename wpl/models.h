@@ -1,0 +1,128 @@
+//	Copyright (c) 2011-2020 by Artem A. Gevorkyan (gevorkyan.org)
+//
+//	Permission is hereby granted, free of charge, to any person obtaining a copy
+//	of this software and associated documentation files (the "Software"), to deal
+//	in the Software without restriction, including without limitation the rights
+//	to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+//	copies of the Software, and to permit persons to whom the Software is
+//	furnished to do so, subject to the following conditions:
+//
+//	The above copyright notice and this permission notice shall be included in
+//	all copies or substantial portions of the Software.
+//
+//	THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+//	IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+//	FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+//	AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+//	LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+//	OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+//	THE SOFTWARE.
+
+#pragma once
+
+#include "concepts.h"
+#include "signals.h"
+
+#include <memory>
+#include <string>
+
+namespace wpl
+{
+	struct index_traits
+	{
+		typedef size_t index_type;
+
+		static index_type npos();
+	};
+
+
+	struct trackable : index_traits
+	{
+		virtual index_type index() const = 0;
+	};
+
+
+	struct scroll_model
+	{
+		virtual std::pair<double /*range_min*/, double /*range_width*/> get_range() const = 0;
+		virtual std::pair<double /*window_min*/, double /*window_width*/> get_window() const = 0;
+		virtual void scrolling(bool begins) = 0;
+		virtual void scroll_window(double window_min, double window_width) = 0;
+
+		signal<void ()> invalidated;
+	};
+
+
+	template <typename ValueT>
+	struct list_model : index_traits
+	{
+		virtual index_type get_count() const throw() = 0;
+		virtual void get_value(index_type index, ValueT &value) const = 0;
+		virtual std::shared_ptr<const trackable> track(index_type row) const = 0;
+
+		signal<void ()> invalidated;
+	};
+
+
+	struct columns_model
+	{
+		typedef short int index_type;
+
+		struct column;
+
+		static index_type npos();
+
+		virtual index_type get_count() const throw() = 0;
+		virtual void get_column(index_type index, column &column) const = 0;
+		virtual void update_column(index_type index, short int width) = 0;
+		virtual std::pair<index_type, bool> get_sort_order() const throw() = 0;
+		virtual void activate_column(index_type column) = 0;
+
+		signal<void (index_type /*new_ordering_column*/, bool /*ascending*/)> sort_order_changed;
+	};
+
+	struct columns_model::column
+	{
+		column();
+		explicit column(const std::wstring &caption, short int width = 0);
+
+		std::wstring caption;
+		short int width;
+	};
+
+
+	struct table_model : index_traits
+	{
+		virtual index_type get_count() const throw() = 0;
+		virtual void get_text(index_type row, index_type column, std::wstring &text) const = 0;
+		virtual void set_order(index_type column, bool ascending) = 0;
+		virtual void precache(index_type from, index_type count) const;
+		virtual std::shared_ptr<const trackable> track(index_type row) const;
+
+		signal<void (index_type new_count)> invalidated;
+	};
+
+
+
+	inline index_traits::index_type index_traits::npos()
+	{	return static_cast<index_type>(-1);	}
+
+
+	inline columns_model::index_type columns_model::npos()
+	{	return -1;	}
+
+
+	inline columns_model::column::column()
+	{	}
+
+	inline columns_model::column::column(const std::wstring &caption_, short int width_)
+		: caption(caption_), width(width_)
+	{	}
+
+
+	inline void table_model::precache(index_type /*from*/, index_type /*count*/) const
+	{	}
+
+	inline std::shared_ptr<const trackable> table_model::track(index_type /*row*/) const
+	{	return std::shared_ptr<trackable>();	}
+}

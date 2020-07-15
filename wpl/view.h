@@ -25,10 +25,7 @@
 
 namespace wpl
 {
-	namespace ui
+	struct view : mouse_input, keyboard_input, visual
 	{
-		struct view : mouse_input, keyboard_input, visual
-		{
-		};
-	}
+	};
 }

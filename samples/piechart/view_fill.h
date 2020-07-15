@@ -9,7 +9,7 @@
 template <typename BaseT>
 class view_fill : public BaseT
 {
-	void draw(wpl::ui::gcontext &ctx, wpl::ui::gcontext::rasterizer_ptr &ras) const
+	void draw(wpl::gcontext &ctx, wpl::gcontext::rasterizer_ptr &ras) const
 	{
 		using namespace agge;
 

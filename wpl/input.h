@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../base/signals.h"
+#include "signals.h"
 
 namespace wpl
 {
@@ -32,7 +32,7 @@ namespace wpl
 		virtual void got_focus();
 		virtual void lost_focus();
 
-		signal<void (const std::shared_ptr<keyboard_input> &view)> request_focus;
+		signal<void (const std::shared_ptr<keyboard_input> &view_)> request_focus;
 	};
 
 	struct mouse_input

@@ -20,25 +20,17 @@
 
 #pragma once
 
-#include "types.h"
-
+#include <agge/color.h>
 #include <memory>
 
 namespace wpl
 {
-	namespace ui
-	{
-		struct button;
-		struct combobox;
-		struct link;
-		struct listview;
-		struct view_host;
+	struct view;
 
-		std::shared_ptr<listview> wrap_listview(HWND hwnd);
-		std::shared_ptr<view_host> wrap_view_host(HWND hwnd);
-		std::shared_ptr<listview> create_listview();
-		std::shared_ptr<button> create_button();
-		std::shared_ptr<combobox> create_combobox();
-		std::shared_ptr<link> create_link();
-	}
+	struct view_host
+	{
+		virtual ~view_host() {	}
+		virtual void set_view(const std::shared_ptr<view> &v) = 0;
+		virtual void set_background_color(agge::color color_) = 0;
+	};
 }

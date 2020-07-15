@@ -18,7 +18,7 @@
 //	OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //	THE SOFTWARE.
 
-#include <wpl/ui/win32/window.h>
+#include <wpl/win32/window.h>
 
 #include <stdexcept>
 
@@ -27,7 +27,7 @@ using namespace std::placeholders;
 
 namespace wpl
 {
-	namespace ui
+	namespace win32
 	{
 		namespace
 		{

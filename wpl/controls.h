@@ -20,19 +20,29 @@
 
 #pragma once
 
-#include "models.h"
 #include "control.h"
+#include "signals.h"
+
+#include <string>
 
 namespace wpl
 {
-	namespace ui
+	struct text_container
 	{
-		struct combobox : control, index_traits
-		{
-			virtual void set_model(const std::shared_ptr<list_model> &model) = 0;
-			virtual void select(index_type item) = 0;
+		enum halign { left, center, right };
 
-			signal<void (index_type item)> selection_changed;
-		};
-	}
+		virtual ~text_container() {	}
+		virtual void set_text(const std::wstring &text) = 0;
+		virtual void set_align(halign value) = 0;
+	};
+
+	struct button : control, text_container
+	{
+		signal<void ()> clicked;
+	};
+
+	struct link : control, text_container
+	{
+		signal<void (size_t item, const std::wstring &link_text)> clicked;
+	};
 }

@@ -20,35 +20,13 @@
 
 #pragma once
 
-#include <wpl/win32/native_view.h>
+#include "types.h"
 
-#include <wpl/combobox.h>
+#include <memory>
 
 namespace wpl
 {
-	namespace win32
-	{
-		class combobox_impl : public combobox, public native_view
-		{
-		public:
-			virtual std::shared_ptr<view> get_view();
-			virtual void set_model(const std::shared_ptr<model_t> &model);
-			virtual void select(index_type index);
+	struct form;
 
-		private:
-			virtual HWND materialize(HWND hparent);
-			virtual LRESULT on_message(UINT message, WPARAM wparam, LPARAM lparam,
-				const window::original_handler_t &handler);
-
-			void on_invalidated(const model_t *model);
-			void update(HWND hcombobox, const model_t *model) const;
-			static void update_selection(HWND hcombobox, std::shared_ptr<const trackable> &selected_item);
-
-		private:
-			mutable std::wstring _text_buffer;
-			std::shared_ptr<model_t> _model;
-			std::shared_ptr<void> _invalidated_connection;
-			std::shared_ptr<const trackable> _selected_item;
-		};
-	}
+	std::shared_ptr<form> create_form(HWND howner = 0);
 }

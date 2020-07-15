@@ -1,11 +1,11 @@
-#include <wpl/ui/combobox.h>
-#include <wpl/ui/container.h>
-#include <wpl/ui/form.h>
-#include <wpl/ui/layout.h>
-#include <wpl/ui/scroller.h>
+#include <wpl/combobox.h>
+#include <wpl/container.h>
+#include <wpl/form.h>
+#include <wpl/layout.h>
+#include <wpl/controls/scroller.h>
 
-#include <wpl/ui/win32/controls.h>
-#include <wpl/ui/win32/form.h>
+#include <wpl/win32/controls.h>
+#include <wpl/win32/form.h>
 
 #include <samples/common/platform.h>
 #include <samples/common/timer.h>
@@ -13,7 +13,6 @@
 using namespace agge;
 using namespace std;
 using namespace wpl;
-using namespace wpl::ui;
 
 namespace
 {
@@ -23,7 +22,7 @@ namespace
 		return c;
 	}
 
-	struct my_model : list_model
+	struct my_model : list_model<wstring>
 	{
 		my_model()
 		{
@@ -39,7 +38,7 @@ namespace
 		virtual index_type get_count() const throw()
 		{	return 4;	}
 
-		virtual void get_text(index_type index, wstring &text) const
+		virtual void get_value(index_type index, wstring &text) const
 		{
 			switch (index)
 			{
@@ -57,7 +56,7 @@ namespace
 			return t;
 		}
 
-		struct my_trackable : wpl::ui::trackable
+		struct my_trackable : trackable
 		{
 			virtual index_type index() const {	return _index;	}
 			index_type _index;

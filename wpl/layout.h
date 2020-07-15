@@ -20,12 +20,41 @@
 
 #pragma once
 
-typedef struct HWND__ *HWND;
+#include "concepts.h"
+#include "container.h"
 
 namespace wpl
 {
-	namespace ui
+	struct layout_manager
 	{
+		virtual ~layout_manager() {	}
 
-	}
+		virtual void layout(unsigned width, unsigned height, container::positioned_view *views, size_t count) const = 0;
+	};
+
+
+	class stack : public layout_manager
+	{
+	public:
+		explicit stack(int spacing, bool horizontal);
+
+		void add(int size);
+		virtual void layout(unsigned width, unsigned height, container::positioned_view *views, size_t count) const;
+
+	private:
+		std::vector<int> _sizes;
+		int _spacing;
+		bool _horizontal;
+	};
+
+	class spacer : public layout_manager
+	{
+	public:
+		spacer(int space_x, int space_y);
+
+		virtual void layout(unsigned width, unsigned height, container::positioned_view *views, size_t count) const;
+
+	private:
+		int _space_x, _space_y;
+	};
 }

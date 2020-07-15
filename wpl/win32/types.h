@@ -20,27 +20,4 @@
 
 #pragma once
 
-#include "control.h"
-#include "models.h"
-
-namespace wpl
-{
-	namespace ui
-	{
-		struct listview : control, index_traits
-		{
-			virtual void set_columns_model(std::shared_ptr<columns_model> cm) = 0;
-			virtual void set_model(std::shared_ptr<table_model> ds) = 0;
-
-			virtual void adjust_column_widths() = 0;
-
-			virtual void select(index_type item, bool reset_previous) = 0;
-			virtual void clear_selection() = 0;
-
-			virtual void ensure_visible(index_type item) = 0;
-
-			signal<void (index_type /*item*/)> item_activate;
-			signal<void (index_type /*item*/, bool /*became selected*/)> selection_changed;
-		};
-	}
-}
+typedef struct HWND__ *HWND;

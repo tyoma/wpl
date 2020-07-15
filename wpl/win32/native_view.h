@@ -21,15 +21,33 @@
 #pragma once
 
 #include "types.h"
+#include "window.h"
 
-#include <memory>
+#include "../view.h"
 
 namespace wpl
 {
-	namespace ui
+	class native_view : public view, public std::enable_shared_from_this<view>
 	{
-		struct form;
+	public:
+		native_view();
+		~native_view();
 
-		std::shared_ptr<form> create_form(HWND howner = 0);
-	}
+		void attach(HWND hwnd);
+		HWND get_window() const throw();
+		HWND get_window(HWND hparent_for);
+
+	protected:
+		// visual methods
+		virtual void resize(unsigned cx, unsigned cy, visual::positioned_native_views &native_views);
+
+	private:
+		virtual HWND materialize(HWND hparent) = 0;
+		virtual LRESULT on_message(UINT message, WPARAM wparam, LPARAM lparam,
+			const win32::window::original_handler_t &handler) = 0;
+
+	private:
+		std::shared_ptr<win32::window> _window;
+		bool _own;
+	};
 }

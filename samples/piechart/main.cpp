@@ -2,17 +2,16 @@
 #include "view_fill.h"
 
 #include <samples/common/platform.h>
-#include <wpl/ui/container.h>
-#include <wpl/ui/form.h>
-#include <wpl/ui/layout.h>
-#include <wpl/ui/listview.h>
+#include <wpl/container.h>
+#include <wpl/form.h>
+#include <wpl/layout.h>
+#include <wpl/listview.h>
 
-#include <wpl/ui/win32/form.h>
-#include <wpl/ui/win32/controls.h>
+#include <wpl/win32/form.h>
+#include <wpl/win32/controls.h>
 
 using namespace std;
 using namespace wpl;
-using namespace wpl::ui;
 
 class spacer_layout : public layout_manager
 {

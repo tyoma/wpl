@@ -1,44 +1,41 @@
 #pragma once
 
 #include <functional>
-#include <wpl/ui/models.h>
+#include <wpl/models.h>
 
 namespace wpl
 {
-	namespace ui
+	namespace tests
 	{
-		namespace tests
+		namespace mocks
 		{
-			namespace mocks
+			class scroll_model : public wpl::scroll_model
 			{
-				class scroll_model : public wpl::ui::scroll_model
+			public:
+				virtual std::pair<double /*[min*/, double /*max)*/> get_range() const
+				{	return range;	}
+
+				virtual std::pair<double /*[window_min*/, double /*window_width)*/> get_window() const
+				{	return window;	}
+
+				virtual void scrolling(bool begins)
 				{
-				public:
-					virtual std::pair<double /*[min*/, double /*max)*/> get_range() const
-					{	return range;	}
+					if (on_scrolling)
+						on_scrolling(begins);
+				}
 
-					virtual std::pair<double /*[window_min*/, double /*window_width)*/> get_window() const
-					{	return window;	}
+				virtual void scroll_window(double window_min, double window_width)
+				{
+					if (on_scroll)
+						on_scroll(window_min, window_width);
+				}
 
-					virtual void scrolling(bool begins)
-					{
-						if (on_scrolling)
-							on_scrolling(begins);
-					}
+				std::function<void (bool begins)> on_scrolling;
+				std::function<void (double window_min, double window_width)> on_scroll;
 
-					virtual void scroll_window(double window_min, double window_width)
-					{
-						if (on_scroll)
-							on_scroll(window_min, window_width);
-					}
-
-					std::function<void (bool begins)> on_scrolling;
-					std::function<void (double window_min, double window_width)> on_scroll;
-
-				public:
-					std::pair<double, double> range, window;
-				};
-			}
+			public:
+				std::pair<double, double> range, window;
+			};
 		}
 	}
 }
