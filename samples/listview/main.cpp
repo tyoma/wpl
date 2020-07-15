@@ -1,7 +1,7 @@
 #include <wpl/ui/container.h>
 #include <wpl/ui/form.h>
 #include <wpl/ui/layout.h>
-#include <wpl/ui/controls/listview_core.h>
+#include <wpl/ui/controls/listview.h>
 
 #include <wpl/ui/win32/controls.h>
 #include <wpl/ui/win32/form.h>
@@ -131,7 +131,7 @@ int main()
 	view_location l = { 100, 100, 300, 200 };
 	shared_ptr<form> f = create_form();
 	slot_connection c = f->close += &exit_message_loop;
-	shared_ptr<listview> lv(new my_listview);
+	shared_ptr<listview> lv = controls::create_listview<my_listview>();
 //	shared_ptr<listview> lv = create_listview();
 	shared_ptr<my_columns> cm(new my_columns);
 	shared_ptr<my_model> m(new my_model);

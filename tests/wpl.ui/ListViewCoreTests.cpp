@@ -414,6 +414,27 @@ namespace wpl
 				}
 
 
+				test( NonNullStableHorizontalScrollModelIsProvided )
+				{
+					// INIT
+					tracking_listview lv;
+
+					// INIT / ACT
+					shared_ptr<scroll_model> sm = lv.get_hscroll_model();
+
+					// ASSERT
+					assert_not_null(sm);
+					assert_not_equal(lv.get_vscroll_model(), sm);
+
+					// ACT / ASSERT
+					assert_equal_pred(make_pair(0, 0), sm->get_range(), eq());
+					assert_equal_pred(make_pair(0, 0), sm->get_window(), eq());
+
+					// ACT / ASSERT
+					assert_equal(sm, lv.get_hscroll_model());
+				}
+
+
 				test( DestructionOfTheCoreLeavesVerticalScrollFunctional )
 				{
 					// INIT

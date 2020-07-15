@@ -63,9 +63,25 @@ namespace wpl
 				listview_core *owner;
 			};
 
+			struct listview_core::horizontal_scroll_model : scroll_model
+			{
+				virtual pair<double /*range_min*/, double /*range_width*/> get_range() const
+				{	return make_pair(0, 0);	}
+
+				virtual pair<double /*window_min*/, double /*window_width*/> get_window() const
+				{	return make_pair(0, 0);	}
+
+				virtual void scrolling(bool /*begins*/)
+				{	}
+
+				virtual void scroll_window(double /*window_min*/, double /*window_width*/)
+				{	}
+			};
+
 
 			listview_core::listview_core()
-				: _first_visible(0), _vsmodel(new vertical_scroll_model), _focus_item(npos())
+				: _first_visible(0), _vsmodel(new vertical_scroll_model), _hsmodel(new horizontal_scroll_model),
+					_focus_item(npos())
 			{
 				_size.w = 0, _size.h = 0;
 				_vsmodel->owner = this;
@@ -76,6 +92,9 @@ namespace wpl
 
 			shared_ptr<scroll_model> listview_core::get_vscroll_model()
 			{	return _vsmodel;	}
+
+			shared_ptr<scroll_model> listview_core::get_hscroll_model()
+			{	return _hsmodel;	}
 
 			void listview_core::key_down(unsigned code, int modifiers)
 			{

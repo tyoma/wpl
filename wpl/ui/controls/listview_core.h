@@ -71,6 +71,7 @@ namespace wpl
 
 			private:
 				struct vertical_scroll_model;
+				struct horizontal_scroll_model;
 
 			private:
 				virtual agge::real_t get_item_height() const = 0;
@@ -92,6 +93,7 @@ namespace wpl
 				std::shared_ptr<table_model> _model;
 				table_model::index_type _item_count;
 				std::shared_ptr<vertical_scroll_model> _vsmodel;
+				std::shared_ptr<horizontal_scroll_model> _hsmodel;
 				slot_connection _model_invalidation;
 				agge::box_r _size;
 				double _first_visible;
