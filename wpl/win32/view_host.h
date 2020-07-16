@@ -18,10 +18,12 @@
 //	OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //	THE SOFTWARE.
 
-#include <wpl/view_host.h>
+#pragma once
 
-#include <wpl/view.h>
-#include <wpl/win32/window.h>
+#include "window.h"
+
+#include "../view.h"
+#include "../view_host.h"
 
 namespace wpl
 {

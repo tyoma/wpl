@@ -18,7 +18,7 @@
 //	OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //	THE SOFTWARE.
 
-#include "listview.h"
+#include <wpl/win32/listview.h>
 
 #include <algorithm>
 #include <commctrl.h>

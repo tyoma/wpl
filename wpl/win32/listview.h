@@ -18,9 +18,11 @@
 //	OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //	THE SOFTWARE.
 
-#include <wpl/listview.h>
+#pragma once
 
-#include <wpl/win32/native_view.h>
+#include "native_view.h"
+
+#include "../listview.h"
 
 namespace wpl
 {

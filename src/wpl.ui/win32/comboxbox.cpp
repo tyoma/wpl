@@ -18,7 +18,7 @@
 //	OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //	THE SOFTWARE.
 
-#include "combobox.h"
+#include <wpl/win32/combobox.h>
 
 #include <commctrl.h>
 #include <olectl.h>

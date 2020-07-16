@@ -18,7 +18,7 @@
 //	OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //	THE SOFTWARE.
 
-#include "view_host.h"
+#include <wpl/win32/view_host.h>
 
 #include <agge/blenders.h>
 #include <agge/blenders_simd.h>

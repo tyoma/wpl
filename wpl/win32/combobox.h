@@ -20,9 +20,9 @@
 
 #pragma once
 
-#include <wpl/win32/native_view.h>
+#include "native_view.h"
 
-#include <wpl/combobox.h>
+#include "../combobox.h"
 
 namespace wpl
 {

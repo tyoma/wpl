@@ -95,10 +95,10 @@
     <ClInclude Include="..\..\wpl\win32\native_view.h" />
     <ClInclude Include="..\..\wpl\win32\types.h" />
     <ClInclude Include="..\..\wpl\win32\window.h" />
-    <ClInclude Include="win32\combobox.h" />
-    <ClInclude Include="win32\listview.h" />
+    <ClInclude Include="..\..\wpl\win32\combobox.h" />
+    <ClInclude Include="..\..\wpl\win32\listview.h" />
     <ClInclude Include="win32\native_view.cpp" />
-    <ClInclude Include="win32\view_host.h" />
+    <ClInclude Include="..\..\wpl\win32\view_host.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
 </Project>
