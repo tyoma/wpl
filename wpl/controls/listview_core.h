@@ -32,7 +32,11 @@ namespace wpl
 		class listview_core : public wpl::listview, public view, public std::enable_shared_from_this<view>, noncopyable
 		{
 		public:
-			enum item_state_flags {	hovered = 1, selected = 2, focused = 4,	};
+			enum item_state_flags {
+				hovered = 1 << 0,
+				selected = 1 << 1,
+				focused = 1 << 2,
+			};
 
 		public:
 			listview_core();

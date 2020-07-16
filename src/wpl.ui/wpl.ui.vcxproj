@@ -45,8 +45,9 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="container.cpp" />
+    <ClCompile Include="controls\header.cpp" />
     <ClCompile Include="controls\listview_core.cpp" />
-    <ClCompile Include="scroller.cpp" />
+    <ClCompile Include="controls\scroller.cpp" />
     <ClCompile Include="win32\comboxbox.cpp">
       <DisableLanguageExtensions>false</DisableLanguageExtensions>
     </ClCompile>
@@ -77,6 +78,7 @@
     <ClInclude Include="..\..\wpl\container.h" />
     <ClInclude Include="..\..\wpl\control.h" />
     <ClInclude Include="..\..\wpl\controls.h" />
+    <ClInclude Include="..\..\wpl\controls\header.h" />
     <ClInclude Include="..\..\wpl\controls\listview.h" />
     <ClInclude Include="..\..\wpl\controls\listview_core.h" />
     <ClInclude Include="..\..\wpl\controls\scroller.h" />

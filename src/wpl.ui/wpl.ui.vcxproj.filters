@@ -43,9 +43,6 @@
     <ClCompile Include="win32\comboxbox.cpp">
       <Filter>Source Files\win32</Filter>
     </ClCompile>
-    <ClCompile Include="scroller.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="win32\listview_win32.cpp">
       <Filter>Source Files\win32</Filter>
     </ClCompile>
@@ -54,6 +51,12 @@
     </ClCompile>
     <ClCompile Include="win32\native_view.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="controls\header.cpp">
+      <Filter>Source Files\controls</Filter>
+    </ClCompile>
+    <ClCompile Include="controls\scroller.cpp">
+      <Filter>Source Files\controls</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -107,6 +110,9 @@
     </ClInclude>
     <ClInclude Include="..\..\wpl\win32\view_host.h">
       <Filter>win32</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\wpl\controls\header.h">
+      <Filter>controls</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

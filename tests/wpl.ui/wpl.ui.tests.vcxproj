@@ -46,6 +46,7 @@
     <ClCompile Include="ComboboxTests.cpp" />
     <ClCompile Include="ContainerTests.cpp" />
     <ClCompile Include="FormTests.cpp" />
+    <ClCompile Include="HeaderTests.cpp" />
     <ClCompile Include="IntegrationTests.cpp" />
     <ClCompile Include="LayoutTests.cpp" />
     <ClCompile Include="ListViewCoreTests.cpp" />
