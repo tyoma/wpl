@@ -96,7 +96,6 @@ namespace wpl
 
 			shared_ptr<listview_complex_layout> layout(new listview_complex_layout);
 			shared_ptr<redirecting_keyboard_container> composite(new redirecting_keyboard_container);
-			shared_ptr<container> composite2 = composite;
 			shared_ptr< external_view_contol<ControlT> > lv(new external_view_contol<ControlT>);
 			shared_ptr<scroller> hscroller(new scroller(scroller::horizontal));
 			shared_ptr<scroller> vscroller(new scroller(scroller::vertical));
@@ -112,7 +111,7 @@ namespace wpl
 
 			vscroller->set_model(lv->get_vscroll_model());
 			composite->add_view(vscroller);
-			return shared_ptr<ControlT>(lv.get(), [composite2] (void *) { });
+			return shared_ptr<ControlT>(lv.get(), [composite] (void *) { });
 		}
 	}
 }

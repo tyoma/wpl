@@ -13,6 +13,9 @@ namespace wpl
 			listview_columns_model::index_type listview_columns_model::get_count() const throw()
 			{	return static_cast<index_type>(columns.size());	}
 
+			void listview_columns_model::get_value(index_type index, short int &width) const
+			{	width = columns[index].width;	}
+
 			void listview_columns_model::get_column(index_type index, column &column) const
 			{	column = columns[index];	}
 

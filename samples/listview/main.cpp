@@ -88,6 +88,7 @@ namespace
 	class my_columns : public columns_model
 	{
 		virtual index_type get_count() const throw() {	return 20u;	}
+		virtual void get_value(index_type /*index*/, short int &column) const { column = 60; }
 		virtual void get_column(index_type /*index*/, column &column) const { column.width = 60; }
 		virtual void update_column(index_type /*index*/, short int /*width*/) {	}
 		virtual std::pair<index_type, bool> get_sort_order() const throw() { return make_pair(npos(), false); }

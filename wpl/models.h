@@ -28,12 +28,15 @@
 
 namespace wpl
 {
-	struct index_traits
+	template <typename T>
+	struct index_traits_t
 	{
-		typedef size_t index_type;
+		typedef T index_type;
 
 		static index_type npos();
 	};
+
+	typedef index_traits_t<size_t> index_traits;
 
 
 	struct trackable : index_traits
@@ -53,32 +56,32 @@ namespace wpl
 	};
 
 
-	template <typename ValueT>
-	struct list_model : index_traits
+	template <typename ValueT, typename IndexT = size_t>
+	struct list_model : index_traits_t<IndexT>
 	{
-		virtual index_type get_count() const throw() = 0;
-		virtual void get_value(index_type index, ValueT &value) const = 0;
-		virtual std::shared_ptr<const trackable> track(index_type row) const = 0;
+		virtual typename index_traits_t<IndexT>::index_type get_count() const throw() = 0;
+		virtual void get_value(typename index_traits_t<IndexT>::index_type index, ValueT &value) const = 0;
+		virtual std::shared_ptr<const trackable> track(typename index_traits_t<IndexT>::index_type row) const;
 
 		signal<void ()> invalidated;
 	};
 
 
-	struct columns_model
+	struct columns_model_base : list_model<short int, short int>
 	{
-		typedef short int index_type;
-
-		struct column;
-
-		static index_type npos();
-
-		virtual index_type get_count() const throw() = 0;
-		virtual void get_column(index_type index, column &column) const = 0;
-		virtual void update_column(index_type index, short int width) = 0;
 		virtual std::pair<index_type, bool> get_sort_order() const throw() = 0;
-		virtual void activate_column(index_type column) = 0;
+		virtual void update_column(index_type index, short int width) = 0;
 
 		signal<void (index_type /*new_ordering_column*/, bool /*ascending*/)> sort_order_changed;
+	};
+
+
+	struct columns_model : columns_model_base
+	{
+		struct column;
+
+		virtual void get_column(index_type index, column &column) const = 0;
+		virtual void activate_column(index_type column) = 0;
 	};
 
 	struct columns_model::column
@@ -104,12 +107,15 @@ namespace wpl
 
 
 
-	inline index_traits::index_type index_traits::npos()
+	template<typename T>
+	inline typename index_traits_t<T>::index_type index_traits_t<T>::npos()
 	{	return static_cast<index_type>(-1);	}
 
 
-	inline columns_model::index_type columns_model::npos()
-	{	return -1;	}
+	template <typename ValueT, typename IndexT>
+	inline std::shared_ptr<const trackable> list_model<ValueT, IndexT>::track(
+		typename index_traits_t<IndexT>::index_type /*row*/) const
+	{	return std::shared_ptr<const trackable>();	}
 
 
 	inline columns_model::column::column()

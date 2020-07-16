@@ -140,9 +140,10 @@ namespace wpl
 			_widths.clear();
 			for (columns_model::index_type c = 0; c != columns; ++c)
 			{
-				_cmodel->get_column(c, _column_buffer);
-				_widths.push_back(static_cast<real_t>(_column_buffer.width));
-				total_width += static_cast<real_t>(_column_buffer.width);
+				short int width;
+				_cmodel->get_value(c, width);
+				_widths.push_back(width);
+				total_width += width;
 			}
 			for (; box.y2 = box.y1 + item_height, r != rows && box.y1 < _size.h; ++r, box.y1 = box.y2)
 			{

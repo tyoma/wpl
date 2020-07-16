@@ -86,7 +86,7 @@ namespace wpl
 			void toggle_selection(index_type item);
 
 		private:
-			std::shared_ptr<columns_model> _cmodel;
+			std::shared_ptr<columns_model_base> _cmodel;
 			std::shared_ptr<table_model> _model;
 			table_model::index_type _item_count;
 			std::shared_ptr<vertical_scroll_model> _vsmodel;
@@ -95,7 +95,6 @@ namespace wpl
 			agge::box_r _size;
 			double _first_visible;
 			mutable std::vector<agge::real_t> _widths;
-			mutable columns_model::column _column_buffer;
 			mutable std::wstring _text_buffer;
 
 			table_model::index_type _focus_item;
