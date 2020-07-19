@@ -9,12 +9,12 @@ namespace wpl
 	{
 		namespace mocks
 		{
-			class listview_columns_model;
+			class columns_model;
 			class listview_model;
 			class listview_trackable;
 
 			typedef std::shared_ptr<listview_model> model_ptr;
-			typedef std::shared_ptr<listview_columns_model> columns_model_ptr;
+			typedef std::shared_ptr<columns_model> columns_model_ptr;
 			typedef std::shared_ptr<listview_trackable> trackable_ptr;
 
 			class listview_trackable : public trackable
@@ -32,15 +32,15 @@ namespace wpl
 				index_type track_result;
 			};
 
-			class listview_columns_model : public columns_model
+			class columns_model : public wpl::columns_model
 			{
 			public:
 				template<size_t n>
-				static std::shared_ptr<listview_columns_model> create(const column (&columns)[n], index_type sort_column,
+				static std::shared_ptr<columns_model> create(const column (&columns)[n], index_type sort_column,
 					bool ascending)
-				{	return std::shared_ptr<listview_columns_model>(new listview_columns_model(columns, sort_column, ascending));	}
+				{	return std::shared_ptr<columns_model>(new columns_model(columns, sort_column, ascending));	}
 
-				static std::shared_ptr<listview_columns_model> create(const std::wstring &caption, short int width = 0);
+				static std::shared_ptr<columns_model> create(const std::wstring &caption, short int width = 0);
 				void set_sort_order(index_type column, bool ascending);
 
 			public:
@@ -51,7 +51,7 @@ namespace wpl
 
 			private:
 				template<size_t n>
-				listview_columns_model(const column (&columns_)[n], index_type sort_column_, bool ascending_)
+				columns_model(const column (&columns_)[n], index_type sort_column_, bool ascending_)
 					: columns(columns_, columns_ + n), sort_column(sort_column_), sort_ascending(ascending_)
 				{	}
 

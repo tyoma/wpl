@@ -1,6 +1,7 @@
 #include <wpl/container.h>
 #include <wpl/form.h>
 #include <wpl/layout.h>
+#include <wpl/controls/header.h>
 #include <wpl/controls/listview.h>
 
 #include <wpl/win32/controls.h>
@@ -85,14 +86,47 @@ namespace
 	};
 
 
+	class my_header : public controls::header
+	{
+	public:
+		my_header()
+			: _font_loader(new native_font_loader), _text_engine(new text_engine_t(*_font_loader, 4)),
+				_font(_text_engine->create_font(L"segoe ui", 14, false, false, agge::font::key::gf_vertical))
+		{	}
+
+		virtual void draw_item(gcontext &ctx, gcontext::rasterizer_ptr &ras, const agge::rect_r &b,
+			index_type /*item*/, unsigned /*item_state_flags*/ /*state*/, const wstring &text) const
+		{
+			auto m = _font->get_metrics();
+			_text_engine->render_string(*ras, *_font, text.c_str(), layout::near, b.x1, b.y2 - m.descent, b.x2 - b.x1);
+			ctx(ras, blender_t(color::make(255, 255, 255)), winding<>());
+		}
+
+	private:
+		shared_ptr<text_engine_base::loader> _font_loader;
+		shared_ptr<text_engine_t> _text_engine;
+		shared_ptr<agge::font> _font;
+		mutable agge::stroke _stroke;
+	};
+
+
 	class my_columns : public columns_model
 	{
-		virtual index_type get_count() const throw() {	return 20u;	}
-		virtual void get_value(index_type /*index*/, short int &column) const { column = 60; }
-		virtual void get_column(index_type /*index*/, column &column) const { column.width = 60; }
-		virtual void update_column(index_type /*index*/, short int /*width*/) {	}
-		virtual std::pair<index_type, bool> get_sort_order() const throw() { return make_pair(npos(), false); }
+	public:
+		my_columns()
+			: _columns(20, column(L"test", 60))
+		{	}
+
+	private:
+		virtual index_type get_count() const throw() { return static_cast<index_type>(_columns.size()); }
+		virtual void get_value(index_type index, short int &w) const { w = _columns[index].width; }
+		virtual void get_column(index_type index, column &column_) const { column_ = _columns[index]; }
+		virtual void update_column(index_type index, short int width) { _columns[index].width = width, invalidated(); }
+		virtual pair<index_type, bool> get_sort_order() const throw() { return make_pair(npos(), false); }
 		virtual void activate_column(index_type /*column*/) {	}
+
+	private:
+		vector<column> _columns;
 	};
 
 	class my_model : public table_model
@@ -131,7 +165,7 @@ int main()
 	view_location l = { 100, 100, 300, 200 };
 	shared_ptr<form> f = create_form();
 	slot_connection c = f->close += &exit_message_loop;
-	shared_ptr<listview> lv = controls::create_listview<my_listview>();
+	shared_ptr<listview> lv = controls::create_listview<my_listview, my_header>();
 //	shared_ptr<listview> lv = create_listview();
 	shared_ptr<my_columns> cm(new my_columns);
 	shared_ptr<my_model> m(new my_model);

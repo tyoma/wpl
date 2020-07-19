@@ -27,7 +27,7 @@ namespace wpl
 {
 	namespace controls
 	{
-		class header : public view, public index_traits
+		class header : public view, public index_traits_t<short int>
 		{
 		public:
 			enum item_state_flags {
@@ -36,9 +36,12 @@ namespace wpl
 			};
 
 		public:
+			header();
+
 			void set_model(const std::shared_ptr<columns_model> &model);
 
 			// mouse_input methods
+			virtual void mouse_move(int depressed, int x, int y);
 			virtual void mouse_down(mouse_buttons button, int buttons, int x, int y);
 			virtual void mouse_up(mouse_buttons button, int buttons, int x, int y);
 
@@ -47,14 +50,22 @@ namespace wpl
 			virtual void resize(unsigned cx, unsigned cy, positioned_native_views &native_views);
 
 		private:
+			enum handle_type { none_handle, column_handle, resize_handle };
+
+		private:
 			virtual void draw_item_background(gcontext &ctx, gcontext::rasterizer_ptr &rasterizer,
 				const agge::rect_r &box, index_type item, unsigned /*item_state_flags*/ state) const;
 			virtual void draw_item(gcontext &ctx, gcontext::rasterizer_ptr &rasterizer,
-				const agge::rect_r &box, index_type item, unsigned /*item_state_flags*/ state) const = 0;
+				const agge::rect_r &box, index_type item, unsigned /*item_state_flags*/ state,
+				const std::wstring &text) const = 0;
+
+			std::pair<index_type, handle_type> handle_from_point(int x) const;
 
 		private:
 			std::shared_ptr<columns_model> _model;
 			agge::box_r _size;
+			std::pair<index_type, int /* click point */> _dragged_colum;
+			slot_connection _model_invalidation;
 		};
 	}
 }

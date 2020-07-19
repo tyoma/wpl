@@ -20,7 +20,7 @@
 
 #include <wpl/form.h>
 
-#include "view_host.h"
+#include <wpl/win32/view_host.h>
 
 #include <tchar.h>
 

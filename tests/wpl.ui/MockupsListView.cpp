@@ -10,32 +10,32 @@ namespace wpl
 	{
 		namespace mocks
 		{
-			listview_columns_model::index_type listview_columns_model::get_count() const throw()
+			columns_model::index_type columns_model::get_count() const throw()
 			{	return static_cast<index_type>(columns.size());	}
 
-			void listview_columns_model::get_value(index_type index, short int &width) const
+			void columns_model::get_value(index_type index, short int &width) const
 			{	width = columns[index].width;	}
 
-			void listview_columns_model::get_column(index_type index, column &column) const
+			void columns_model::get_column(index_type index, column &column) const
 			{	column = columns[index];	}
 
-			void listview_columns_model::update_column(index_type index, short int width)
+			void columns_model::update_column(index_type index, short int width)
 			{	columns[index].width = width;	}
 
-			pair<listview_columns_model::index_type, bool> listview_columns_model::get_sort_order() const throw()
+			pair<columns_model::index_type, bool> columns_model::get_sort_order() const throw()
 			{	return make_pair(sort_column, sort_ascending);	}
 
-			void listview_columns_model::activate_column(index_type column)
+			void columns_model::activate_column(index_type column)
 			{	column_activation_log.push_back(column);	}
 
-			shared_ptr<listview_columns_model> listview_columns_model::create(const wstring &caption, short int width)
+			shared_ptr<columns_model> columns_model::create(const wstring &caption, short int width)
 			{
 				column columns[] = { column(caption, width), };
 
 				return create(columns, npos(), false);
 			}
 
-			void listview_columns_model::set_sort_order(index_type column, bool ascending)
+			void columns_model::set_sort_order(index_type column, bool ascending)
 			{
 				sort_column = column;
 				sort_ascending = ascending;

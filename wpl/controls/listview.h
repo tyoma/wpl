@@ -35,7 +35,7 @@ namespace wpl
 			virtual void layout(unsigned width, unsigned height, container::positioned_view *views, size_t count) const
 			{
 				const int scroller_width = 10;
-				const int header_height = 0;
+				const int header_height = 20;
 				const int height2 = height - header_height;
 
 				// listview core
@@ -56,15 +56,29 @@ namespace wpl
 			}
 		};
 
-		template <typename BaseControlT>
+		template <typename BaseControlT, typename HeaderT>
 		class external_view_contol : public BaseControlT
 		{
+		public:
+			external_view_contol(const std::shared_ptr<HeaderT> &header_)
+				: _header(header_)
+			{	}
+
 		public:
 			std::weak_ptr<view> external_view;
 
 		private:
 			virtual std::shared_ptr<view> get_view()
 			{	return external_view.lock();	}
+
+			virtual void set_columns_model(std::shared_ptr<columns_model> m)
+			{
+				_header->set_model(m);
+				BaseControlT::set_columns_model(m);
+			}
+
+		private:
+			std::shared_ptr<HeaderT> _header;
 		};
 
 		struct redirecting_keyboard_container : container
@@ -89,14 +103,15 @@ namespace wpl
 
 
 
-		template <typename ControlT>
+		template <typename ControlT, typename HeaderT>
 		std::shared_ptr<ControlT> create_listview()
 		{
 			using namespace std;
 
 			shared_ptr<listview_complex_layout> layout(new listview_complex_layout);
 			shared_ptr<redirecting_keyboard_container> composite(new redirecting_keyboard_container);
-			shared_ptr< external_view_contol<ControlT> > lv(new external_view_contol<ControlT>);
+			shared_ptr<HeaderT> header(new HeaderT);
+			shared_ptr< external_view_contol<ControlT, HeaderT> > lv(new external_view_contol<ControlT, HeaderT>(header));
 			shared_ptr<scroller> hscroller(new scroller(scroller::horizontal));
 			shared_ptr<scroller> vscroller(new scroller(scroller::vertical));
 
@@ -111,6 +126,9 @@ namespace wpl
 
 			vscroller->set_model(lv->get_vscroll_model());
 			composite->add_view(vscroller);
+
+			composite->add_view(header);
+
 			return shared_ptr<ControlT>(lv.get(), [composite] (void *) { });
 		}
 	}
