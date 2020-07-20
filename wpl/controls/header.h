@@ -65,7 +65,9 @@ namespace wpl
 			std::shared_ptr<columns_model> _model;
 			agge::box_r _size;
 			std::pair<index_type, int /* click point */> _dragged_colum;
+			std::pair<index_type, bool /*ascending*/> _sorted_column;
 			slot_connection _model_invalidation;
+			slot_connection _model_sorting_change;
 		};
 	}
 }

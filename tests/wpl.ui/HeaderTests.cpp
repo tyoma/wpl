@@ -397,6 +397,54 @@ namespace wpl
 				// ASSERT
 				assert_is_empty(m->column_activation_log);
 			}
+
+
+			test( StateIsProvidedToDrawingFunctions )
+			{
+				// INIT
+				tracking_header hdr;
+				column_t c[] = { column_t(L"a", 10), column_t(L"b", 13), column_t(L"Z A", 17), };
+				shared_ptr<mocks::columns_model> m = mocks::columns_model::create(c, 2, true);
+
+				hdr.resize(1000, 33, nviews);
+				hdr.set_model(m);
+
+				// ACT
+				hdr.draw(*ctx, ras);
+
+				// ASSERT
+				tracking_header::drawing_event reference1[] = {
+					tracking_header::drawing_event(item_background, *ctx, ras, make_rect(0, 0, 10, 33), 0, 0),
+					tracking_header::drawing_event(item_self, *ctx, ras, make_rect(0, 0, 10, 33), 0, 0, L"a"),
+					tracking_header::drawing_event(item_background, *ctx, ras, make_rect(10, 0, 23, 33), 1, 0),
+					tracking_header::drawing_event(item_self, *ctx, ras, make_rect(10, 0, 23, 33), 1, 0, L"b"),
+					tracking_header::drawing_event(item_background, *ctx, ras, make_rect(23, 0, 40, 33), 2,
+						controls::header::ascending | controls::header::sorted),
+					tracking_header::drawing_event(item_self, *ctx, ras, make_rect(23, 0, 40, 33), 2,
+						controls::header::ascending | controls::header::sorted, L"Z A"),
+				};
+
+				assert_equal_pred(reference1, hdr.events, rect_eq());
+
+				// INIT
+				hdr.events.clear();
+
+				// ACT
+				m->set_sort_order(0, false);
+				hdr.draw(*ctx, ras);
+
+				// ASSERT
+				tracking_header::drawing_event reference2[] = {
+					tracking_header::drawing_event(item_background, *ctx, ras, make_rect(0, 0, 10, 33), 0, controls::header::sorted),
+					tracking_header::drawing_event(item_self, *ctx, ras, make_rect(0, 0, 10, 33), 0, controls::header::sorted, L"a"),
+					tracking_header::drawing_event(item_background, *ctx, ras, make_rect(10, 0, 23, 33), 1, 0),
+					tracking_header::drawing_event(item_self, *ctx, ras, make_rect(10, 0, 23, 33), 1, 0, L"b"),
+					tracking_header::drawing_event(item_background, *ctx, ras, make_rect(23, 0, 40, 33), 2, 0),
+					tracking_header::drawing_event(item_self, *ctx, ras, make_rect(23, 0, 40, 33), 2, 0, L"Z A"),
+				};
+
+				assert_equal_pred(reference2, hdr.events, rect_eq());
+			}
 		end_test_suite
 	}
 }

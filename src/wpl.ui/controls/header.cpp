@@ -34,7 +34,18 @@ namespace wpl
 		void header::set_model(const shared_ptr<columns_model> &model)
 		{
 			_model = model;
-			_model_invalidation = model ? model->invalidated += [this] { invalidate(nullptr); } : nullptr;
+			if (model)
+			{
+				_model_invalidation = model->invalidated += [this] { invalidate(nullptr); };
+				_model_sorting_change = model->sort_order_changed += [this] (index_type column, bool ascending) {
+					_sorted_column = make_pair(column, ascending);
+				};
+				_sorted_column = model->get_sort_order();
+			}
+			else
+			{
+				_model_invalidation = nullptr;
+			}
 		}
 
 		void header::mouse_move(int /*depressed*/, int x, int /*y*/)
@@ -75,14 +86,16 @@ namespace wpl
 				rect_r rc = { 0.0f, 0.0f, 0.0f, _size.h };
 				columns_model::column c;
 
-				for (short i = 0, n = _model->get_count(); i != n; ++i)
+				for (index_type i = 0, n = _model->get_count(); i != n; ++i)
 				{
+					unsigned int state = i == _sorted_column.first ? sorted | (_sorted_column.second ? ascending : 0) : 0;
+
 					_model->get_column(i, c);
 					rc.x1 = rc.x2;
 					rc.x2 += c.width;
 
-					draw_item_background(ctx, rasterizer_, rc, i, 0);
-					draw_item(ctx, rasterizer_, rc, i, 0, c.caption );
+					draw_item_background(ctx, rasterizer_, rc, i, state);
+					draw_item(ctx, rasterizer_, rc, i, state, c.caption );
 				}
 			}
 		}
