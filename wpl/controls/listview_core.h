@@ -46,6 +46,7 @@ namespace wpl
 			std::shared_ptr<scroll_model> get_hscroll_model();
 
 			void focus(index_type item);
+			void make_visible(index_type item);
 
 			// keyboard_input methods
 			virtual void key_down(unsigned code, int modifiers);
@@ -95,6 +96,7 @@ namespace wpl
 			index_type get_item(int y) const;
 			void toggle_selection(index_type item);
 			bool is_selected(index_type item) const;
+			bool is_visible(index_type item) const;
 
 		private:
 			std::shared_ptr<columns_model_base> _cmodel;

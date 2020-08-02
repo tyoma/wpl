@@ -116,7 +116,7 @@ namespace wpl
 			};
 		}
 
-		begin_test_suite( ListViewCoreTests )
+		begin_test_suite( AListViewCoreTests )
 
 			shared_ptr<gcontext::surface_type> surface;
 			shared_ptr<gcontext::renderer_type> ren;
@@ -769,10 +769,112 @@ namespace wpl
 				assert_equal(2, scroll_invalidations);
 			}
 
+
+			test( MakingVisisbleScrollsTheView )
+			{
+				// INIT
+				auto invalidations = 0;
+				auto scroll_invalidations = 0;
+				tracking_listview lv;
+				auto sm = lv.get_vscroll_model();
+
+				lv.item_height = 5;
+				lv.reported_events = item_self;
+				lv.resize(10, 28, nviews);
+				lv.set_columns_model(mocks::columns_model::create(L"", 100));
+				lv.set_model(create_model(1000, 1));
+
+				auto c1 = lv.invalidate += [&] (const void *) { invalidations++; };
+				auto c2 = sm->invalidated += [&] { scroll_invalidations++; };
+
+				// ACT
+				lv.make_visible(31);
+
+				// ASSERT
+				assert_equal(1, scroll_invalidations);
+				assert_equal(1, invalidations);
+				assert_approx_equal(26.4, sm->get_window().first, 0.001);
+
+				// ACT
+				lv.make_visible(13);
+
+				// ASSERT
+				assert_equal(2, scroll_invalidations);
+				assert_equal(2, invalidations);
+				assert_approx_equal(13.0, sm->get_window().first, 0.001);
+
+				// ACT
+				lv.make_visible(39);
+
+				// ASSERT
+				assert_equal(3, scroll_invalidations);
+				assert_equal(3, invalidations);
+				assert_approx_equal(34.4, sm->get_window().first, 0.001);
+
+				// ACT
+				lv.make_visible(33);
+
+				// ASSERT
+				assert_equal(4, scroll_invalidations);
+				assert_equal(4, invalidations);
+				assert_approx_equal(33.0, sm->get_window().first, 0.001);
+			}
+
+
+			test( MakingVisibleDoesNothingForVisibleItems )
+			{
+				// INIT
+				auto invalidations = 0;
+				auto scroll_invalidations = 0;
+				tracking_listview lv;
+				auto sm = lv.get_vscroll_model();
+
+				lv.item_height = 5;
+				lv.reported_events = item_self;
+				lv.resize(10, 28, nviews);
+				lv.set_columns_model(mocks::columns_model::create(L"", 100));
+				lv.set_model(create_model(1000, 1));
+
+				auto c1 = lv.invalidate += [&] (const void *) { invalidations++; };
+				auto c2 = sm->invalidated += [&] { scroll_invalidations++; };
+
+				lv.make_visible(31);
+				invalidations = 0;
+				scroll_invalidations = 0;
+
+				// ACT
+				lv.make_visible(27);
+				lv.make_visible(28);
+				lv.make_visible(29);
+				lv.make_visible(30);
+				lv.make_visible(31);
+
+				// ASSERT
+				assert_equal(0, scroll_invalidations);
+				assert_equal(0, invalidations);
+				assert_approx_equal(26.4, sm->get_window().first, 0.001);
+
+				lv.make_visible(20);
+				invalidations = 0;
+				scroll_invalidations = 0;
+
+				// ACT
+				lv.make_visible(20);
+				lv.make_visible(21);
+				lv.make_visible(22);
+				lv.make_visible(23);
+				lv.make_visible(24);
+
+				// ASSERT
+				assert_equal(0, scroll_invalidations);
+				assert_equal(0, invalidations);
+				assert_approx_equal(20.0, sm->get_window().first, 0.001);
+			}
+
 		end_test_suite
 
 
-		begin_test_suite( AListViewSelectionCoreTests )
+		begin_test_suite( ListViewSelectionCoreTests )
 			shared_ptr<gcontext::surface_type> surface;
 			shared_ptr<gcontext::renderer_type> ren;
 			shared_ptr<gcontext> ctx;
@@ -1092,6 +1194,39 @@ namespace wpl
 				// ASSERT
 				assert_is_empty(get_visible_states(lv));
 				assert_is_empty(*m->auto_trackables);
+			}
+
+
+			test( FocusingInvisibleElementMakesItVisible )
+			{
+				// INIT
+				tracking_listview lv;
+				mocks::autotrackable_table_model_ptr m(create_model(1000, 1));
+				shared_ptr<scroll_model> sm = lv.get_vscroll_model();
+
+				lv.item_height = 1;
+				lv.reported_events = item_self;
+				lv.resize(1, 4, nviews);
+				lv.set_columns_model(mocks::columns_model::create(L"", 1));
+				lv.set_model(m);
+
+				// ACT
+				lv.focus(20);
+
+				// ASSERT
+				assert_approx_equal(17.0, sm->get_window().first, 0.001);
+
+				// ACT
+				lv.focus(14);
+
+				// ASSERT
+				assert_approx_equal(14.0, sm->get_window().first, 0.001);
+
+				// ACT
+				lv.focus(16);
+
+				// ASSERT
+				assert_approx_equal(14.0, sm->get_window().first, 0.001);
 			}
 
 
@@ -1451,45 +1586,45 @@ namespace wpl
 				sm->scroll_window(3.8, 0);
 
 				// ACT
-				lv.mouse_down(mouse_input::left, 0, 10, 0);
-				lv.mouse_up(mouse_input::left, 0, 10, 0);
+				lv.mouse_down(mouse_input::left, 0, 10, 1);
+				lv.mouse_up(mouse_input::left, 0, 10, 1);
 				auto s1 = get_visible_states_raw(lv);
 
 				// ASSERT
 				pair<table_model::index_type, unsigned /*state*/> reference1[] = {
-					make_pair(3, controls::listview_core::selected | controls::listview_core::focused),
+					make_pair(4, controls::listview_core::selected | controls::listview_core::focused),
 				};
 
 				assert_equal(reference1, s1);
 
 				// ACT
-				lv.mouse_down(mouse_input::left, 0, 10, 1);
-				lv.mouse_up(mouse_input::left, 0, 10, 1);
+				lv.mouse_down(mouse_input::left, 0, 10, 4);
+				lv.mouse_up(mouse_input::left, 0, 10, 4);
 				auto s2 = get_visible_states_raw(lv);
 
 				// ASSERT
-				pair<table_model::index_type, unsigned /*state*/> reference2[] = {
-					make_pair(4, controls::listview_core::selected | controls::listview_core::focused),
-				};
-
-				assert_equal(reference2, s2);
-
-				// ACT
-				lv.mouse_down(mouse_input::left, 0, 10, 4);
-				lv.mouse_up(mouse_input::left, 0, 10, 4);
-				auto s3 = get_visible_states_raw(lv);
-
-				// ASSERT
-				assert_equal(reference2, s3);
+				assert_equal(reference1, s2);
 
 				// ACT
 				lv.mouse_down(mouse_input::left, 0, 10, 5);
 				lv.mouse_up(mouse_input::left, 0, 10, 5);
+				auto s3 = get_visible_states_raw(lv);
+
+				// ASSERT
+				pair<table_model::index_type, unsigned /*state*/> reference3[] = {
+					make_pair(5, controls::listview_core::selected | controls::listview_core::focused),
+				};
+
+				assert_equal(reference3, s3);
+
+				// ACT
+				lv.mouse_down(mouse_input::left, 0, 10, 9);
+				lv.mouse_up(mouse_input::left, 0, 10, 9);
 				auto s4 = get_visible_states_raw(lv);
 
 				// ASSERT
 				pair<table_model::index_type, unsigned /*state*/> reference4[] = {
-					make_pair(5, controls::listview_core::selected | controls::listview_core::focused),
+					make_pair(6, controls::listview_core::selected | controls::listview_core::focused),
 				};
 
 				assert_equal(reference4, s4);

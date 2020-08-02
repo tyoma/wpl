@@ -108,11 +108,23 @@ namespace wpl
 
 		void listview_core::focus(index_type item)
 		{
-			if (_model)
-			{
-				_focused_item = item != npos() ? _model->track(item) : nullptr;
-				invalidate(nullptr);
-			}
+			if (!_model)
+				return;
+			_focused_item = item != npos() ? _model->track(item) : nullptr;
+			invalidate(nullptr);
+			make_visible(item);
+		}
+
+		void listview_core::make_visible(index_type item)
+		{
+			if (is_visible(item))
+				return;
+			else if (item < _first_visible)
+				_first_visible = item;
+			else
+				_first_visible = item - _size.h / get_item_height() + 1;
+			_vsmodel->invalidated();
+			invalidate(nullptr);
 		}
 
 		void listview_core::key_down(unsigned code, int modifiers)
@@ -283,5 +295,13 @@ namespace wpl
 
 		bool listview_core::is_selected(index_type item) const
 		{	return binary_search(_selected_items.begin(), _selected_items.end(), item, trackable_less());	}
+
+		bool listview_core::is_visible(index_type item) const
+		{
+			const real_t item_height = get_item_height();
+			const real_t lower = item_height * static_cast<real_t>(item - _first_visible), upper = lower + item_height;
+
+			return (lower >= real_t()) & (upper <= _size.h);
+		}
 	}
 }
