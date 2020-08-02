@@ -156,7 +156,7 @@ namespace wpl
 		const int width = _orientation == horizontal ? cy : cx;
 
 		_extent = static_cast<real_t>(extent);
-		_rextent = 1.0 / (extent - width);
+		_rextent = 1.0 / (extent - width); // TODO: fix division by zero below
 		_width = static_cast<real_t>(width);
 		if (real_t w = 0.7f * _width)
 		{
@@ -184,5 +184,8 @@ namespace wpl
 	}
 
 	real_t scroller::to_screen(const pair<double, double> &range, double c) const
-	{	return static_cast<real_t>((c - range.first) / (range.second * _rextent)) + 0.5f * _width;	}
+	{
+		// TODO: fix division by zero below
+		return static_cast<real_t>((c - range.first) / (range.second * _rextent)) + 0.5f * _width;
+	}
 }

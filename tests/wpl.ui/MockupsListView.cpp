@@ -10,6 +10,13 @@ namespace wpl
 	{
 		namespace mocks
 		{
+			listview_trackable::~listview_trackable()
+			{
+				if (container && track_result != npos())
+					container->erase(track_result);
+			}
+
+
 			columns_model::index_type columns_model::get_count() const throw()
 			{	return static_cast<index_type>(columns.size());	}
 
@@ -43,6 +50,16 @@ namespace wpl
 			}
 
 
+			listview_model::listview_model(index_type count, index_type columns)
+				: columns_count(columns)
+			{	items.resize(count, vector<wstring>(columns));	}
+
+			void listview_model::set_count(index_type new_count)
+			{
+				items.resize(new_count, vector<wstring>(columns_count));
+				invalidated(static_cast<index_type>(items.size()));
+			}
+
 			listview_model::index_type listview_model::get_count() const throw()
 			{	return static_cast<index_type>(items.size());	}
 
@@ -64,14 +81,37 @@ namespace wpl
 				return i != trackables.end() ? i->second : shared_ptr<const trackable>();
 			}
 
-			listview_model::listview_model(index_type count, index_type columns)
-				: columns_count(columns)
-			{	items.resize(count, vector<wstring>(columns));	}
 
-			void listview_model::set_count(index_type new_count)
+			autotrackable_table_model::autotrackable_table_model(index_type count, index_type columns)
+				: listview_model(count, columns), auto_trackables(new trackables_map)
+			{	}
+
+			void autotrackable_table_model::move_tracking(index_type position, index_type new_position)
 			{
-				items.resize(new_count, vector<wstring>(columns_count));
-				invalidated(static_cast<index_type>(items.size()));
+				shared_ptr<listview_trackable> t((*auto_trackables)[position]);
+
+				auto_trackables->erase(position);
+				t->track_result = new_position;
+				(*auto_trackables)[new_position] = t;
+			}
+
+			shared_ptr<const trackable> autotrackable_table_model::track(index_type row) const
+			{
+				pair<trackables_map::iterator, bool> i = auto_trackables->insert(make_pair(row, shared_ptr<listview_trackable>()));
+
+				if (i.second)
+				{
+					shared_ptr<listview_trackable> t(new listview_trackable);
+
+					t->track_result = row;
+					t->container = auto_trackables;
+					i.first->second = t;
+					return t;
+				}
+				else
+				{
+					return i.first->second.lock();
+				}
 			}
 		}
 	}

@@ -9,13 +9,16 @@ namespace wpl
 	{
 		namespace mocks
 		{
+			class autotrackable_table_model;
 			class columns_model;
 			class listview_model;
 			class listview_trackable;
 
+			typedef std::shared_ptr<autotrackable_table_model> autotrackable_table_model_ptr;
 			typedef std::shared_ptr<listview_model> model_ptr;
 			typedef std::shared_ptr<columns_model> columns_model_ptr;
 			typedef std::shared_ptr<listview_trackable> trackable_ptr;
+			typedef std::map< trackable::index_type, std::weak_ptr<listview_trackable> > trackables_map;
 
 			class listview_trackable : public trackable
 			{
@@ -30,6 +33,7 @@ namespace wpl
 
 			public:
 				index_type track_result;
+				std::shared_ptr<trackables_map> container;
 			};
 
 			class columns_model : public wpl::columns_model
@@ -83,10 +87,21 @@ namespace wpl
 				virtual std::shared_ptr<const trackable> track(index_type row) const;
 			};
 
+			class autotrackable_table_model : public listview_model
+			{
+			public:
+				autotrackable_table_model(index_type count, index_type columns = 0);
+
+				void move_tracking(index_type position, index_type new_position);
+
+			public:
+				std::shared_ptr<trackables_map> auto_trackables;
+
+			private:
+				virtual std::shared_ptr<const trackable> track(index_type row) const;
+			};
 
 
-			inline listview_trackable::~listview_trackable()
-			{	}
 
 			template <typename Map>
 			inline std::shared_ptr<listview_trackable> listview_trackable::add(Map &m, index_type index)

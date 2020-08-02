@@ -18,6 +18,11 @@ namespace wpl
 			typedef columns_model::column column_t;
 			enum drawing_event_type { item_background = 1, subitem_background = 2, item_self = 4, subitem_self = 8, };
 
+			mocks::autotrackable_table_model_ptr create_model(table_model::index_type count, columns_model::index_type columns_count = 1)
+			{
+				return mocks::autotrackable_table_model_ptr(new mocks::autotrackable_table_model(count, columns_count));
+			}
+
 			class tracking_listview : public controls::listview_core
 			{
 			public:
@@ -154,7 +159,7 @@ namespace wpl
 
 				// INIT
 				lv1.set_columns_model(mocks::columns_model::create(L"Name", 100));
-				lv2.set_model(mocks::model_ptr(new mocks::listview_model(10)));
+				lv2.set_model(create_model(10));
 
 				// ACT
 				lv1.draw(*ctx, ras);
@@ -173,7 +178,7 @@ namespace wpl
 
 				lv.resize(1000, 1000, nviews);
 				lv.set_columns_model(mocks::columns_model::create(L"Name"));
-				lv.set_model(mocks::model_ptr(new mocks::listview_model(1, 1)));
+				lv.set_model(create_model(1, 1));
 
 				// ACT
 				lv.draw(*ctx, ras);
@@ -199,7 +204,7 @@ namespace wpl
 
 				lv.resize(1000, 1000, nviews);
 				lv.set_columns_model(mocks::columns_model::create(c, columns_model::npos(), true));
-				lv.set_model(mocks::model_ptr(new mocks::listview_model(4, 3)));
+				lv.set_model(create_model(4, 3));
 
 				// ACT
 				lv.draw(*ctx, ras);
@@ -257,7 +262,7 @@ namespace wpl
 				lv.resize(1000, 1000, nviews);
 				lv.item_height = 3;
 				lv.set_columns_model(mocks::columns_model::create(c1, columns_model::npos(), true));
-				lv.set_model(mocks::model_ptr(new mocks::listview_model(3, 2)));
+				lv.set_model(create_model(3, 2));
 
 				// ACT
 				lv.draw(*ctx, ras);
@@ -291,7 +296,7 @@ namespace wpl
 				// INIT
 				lv.item_height = 5.1;
 				lv.set_columns_model(mocks::columns_model::create(c2, columns_model::npos(), true));
-				lv.set_model(mocks::model_ptr(new mocks::listview_model(2, 3)));
+				lv.set_model(create_model(2, 3));
 				lv.events.clear();
 
 				// ACT
@@ -328,7 +333,7 @@ namespace wpl
 				tracking_listview lv;
 				column_t c[] = { column_t(L"", 1), column_t(L"", 1), };
 				mocks::columns_model_ptr cm = mocks::columns_model::create(c, columns_model::npos(), true);
-				mocks::model_ptr m(new mocks::listview_model(2, 2));
+				mocks::autotrackable_table_model_ptr m(create_model(2, 2));
 
 				lv.resize(1000, 1000, nviews);
 				lv.item_height = 1;
@@ -372,7 +377,7 @@ namespace wpl
 				lv.resize(1000, 31, nviews);
 				lv.item_height = 15.4;
 				lv.set_columns_model(mocks::columns_model::create(L"", 10));
-				lv.set_model(mocks::model_ptr(new mocks::listview_model(4, 1)));
+				lv.set_model(create_model(4, 1));
 
 				// ACT
 				lv.draw(*ctx, ras);
@@ -438,7 +443,7 @@ namespace wpl
 				// INIT
 				shared_ptr<tracking_listview> lv(new tracking_listview);
 				shared_ptr<scroll_model> sm = lv->get_vscroll_model();
-				mocks::model_ptr m(new mocks::listview_model(1, 1));
+				mocks::autotrackable_table_model_ptr m(create_model(1, 1));
 
 				lv->resize(1000, 31, nviews);
 				lv->item_height = 15.4;
@@ -461,7 +466,7 @@ namespace wpl
 				// INIT
 				tracking_listview lv;
 				shared_ptr<scroll_model> sm = lv.get_vscroll_model();
-				mocks::model_ptr m(new mocks::listview_model(1, 1));
+				mocks::autotrackable_table_model_ptr m(create_model(1, 1));
 
 				lv.resize(1000, 31, nviews);
 				lv.item_height = 15.4;
@@ -484,7 +489,7 @@ namespace wpl
 				// INIT
 				tracking_listview lv;
 				shared_ptr<scroll_model> sm = lv.get_vscroll_model();
-				mocks::model_ptr m(new mocks::listview_model(1000, 1));
+				mocks::autotrackable_table_model_ptr m(create_model(1000, 1));
 
 				lv.item_height = 5;
 				lv.set_columns_model(mocks::columns_model::create(L"", 10));
@@ -518,7 +523,7 @@ namespace wpl
 				// INIT
 				tracking_listview lv;
 				shared_ptr<scroll_model> sm = lv.get_vscroll_model();
-				mocks::model_ptr m(new mocks::listview_model(1, 1));
+				mocks::autotrackable_table_model_ptr m(create_model(1, 1));
 
 				m->items.resize(111, vector<wstring>(1));
 				lv.set_columns_model(mocks::columns_model::create(L"", 10));
@@ -552,7 +557,7 @@ namespace wpl
 				lv.resize(100, 1000, nviews);
 				lv.item_height = 10;
 				lv.set_columns_model(mocks::columns_model::create(L"", 10));
-				lv.set_model(mocks::model_ptr(new mocks::listview_model(1, 1)));
+				lv.set_model(create_model(1, 1));
 
 				// ACT
 				sm->scroll_window(-0.8, 0 /*we don't care yet*/);
@@ -597,7 +602,7 @@ namespace wpl
 				lv.reported_events = item_self;
 				lv.resize(100, 40, nviews);
 				lv.set_columns_model(mocks::columns_model::create(L"", 100));
-				lv.set_model(mocks::model_ptr(new mocks::listview_model(1000, 1)));
+				lv.set_model(create_model(1000, 1));
 
 				// ACT
 				sm->scroll_window(10.3 /*first visible*/, 0 /*we don't care yet*/);
@@ -644,7 +649,7 @@ namespace wpl
 				// INIT
 				auto invalidations = 0;
 				tracking_listview lv;
-				mocks::model_ptr m(new mocks::listview_model(1000, 1));
+				mocks::autotrackable_table_model_ptr m(create_model(1000, 1));
 
 				lv.item_height = 10;
 				lv.reported_events = item_self;
@@ -675,7 +680,7 @@ namespace wpl
 				auto invalidations = 0;
 				tracking_listview lv;
 				auto sm = lv.get_vscroll_model();
-				mocks::model_ptr m(new mocks::listview_model(1000, 1));
+				mocks::autotrackable_table_model_ptr m(create_model(1000, 1));
 
 				lv.item_height = 10;
 				lv.reported_events = item_self;
@@ -718,7 +723,7 @@ namespace wpl
 				lv.reported_events = item_self;
 				lv.resize(100, 40, nviews);
 				lv.set_columns_model(mocks::columns_model::create(L"", 100));
-				lv.set_model(mocks::model_ptr(new mocks::listview_model(1000, 1)));
+				lv.set_model(create_model(1000, 1));
 
 				auto c1 = lv.invalidate += [&] (const void *) { invalidations++; };
 				auto c2 = sm->invalidated += [&] { scroll_invalidations++; };
@@ -744,7 +749,7 @@ namespace wpl
 				lv.reported_events = item_self;
 				lv.resize(100, 40, nviews);
 				lv.set_columns_model(mocks::columns_model::create(L"", 100));
-				lv.set_model(mocks::model_ptr(new mocks::listview_model(1000, 1)));
+				lv.set_model(create_model(1000, 1));
 
 				auto c1 = lv.invalidate += [&] (const void *) { invalidations++; };
 				auto c2 = sm->invalidated += [&] { scroll_invalidations++; };
@@ -774,7 +779,7 @@ namespace wpl
 			gcontext::rasterizer_ptr ras;
 			view::positioned_native_views nviews;
 
-			vector< pair<table_model::index_type, unsigned /*state*/> > get_states_raw(tracking_listview &lv)
+			vector< pair<table_model::index_type, unsigned /*state*/> > get_visible_states_raw(tracking_listview &lv)
 			{
 				vector< pair<table_model::index_type, unsigned /*state*/> > selection;
 
@@ -788,13 +793,13 @@ namespace wpl
 				return selection;
 			}
 
-			vector< pair<table_model::index_type, unsigned /*state*/> > get_states(tracking_listview &lv)
+			vector< pair<table_model::index_type, unsigned /*state*/> > get_visible_states(tracking_listview &lv)
 			{
 				lv.events.clear();
 				lv.item_height = 1;
 				lv.reported_events = item_self;
 				lv.resize(1, 1000, nviews);
-				return get_states_raw(lv);
+				return get_visible_states_raw(lv);
 			}
 
 			init( Init )
@@ -815,7 +820,7 @@ namespace wpl
 				lv.reported_events = item_background | subitem_background | item_self | subitem_self;
 				lv.resize(1, 4, nviews);
 				lv.set_columns_model(mocks::columns_model::create(L"", 1));
-				lv.set_model(mocks::model_ptr(new mocks::listview_model(1000, 1)));
+				lv.set_model(create_model(1000, 1));
 
 				// ACT
 				lv.select(2, true);
@@ -858,7 +863,7 @@ namespace wpl
 					make_pair(0, controls::listview_core::selected),
 				};
 
-				assert_equal(reference2, get_states(lv));
+				assert_equal(reference2, get_visible_states(lv));
 
 				// INIT
 				lv.events.clear();
@@ -872,7 +877,221 @@ namespace wpl
 					make_pair(1, controls::listview_core::selected),
 				};
 
-				assert_equal(reference3, get_states(lv));
+				assert_equal(reference3, get_visible_states(lv));
+			}
+
+
+			test( SelectionAcquiresTrackable )
+			{
+				// INIT
+				tracking_listview lv;
+				mocks::autotrackable_table_model_ptr m(create_model(1000, 1));
+
+				lv.item_height = 5;
+				lv.reported_events = item_self;
+				lv.resize(1, 27, nviews);
+				lv.set_columns_model(mocks::columns_model::create(L"", 1));
+				lv.set_model(m);
+
+				// ACT
+				lv.select(3, true);
+
+				// ASSERT
+				assert_equal(1u, m->auto_trackables->size());
+				assert_equal(1u, m->auto_trackables->count(3));
+
+				// ACT
+				lv.select(31, true);
+
+				// ASSERT
+				assert_equal(1u, m->auto_trackables->size());
+				assert_equal(1u, m->auto_trackables->count(31));
+
+				// ACT
+				lv.select(1, false);
+				lv.select(7, false);
+
+				// ASSERT
+				assert_equal(3u, m->auto_trackables->size());
+				assert_equal(1u, m->auto_trackables->count(1));
+				assert_equal(1u, m->auto_trackables->count(7));
+				assert_equal(1u, m->auto_trackables->count(31));
+
+				// ACT
+				lv.select(0, true);
+
+				// ASSERT
+				assert_equal(1u, m->auto_trackables->size());
+				assert_equal(1u, m->auto_trackables->count(0));
+
+				// ACT
+				lv.clear_selection();
+
+				// ASSERT
+				assert_is_empty(*m->auto_trackables);
+			}
+
+
+			test( FocusedElementsHaveCorrespondingStateOnDraw )
+			{
+				// INIT
+				tracking_listview lv;
+				int invalidated = 0;
+
+				lv.item_height = 1;
+				lv.reported_events = item_self;
+				lv.resize(1, 4, nviews);
+				lv.set_columns_model(mocks::columns_model::create(L"", 1));
+				lv.set_model(create_model(1000, 1));
+
+				lv.select(2, true);
+
+				auto conn = lv.invalidate += [&] (const void *r) {	assert_null(r); invalidated++;	};
+
+				// ACT
+				lv.focus(1);
+				lv.draw(*ctx, ras);
+
+				// ASSERT
+				tracking_listview::drawing_event reference1[] = {
+					tracking_listview::drawing_event(item_self, *ctx, ras, make_rect(0, 0, 1, 1), 0, 0),
+					tracking_listview::drawing_event(item_self, *ctx, ras, make_rect(0, 1, 1, 2), 1, controls::listview_core::focused),
+					tracking_listview::drawing_event(item_self, *ctx, ras, make_rect(0, 2, 1, 3), 2, controls::listview_core::selected),
+					tracking_listview::drawing_event(item_self, *ctx, ras, make_rect(0, 3, 1, 4), 3, 0),
+				};
+
+				assert_equal_pred(reference1, lv.events, rect_eq());
+				assert_equal(1, invalidated);
+
+				// INIT
+				lv.events.clear();
+
+				// ACT
+				lv.focus(0);
+				lv.focus(3);
+				lv.draw(*ctx, ras);
+
+				// ASSERT
+				tracking_listview::drawing_event reference2[] = {
+					tracking_listview::drawing_event(item_self, *ctx, ras, make_rect(0, 0, 1, 1), 0, 0),
+					tracking_listview::drawing_event(item_self, *ctx, ras, make_rect(0, 1, 1, 2), 1, 0),
+					tracking_listview::drawing_event(item_self, *ctx, ras, make_rect(0, 2, 1, 3), 2, controls::listview_core::selected),
+					tracking_listview::drawing_event(item_self, *ctx, ras, make_rect(0, 3, 1, 4), 3, controls::listview_core::focused),
+				};
+
+				assert_equal_pred(reference2, lv.events, rect_eq());
+				assert_equal(3, invalidated);
+			}
+
+
+			test( NothingHappensOnFocusingWhileNoModelIsSet )
+			{
+				// INIT
+				tracking_listview lv;
+
+				lv.item_height = 2;
+				lv.resize(1, 9, nviews);
+				lv.set_columns_model(mocks::columns_model::create(L"", 1));
+
+				auto conn = lv.invalidate += [] (const void*) {	assert_is_true(false);	};
+
+				// ACT / ASSERT
+				lv.focus(1);
+			}
+
+
+			test( FocusingElementAcquiresTrackable )
+			{
+				// INIT
+				tracking_listview lv;
+				mocks::autotrackable_table_model_ptr m(create_model(1000, 1));
+
+				lv.item_height = 2;
+				lv.reported_events = item_self;
+				lv.resize(1, 9, nviews);
+				lv.set_columns_model(mocks::columns_model::create(L"", 1));
+				lv.set_model(m);
+
+				// INIT / ASSERT
+				assert_is_empty(*m->auto_trackables);
+
+				// ACT
+				lv.focus(1);
+
+				// ASSERT
+				assert_equal(1u, m->auto_trackables->size());
+				assert_equal(1u, m->auto_trackables->count(1));
+
+				// ACT
+				lv.focus(7);
+
+				// ASSERT
+				assert_equal(1u, m->auto_trackables->size());
+				assert_equal(1u, m->auto_trackables->count(7));
+			}
+
+
+			test( FocusFollowsTrackableValueChange )
+			{
+				// INIT
+				tracking_listview lv;
+				mocks::autotrackable_table_model_ptr m(create_model(1000, 1));
+
+				lv.item_height = 2;
+				lv.reported_events = item_self;
+				lv.resize(1, 9, nviews);
+				lv.set_columns_model(mocks::columns_model::create(L"", 1));
+				lv.set_model(m);
+
+				lv.focus(1);
+
+				// ACT
+				m->move_tracking(1, 4);
+				m->invalidated(1000);
+
+				// ASSERT
+				pair<table_model::index_type, unsigned /*state*/> reference1[] = {
+					make_pair(4, controls::listview_core::focused),
+				};
+
+				assert_equal(reference1, get_visible_states(lv));
+
+				// ACT
+				m->move_tracking(4, 0);
+				m->invalidated(1000);
+
+				// ASSERT
+				pair<table_model::index_type, unsigned /*state*/> reference2[] = {
+					make_pair(0, controls::listview_core::focused),
+				};
+
+				assert_equal(reference2, get_visible_states(lv));
+			}
+
+
+			test( FocusIsRemovedWhenNoPosIsFocused )
+			{
+				// INIT
+				tracking_listview lv;
+				int invalidated = 0;
+				mocks::autotrackable_table_model_ptr m(create_model(1000, 1));
+
+				lv.item_height = 1;
+				lv.reported_events = item_self;
+				lv.resize(1, 4, nviews);
+				lv.set_columns_model(mocks::columns_model::create(L"", 1));
+				lv.set_model(m);
+
+				lv.focus(2);
+
+				auto conn = lv.invalidate += [&] (const void *r) {	assert_null(r); invalidated++;	};
+
+				// ACT
+				lv.focus(table_model::npos());
+
+				// ASSERT
+				assert_is_empty(get_visible_states(lv));
+				assert_is_empty(*m->auto_trackables);
 			}
 
 
@@ -886,7 +1105,7 @@ namespace wpl
 				lv.reported_events = item_self;
 				lv.resize(1, 4, nviews);
 				lv.set_columns_model(mocks::columns_model::create(L"", 1));
-				lv.set_model(mocks::model_ptr(new mocks::listview_model(1000, 1)));
+				lv.set_model(create_model(1000, 1));
 
 				auto conn = lv.invalidate += [&] (const void *) {
 
@@ -897,7 +1116,7 @@ namespace wpl
 						make_pair(3, controls::listview_core::selected),
 					};
 
-					assert_equal(reference, get_states_raw(lv));
+					assert_equal(reference, get_visible_states_raw(lv));
 				};
 
 				// ACT
@@ -905,6 +1124,20 @@ namespace wpl
 
 				// ASSERT
 				assert_equal(1, invalidated);
+
+				// INIT
+				conn = lv.invalidate += [&] (const void *r) {
+					invalidated++;
+
+					// ASSERT
+					assert_null(r);
+				};
+
+				// ACT
+				lv.clear_selection();
+
+				// ASSERT
+				assert_equal(2, invalidated);
 			}
 
 
@@ -914,7 +1147,7 @@ namespace wpl
 				tracking_listview lv;
 
 				lv.set_columns_model(mocks::columns_model::create(L"", 1));
-				lv.set_model(mocks::model_ptr(new mocks::listview_model(1000, 1)));
+				lv.set_model(create_model(1000, 1));
 
 				// ACT
 				lv.key_down(keyboard_input::down, 0);
@@ -924,7 +1157,7 @@ namespace wpl
 					make_pair(0, controls::listview_core::selected | controls::listview_core::focused),
 				};
 
-				assert_equal(reference1, get_states(lv));
+				assert_equal(reference1, get_visible_states(lv));
 
 				// ACT
 				lv.key_down(keyboard_input::down, 0);
@@ -934,7 +1167,7 @@ namespace wpl
 					make_pair(1, controls::listview_core::selected | controls::listview_core::focused),
 				};
 
-				assert_equal(reference2, get_states(lv));
+				assert_equal(reference2, get_visible_states(lv));
 
 				// ACT
 				lv.key_down(keyboard_input::down, 0);
@@ -944,13 +1177,13 @@ namespace wpl
 					make_pair(2, controls::listview_core::selected | controls::listview_core::focused),
 				};
 
-				assert_equal(reference3, get_states(lv));
+				assert_equal(reference3, get_visible_states(lv));
 
 				// ACT
 				lv.key_down(keyboard_input::up, 0);
 
 				// ASSERT
-				assert_equal(reference2, get_states(lv));
+				assert_equal(reference2, get_visible_states(lv));
 			}
 
 
@@ -960,14 +1193,14 @@ namespace wpl
 				tracking_listview lv;
 
 				lv.set_columns_model(mocks::columns_model::create(L"", 1));
-				lv.set_model(mocks::model_ptr(new mocks::listview_model(1000, 1)));
+				lv.set_model(create_model(1000, 1));
 
 				// ACT
 				lv.key_down(keyboard_input::up, 0);
 				lv.key_up(keyboard_input::up, 0);
 
 				// ASSERT
-				assert_is_empty(get_states(lv));
+				assert_is_empty(get_visible_states(lv));
 
 				// ACT
 				lv.key_down(keyboard_input::down, 0);
@@ -980,7 +1213,7 @@ namespace wpl
 					make_pair(0, controls::listview_core::selected | controls::listview_core::focused),
 				};
 
-				assert_equal(reference, get_states(lv));
+				assert_equal(reference, get_visible_states(lv));
 			}
 
 
@@ -988,7 +1221,7 @@ namespace wpl
 			{
 				// INIT
 				tracking_listview lv;
-				mocks::model_ptr m(new mocks::listview_model(3, 1));
+				mocks::autotrackable_table_model_ptr m(create_model(3, 1));
 
 				lv.set_columns_model(mocks::columns_model::create(L"", 1));
 				lv.set_model(m);
@@ -1009,7 +1242,7 @@ namespace wpl
 					make_pair(2, controls::listview_core::selected | controls::listview_core::focused),
 				};
 
-				assert_equal(reference1, get_states(lv));
+				assert_equal(reference1, get_visible_states(lv));
 
 				// INIT
 				m->items.resize(4, vector<wstring>(1)); // we don't invalidate the model - get_count() is used instead.
@@ -1023,7 +1256,7 @@ namespace wpl
 					make_pair(3, controls::listview_core::selected | controls::listview_core::focused),
 				};
 
-				assert_equal(reference2, get_states(lv));
+				assert_equal(reference2, get_visible_states(lv));
 			}
 
 
@@ -1033,7 +1266,7 @@ namespace wpl
 				tracking_listview lv;
 
 				lv.set_columns_model(mocks::columns_model::create(L"", 1));
-				lv.set_model(mocks::model_ptr(new mocks::listview_model(1000, 1)));
+				lv.set_model(create_model(1000, 1));
 				lv.select(1, true);
 
 				// ACT
@@ -1045,7 +1278,7 @@ namespace wpl
 					make_pair(1, controls::listview_core::selected),
 				};
 
-				assert_equal(reference1, get_states(lv));
+				assert_equal(reference1, get_visible_states(lv));
 
 				// ACT
 				lv.key_down(keyboard_input::down, keyboard_input::control);
@@ -1055,7 +1288,7 @@ namespace wpl
 					make_pair(1, controls::listview_core::selected | controls::listview_core::focused),
 				};
 
-				assert_equal(reference2, get_states(lv));
+				assert_equal(reference2, get_visible_states(lv));
 
 				// ACT
 				lv.key_down(keyboard_input::down, keyboard_input::control);
@@ -1066,13 +1299,13 @@ namespace wpl
 					make_pair(2, controls::listview_core::focused),
 				};
 
-				assert_equal(reference3, get_states(lv));
+				assert_equal(reference3, get_visible_states(lv));
 
 				// ACT
 				lv.key_down(keyboard_input::up, keyboard_input::control);
 
 				// ASSERT
-				assert_equal(reference2, get_states(lv));
+				assert_equal(reference2, get_visible_states(lv));
 			}
 
 
@@ -1082,7 +1315,7 @@ namespace wpl
 				tracking_listview lv;
 
 				lv.set_columns_model(mocks::columns_model::create(L"", 1));
-				lv.set_model(mocks::model_ptr(new mocks::listview_model(1000, 1)));
+				lv.set_model(create_model(1000, 1));
 				lv.select(0, true);
 
 				// ACT
@@ -1093,7 +1326,7 @@ namespace wpl
 					make_pair(0, controls::listview_core::selected),
 				};
 
-				assert_equal(reference, get_states(lv));
+				assert_equal(reference, get_visible_states(lv));
 			}
 
 
@@ -1103,7 +1336,7 @@ namespace wpl
 				tracking_listview lv;
 
 				lv.set_columns_model(mocks::columns_model::create(L"", 1));
-				lv.set_model(mocks::model_ptr(new mocks::listview_model(1000, 1)));
+				lv.set_model(create_model(1000, 1));
 
 				lv.item_height = 5;
 				lv.reported_events = item_self;
@@ -1112,7 +1345,7 @@ namespace wpl
 				// ACT
 				lv.mouse_down(mouse_input::left, 0, 10, 0);
 				lv.mouse_up(mouse_input::left, 0, 10, 0);
-				auto s1 = get_states_raw(lv);
+				auto s1 = get_visible_states_raw(lv);
 
 				// ASSERT
 				pair<table_model::index_type, unsigned /*state*/> reference1[] = {
@@ -1124,7 +1357,7 @@ namespace wpl
 				// ACT
 				lv.mouse_down(mouse_input::left, 0, 10, 4);
 				lv.mouse_up(mouse_input::left, 0, 10, 4);
-				auto s2 = get_states_raw(lv);
+				auto s2 = get_visible_states_raw(lv);
 
 				// ASSERT
 				assert_equal(reference1, s2);
@@ -1132,7 +1365,7 @@ namespace wpl
 				// ACT
 				lv.mouse_down(mouse_input::left, 0, 99, 5);
 				lv.mouse_up(mouse_input::left, 0, 99, 5);
-				auto s3 = get_states_raw(lv);
+				auto s3 = get_visible_states_raw(lv);
 
 				// ASSERT
 				pair<table_model::index_type, unsigned /*state*/> reference3[] = {
@@ -1144,7 +1377,7 @@ namespace wpl
 				// ACT
 				lv.mouse_down(mouse_input::left, 0, 1, 19);
 				lv.mouse_up(mouse_input::left, 0, 99, 19);
-				auto s4 = get_states_raw(lv);
+				auto s4 = get_visible_states_raw(lv);
 
 				// ASSERT
 				pair<table_model::index_type, unsigned /*state*/> reference4[] = {
@@ -1160,7 +1393,7 @@ namespace wpl
 				// ACT
 				lv.mouse_down(mouse_input::left, 0, 0, 0);
 				lv.mouse_up(mouse_input::left, 0, 0, 0);
-				auto s5 = get_states_raw(lv);
+				auto s5 = get_visible_states_raw(lv);
 
 				// ASSERT
 				assert_equal(reference1, s5);
@@ -1168,7 +1401,7 @@ namespace wpl
 				// ACT
 				lv.mouse_down(mouse_input::left, 0, 19, 3);
 				lv.mouse_up(mouse_input::left, 0, 19, 3);
-				auto s6 = get_states_raw(lv);
+				auto s6 = get_visible_states_raw(lv);
 
 				// ASSERT
 				assert_equal(reference1, s6);
@@ -1176,7 +1409,7 @@ namespace wpl
 				// ACT
 				lv.mouse_down(mouse_input::left, 0, 19, 4);
 				lv.mouse_up(mouse_input::left, 0, 19, 4);
-				auto s7 = get_states_raw(lv);
+				auto s7 = get_visible_states_raw(lv);
 
 				// ASSERT
 				assert_equal(reference3, s7);
@@ -1184,7 +1417,7 @@ namespace wpl
 				// ACT
 				lv.mouse_down(mouse_input::left, 0, 19, 8);
 				lv.mouse_up(mouse_input::left, 0, 19, 8);
-				auto s8 = get_states_raw(lv);
+				auto s8 = get_visible_states_raw(lv);
 
 				// ASSERT
 				assert_equal(reference3, s8);
@@ -1192,7 +1425,7 @@ namespace wpl
 				// ACT
 				lv.mouse_down(mouse_input::left, 0, 19, 9);
 				lv.mouse_up(mouse_input::left, 0, 19, 9);
-				auto s9 = get_states_raw(lv);
+				auto s9 = get_visible_states_raw(lv);
 
 				// ASSERT
 				pair<table_model::index_type, unsigned /*state*/> reference9[] = {
@@ -1210,7 +1443,7 @@ namespace wpl
 				auto sm = lv.get_vscroll_model();
 
 				lv.set_columns_model(mocks::columns_model::create(L"", 1));
-				lv.set_model(mocks::model_ptr(new mocks::listview_model(1000, 1)));
+				lv.set_model(create_model(1000, 1));
 
 				lv.item_height = 4.3;
 				lv.reported_events = item_self;
@@ -1220,7 +1453,7 @@ namespace wpl
 				// ACT
 				lv.mouse_down(mouse_input::left, 0, 10, 0);
 				lv.mouse_up(mouse_input::left, 0, 10, 0);
-				auto s1 = get_states_raw(lv);
+				auto s1 = get_visible_states_raw(lv);
 
 				// ASSERT
 				pair<table_model::index_type, unsigned /*state*/> reference1[] = {
@@ -1232,7 +1465,7 @@ namespace wpl
 				// ACT
 				lv.mouse_down(mouse_input::left, 0, 10, 1);
 				lv.mouse_up(mouse_input::left, 0, 10, 1);
-				auto s2 = get_states_raw(lv);
+				auto s2 = get_visible_states_raw(lv);
 
 				// ASSERT
 				pair<table_model::index_type, unsigned /*state*/> reference2[] = {
@@ -1244,7 +1477,7 @@ namespace wpl
 				// ACT
 				lv.mouse_down(mouse_input::left, 0, 10, 4);
 				lv.mouse_up(mouse_input::left, 0, 10, 4);
-				auto s3 = get_states_raw(lv);
+				auto s3 = get_visible_states_raw(lv);
 
 				// ASSERT
 				assert_equal(reference2, s3);
@@ -1252,7 +1485,7 @@ namespace wpl
 				// ACT
 				lv.mouse_down(mouse_input::left, 0, 10, 5);
 				lv.mouse_up(mouse_input::left, 0, 10, 5);
-				auto s4 = get_states_raw(lv);
+				auto s4 = get_visible_states_raw(lv);
 
 				// ASSERT
 				pair<table_model::index_type, unsigned /*state*/> reference4[] = {
@@ -1269,7 +1502,7 @@ namespace wpl
 				tracking_listview lv;
 
 				lv.set_columns_model(mocks::columns_model::create(L"", 1));
-				lv.set_model(mocks::model_ptr(new mocks::listview_model(1000, 1)));
+				lv.set_model(create_model(1000, 1));
 
 				lv.item_height = 5;
 				lv.reported_events = item_self;
@@ -1277,14 +1510,14 @@ namespace wpl
 
 				// ACT
 				lv.mouse_down(mouse_input::left, keyboard_input::control, 10, 2);
-				auto s1 = get_states_raw(lv);
+				auto s1 = get_visible_states_raw(lv);
 
 				// ASSERT
 				assert_is_empty(s1);
 
 				// ACT
 				lv.mouse_up(mouse_input::left, keyboard_input::control, 10, 2);
-				auto s2 = get_states_raw(lv);
+				auto s2 = get_visible_states_raw(lv);
 
 				// ASSERT
 				pair<table_model::index_type, unsigned /*state*/> reference2[] = {
@@ -1295,14 +1528,14 @@ namespace wpl
 
 				// ACT
 				lv.mouse_down(mouse_input::left, keyboard_input::control, 10, 2);
-				auto s3 = get_states_raw(lv);
+				auto s3 = get_visible_states_raw(lv);
 
 				// ASSERT
 				assert_equal(reference2, s3);
 
 				// ACT
 				lv.mouse_up(mouse_input::left, keyboard_input::control, 10, 2);
-				auto s4 = get_states_raw(lv);
+				auto s4 = get_visible_states_raw(lv);
 
 				// ASSERT
 				pair<table_model::index_type, unsigned /*state*/> reference4[] = {
@@ -1313,14 +1546,14 @@ namespace wpl
 
 				// ACT
 				lv.mouse_down(mouse_input::left, keyboard_input::control, 10, 10);
-				auto s5 = get_states_raw(lv);
+				auto s5 = get_visible_states_raw(lv);
 
 				// ASSERT
 				assert_equal(reference4, s5);
 
 				// ACT
 				lv.mouse_up(mouse_input::left, keyboard_input::control, 10, 10);
-				auto s6 = get_states_raw(lv);
+				auto s6 = get_visible_states_raw(lv);
 
 				// ASSERT
 				pair<table_model::index_type, unsigned /*state*/> reference6[] = {
@@ -1336,7 +1569,7 @@ namespace wpl
 				tracking_listview lv;
 
 				lv.set_columns_model(mocks::columns_model::create(L"", 1));
-				lv.set_model(mocks::model_ptr(new mocks::listview_model(1000, 1)));
+				lv.set_model(create_model(1000, 1));
 
 				lv.item_height = 5;
 				lv.reported_events = item_self;
@@ -1347,7 +1580,7 @@ namespace wpl
 				lv.mouse_up(mouse_input::left, keyboard_input::control, 10, 2);
 				lv.mouse_down(mouse_input::left, keyboard_input::control, 11, 12);
 				lv.mouse_up(mouse_input::left, keyboard_input::control, 11, 12);
-				auto s1 = get_states_raw(lv);
+				auto s1 = get_visible_states_raw(lv);
 
 				// ASSERT
 				pair<table_model::index_type, unsigned /*state*/> reference1[] = {
@@ -1360,7 +1593,7 @@ namespace wpl
 				// ACT
 				lv.mouse_down(mouse_input::left, keyboard_input::control, 11, 16);
 				lv.mouse_up(mouse_input::left, keyboard_input::control, 11, 16);
-				auto s2 = get_states_raw(lv);
+				auto s2 = get_visible_states_raw(lv);
 
 				// ASSERT
 				pair<table_model::index_type, unsigned /*state*/> reference2[] = {
@@ -1370,6 +1603,44 @@ namespace wpl
 				};
 
 				assert_equal(reference2, s2);
+			}
+
+
+			test( ColumnsModelChangeLeadsToInvalidation )
+			{
+				// INIT
+				tracking_listview lv;
+				const auto cm = mocks::columns_model::create(L"", 13);
+				auto invalidations = 0;
+
+				lv.set_columns_model(cm);
+				lv.set_model(create_model(1000, 1));
+
+				lv.item_height = 5;
+				lv.reported_events = item_self;
+				lv.resize(100, 25, nviews);
+
+				auto c = lv.invalidate += [&] (const void *r) { assert_null(r); invalidations++; };
+
+				// ACT
+				cm->invalidated();
+
+				// ASSERT
+				assert_equal(1, invalidations);
+
+				// ACT
+				cm->invalidated();
+				cm->invalidated();
+
+				// ASSERT
+				assert_equal(3, invalidations);
+
+				// ACT
+				lv.set_columns_model(nullptr);
+				cm->invalidated();
+
+				// ASSERT
+				assert_equal(3, invalidations);
 			}
 		end_test_suite
 	}

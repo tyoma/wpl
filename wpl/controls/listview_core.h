@@ -45,6 +45,8 @@ namespace wpl
 			std::shared_ptr<scroll_model> get_vscroll_model();
 			std::shared_ptr<scroll_model> get_hscroll_model();
 
+			void focus(index_type item);
+
 			// keyboard_input methods
 			virtual void key_down(unsigned code, int modifiers);
 
@@ -71,6 +73,10 @@ namespace wpl
 			virtual void ensure_visible(index_type item);
 
 		private:
+			typedef std::shared_ptr<const trackable> trackable_ptr;
+			typedef std::vector<trackable_ptr> trackables;
+
+			struct trackable_less;
 			struct vertical_scroll_model;
 			struct horizontal_scroll_model;
 
@@ -88,6 +94,7 @@ namespace wpl
 
 			index_type get_item(int y) const;
 			void toggle_selection(index_type item);
+			bool is_selected(index_type item) const;
 
 		private:
 			std::shared_ptr<columns_model_base> _cmodel;
@@ -96,13 +103,14 @@ namespace wpl
 			std::shared_ptr<vertical_scroll_model> _vsmodel;
 			std::shared_ptr<horizontal_scroll_model> _hsmodel;
 			slot_connection _model_invalidation;
+			slot_connection _columns_model_invalidation;
 			agge::box_r _size;
 			double _first_visible;
 			mutable std::vector<agge::real_t> _widths;
 			mutable std::wstring _text_buffer;
 
-			table_model::index_type _focus_item;
-			std::set<index_type> _selected_items;
+			trackable_ptr _focused_item;
+			trackables _selected_items;
 		};
 	}
 }

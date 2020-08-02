@@ -153,6 +153,23 @@ namespace
 		virtual void set_order(index_type /*column*/, bool /*ascending*/)
 		{	}
 
+		virtual shared_ptr<const trackable> track(index_type row) const
+		{
+			shared_ptr<my_trackable> t(new my_trackable);
+
+			t->_index = row;
+			return t;
+		}
+
+	private:
+		struct my_trackable : trackable
+		{
+			virtual index_type index() const
+			{	return _index;	}
+
+			index_type _index;
+		};
+
 	private:
 		double _n;
 		shared_ptr<void> _timer;

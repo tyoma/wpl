@@ -29,7 +29,7 @@ namespace wpl
 							unsigned state_, wstring text_ = L"")
 						: type(type_), context(&context_), rasterizer(rasterizer_.get()), item(item_), state(state_),
 							text(text_)
-					{	box.x1 = box_.x1, box.y1 = box_.y1, box.x2 = box_.x2, box.y2 = box_.y2; }
+					{	box.x1 = box_.x1, box.y1 = box_.y1, box.x2 = box_.x2, box.y2 = box_.y2;	}
 
 					drawing_event_type type;
 					gcontext *context;
