@@ -59,15 +59,18 @@ namespace wpl
 				return make_pair(owner->_first_visible, owner->_size.h / owner->get_item_height());
 			}
 
-			virtual void scrolling(bool /*begins*/)
-			{	}
+			virtual void scrolling(bool begins)
+			{
+				if (owner)
+					owner->_state_vscrolling = begins, owner->_state_keep_focus_visible = false;
+			}
 
 			virtual void scroll_window(double window_min, double /*window_width*/)
 			{
 				if (!owner)
 					return;
 				owner->_first_visible = window_min;
-				owner->invalidate(nullptr);
+				owner->invalidate_();
 				invalidated();
 			}
 
@@ -91,7 +94,8 @@ namespace wpl
 
 
 		listview_core::listview_core()
-			: _first_visible(0), _vsmodel(new vertical_scroll_model), _hsmodel(new horizontal_scroll_model)
+			: _first_visible(0), _vsmodel(new vertical_scroll_model), _hsmodel(new horizontal_scroll_model),
+				_state_vscrolling(false)
 		{
 			_size.w = 0, _size.h = 0;
 			_vsmodel->owner = this;
@@ -110,26 +114,24 @@ namespace wpl
 		{
 			if (!_model)
 				return;
-			_focused_item = item != npos() ? _model->track(item) : nullptr;
-			invalidate(nullptr);
+			_focused = item != npos() ? _model->track(item) : nullptr;
+			_state_keep_focus_visible = true;
+			invalidate_();
 			make_visible(item);
 		}
 
 		void listview_core::make_visible(index_type item)
 		{
-			if (is_visible(item))
+			if (is_visible(item) || _state_vscrolling)
 				return;
-			else if (item < _first_visible)
-				_first_visible = item;
-			else
-				_first_visible = item - _size.h / get_item_height() + 1;
+			_first_visible = static_cast<double>(item < _first_visible ? item : item - _size.h / get_item_height() + 1);
 			_vsmodel->invalidated();
-			invalidate(nullptr);
+			invalidate_();
 		}
 
 		void listview_core::key_down(unsigned code, int modifiers)
 		{
-			index_type item = _focused_item ? _focused_item->index() : npos();
+			index_type item = _focused ? _focused->index() : npos();
 
 			switch (code)
 			{
@@ -181,7 +183,7 @@ namespace wpl
 			const index_type rows = _model->get_count();
 			const columns_model::index_type columns = _cmodel->get_count();
 			const real_t item_height = get_item_height();
-			const index_type focused_item = _focused_item ? _focused_item->index() : npos();
+			const index_type focused_item = _focused ? _focused->index() : npos();
 			real_t total_width = 0.0f;
 			index_type r = (max)(0, static_cast<int>(_first_visible));
 			rect_r box = { 0.0f, item_height * static_cast<real_t>(r - _first_visible), 0.0f, 0.0f };
@@ -220,7 +222,7 @@ namespace wpl
 		{
 			_size.w = static_cast<real_t>(cx);
 			_size.h = static_cast<real_t>(cy);
-			invalidate(nullptr);
+			invalidate_();
 			_vsmodel->invalidated();
 		}
 
@@ -229,19 +231,26 @@ namespace wpl
 
 		void listview_core::set_columns_model(shared_ptr<columns_model> cmodel)
 		{
+			_cmodel_invalidation = cmodel ? cmodel->invalidated += [this] {	invalidate_();	} : nullptr;
 			_cmodel = cmodel;
-			_columns_model_invalidation = cmodel ? cmodel->invalidated += [this] {	this->invalidate(nullptr);	} : nullptr;
 		}
 
 		void listview_core::set_model(shared_ptr<table_model> model)
 		{
+			if (model == _model)
+				return;
 			_model_invalidation = model ? model->invalidated += [this] (index_type count) {
 				if (_item_count != count)
 					_vsmodel->invalidated(), _item_count = count;
-				invalidate(nullptr);
-			} : slot_connection();
+				sort(_selected.begin(), _selected.end(), listview_core::trackable_less());
+				if (_focused && _state_keep_focus_visible)
+					make_visible(_focused->index());
+				invalidate_();
+			} : nullptr;
 			_item_count = model ? model->get_count() : 0u;
 			_model = model;
+			_focused = nullptr;
+			_selected.clear();
 		}
 
 		void listview_core::adjust_column_widths()
@@ -252,17 +261,16 @@ namespace wpl
 			const trackable_ptr t = _model->track(item);
 
 			if (reset_previous)
-				_selected_items.assign(1, t);
+				_selected.assign(1, t);
 			else
-				_selected_items.push_back(t);
-			sort(_selected_items.begin(), _selected_items.end(), trackable_less());
-			invalidate(nullptr);
+				_selected.insert(upper_bound(_selected.begin(), _selected.end(), t, trackable_less()), t);
+			invalidate_();
 		}
 
 		void listview_core::clear_selection()
 		{
-			_selected_items.clear();
-			invalidate(nullptr);
+			_selected.clear();
+			invalidate_();
 		}
 
 		void listview_core::ensure_visible(index_type /*item*/)
@@ -276,6 +284,19 @@ namespace wpl
 			const agge::rect_r &/*box*/, index_type /*item*/, unsigned /*state*/) const
 		{	}
 
+		void listview_core::invalidate_()
+		{	visual::invalidate(nullptr);	}
+
+		void listview_core::toggle_selection(index_type item)
+		{
+			trackables::iterator i = lower_bound(_selected.begin(), _selected.end(), item, trackable_less());
+
+			if (i != _selected.end() && (*i)->index() == item)
+				_selected.erase(i);
+			else
+				_selected.insert(i, _model->track(item));
+		}
+
 		listview_core::index_type listview_core::get_item(int y) const
 		{
 			const double item_height = get_item_height();
@@ -283,25 +304,16 @@ namespace wpl
 			return static_cast<index_type>((y + _first_visible * item_height + 0.5) / item_height);
 		}
 
-		void listview_core::toggle_selection(index_type item)
-		{
-			trackables::iterator i = lower_bound(_selected_items.begin(), _selected_items.end(), item, trackable_less());
-
-			if (i != _selected_items.end() && (*i)->index() == item)
-				_selected_items.erase(i);
-			else
-				_selected_items.insert(i, _model->track(item));
-		}
-
 		bool listview_core::is_selected(index_type item) const
-		{	return binary_search(_selected_items.begin(), _selected_items.end(), item, trackable_less());	}
+		{	return binary_search(_selected.begin(), _selected.end(), item, trackable_less());	}
 
 		bool listview_core::is_visible(index_type item) const
 		{
+			const real_t tolerance = 0.001f;
 			const real_t item_height = get_item_height();
 			const real_t lower = item_height * static_cast<real_t>(item - _first_visible), upper = lower + item_height;
 
-			return (lower >= real_t()) & (upper <= _size.h);
+			return (-tolerance < lower) & (upper < _size.h + tolerance);
 		}
 	}
 }

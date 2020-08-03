@@ -49,9 +49,6 @@
     <ClCompile Include="controls\listview_core.cpp">
       <Filter>Source Files\controls</Filter>
     </ClCompile>
-    <ClCompile Include="win32\native_view.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="controls\header.cpp">
       <Filter>Source Files\controls</Filter>
     </ClCompile>

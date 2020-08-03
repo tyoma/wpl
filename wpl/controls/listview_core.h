@@ -93,8 +93,9 @@ namespace wpl
 				const agge::rect_r &box, index_type item, unsigned /*item_state_flags*/ state, index_type subitem,
 				const std::wstring &text) const = 0;
 
-			index_type get_item(int y) const;
+			void invalidate_();
 			void toggle_selection(index_type item);
+			index_type get_item(int y) const;
 			bool is_selected(index_type item) const;
 			bool is_visible(index_type item) const;
 
@@ -104,15 +105,17 @@ namespace wpl
 			table_model::index_type _item_count;
 			std::shared_ptr<vertical_scroll_model> _vsmodel;
 			std::shared_ptr<horizontal_scroll_model> _hsmodel;
-			slot_connection _model_invalidation;
-			slot_connection _columns_model_invalidation;
+			slot_connection _model_invalidation, _cmodel_invalidation;
 			agge::box_r _size;
 			double _first_visible;
 			mutable std::vector<agge::real_t> _widths;
 			mutable std::wstring _text_buffer;
 
-			trackable_ptr _focused_item;
-			trackables _selected_items;
+			trackable_ptr _focused;
+			trackables _selected;
+
+			bool _state_vscrolling : 1;
+			bool _state_keep_focus_visible : 1;
 		};
 	}
 }

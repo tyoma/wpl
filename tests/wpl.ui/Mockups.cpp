@@ -2,7 +2,7 @@
 
 #include "helpers.h"
 
-#include <wpl/win32/native_view.h>
+#include <string.h>
 
 using namespace std;
 

@@ -90,6 +90,7 @@ namespace wpl
 			{
 				shared_ptr<listview_trackable> t((*auto_trackables)[position]);
 
+				assert_equal(auto_trackables->end(), auto_trackables->find(new_position));
 				auto_trackables->erase(position);
 				t->track_result = new_position;
 				(*auto_trackables)[new_position] = t;

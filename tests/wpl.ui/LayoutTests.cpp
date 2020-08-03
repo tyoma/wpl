@@ -45,16 +45,16 @@ namespace wpl
 				// INIT
 				int sizes1[] = { 13, };
 				int sizes2[] = { 171, };
-				container::positioned_view p1[_countof(sizes1)];
-				container::positioned_view p2[_countof(sizes2)];
+				container::positioned_view p1[1];
+				container::positioned_view p2[1];
 
 				// INIT / ACT
 				stack s1 = hstack(begin(sizes1), end(sizes1), 0);
 				stack s2 = hstack(begin(sizes2), end(sizes2), 0);
 
 				// ACT
-				s1.layout(10, 15, p1, _countof(p1));
-				s2.layout(1000, 551, p2, _countof(p2));
+				s1.layout(10, 15, p1, 1);
+				s2.layout(1000, 551, p2, 1);
 
 				// ASSERT
 				assert_equal(0, p1[0].location.left);
@@ -68,8 +68,8 @@ namespace wpl
 				assert_equal(551, p2[0].location.height);
 
 				// ACT
-				s1.layout(10, 19, p1, _countof(p1));
-				s2.layout(1000, 41, p2, _countof(p2));
+				s1.layout(10, 19, p1, 1);
+				s2.layout(1000, 41, p2, 1);
 
 				// ASSERT
 				assert_equal(0, p1[0].location.left);
@@ -88,13 +88,13 @@ namespace wpl
 			{
 				// INIT
 				int sizes[] = { 13, 17, 121 };
-				container::positioned_view p[_countof(sizes)];
+				container::positioned_view p[3];
 
 				// INIT / ACT
 				stack s = hstack(begin(sizes), end(sizes), 0);
 
 				// ACT
-				s.layout(10, 15, p, _countof(p));
+				s.layout(10, 15, p, 3);
 
 				// ASSERT
 				container::positioned_view reference1[] = {
@@ -108,7 +108,7 @@ namespace wpl
 				assert_equal(reference1[2], p[2]);
 
 				// ACT
-				s.layout(10, 19, p, _countof(p));
+				s.layout(10, 19, p, 3);
 
 				// ASSERT
 				container::positioned_view reference2[] = {
@@ -127,13 +127,13 @@ namespace wpl
 			{
 				// INIT
 				int sizes[] = { 13, 17, 121 };
-				container::positioned_view p[_countof(sizes)];
+				container::positioned_view p[3];
 
 				// INIT / ACT
 				stack s = vstack(begin(sizes), end(sizes), 0);
 
 				// ACT
-				s.layout(11, 15, p, _countof(p));
+				s.layout(11, 15, p, 3);
 
 				// ASSERT
 				container::positioned_view reference1[] = {
@@ -147,7 +147,7 @@ namespace wpl
 				assert_equal(reference1[2], p[2]);
 
 				// ACT
-				s.layout(21, 19, p, _countof(p));
+				s.layout(21, 19, p, 3);
 
 				// ASSERT
 				container::positioned_view reference2[] = {
@@ -166,13 +166,13 @@ namespace wpl
 			{
 				// INIT
 				int sizes[] = { 13, 17, 121, 71 };
-				container::positioned_view p[_countof(sizes)];
+				container::positioned_view p[4];
 
 				// INIT / ACT
 				stack s = vstack(begin(sizes), end(sizes), 5);
 
 				// ACT
-				s.layout(11, 15, p, _countof(p));
+				s.layout(11, 15, p, 4);
 
 				// ASSERT
 				container::positioned_view reference1[] = {
@@ -194,14 +194,14 @@ namespace wpl
 				// INIT
 				int sizes1[] = { -10000 /* 10000 / 10000 */ };
 				int sizes2[] = { -5750 /* 5750 / 5750 */ };
-				container::positioned_view p1[_countof(sizes1)];
-				container::positioned_view p2[_countof(sizes2)];
+				container::positioned_view p1[1];
+				container::positioned_view p2[1];
 				stack s1 = hstack(begin(sizes1), end(sizes1), 0);
 				stack s2 = hstack(begin(sizes2), end(sizes2), 0);
 
 				// ACT
-				s1.layout(11, 15, p1, _countof(p1));
-				s2.layout(1103, 315, p2, _countof(p2));
+				s1.layout(11, 15, p1, 1);
+				s2.layout(1103, 315, p2, 1);
 
 				// ASSERT
 				container::positioned_view reference[] = {
@@ -219,14 +219,14 @@ namespace wpl
 				// INIT
 				int sizes1[] = { -10000 /* 10000 / 35500 */, -20500 /* 20000 / 35500 */, -5000 /* 5000 / 35500 */, };
 				int sizes2[] = { -5750 /* 5750 / 11500 */, -5750 /* 5750 / 11500 */, };
-				container::positioned_view p1[_countof(sizes1)];
-				container::positioned_view p2[_countof(sizes2)];
+				container::positioned_view p1[3];
+				container::positioned_view p2[2];
 				stack s1 = vstack(begin(sizes1), end(sizes1), 0);
 				stack s2 = vstack(begin(sizes2), end(sizes2), 0);
 
 				// ACT
-				s1.layout(19, 1315, p1, _countof(p1));
-				s2.layout(31, 316, p2, _countof(p2));
+				s1.layout(19, 1315, p1, 3);
+				s2.layout(31, 316, p2, 2);
 
 				// ASSERT
 				container::positioned_view reference1[] = {
@@ -253,14 +253,14 @@ namespace wpl
 				// INIT
 				int sizes1[] = { -10000 /* 10000 / 15200 */, 100, -5200 /* 5200 / 15200 */, };
 				int sizes2[] = { -5750 /* 5750 / 5750 */, 107, };
-				container::positioned_view p1[_countof(sizes1)];
-				container::positioned_view p2[_countof(sizes2)];
+				container::positioned_view p1[3];
+				container::positioned_view p2[2];
 				stack s1 = vstack(begin(sizes1), end(sizes1), 3);
 				stack s2 = vstack(begin(sizes2), end(sizes2), 7);
 
 				// ACT
-				s1.layout(19, 1315, p1, _countof(p1));
-				s2.layout(31, 316, p2, _countof(p2));
+				s1.layout(19, 1315, p1, 3);
+				s2.layout(31, 316, p2, 2);
 
 				// ASSERT
 				container::positioned_view reference1[] = {
@@ -295,8 +295,8 @@ namespace wpl
 				container::positioned_view p2[2];
 
 				// ACT
-				s1.layout(100, 120, p1, _countof(p1));
-				s2.layout(100, 120, p2, _countof(p2));
+				s1.layout(100, 120, p1, 1);
+				s2.layout(100, 120, p2, 2);
 
 				// ASSERT
 				container::positioned_view reference1[] = {
@@ -311,8 +311,8 @@ namespace wpl
 				assert_equal(reference2, p2);
 
 				// ACT
-				s1.layout(51, 91, p1, _countof(p1));
-				s2.layout(51, 91, p2, _countof(p2));
+				s1.layout(51, 91, p1, 1);
+				s2.layout(51, 91, p2, 2);
 
 				// ASSERT
 				container::positioned_view reference3[] = {

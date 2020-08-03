@@ -22,6 +22,7 @@
 
 #include <commctrl.h>
 #include <olectl.h>
+#include <stdexcept>
 #include <windowsx.h>
 
 using namespace std;

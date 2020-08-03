@@ -26,6 +26,7 @@
 #include <agge/filling_rules.h>
 #include <agge/path.h>
 #include <agge/stroke_features.h>
+#include <math.h>
 
 using namespace agge;
 using namespace std;

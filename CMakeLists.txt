@@ -15,6 +15,22 @@ if (MSVC)
 	add_definitions(-DUNICODE -D_UNICODE -DISOLATION_AWARE_ENABLED=1)
 endif()
 
+add_compile_options(
+	$<$<OR:$<CXX_COMPILER_ID:GNU>,$<CXX_COMPILER_ID:Clang>>:$<$<COMPILE_LANGUAGE:C>:-fPIC>>
+	$<$<OR:$<CXX_COMPILER_ID:GNU>,$<CXX_COMPILER_ID:Clang>>:$<$<COMPILE_LANGUAGE:CXX>:-fPIC>>
+)
+
+if (CMAKE_VERSION VERSION_GREATER_EQUAL 3.13.5)
+	add_link_options(
+		"$<$<CXX_COMPILER_ID:GNU>:-Wl,--no-undefined>"
+		"$<$<CXX_COMPILER_ID:Clang>:-Wl,-undefined,error>"
+	)
+endif()
+
+if (UNIX)
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread")
+endif()
+
 include_directories(.)
 include_directories(./libraries/agge)
 
