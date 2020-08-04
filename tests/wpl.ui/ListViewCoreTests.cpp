@@ -1956,6 +1956,115 @@ namespace wpl
 				assert_approx_equal(10.0, sm->get_window().first, 0.001);
 			}
 
+
+			test( SelectionChangeNotificationIsFiredOnSelectionChange )
+			{
+				// INIT
+				tracking_listview lv;
+
+				lv.item_height = 5;
+				lv.resize(100, 33, nviews);
+				lv.set_columns_model(mocks::columns_model::create(L"", 1));
+				lv.set_model(create_model(1000, 1));
+
+				vector< pair<table_model::index_type, bool> > selections;
+				auto c = lv.selection_changed += [&] (table_model::index_type item, bool selected) {
+					selections.push_back(make_pair(item, selected));
+				};
+
+				// ACT
+				lv.select(10, true);
+
+				// ASSERT
+				pair<table_model::index_type, bool> reference1[] = {
+					make_pair(10u, true),
+				};
+
+				assert_equivalent(reference1, selections);
+
+				// INIT
+				selections.clear();
+
+				// ACT
+				lv.select(11, false);
+				lv.select(111, false);
+
+				// ASSERT
+				pair<table_model::index_type, bool> reference2[] = {
+					make_pair(11u, true),
+					make_pair(111u, true),
+				};
+
+				assert_equivalent(reference2, selections);
+
+				// INIT
+				selections.clear();
+
+				// ACT
+				lv.select(123, true);
+
+				// ASSERT
+				pair<table_model::index_type, bool> reference3[] = {
+					make_pair(10u, false),
+					make_pair(11u, false),
+					make_pair(111u, false),
+					make_pair(123u, true),
+				};
+
+				assert_equivalent(reference3, selections);
+			}
+
+
+			test( OnlyAClickedItemIsNotifiedInSelectionChange )
+			{
+				// INIT
+				tracking_listview lv;
+
+				lv.item_height = 5;
+				lv.resize(100, 33, nviews);
+				lv.set_columns_model(mocks::columns_model::create(L"", 1));
+				lv.set_model(create_model(1000, 1));
+
+				lv.select(7, true);
+				lv.select(11, false);
+				lv.select(147, false);
+
+				vector< pair<table_model::index_type, bool> > selections;
+				auto c = lv.selection_changed += [&] (table_model::index_type item, bool selected) {
+					selections.push_back(make_pair(item, selected));
+				};
+
+				// ACT
+				lv.mouse_down(mouse_input::left, keyboard_input::control, 0, 6);
+				lv.mouse_up(mouse_input::left, keyboard_input::control, 0, 6);
+
+				// ASSERT
+				pair<table_model::index_type, bool> reference1[] = {
+					make_pair(1u, true),
+				};
+
+				assert_equivalent(reference1, selections);
+
+				// INIT
+				selections.clear();
+
+				// ACT
+				lv.mouse_down(mouse_input::left, keyboard_input::control, 0, 0);
+				lv.mouse_up(mouse_input::left, keyboard_input::control, 0, 0);
+				lv.mouse_down(mouse_input::left, keyboard_input::control, 0, 17);
+				lv.mouse_up(mouse_input::left, keyboard_input::control, 0, 17);
+				lv.mouse_down(mouse_input::left, keyboard_input::control, 0, 6);
+				lv.mouse_up(mouse_input::left, keyboard_input::control, 0, 6);
+
+				// ASSERT
+				pair<table_model::index_type, bool> reference2[] = {
+					make_pair(0u, true),
+					make_pair(1u, false),
+					make_pair(3u, true),
+				};
+
+				assert_equivalent(reference2, selections);
+			}
 		end_test_suite
 	}
 }

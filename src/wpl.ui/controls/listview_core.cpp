@@ -261,9 +261,16 @@ namespace wpl
 			const trackable_ptr t = _model->track(item);
 
 			if (reset_previous)
+			{
+				for (auto i = _selected.begin(); i != _selected.end(); ++i)
+					selection_changed((*i)->index(), false);
 				_selected.assign(1, t);
+			}
 			else
+			{
 				_selected.insert(upper_bound(_selected.begin(), _selected.end(), t, trackable_less()), t);
+			}
+			selection_changed(item, true);
 			invalidate_();
 		}
 
@@ -292,9 +299,9 @@ namespace wpl
 			trackables::iterator i = lower_bound(_selected.begin(), _selected.end(), item, trackable_less());
 
 			if (i != _selected.end() && (*i)->index() == item)
-				_selected.erase(i);
+				_selected.erase(i), selection_changed(item, false);
 			else
-				_selected.insert(i, _model->track(item));
+				select(item, false);
 		}
 
 		listview_core::index_type listview_core::get_item(int y) const
