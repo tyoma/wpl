@@ -1273,11 +1273,14 @@ namespace wpl
 				tracking_listview lv;
 				int invalidated = 0;
 				const auto m = create_model(1000, 1);
+				const auto sm = lv.get_vscroll_model();
 
+				lv.item_height = 10;
+				lv.resize(10, 100, nviews);
 				lv.set_columns_model(mocks::columns_model::create(L"", 1));
 				lv.set_model(m);
 
-				lv.focus(2);
+				lv.focus(200);
 
 				const auto conn = lv.invalidate += [&] (const void *r) {	assert_null(r); invalidated++;	};
 
@@ -1287,6 +1290,7 @@ namespace wpl
 				// ASSERT
 				assert_is_empty(get_visible_states(lv));
 				assert_is_empty(*m->auto_trackables);
+				assert_approx_equal(191.0, sm->get_window().first, 0.001);
 			}
 
 

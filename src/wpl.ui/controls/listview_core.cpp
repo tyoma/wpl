@@ -110,16 +110,6 @@ namespace wpl
 		shared_ptr<scroll_model> listview_core::get_hscroll_model()
 		{	return _hsmodel;	}
 
-		void listview_core::focus(index_type item)
-		{
-			if (!_model)
-				return;
-			_focused = item != npos() ? _model->track(item) : nullptr;
-			_state_keep_focus_visible = true;
-			invalidate_();
-			make_visible(item);
-		}
-
 		void listview_core::make_visible(index_type item)
 		{
 			if (is_visible(item) || _state_vscrolling)
@@ -274,8 +264,16 @@ namespace wpl
 			invalidate_();
 		}
 
-		void listview_core::ensure_visible(index_type /*item*/)
-		{	}
+		void listview_core::focus(index_type item)
+		{
+			if (!_model)
+				return;
+			_focused = item != npos() ? _model->track(item) : nullptr;
+			_state_keep_focus_visible = true;
+			invalidate_();
+			if (npos() != item)
+				make_visible(item);
+		}
 
 		void listview_core::draw_subitem_background(gcontext &/*ctx*/, gcontext::rasterizer_ptr &/*rasterizer*/,
 			const agge::rect_r &/*box*/, index_type /*item*/, unsigned /*state*/, index_type /*subitem*/) const

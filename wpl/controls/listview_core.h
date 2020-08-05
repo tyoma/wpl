@@ -45,7 +45,6 @@ namespace wpl
 			std::shared_ptr<scroll_model> get_vscroll_model();
 			std::shared_ptr<scroll_model> get_hscroll_model();
 
-			void focus(index_type item);
 			void make_visible(index_type item);
 
 			// keyboard_input methods
@@ -69,8 +68,7 @@ namespace wpl
 			virtual void adjust_column_widths();
 
 			virtual void select(index_type item, bool reset_previous);
-
-			virtual void ensure_visible(index_type item);
+			virtual void focus(index_type item);
 
 		private:
 			typedef std::shared_ptr<const trackable> trackable_ptr;
