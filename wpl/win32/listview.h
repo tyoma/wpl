@@ -28,7 +28,7 @@ namespace wpl
 {
 	namespace win32
 	{
-		class listview : public wpl::listview, public native_view
+		class listview : public wpl::listview, public native_view, index_traits
 		{
 		public:
 			listview();

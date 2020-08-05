@@ -47,9 +47,9 @@ namespace wpl
 				form_and_handle f = create_form_with_handle();
 				window_tracker wt;
 				shared_ptr<listview> lv = wpl::create_listview();
-				vector<listview::index_type> selections;
+				vector<table_model::index_type> selections;
 				slot_connection c =
-					lv->selection_changed += bind(&push_back<listview::index_type>, ref(selections), _1);
+					lv->selection_changed += bind(&push_back<table_model::index_type>, ref(selections), _1);
 				RECT rc;
 
 				wt.checkpoint();
@@ -84,7 +84,7 @@ namespace wpl
 				emulate_click(hlv, rc.left, rc.top, mouse_input::left, 0);
 
 				// ASSERT
-				listview::index_type reference1[] = { 0, };
+				table_model::index_type reference1[] = { 0, };
 
 				assert_equal(reference1, selections);
 
@@ -95,7 +95,7 @@ namespace wpl
 				emulate_click(hlv, rc.left, rc.top, mouse_input::left, 0);
 
 				// ASSERT
-				listview::index_type reference2[] = { 0, listview::npos(), 2, listview::npos(), 1, };
+				table_model::index_type reference2[] = { 0, table_model::npos(), 2, table_model::npos(), 1, };
 
 				assert_equal(reference2, selections);
 			}

@@ -67,7 +67,7 @@ namespace
 		}
 
 		virtual void draw_subitem(gcontext &ctx, gcontext::rasterizer_ptr &ras, const rect_r &b, index_type /*item*/,
-			unsigned state, index_type /*subitem*/, const wstring &text) const
+			unsigned state, columns_model::index_type /*subitem*/, const wstring &text) const
 		{
 			const color text_color = state & selected ? color::make(0, 0, 0) : color::make(255, 255, 255);
 

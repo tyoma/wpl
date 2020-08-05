@@ -34,7 +34,7 @@ namespace wpl
 			size_t get_columns_count(HWND hlv)
 			{	return Header_GetItemCount(ListView_GetHeader(hlv));	}
 
-			sort_direction get_column_direction(HWND hlv, listview::index_type column)
+			sort_direction get_column_direction(HWND hlv, columns_model::index_type column)
 			{
 				HDITEM item = { 0 };
 				HWND hheader = ListView_GetHeader(hlv);
@@ -44,7 +44,7 @@ namespace wpl
 				return (item.fmt & HDF_SORTUP) ? dir_ascending : (item.fmt & HDF_SORTDOWN) ? dir_descending : dir_none;
 			}
 
-			basic_string<TCHAR> get_column_text(HWND hlv, listview::index_type column)
+			basic_string<TCHAR> get_column_text(HWND hlv, columns_model::index_type column)
 			{
 				HDITEM item = { 0 };
 				HWND hheader = ListView_GetHeader(hlv);
@@ -56,7 +56,7 @@ namespace wpl
 				return item.pszText;
 			}
 
-			int get_column_width(HWND hlv, listview::index_type column)
+			int get_column_width(HWND hlv, columns_model::index_type column)
 			{
 				HDITEM item = { 0 };
 				HWND hheader = ListView_GetHeader(hlv);
@@ -854,11 +854,11 @@ namespace wpl
 			test( ItemActivationFiresCorrespondingEvent )
 			{
 				// INIT
-				vector<listview::index_type> selections;
+				vector<table_model::index_type> selections;
 				HWND hlv = create_listview();
 				shared_ptr<listview> lv(wrap_listview(hlv));
 				slot_connection c =
-					lv->item_activate += bind(&push_back<listview::index_type>, ref(selections), _1);
+					lv->item_activate += bind(&push_back<table_model::index_type>, ref(selections), _1);
 				NMITEMACTIVATE nm = {	{	0, 0, LVN_ITEMACTIVATE	},	};
 
 				lv->set_model(mocks::model_ptr(new mocks::listview_model(10)));
@@ -890,12 +890,12 @@ namespace wpl
 			test( ItemChangeWithSelectionRemainingDoesNotFireEvent )
 			{
 				// INIT
-				vector<listview::index_type> selection_indices;
+				vector<table_model::index_type> selection_indices;
 				vector<bool> selection_states;
 				HWND hlv = create_listview();
 				shared_ptr<listview> lv(wrap_listview(hlv));
 				slot_connection
-					c1 = lv->selection_changed += bind(&push_back<listview::index_type>, ref(selection_indices), _1),
+					c1 = lv->selection_changed += bind(&push_back<table_model::index_type>, ref(selection_indices), _1),
 					c2 = lv->selection_changed += bind(&push_back<bool>, ref(selection_states), _2);
 				NMLISTVIEW nmlv = {
 					{	0, 0, LVN_ITEMCHANGED	},
@@ -918,12 +918,12 @@ namespace wpl
 			test( ItemChangeWithSelectionChangingDoesFireEvent )
 			{
 				// INIT
-				vector<listview::index_type> selection_indices;
+				vector<table_model::index_type> selection_indices;
 				vector<bool> selection_states;
 				HWND hlv = create_listview();
 				shared_ptr<listview> lv(wrap_listview(hlv));
 				slot_connection
-					c1 = lv->selection_changed += bind(&push_back<listview::index_type>, ref(selection_indices), _1),
+					c1 = lv->selection_changed += bind(&push_back<table_model::index_type>, ref(selection_indices), _1),
 					c2 = lv->selection_changed += bind(&push_back<bool>, ref(selection_states), _2);
 				NMLISTVIEW nmlv = {
 					{	0, 0, LVN_ITEMCHANGED	},
@@ -1412,7 +1412,7 @@ namespace wpl
 				m->trackables.clear();
 
 				// ACT
-				t->track_result = listview::npos();
+				t->track_result = table_model::npos();
 				t.reset();
 				m->invalidated(100);
 
@@ -1447,7 +1447,7 @@ namespace wpl
 				m->invalidated(100);
 
 				// ASSERT
-				listview::index_type expected1[] = {	5, 7, 21,	};
+				table_model::index_type expected1[] = {	5, 7, 21,	};
 
 				assert_equivalent(expected1, get_matching_indices(hlv, LVNI_SELECTED));
 
@@ -1456,16 +1456,16 @@ namespace wpl
 				m->invalidated(100);
 
 				// ASSERT
-				listview::index_type expected2[] = {	13, 7, 21,	};
+				table_model::index_type expected2[] = {	13, 7, 21,	};
 
 				assert_equivalent(expected2, get_matching_indices(hlv, LVNI_SELECTED));
 
 				// ACT
-				t[1]->track_result = listview::npos();
+				t[1]->track_result = table_model::npos();
 				m->invalidated(100);
 
 				// ASSERT
-				listview::index_type expected3[] = {	13, 21,	};
+				table_model::index_type expected3[] = {	13, 21,	};
 
 				assert_equivalent(expected3, get_matching_indices(hlv, LVNI_SELECTED));
 				assert_is_empty(m->tracking_requested);
@@ -1502,7 +1502,7 @@ namespace wpl
 				m->set_count(100);
 
 				// ASSERT
-				listview::index_type expected1[] = {	5, 7, 3, 19, 47,	};
+				table_model::index_type expected1[] = {	5, 7, 3, 19, 47,	};
 
 				assert_equivalent(expected1, get_matching_indices(hlv, LVNI_SELECTED));
 
@@ -1511,7 +1511,7 @@ namespace wpl
 				m->set_count(100);
 
 				// ASSERT
-				listview::index_type expected2[] = {	5, 7, 3, 1, 47,	};
+				table_model::index_type expected2[] = {	5, 7, 3, 1, 47,	};
 
 				assert_equivalent(expected2, get_matching_indices(hlv, LVNI_SELECTED));
 				assert_is_empty(m->tracking_requested);
@@ -1538,7 +1538,7 @@ namespace wpl
 				m->trackables.clear();
 
 				// ACT
-				t->track_result = listview::npos();
+				t->track_result = table_model::npos();
 				t.reset();
 				m->set_count(99);
 
@@ -1603,7 +1603,7 @@ namespace wpl
 				m->set_count(100);
 
 				// ASSERT
-				listview::index_type expected1[] = {	3, 7,	};
+				table_model::index_type expected1[] = {	3, 7,	};
 
 				assert_equivalent(expected1, get_matching_indices(hlv, LVNI_SELECTED));
 
@@ -1613,7 +1613,7 @@ namespace wpl
 				m->set_count(100);
 
 				// ASSERT
-				listview::index_type expected2[] = {	7,	};
+				table_model::index_type expected2[] = {	7,	};
 
 				assert_equivalent(expected2, get_matching_indices(hlv, LVNI_SELECTED));
 			}
@@ -1687,7 +1687,7 @@ namespace wpl
 				m->set_count(100);
 
 				// ASSERT
-				listview::index_type expected[] = {	7, 8,	};
+				table_model::index_type expected[] = {	7, 8,	};
 
 				assert_equivalent(expected, get_matching_indices(hlv, LVNI_SELECTED));
 			}
@@ -2291,8 +2291,8 @@ namespace wpl
 				hwnd = get_listview_window(*lv, hparent2);
 
 				// ASSERT
-				vector<listview::index_type> selection = get_matching_indices(hwnd, LVNI_SELECTED);
-				listview::index_type reference1[] = { 1, 3, };
+				vector<table_model::index_type> selection = get_matching_indices(hwnd, LVNI_SELECTED);
+				table_model::index_type reference1[] = { 1, 3, };
 
 				assert_equal(reference1, selection);
 
@@ -2304,7 +2304,7 @@ namespace wpl
 
 				// ASSERT
 				selection = get_matching_indices(hwnd, LVNI_SELECTED);
-				listview::index_type reference2[] = { 2, };
+				table_model::index_type reference2[] = { 2, };
 
 				assert_equal(reference2, selection);
 			}
@@ -2349,9 +2349,9 @@ namespace wpl
 				window_tracker wt;
 				shared_ptr<listview> lv = wpl::create_listview();
 				HWND hlv = get_listview_window(*lv, hparent);
-				vector<listview::index_type> selections;
+				vector<table_model::index_type> selections;
 				slot_connection c =
-					lv->selection_changed += bind(&push_back<listview::index_type>, ref(selections), _1);
+					lv->selection_changed += bind(&push_back<table_model::index_type>, ref(selections), _1);
 
 				wt.checkpoint();
 
@@ -2373,7 +2373,7 @@ namespace wpl
 				emulate_click(hlv, rc.left, rc.top, mouse_input::left, 0);
 
 				// ASSERT
-				listview::index_type reference1[] = { 0, };
+				table_model::index_type reference1[] = { 0, };
 
 				assert_equal(reference1, selections);
 
@@ -2384,7 +2384,7 @@ namespace wpl
 				emulate_click(hlv, rc.left, rc.top, mouse_input::left, 0);
 
 				// ASSERT
-				listview::index_type reference2[] = { 0, listview::npos(), 2, listview::npos(), 1, };
+				table_model::index_type reference2[] = { 0, table_model::npos(), 2, table_model::npos(), 1, };
 
 				assert_equal(reference2, selections);
 			}

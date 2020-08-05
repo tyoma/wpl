@@ -31,7 +31,7 @@ namespace wpl
 					template <typename T>
 					drawing_event(drawing_event_type type_, gcontext &context_,
 							const gcontext::rasterizer_ptr &rasterizer_, const agge::rect<T> &box_, index_type item_,
-							unsigned state_, index_type subitem_ = 0u, wstring text_ = L"")
+							unsigned state_, columns_model::index_type subitem_ = 0u, wstring text_ = L"")
 						: type(type_), context(&context_), rasterizer(rasterizer_.get()), item(item_),
 							subitem(subitem_), state(state_), text(text_)
 					{	box.x1 = box_.x1, box.y1 = box_.y1, box.x2 = box_.x2, box.y2 = box_.y2; }
@@ -40,8 +40,8 @@ namespace wpl
 					gcontext *context;
 					gcontext::rasterizer_type *rasterizer;
 					agge::rect<double> box;
-					index_type item;
-					index_type subitem;
+					table_model::index_type item;
+					columns_model::index_type subitem;
 					unsigned state;
 					wstring text;
 				};
@@ -70,8 +70,7 @@ namespace wpl
 				}
 
 				virtual void draw_subitem_background(gcontext &ctx, gcontext::rasterizer_ptr &rasterizer,
-					const agge::rect_r &box, index_type item, unsigned state,
-					index_type subitem) const
+					const agge::rect_r &box, index_type item, unsigned state, columns_model::index_type subitem) const
 				{
 					if (subitem_background & reported_events)
 						events.push_back(drawing_event(subitem_background, ctx, rasterizer, box, item, state, subitem));
@@ -84,9 +83,8 @@ namespace wpl
 						events.push_back(drawing_event(item_self, ctx, rasterizer, box, item, state));
 				}
 
-				virtual void draw_subitem(gcontext &ctx, gcontext::rasterizer_ptr &rasterizer,
-					const agge::rect_r &box, index_type item, unsigned state, index_type subitem,
-					const std::wstring &text) const
+				virtual void draw_subitem(gcontext &ctx, gcontext::rasterizer_ptr &rasterizer, const agge::rect_r &box,
+					index_type item, unsigned state, columns_model::index_type subitem, const std::wstring &text) const
 				{
 					if (subitem_self & reported_events)
 						events.push_back(drawing_event(subitem_self, ctx, rasterizer, box, item, state, subitem, text));
@@ -770,7 +768,7 @@ namespace wpl
 			}
 
 
-			test( MakingVisisbleScrollsTheView )
+			test( MakingVisibleScrollsTheView )
 			{
 				// INIT
 				auto invalidations = 0;
@@ -818,6 +816,39 @@ namespace wpl
 				assert_equal(4, scroll_invalidations);
 				assert_equal(4, invalidations);
 				assert_approx_equal(33.0, sm->get_window().first, 0.001);
+			}
+
+
+			test( MakingVisibleToNPosScrollsNowhere )
+			{
+				// INIT
+				auto invalidations = 0;
+				auto scroll_invalidations = 0;
+				tracking_listview lv;
+				const auto sm = lv.get_vscroll_model();
+
+				lv.item_height = 5;
+				lv.reported_events = item_self;
+				lv.resize(10, 28, nviews);
+				lv.set_columns_model(mocks::columns_model::create(L"", 100));
+				lv.set_model(create_model(1000, 1));
+
+				const auto c1 = lv.invalidate += [&] (const void *) { invalidations++; };
+				const auto c2 = sm->invalidated += [&] { scroll_invalidations++; };
+
+				lv.make_visible(31);
+				lv.make_visible(5);
+
+				invalidations = 0;
+				scroll_invalidations = 0;
+
+				// ACT
+				lv.make_visible(table_model::npos());
+
+				// ASSERT
+				assert_approx_equal(5.0, sm->get_window().first, 0.001);
+				assert_equal(0, invalidations);
+				assert_equal(0, scroll_invalidations);
 			}
 
 

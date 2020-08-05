@@ -120,7 +120,7 @@ namespace wpl
 					return make_pair(i, resize_handle);
 				x -= w;
 			}
-			return make_pair(0, none_handle);
+			return make_pair(index_type(), none_handle);
 		}
 	}
 }

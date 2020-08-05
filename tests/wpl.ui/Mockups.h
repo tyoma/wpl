@@ -276,7 +276,7 @@ namespace wpl
 
 			template <typename BaseT>
 			inline void logging_key_input<BaseT>::key_down(unsigned code, int modifiers)
-			{	keyboard_event e = { keyboard_event::keydown, code, modifiers }; events.push_back(e);	}
+			{	keyboard_event e = { keyboard_event::keydown, (int)code, modifiers }; events.push_back(e);	}
 
 			template <typename BaseT>
 			inline void logging_key_input<BaseT>::character(wchar_t /*symbol*/, unsigned /*repeats*/, int /*modifiers*/)
@@ -284,7 +284,7 @@ namespace wpl
 
 			template <typename BaseT>
 			inline void logging_key_input<BaseT>::key_up(unsigned code, int modifiers)
-			{	keyboard_event e = { keyboard_event::keyup, code, modifiers }; events.push_back(e);	}
+			{	keyboard_event e = { keyboard_event::keyup, (int)code, modifiers }; events.push_back(e);	}
 
 			template <typename BaseT>
 			inline void logging_key_input<BaseT>::got_focus()

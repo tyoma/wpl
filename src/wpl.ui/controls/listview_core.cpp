@@ -112,7 +112,7 @@ namespace wpl
 
 		void listview_core::make_visible(index_type item)
 		{
-			if (is_visible(item) || _state_vscrolling)
+			if (is_visible(item) | _state_vscrolling | (npos() == item))
 				return;
 			_first_visible = static_cast<double>(item < _first_visible ? item : item - _size.h / get_item_height() + 1);
 			_vsmodel->invalidated();
@@ -270,13 +270,13 @@ namespace wpl
 				return;
 			_focused = item != npos() ? _model->track(item) : nullptr;
 			_state_keep_focus_visible = true;
+			make_visible(item);
 			invalidate_();
-			if (npos() != item)
-				make_visible(item);
 		}
 
 		void listview_core::draw_subitem_background(gcontext &/*ctx*/, gcontext::rasterizer_ptr &/*rasterizer*/,
-			const agge::rect_r &/*box*/, index_type /*item*/, unsigned /*state*/, index_type /*subitem*/) const
+			const agge::rect_r &/*box*/, index_type /*item*/, unsigned /*state*/,
+			columns_model::index_type /*subitem*/) const
 		{	}
 
 		void listview_core::draw_item(gcontext &/*ctx*/, gcontext::rasterizer_ptr &/*rasterizer*/,

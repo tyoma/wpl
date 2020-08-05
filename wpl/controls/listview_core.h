@@ -29,7 +29,8 @@ namespace wpl
 {
 	namespace controls
 	{
-		class listview_core : public wpl::listview, public view, public std::enable_shared_from_this<view>, noncopyable
+		class listview_core : public wpl::listview, public view, public std::enable_shared_from_this<view>,
+			public index_traits, noncopyable
 		{
 		public:
 			enum item_state_flags {
@@ -83,12 +84,13 @@ namespace wpl
 			virtual void draw_item_background(gcontext &ctx, gcontext::rasterizer_ptr &rasterizer,
 				const agge::rect_r &box, index_type item, unsigned /*item_state_flags*/ state) const = 0;
 			virtual void draw_subitem_background(gcontext &ctx, gcontext::rasterizer_ptr &rasterizer,
-				const agge::rect_r &box, index_type item, unsigned /*item_state_flags*/ state, index_type subitem) const;
+				const agge::rect_r &box, index_type item, unsigned /*item_state_flags*/ state,
+				columns_model::index_type subitem) const;
 			virtual void draw_item(gcontext &ctx, gcontext::rasterizer_ptr &rasterizer,
 				const agge::rect_r &box, index_type item, unsigned /*item_state_flags*/ state) const;
 			virtual void draw_subitem(gcontext &ctx, gcontext::rasterizer_ptr &rasterizer,
-				const agge::rect_r &box, index_type item, unsigned /*item_state_flags*/ state, index_type subitem,
-				const std::wstring &text) const = 0;
+				const agge::rect_r &box, index_type item, unsigned /*item_state_flags*/ state,
+				columns_model::index_type subitem, const std::wstring &text) const = 0;
 
 			void invalidate_();
 			void toggle_selection(index_type item);

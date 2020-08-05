@@ -25,17 +25,17 @@
 
 namespace wpl
 {
-	struct listview : control, index_traits
+	struct listview : control
 	{
 		virtual void set_columns_model(std::shared_ptr<columns_model> cm) = 0;
 		virtual void set_model(std::shared_ptr<table_model> ds) = 0;
 
 		virtual void adjust_column_widths() = 0;
 
-		virtual void select(index_type item, bool reset_previous) = 0;
-		virtual void focus(index_type item) = 0;
+		virtual void select(table_model::index_type item, bool reset_previous) = 0;
+		virtual void focus(table_model::index_type item) = 0;
 
-		signal<void (index_type /*item*/)> item_activate;
-		signal<void (index_type /*item*/, bool /*became selected*/)> selection_changed;
+		signal<void (table_model::index_type /*item*/)> item_activate;
+		signal<void (table_model::index_type /*item*/, bool /*became selected*/)> selection_changed;
 	};
 }
