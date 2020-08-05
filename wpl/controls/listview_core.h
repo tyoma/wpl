@@ -69,7 +69,6 @@ namespace wpl
 			virtual void adjust_column_widths();
 
 			virtual void select(index_type item, bool reset_previous);
-			virtual void clear_selection();
 
 			virtual void ensure_visible(index_type item);
 

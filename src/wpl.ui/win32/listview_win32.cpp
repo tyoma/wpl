@@ -123,22 +123,28 @@ namespace wpl
 
 		void listview::select(index_type item, bool reset_previous)
 		{
-			if (reset_previous)
-				clear_selection();
-			ListView_SetItemState(get_window(), item, LVIS_SELECTED, LVIS_SELECTED);
-		}
-
-		void listview::clear_selection()
-		{
 			HWND hwnd = get_window();
 
-			for (int i; i = ListView_GetNextItem(hwnd, -1, LVNI_ALL | LVNI_SELECTED), i != -1; )
-				ListView_SetItemState(hwnd, i, 0, LVIS_SELECTED);
+			if (reset_previous)
+			{
+				for (int i; i = ListView_GetNextItem(hwnd, -1, LVNI_ALL | LVNI_SELECTED), i != -1; )
+					ListView_SetItemState(hwnd, i, 0, LVIS_SELECTED);
+			}
+			if (npos() != item)
+				ListView_SetItemState(get_window(), item, LVIS_SELECTED, LVIS_SELECTED);
 		}
 
-		void listview::ensure_visible(index_type item)
+		void listview::focus(index_type item)
 		{
 			_visible_item = make_pair(item, _model->track(item));
+			if (npos() != item)
+			{
+				ListView_SetItemState(get_window(), item, LVIS_FOCUSED, LVIS_FOCUSED);
+			}
+			else if (_focused_item)
+			{
+				ListView_SetItemState(get_window(), _focused_item->index(), 0, LVIS_FOCUSED);
+			}
 			ListView_EnsureVisible(get_window(), item, FALSE);
 		}
 

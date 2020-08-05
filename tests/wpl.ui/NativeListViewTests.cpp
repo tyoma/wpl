@@ -1208,7 +1208,7 @@ namespace wpl
 
 				// ACT
 				lv->select(1, false);
-				lv->clear_selection();
+				lv->select(table_model::npos(), true);
 
 				// ASSERT
 				assert_is_empty(get_matching_indices(hlv, LVNI_SELECTED));
@@ -1216,7 +1216,7 @@ namespace wpl
 				// ACT
 				lv->select(2, false);
 				lv->select(3, false);
-				lv->clear_selection();
+				lv->select(table_model::npos(), true);
 
 				// ASSERT
 				assert_is_empty(get_matching_indices(hlv, LVNI_SELECTED));
@@ -1721,7 +1721,41 @@ namespace wpl
 			}
 
 
-			test( EnsureItemVisibility )
+			test( FocusingItemChangesListViewItemState )
+			{
+				// INIT
+				HWND hlv = create_listview();
+				shared_ptr<listview> lv(wrap_listview(hlv));
+
+				lv->set_model(mocks::autotrackable_table_model_ptr(new mocks::autotrackable_table_model(100, 1)));
+				lv->set_columns_model(mocks::columns_model::create(L"iiii"));
+				lv->adjust_column_widths();
+
+				// ACT
+				lv->focus(99);
+
+				// ASSERT
+				table_model::index_type reference1[] = { 99u, };
+
+				assert_equal(reference1, get_matching_indices(hlv, LVNI_FOCUSED));
+
+				// ACT
+				lv->focus(49);
+
+				// ASSERT
+				table_model::index_type reference2[] = { 49u, };
+
+				assert_equal(reference2, get_matching_indices(hlv, LVNI_FOCUSED));
+
+				// ACT
+				lv->focus(table_model::npos());
+
+				// ASSERT
+				assert_is_empty(get_matching_indices(hlv, LVNI_FOCUSED));
+			}
+
+
+			test( FocusingItemMakesItVisisble )
 			{
 				// INIT
 				HWND hlv = create_listview();
@@ -1732,7 +1766,7 @@ namespace wpl
 				lv->adjust_column_widths();
 
 				// ACT
-				lv->ensure_visible(99);
+				lv->focus(99);
 
 				// ASSERT
 				assert_is_true(is_item_visible(hlv, 99));
@@ -1740,7 +1774,7 @@ namespace wpl
 				assert_is_false(is_item_visible(hlv, 0));
 
 				// ACT
-				lv->ensure_visible(49);
+				lv->focus(49);
 
 				// ASSERT
 				assert_is_false(is_item_visible(hlv, 99));
@@ -1748,7 +1782,7 @@ namespace wpl
 				assert_is_false(is_item_visible(hlv, 0));
 
 				// ACT
-				lv->ensure_visible(0);
+				lv->focus(0);
 
 				// ASSERT
 				assert_is_false(is_item_visible(hlv, 99));
@@ -1757,36 +1791,35 @@ namespace wpl
 			}
 
 
-			test( CaptureTrackableOnSettingVisibilityTracking )
+			test( CaptureTrackableOnFocusingItem )
 			{
 				// INIT
 				HWND hlv = create_listview();
 				shared_ptr<listview> lv(wrap_listview(hlv));
-				mocks::model_ptr m(new mocks::listview_model(100, 1));
+				mocks::autotrackable_table_model_ptr m(new mocks::autotrackable_table_model(100, 1));
 
 				lv->set_columns_model(mocks::columns_model::create(L"iiii"));
 				lv->adjust_column_widths();
 				lv->set_model(m);
 
 				// ACT
-				lv->ensure_visible(0);
+				lv->focus(0);
 
 				// ASSERT
-				assert_equal(1u, m->tracking_requested.size());
-				assert_equal(0u, m->tracking_requested[0]);
+				assert_equal(1u, m->auto_trackables->size());
+				assert_equal(1u, m->auto_trackables->count(0));
 
 				// ACT
-				lv->ensure_visible(1);
-				lv->ensure_visible(7);
+				lv->focus(1);
+				lv->focus(7);
 
 				// ASSERT
-				assert_equal(3u, m->tracking_requested.size());
-				assert_equal(1u, m->tracking_requested[1]);
-				assert_equal(7u, m->tracking_requested[2]);
+				assert_equal(1u, m->auto_trackables->size());
+				assert_equal(1u, m->auto_trackables->count(7));
 			}
 
 
-			test( ReleaseTrackableOnChangingVisibilityTracking )
+			test( ReleaseTrackableOnChangingFocus )
 			{
 				// INIT
 				HWND hlv = create_listview();
@@ -1802,8 +1835,8 @@ namespace wpl
 				lv->set_model(m);
 
 				// ACT
-				lv->ensure_visible(4);
-				lv->ensure_visible(7);
+				lv->focus(4);
+				lv->focus(7);
 				m->trackables.clear();
 
 				// ASSERT
@@ -1812,7 +1845,7 @@ namespace wpl
 			}
 
 
-			test( ReleaseVisibilityTrackableOnChangingModel )
+			test( ReleaseFocusTrackableOnChangingModel )
 			{
 				// INIT
 				HWND hlv = create_listview();
@@ -1823,7 +1856,7 @@ namespace wpl
 				lv->set_columns_model(mocks::columns_model::create(L"iiii"));
 				lv->adjust_column_widths();
 				lv->set_model(m1);
-				lv->ensure_visible(5);
+				lv->focus(5);
 				m1->trackables.clear();
 
 				// ACT
@@ -1845,7 +1878,7 @@ namespace wpl
 				lv->set_model(m);
 				lv->set_columns_model(mocks::columns_model::create(L"iiii"));
 				lv->adjust_column_widths();
-				lv->ensure_visible(0);
+				lv->focus(0);
 
 				// ACT
 				t->track_result = 99;
@@ -1856,6 +1889,10 @@ namespace wpl
 				assert_is_false(is_item_visible(hlv, 49));
 				assert_is_false(is_item_visible(hlv, 0));
 
+				table_model::index_type reference1[] = { 99, };
+
+				assert_equal(reference1, get_matching_indices(hlv, LVNI_FOCUSED));
+
 				// ACT
 				t->track_result = 49;
 				m->set_count(100);
@@ -1865,6 +1902,10 @@ namespace wpl
 				assert_is_true(is_item_visible(hlv, 49));
 				assert_is_false(is_item_visible(hlv, 0));
 
+				table_model::index_type reference2[] = { 49, };
+
+				assert_equal(reference2, get_matching_indices(hlv, LVNI_FOCUSED));
+
 				// ACT
 				t->track_result = 0;
 				m->set_count(100);
@@ -1873,10 +1914,14 @@ namespace wpl
 				assert_is_false(is_item_visible(hlv, 99));
 				assert_is_false(is_item_visible(hlv, 49));
 				assert_is_true(is_item_visible(hlv, 0));
+
+				table_model::index_type reference3[] = { 0, };
+
+				assert_equal(reference3, get_matching_indices(hlv, LVNI_FOCUSED));
 			}
 
 
-			test( DontTrackItemIfItWasHidden1 )
+			test( VisibilityTrackingBreaksWhenItemIsScrolledOut1 )
 			{
 				// INIT
 				HWND hlv = create_listview();
@@ -1887,7 +1932,7 @@ namespace wpl
 				lv->set_model(m);
 				lv->set_columns_model(mocks::columns_model::create(L"iiii"));
 				lv->adjust_column_widths();
-				lv->ensure_visible(0);
+				lv->focus(0);
 
 				// ACT
 				ListView_EnsureVisible(hlv, 49, FALSE);
@@ -1899,6 +1944,10 @@ namespace wpl
 				assert_is_true(is_item_visible(hlv, 49));
 				assert_is_false(is_item_visible(hlv, 99));
 
+				table_model::index_type reference1[] = { 99, };
+
+				assert_equal(reference1, get_matching_indices(hlv, LVNI_FOCUSED));
+
 				// ACT
 				ListView_EnsureVisible(hlv, 0, FALSE);
 				t->track_result = 49;
@@ -1908,10 +1957,14 @@ namespace wpl
 				assert_is_true(is_item_visible(hlv, 0));
 				assert_is_false(is_item_visible(hlv, 49));
 				assert_is_false(is_item_visible(hlv, 99));
+
+				table_model::index_type reference2[] = { 49, };
+
+				assert_equal(reference2, get_matching_indices(hlv, LVNI_FOCUSED));
 			}
 
 
-			test( DontTrackItemIfItWasHidden2 )
+			test( VisibilityTrackingBreaksWhenItemIsScrolledOut2 )
 			{
 				// INIT
 				HWND hlv = create_listview();
@@ -1922,7 +1975,7 @@ namespace wpl
 				lv->set_model(m);
 				lv->set_columns_model(mocks::columns_model::create(L"iiii"));
 				lv->adjust_column_widths();
-				lv->ensure_visible(49);
+				lv->focus(49);
 
 				// ACT
 				ListView_EnsureVisible(hlv, 0, FALSE);
@@ -1936,7 +1989,7 @@ namespace wpl
 			}
 
 
-			test( RestoreVisibilityTracking )
+			test( VisibilityTrackingIsRestoredWhenFocusBecomesVisisble )
 			{
 				// INIT
 				HWND hlv = create_listview();
@@ -1947,7 +2000,7 @@ namespace wpl
 				lv->set_model(m);
 				lv->set_columns_model(mocks::columns_model::create(L"iiii"));
 				lv->adjust_column_widths();
-				lv->ensure_visible(49);
+				lv->focus(49);
 				ListView_EnsureVisible(hlv, 0, FALSE);
 				t->track_result = 99;
 				m->set_count(100);
@@ -1988,7 +2041,7 @@ namespace wpl
 				::MoveWindow(hlv, 0, 0, LOWORD(dwsize), HIWORD(dwsize), TRUE);
 
 				// ACT
-				lv->ensure_visible(9);
+				lv->focus(9);
 				int first_visible = ListView_GetTopIndex(hlv);
 
 				// ASSERT
@@ -2006,7 +2059,7 @@ namespace wpl
 				::MoveWindow(::GetParent(hlv), 37, 71, LOWORD(dwsize), HIWORD(dwsize), TRUE);
 
 				// ACT
-				lv->ensure_visible(9);
+				lv->focus(9);
 				first_visible = ListView_GetTopIndex(hlv);
 
 				// ASSERT
@@ -2041,7 +2094,7 @@ namespace wpl
 				::MoveWindow(hlv, 0, 0, LOWORD(dwsize), HIWORD(dwsize), TRUE);
 
 				// ACT
-				lv->ensure_visible(9);
+				lv->focus(9);
 				int first_visible = ListView_GetTopIndex(hlv);
 
 				// ASSERT
@@ -2240,7 +2293,7 @@ namespace wpl
 				// ASSERT
 				vector<listview::index_type> selection = get_matching_indices(hwnd, LVNI_SELECTED);
 				listview::index_type reference1[] = { 1, 3, };
-					
+
 				assert_equal(reference1, selection);
 
 				// INIT
@@ -2252,8 +2305,41 @@ namespace wpl
 				// ASSERT
 				selection = get_matching_indices(hwnd, LVNI_SELECTED);
 				listview::index_type reference2[] = { 2, };
-					
+
 				assert_equal(reference2, selection);
+			}
+
+
+			test( SelectingNPosAcquiresNoTrackable )
+			{
+				// INIT
+				shared_ptr<listview> lv = wpl::create_listview();
+				shared_ptr<mocks::listview_model> model(new mocks::listview_model(5, 1));
+				vector<table_model::index_type> selections;
+
+				lv->set_columns_model(mocks::columns_model::create(L"Name", 100));
+				lv->set_model(model);
+
+				HWND hwnd = get_listview_window(*lv, hparent);
+
+				::SetWindowLong(hwnd, GWL_STYLE, ::GetWindowLong(hwnd, GWL_STYLE) & ~LVS_SINGLESEL);
+
+				lv->select(1, true);
+				lv->select(3, false);
+				model->tracking_requested.clear();
+
+				// ACT
+				lv->select(table_model::npos(), false);
+
+				// ASSERT
+				assert_is_empty(model->tracking_requested);
+				assert_equal(2u, get_matching_indices(hwnd, LVNI_SELECTED).size());
+
+				// ACT
+				lv->select(table_model::npos(), true);
+
+				// ASSERT
+				assert_is_empty(model->tracking_requested);
 			}
 
 

@@ -1057,6 +1057,12 @@ namespace wpl
 				assert_equal(1u, m->auto_trackables->count(31));
 
 				// ACT
+				lv.select(table_model::npos(), false); // does nothing
+
+				// ASSERT
+				assert_equal(3u, m->auto_trackables->size());
+
+				// ACT
 				lv.select(0, true);
 
 				// ASSERT
@@ -1064,7 +1070,8 @@ namespace wpl
 				assert_equal(1u, m->auto_trackables->count(0));
 
 				// ACT
-				lv.clear_selection();
+				lv.select(1, true);
+				lv.select(table_model::npos(), true);
 
 				// ASSERT
 				assert_is_empty(*m->auto_trackables);
@@ -1346,6 +1353,12 @@ namespace wpl
 				// ASSERT
 				assert_equal(1, invalidated);
 
+				// ACT
+				lv.select(table_model::npos(), false);
+
+				// ASSERT
+				assert_equal(1, invalidated);
+
 				// INIT
 				conn = lv.invalidate += [&] (const void *r) {
 					invalidated++;
@@ -1355,7 +1368,7 @@ namespace wpl
 				};
 
 				// ACT
-				lv.clear_selection();
+				lv.select(table_model::npos(), true);
 
 				// ASSERT
 				assert_equal(2, invalidated);
@@ -2012,6 +2025,15 @@ namespace wpl
 				};
 
 				assert_equivalent(reference3, selections);
+
+				// INIT
+				selections.clear();
+
+				// ACT
+				lv.select(table_model::npos(), false);
+
+				// ASSERT
+				assert_is_empty(selections);
 			}
 
 

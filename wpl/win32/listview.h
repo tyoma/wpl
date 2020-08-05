@@ -42,20 +42,19 @@ namespace wpl
 		private:
 			void init();
 
-			// control interface
+			// control methods
 			std::shared_ptr<view> get_view();
 
-			// listview interface
+			// listview methods
 			virtual void set_columns_model(std::shared_ptr<columns_model> cm);
 			virtual void set_model(std::shared_ptr<table_model> model);
 
 			virtual void adjust_column_widths();
 
 			virtual void select(index_type item, bool reset_previous);
-			virtual void clear_selection();
+			virtual void focus(index_type item);
 
-			virtual void ensure_visible(index_type item);
-
+			// native_view methods
 			virtual HWND materialize(HWND hparent_for);
 			virtual LRESULT on_message(UINT message, WPARAM wparam, LPARAM lparam,
 				const window::original_handler_t &previous);

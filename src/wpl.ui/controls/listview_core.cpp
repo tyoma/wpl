@@ -258,25 +258,19 @@ namespace wpl
 
 		void listview_core::select(index_type item, bool reset_previous)
 		{
-			const trackable_ptr t = _model->track(item);
-
+			if (npos() == item && !reset_previous)
+				return;
 			if (reset_previous)
 			{
 				for (auto i = _selected.begin(); i != _selected.end(); ++i)
 					selection_changed((*i)->index(), false);
-				_selected.assign(1, t);
+				_selected.clear();
 			}
-			else
+			if (const trackable_ptr t = npos() != item ? _model->track(item) : nullptr)
 			{
 				_selected.insert(upper_bound(_selected.begin(), _selected.end(), t, trackable_less()), t);
+				selection_changed(item, true);
 			}
-			selection_changed(item, true);
-			invalidate_();
-		}
-
-		void listview_core::clear_selection()
-		{
-			_selected.clear();
 			invalidate_();
 		}
 
