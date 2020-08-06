@@ -134,6 +134,39 @@ namespace wpl
 			}
 
 
+			test( NothingIsDrawnIfNoModelSetIfModelIsEmptyOrIfWindowIsNotSmallerThanTheRange )
+			{
+				// INIT / ACT
+				scroller s(scroller::horizontal);
+				gcontext::surface_type surface(1000, 1000, 0);
+				gcontext::renderer_type ren(1);
+				gcontext::rasterizer_ptr ras(new gcontext::rasterizer_type);
+				gcontext ctx(surface, ren, make_rect(0, 0, 100, 10));
+
+				memset(surface.row_ptr(0), 0, sizeof(gcontext::surface_type::pixel) * 1000 * 1000);
+				s.resize(100, 10, dummy_nviews);
+
+				shared_ptr<mocks::scroll_model> m(new mocks::scroll_model);
+				m->range = make_pair(0, 0);
+				m->window = make_pair(0, 0);
+
+				// ACT / ASSERT
+				s.draw(ctx, ras);
+				s.set_model(m);
+				s.draw(ctx, ras);
+				m->range = make_pair(0, 10);
+				m->window = make_pair(3, 100);
+				s.draw(ctx, ras);
+
+				// ASSERT
+				for (agge::count_t i = 0, count = surface.height(); i != count; ++i)
+					assert_equal(surface.row_ptr(i) + 1000, find_if(surface.row_ptr(i), surface.row_ptr(i) + 1000,
+						[] (const gcontext::surface_type::pixel &p) {
+						return p.components[0] || p.components[1] || p.components[2] || p.components[3];
+					}));
+			}
+
+
 			test( ScrollerIsInvalidatedOnResizeToValidSize )
 			{
 				// INIT

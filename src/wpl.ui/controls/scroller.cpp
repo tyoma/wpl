@@ -133,7 +133,7 @@ namespace wpl
 
 	void scroller::draw(gcontext &ctx, gcontext::rasterizer_ptr &rasterizer_) const
 	{
-		if (_model)
+		if (_model && _model->get_window().second < _model->get_range().second)
 		{
 			const bool horz = _orientation == horizontal;
 			const thumb t = get_thumb();
