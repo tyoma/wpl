@@ -102,7 +102,6 @@ namespace wpl
 		};
 
 
-
 		template <typename ControlT, typename HeaderT>
 		std::shared_ptr<ControlT> create_listview()
 		{
@@ -129,7 +128,7 @@ namespace wpl
 
 			composite->add_view(header);
 
-			return shared_ptr<ControlT>(lv.get(), [composite] (void *) { });
+			return shared_ptr<ControlT>(composite, lv.get());
 		}
 	}
 }

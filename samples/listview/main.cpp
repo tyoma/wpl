@@ -1,3 +1,5 @@
+#include <crtdbg.h>
+
 #include <wpl/container.h>
 #include <wpl/form.h>
 #include <wpl/layout.h>
@@ -178,6 +180,9 @@ namespace
 
 int main()
 {
+
+		_CrtSetDbgFlag(_CrtSetDbgFlag(_CRTDBG_REPORT_FLAG) | _CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
+
 	wpl::font fnt = { L"", 8 };
 	view_location l = { 100, 100, 300, 200 };
 	shared_ptr<form> f = create_form();
