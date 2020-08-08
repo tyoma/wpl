@@ -186,7 +186,7 @@ namespace wpl
 				_widths.push_back(width);
 				total_width += width;
 			}
-			for (; box.y2 = box.y1 + item_height, r != rows && box.y1 < _size.h; ++r, box.y1 = box.y2)
+			for (; box.y2 = box.y1 + item_height, r < rows && box.y1 < _size.h; ++r, box.y1 = box.y2)
 			{
 				const unsigned state = (is_selected(r) ? selected : 0) | (focused_item == r ? focused : 0);
 

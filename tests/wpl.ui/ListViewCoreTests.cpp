@@ -590,7 +590,7 @@ namespace wpl
 			}
 
 
-			test( OnlyVisibleAndPartiallyVisibleItemsAreDrawnIfWindowIsApplied )
+			test( OnlyVisibleAndPartiallyVisibleItemsAreDrawnIfWindowIsApplied2 )
 			{
 				// INIT
 				tracking_listview lv;
@@ -600,45 +600,30 @@ namespace wpl
 				lv.reported_events = item_self;
 				lv.resize(100, 40, nviews);
 				lv.set_columns_model(mocks::columns_model::create(L"", 100));
-				lv.set_model(create_model(1000, 1));
+				lv.set_model(create_model(100, 1));
 
 				// ACT
-				sm->scroll_window(10.3 /*first visible*/, 0 /*we don't care yet*/);
+				sm->scroll_window(98.3 /*first visible*/, 0 /*we don't care yet*/);
+				lv.events.clear();
 				lv.draw(*ctx, ras);
-
-				// ACT / ASSERT
-				assert_equal(10.3, sm->get_window().first);
 
 				// ASSERT
 				tracking_listview::drawing_event reference1[] = {
-					tracking_listview::drawing_event(item_self, *ctx, ras, make_rect(0, -3, 100, 7), 10, 0),
-					tracking_listview::drawing_event(item_self, *ctx, ras, make_rect(0, 7, 100, 17), 11, 0),
-					tracking_listview::drawing_event(item_self, *ctx, ras, make_rect(0, 17, 100, 27), 12, 0),
-					tracking_listview::drawing_event(item_self, *ctx, ras, make_rect(0, 27, 100, 37), 13, 0),
-					tracking_listview::drawing_event(item_self, *ctx, ras, make_rect(0, 37, 100, 47), 14, 0),
+					tracking_listview::drawing_event(item_self, *ctx, ras, make_rect(0, -3, 100, 7), 98, 0),
+					tracking_listview::drawing_event(item_self, *ctx, ras, make_rect(0, 7, 100, 17), 99, 0),
 				};
 
 				assert_equal_pred(reference1, lv.events, rect_eq());
 
 				// INIT
 				lv.events.clear();
-				lv.item_height = 7.5;
 
 				// ACT
-				sm->scroll_window(-3.1, 0);
+				sm->scroll_window(101, 0);
 				lv.draw(*ctx, ras);
 
-				// ACT / ASSERT
-				assert_equal(-3.1, sm->get_window().first);
-
 				// ASSERT
-				tracking_listview::drawing_event reference2[] = {
-					tracking_listview::drawing_event(item_self, *ctx, ras, make_rect(0.0, 23.25, 100.0, 30.75), 0, 0),
-					tracking_listview::drawing_event(item_self, *ctx, ras, make_rect(0.0, 30.75, 100.0, 38.25), 1, 0),
-					tracking_listview::drawing_event(item_self, *ctx, ras, make_rect(0.0, 38.25, 100.0, 45.75), 2, 0),
-				};
-
-				assert_equal_pred(reference2, lv.events, rect_eq());
+				assert_is_empty(lv.events);
 			}
 
 
