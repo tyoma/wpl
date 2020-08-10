@@ -487,6 +487,34 @@ namespace wpl
 
 				assert_equal_pred(reference2, hdr.events, rect_eq());
 			}
+
+
+			test( HeaderIsInvalidatedOnSortOrderChange )
+			{
+				// INIT
+				tracking_header hdr;
+				auto invalidations = 0;
+				column_t c[] = { column_t(L"a", 10), column_t(L"b", 13), column_t(L"Z A", 17), };
+				shared_ptr<mocks::columns_model> m = mocks::columns_model::create(c, 2, true);
+				auto conn = hdr.invalidate += [&] (const agge::rect_i *r) { assert_null(r); invalidations++; };
+
+				hdr.resize(1000, 33, nviews);
+				hdr.set_model(m);
+
+				// ACT
+				m->set_sort_order(0, true);
+
+				// ASSERT
+				assert_equal(1, invalidations);
+
+				// ACT
+				m->set_sort_order(2, false);
+				m->set_sort_order(1, true);
+
+				// ASSERT
+				assert_equal(3, invalidations);
+			}
+
 		end_test_suite
 	}
 }

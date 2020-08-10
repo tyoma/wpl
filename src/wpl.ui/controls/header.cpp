@@ -39,6 +39,7 @@ namespace wpl
 				_model_invalidation = model->invalidated += [this] { invalidate(nullptr); };
 				_model_sorting_change = model->sort_order_changed += [this] (index_type column, bool ascending) {
 					_sorted_column = make_pair(column, ascending);
+					invalidate(nullptr);
 				};
 				_sorted_column = model->get_sort_order();
 			}
