@@ -298,9 +298,10 @@ namespace wpl
 
 		listview_core::index_type listview_core::get_item(int y) const
 		{
-			const double item_height = get_item_height();
+			const auto item_height = get_item_height();
+			const auto item = (y + _first_visible * item_height + 0.5) / item_height;
 
-			return static_cast<index_type>((y + _first_visible * item_height + 0.5) / item_height);
+			return _model && 0 <= item && item < _model->get_count() ? static_cast<index_type>(item) : table_model::npos();
 		}
 
 		bool listview_core::is_selected(index_type item) const

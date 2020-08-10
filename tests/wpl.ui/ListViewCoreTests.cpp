@@ -1584,6 +1584,26 @@ namespace wpl
 			}
 
 
+			test( ClickingOnEmptySpaceWithNoModelDoesNothing )
+			{
+				// INIT
+				tracking_listview lv;
+				auto c = lv.selection_changed += [] (...) { assert_is_true(false); };
+
+				lv.set_columns_model(mocks::columns_model::create(L"", 1));
+
+				lv.item_height = 5;
+				lv.resize(100, 25, nviews);
+
+				// ACT
+				lv.mouse_down(mouse_input::left, 0, 10, 10);
+				lv.mouse_up(mouse_input::left, 0, 10, 10);
+
+				// ACT / ASSERT
+				assert_is_empty(get_visible_states_raw(lv));
+			}
+
+
 			test( ClickingOnItemMakesItSelected )
 			{
 				// INIT
@@ -1687,6 +1707,42 @@ namespace wpl
 				};
 
 				assert_equal(reference9, s9);
+			}
+
+
+			test( ClickingOutsideItemsIslandResetsSelection )
+			{
+				// INIT
+				tracking_listview lv;
+				auto m = create_model(100, 1);
+
+				lv.set_columns_model(mocks::columns_model::create(L"", 1));
+				lv.set_model(m);
+
+				lv.item_height = 5;
+				lv.reported_events = item_self;
+				lv.resize(100, 25, nviews);
+
+				lv.mouse_down(mouse_input::left, 0, 10, 0);
+				lv.mouse_up(mouse_input::left, 0, 10, 0);
+
+				// ACT
+				lv.mouse_down(mouse_input::left, 0, 10, -1);
+				lv.mouse_up(mouse_input::left, 0, 10, -1);
+
+				// ASSERT
+				assert_is_empty(get_visible_states_raw(lv));
+
+				// INIT
+				lv.mouse_down(mouse_input::left, 0, 10, 15);
+				lv.mouse_up(mouse_input::left, 0, 10, 15);
+
+				// ACT
+				lv.mouse_down(mouse_input::left, 0, 10, 500);
+				lv.mouse_up(mouse_input::left, 0, 10, 500);
+
+				// ASSERT
+				assert_is_empty(get_visible_states_raw(lv));
 			}
 
 
