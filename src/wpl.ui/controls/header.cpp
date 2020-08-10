@@ -28,7 +28,7 @@ namespace wpl
 	namespace controls
 	{
 		header::header()
-			: _dragged_colum(make_pair(npos(), 0))
+			: _resizing_colum(make_pair(npos(), 0))
 		{	}
 
 		void header::set_model(const shared_ptr<columns_model> &model)
@@ -50,8 +50,8 @@ namespace wpl
 
 		void header::mouse_move(int /*depressed*/, int x, int /*y*/)
 		{
-			if (_dragged_colum.first != npos())
-				_model->update_column(_dragged_colum.first, static_cast<short>(_dragged_colum.second + x));
+			if (_resizing_colum.first != npos())
+				_model->update_column(_resizing_colum.first, static_cast<short>(_resizing_colum.second + x));
 		}
 
 		void header::mouse_down(mouse_buttons /*button*/, int /*buttons*/, int x, int /*y*/)
@@ -63,20 +63,25 @@ namespace wpl
 				short w;
 
 				_model->get_value(h.first, w);
-				_dragged_colum = make_pair(h.first, w - x);
+				_resizing_colum = make_pair(h.first, w - x);
+				capture(_resizing_capture);
 			}
 		}
 
 		void header::mouse_up(mouse_buttons /*button*/, int /*buttons*/, int x, int /*y*/)
 		{
-			if (_dragged_colum.first == npos())
+			if (_resizing_colum.first != npos())
+			{
+				_resizing_colum.first = npos();
+				_resizing_capture.reset();
+			}
+			else
 			{
 				pair<index_type, handle_type> h = handle_from_point(x);
 
 				if (h.second == column_handle)
 					_model->activate_column(h.first);
 			}
-			_dragged_colum.first = npos();
 		}
 
 		void header::draw(gcontext &ctx, gcontext::rasterizer_ptr &rasterizer_) const

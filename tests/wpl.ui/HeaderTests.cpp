@@ -358,6 +358,48 @@ namespace wpl
 			}
 
 
+			test( MouseIsCapturedOnStartingWidthUpdate )
+			{
+				// INIT
+				tracking_header hdr;
+				column_t c[] = { column_t(L"", 17), column_t(L"", 13), column_t(L"", 29), };
+				shared_ptr<mocks::columns_model> m = mocks::columns_model::create(c, columns_model::npos(), true);
+				auto capture = 0;
+				auto release = 0;
+				auto conn = hdr.capture += [&] (shared_ptr<void> &handle) {
+					capture++;
+					handle.reset(new int, [&] (int *p) {
+						release++;
+						delete p;
+					});
+				};
+
+				hdr.resize(1000, 33, nviews);
+				hdr.set_model(m);
+
+				// ACT
+				hdr.mouse_down(mouse_input::left, 0, 17, 0);
+
+				// ASSERT
+				assert_equal(1, capture);
+				assert_equal(0, release);
+
+				// ACT
+				hdr.mouse_move(0, 25, 0);
+
+				// ASSERT
+				assert_equal(1, capture);
+				assert_equal(0, release);
+
+				// ACT
+				hdr.mouse_up(mouse_input::left, 0, 25, 0);
+
+				// ASSERT
+				assert_equal(1, capture);
+				assert_equal(1, release);
+			}
+
+
 			test( WidthUpdatesAreEndedWithMouseUp )
 			{
 				// INIT
