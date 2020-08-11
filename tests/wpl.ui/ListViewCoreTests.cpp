@@ -925,6 +925,60 @@ namespace wpl
 				assert_equal(3, invalidations);
 			}
 
+
+			test( DoubleClickingOnItemActivatesIt )
+			{
+				// INIT
+				tracking_listview lv;
+				const auto cm = mocks::columns_model::create(L"", 13);
+				vector<table_model::index_type> log;
+				const auto c = lv.item_activate += [&](table_model::index_type i) { log.push_back(i); };
+
+				lv.set_columns_model(cm);
+				lv.set_model(create_model(1000, 1));
+
+				lv.item_height = 7;
+				lv.reported_events = item_self;
+				lv.resize(100, 35, nviews);
+
+				// ACT
+				lv.mouse_double_click(mouse_input::left, 0, 13, 8);
+
+				// ASSERT
+				table_model::index_type reference1[] = { 1u, };
+
+				assert_equal(reference1, log);
+
+				// ACT
+				lv.mouse_double_click(mouse_input::left, 0, 18, 24);
+
+				// ASSERT
+				table_model::index_type reference2[] = { 1u, 3u, };
+
+				assert_equal(reference2, log);
+			}
+
+
+			test( DoubleClickingOnEmptySpaceActivatesNothing )
+			{
+				// INIT
+				tracking_listview lv;
+				const auto cm = mocks::columns_model::create(L"", 13);
+				vector<table_model::index_type> log;
+				const auto c = lv.item_activate += [&] (...) { assert_is_true(false); };
+
+				lv.set_columns_model(cm);
+				lv.set_model(create_model(5, 1));
+
+				lv.item_height = 7;
+				lv.reported_events = item_self;
+				lv.resize(100, 40, nviews);
+
+				// ACT / ASSERT
+				lv.mouse_double_click(mouse_input::left, 0, 13, -1);
+				lv.mouse_double_click(mouse_input::left, 0, 18, 35);
+			}
+
 		end_test_suite
 
 

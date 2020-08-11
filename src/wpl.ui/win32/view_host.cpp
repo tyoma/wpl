@@ -77,6 +77,7 @@ namespace wpl
 				_mouse_in(false), _input_modifiers(0)
 		{
 			_window = window::attach(hwnd, bind(&view_host::wndproc, this, _1, _2, _3, _4));
+			::SetClassLongPtr(_window->hwnd(), GCL_STYLE, CS_DBLCLKS | ::GetClassLongPtr(_window->hwnd(), GCL_STYLE));
 		}
 
 		view_host::~view_host()

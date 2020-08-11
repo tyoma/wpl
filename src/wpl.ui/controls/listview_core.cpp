@@ -143,9 +143,9 @@ namespace wpl
 				select(item, true);
 		}
 
-		void listview_core::mouse_down(mouse_buttons /*button*/, int buttons, int /*x*/, int y)
+		void listview_core::mouse_down(mouse_buttons /*button*/, int depressed, int /*x*/, int y)
 		{
-			if (!(buttons & keyboard_input::control))
+			if (!(depressed & keyboard_input::control))
 			{
 				const index_type item = get_item(y);
 
@@ -154,15 +154,23 @@ namespace wpl
 			}
 		}
 
-		void listview_core::mouse_up(mouse_buttons /*button*/, int buttons, int /*x*/, int y)
+		void listview_core::mouse_up(mouse_buttons /*button*/, int depressed, int /*x*/, int y)
 		{
-			if (buttons & keyboard_input::control)
+			if (depressed & keyboard_input::control)
 			{
 				const index_type item = get_item(y);
 
 				focus(item);
 				toggle_selection(item);
 			}
+		}
+
+		void listview_core::mouse_double_click(mouse_buttons /*button*/, int /*depressed*/, int /*x*/, int y)
+		{
+			const index_type item = get_item(y);
+
+			if (item != npos())
+				item_activate(item);
 		}
 
 		void listview_core::draw(gcontext &ctx, gcontext::rasterizer_ptr &ras) const
