@@ -712,6 +712,96 @@ namespace wpl
 			}
 
 
+			test( UpdatingHorizontalScrollModelOffsetsDisplayHorizontally )
+			{
+				// INIT
+				tracking_listview lv;
+				const auto sm = lv.get_hscroll_model();
+				columns_model::column columns[] = {
+					columns_model::column(L"", 17), columns_model::column(L"", 31),columns_model::column(L"", 23),
+				};
+				auto cm = mocks::columns_model::create(columns, columns_model::npos(), false);
+
+				lv.reported_events = item_background | subitem_background | item_self | subitem_self;
+				lv.item_height = 1;
+				lv.resize(30, 1000, nviews);
+				lv.set_columns_model(cm);
+				lv.set_model(create_model(1, 3));
+
+				// ACT
+				sm->scroll_window(-13, 0 /*we don't care yet*/);
+				lv.draw(*ctx, ras);
+
+				// ASSERT
+				tracking_listview::drawing_event reference1[] = {
+					tracking_listview::drawing_event(item_background, *ctx, ras, make_rect(13.0, 0.0, 84.0, 1.0), 0, 0),
+					tracking_listview::drawing_event(subitem_background, *ctx, ras, make_rect(13.0, 0.0, 30.0, 1.0), 0, 0, 0),
+					tracking_listview::drawing_event(item_self, *ctx, ras, make_rect(13.0, 0.0, 84.0, 1.0), 0, 0),
+					tracking_listview::drawing_event(subitem_self, *ctx, ras, make_rect(13.0, 0.0, 30.0, 1.0), 0, 0, 0),
+				};
+
+				assert_equal_pred(reference1, lv.events, rect_eq());
+
+				// INIT
+				lv.events.clear();
+
+				// ACT
+				sm->scroll_window(0, 0 /*we don't care yet*/);
+				lv.draw(*ctx, ras);
+
+				// ASSERT
+				tracking_listview::drawing_event reference2[] = {
+					tracking_listview::drawing_event(item_background, *ctx, ras, make_rect(0.0, 0.0, 71.0, 1.0), 0, 0),
+					tracking_listview::drawing_event(subitem_background, *ctx, ras, make_rect(0.0, 0.0, 17.0, 1.0), 0, 0, 0),
+					tracking_listview::drawing_event(subitem_background, *ctx, ras, make_rect(17.0, 0.0, 48.0, 1.0), 0, 0, 1),
+					tracking_listview::drawing_event(item_self, *ctx, ras, make_rect(0.0, 0.0, 71.0, 1.0), 0, 0),
+					tracking_listview::drawing_event(subitem_self, *ctx, ras, make_rect(0.0, 0.0, 17.0, 1.0), 0, 0, 0),
+					tracking_listview::drawing_event(subitem_self, *ctx, ras, make_rect(17.0, 0.0, 48.0, 1.0), 0, 0, 1),
+				};
+
+				assert_equal_pred(reference2, lv.events, rect_eq());
+
+				// INIT
+				cm->columns[1].width = 10;
+				lv.events.clear();
+
+				// ACT
+				sm->scroll_window(7.4, 0 /*we don't care yet*/);
+				lv.draw(*ctx, ras);
+
+				// ASSERT
+				tracking_listview::drawing_event reference3[] = {
+					tracking_listview::drawing_event(item_background, *ctx, ras, make_rect(-7.4, 0.0, 42.6, 1.0), 0, 0),
+					tracking_listview::drawing_event(subitem_background, *ctx, ras, make_rect(-7.4, 0.0, 9.6, 1.0), 0, 0, 0),
+					tracking_listview::drawing_event(subitem_background, *ctx, ras, make_rect(9.6, 0.0, 19.6, 1.0), 0, 0, 1),
+					tracking_listview::drawing_event(subitem_background, *ctx, ras, make_rect(19.6, 0.0, 42.6, 1.0), 0, 0, 2),
+					tracking_listview::drawing_event(item_self, *ctx, ras, make_rect(-7.4, 0.0, 42.6, 1.0), 0, 0),
+					tracking_listview::drawing_event(subitem_self, *ctx, ras, make_rect(-7.4, 0.0, 9.6, 1.0), 0, 0, 0),
+					tracking_listview::drawing_event(subitem_self, *ctx, ras, make_rect(9.6, 0.0, 19.6, 1.0), 0, 0, 1),
+					tracking_listview::drawing_event(subitem_self, *ctx, ras, make_rect(19.6, 0.0, 42.6, 1.0), 0, 0, 2),
+				};
+
+				assert_equal_pred(reference3, lv.events, rect_eq());
+
+				// INIT
+				lv.events.clear();
+
+				// ACT
+				sm->scroll_window(30, 0 /*we don't care yet*/);
+				lv.draw(*ctx, ras);
+
+				// ASSERT
+				tracking_listview::drawing_event reference4[] = {
+					tracking_listview::drawing_event(item_background, *ctx, ras, make_rect(-30.0, 0.0, 20.0, 1.0), 0, 0),
+					tracking_listview::drawing_event(subitem_background, *ctx, ras, make_rect(-3.0, 0.0, 20.0, 1.0), 0, 0, 2),
+					tracking_listview::drawing_event(item_self, *ctx, ras, make_rect(-30.0, 0.0, 20.0, 1.0), 0, 0),
+					tracking_listview::drawing_event(subitem_self, *ctx, ras, make_rect(-3.0, 0.0, 20.0, 1.0), 0, 0, 2),
+				};
+
+				assert_equal_pred(reference4, lv.events, rect_eq());
+			}
+
+
 			test( OnlyVisibleAndPartiallyVisibleItemsAreDrawnIfWindowIsApplied2 )
 			{
 				// INIT
@@ -1010,7 +1100,7 @@ namespace wpl
 			}
 
 
-			test( ColumnsModelChangeLeadsToInvalidation )
+			test( ColumnsModelChangeLeadsToListViewInvalidation )
 			{
 				// INIT
 				tracking_listview lv;
@@ -1045,6 +1135,84 @@ namespace wpl
 
 				// ASSERT
 				assert_equal(3, invalidations);
+			}
+
+
+			test( ColumnsModelInvalidationLeadsToHorizontalScrollModelInvalidation )
+			{
+				// INIT
+				tracking_listview lv;
+				const auto sm = lv.get_hscroll_model();
+				const auto cm = mocks::columns_model::create(L"", 13);
+				auto invalidations = 0;
+
+				lv.set_columns_model(cm);
+				lv.set_model(create_model(1000, 1));
+
+				lv.item_height = 5;
+				lv.reported_events = item_self;
+				lv.resize(100, 25, nviews);
+
+				const auto c = sm->invalidated += [&] { invalidations++; };
+
+				// ACT
+				cm->invalidated();
+
+				// ASSERT
+				assert_equal(1, invalidations);
+
+				// ACT
+				cm->invalidated();
+				cm->invalidated();
+
+				// ASSERT
+				assert_equal(3, invalidations);
+			}
+
+
+			test( ScrollingOfAHorizontalModelLeadsToChangeOfRange )
+			{
+				// INIT
+				auto invalidations = 0;
+				auto sinvalidations = 0;
+				tracking_listview lv;
+				const auto sm = lv.get_hscroll_model();
+				columns_model::column columns[] = {
+					columns_model::column(L"#1", 103), columns_model::column(L"#2", 53), columns_model::column(L"#3", 43),
+				};
+				const auto cm = mocks::columns_model::create(columns, columns_model::npos(), false);
+
+				lv.set_columns_model(cm);
+				lv.set_model(create_model(1000, 1));
+
+				lv.item_height = 5;
+				lv.reported_events = item_self;
+				lv.resize(101, 25, nviews);
+
+				const auto c = lv.invalidate += [&](const void* r) { assert_null(r); invalidations++; };
+				const auto c2 = sm->invalidated += [&] { sinvalidations++; };
+
+				// ACT
+				sm->scroll_window(10, 101);
+
+				// ACT / ASSERT
+				assert_equal_pred(make_pair(10, 101), sm->get_window(), eq());
+				assert_equal(1, invalidations);
+				assert_equal(1, sinvalidations);
+
+				// ACT
+				sm->scroll_window(71.37, 101);
+
+				// ACT / ASSERT
+				assert_equal_pred(make_pair(71.37, 101), sm->get_window(), eq());
+
+				// ACT
+				sm->scroll_window(-50, 101);
+
+				// ACT / ASSERT
+				assert_equal_pred(make_pair(-50, 101), sm->get_window(), eq());
+				assert_equal(3, invalidations);
+				assert_equal(3, sinvalidations);
 			}
 
 

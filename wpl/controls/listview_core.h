@@ -75,6 +75,7 @@ namespace wpl
 			typedef std::vector<trackable_ptr> trackables;
 
 			struct trackable_less;
+			struct base_scroll_model;
 			struct vertical_scroll_model;
 			struct horizontal_scroll_model;
 
@@ -105,7 +106,7 @@ namespace wpl
 			std::shared_ptr<horizontal_scroll_model> _hsmodel;
 			slot_connection _model_invalidation, _cmodel_invalidation;
 			agge::box_r _size;
-			double _first_visible;
+			agge::agge_vector<double> _offset;
 			mutable std::vector<agge::real_t> _widths;
 			mutable std::wstring _text_buffer;
 

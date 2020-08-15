@@ -31,6 +31,11 @@ namespace wpl
 {
 	namespace controls
 	{
+		namespace
+		{
+			const real_t c_tolerance = 0.001f;
+		}
+
 		struct listview_core::trackable_less
 		{
 			bool operator ()(const trackable_ptr &lhs, const trackable_ptr &rhs)
@@ -43,21 +48,38 @@ namespace wpl
 			{	return lhs < rhs->index();	}
 		};
 
-
-		struct listview_core::vertical_scroll_model : scroll_model
+		struct listview_core::base_scroll_model : scroll_model
 		{
-			virtual pair<double /*range_min*/, double /*range_width*/> get_range() const
+			typedef pair<double, double> range;
+
+			base_scroll_model()
+				: owner(nullptr)
+			{	}
+
+			virtual range get_range() const
+			{	return make_pair(0, owner ? get_max() : 0);	}
+
+			virtual void scroll_window(double window_min, double /*window_width*/)
 			{
-				if (!owner || !owner->_model)
-					return make_pair(0, 0);
-				return make_pair(0, static_cast<double>(owner->_model->get_count()));
+				if (!owner)
+					return;
+				set_window(window_min);
+				owner->invalidate_();
+				invalidated();
 			}
 
-			virtual pair<double /*window_min*/, double /*window_width*/> get_window() const
+			virtual double get_max() const = 0;
+			virtual void set_window(double window_min) = 0;
+
+			listview_core *owner;
+		};
+
+		struct listview_core::vertical_scroll_model : base_scroll_model
+		{
+			virtual range get_window() const
 			{
-				if (!owner || !owner->get_item_height())
-					return make_pair(0, 0);
-				return make_pair(owner->_first_visible, owner->_size.h / owner->get_item_height());
+				return owner && owner->get_item_height()
+					? range(owner->_offset.dy, owner->_size.h / owner->get_item_height()) : range(0, 0);
 			}
 
 			virtual void scrolling(bool begins)
@@ -66,57 +88,47 @@ namespace wpl
 					owner->_state_vscrolling = begins, owner->_state_keep_focus_visible = false;
 			}
 
-			virtual void scroll_window(double window_min, double /*window_width*/)
-			{
-				if (!owner)
-					return;
-				owner->_first_visible = window_min;
-				owner->invalidate_();
-				invalidated();
-			}
+			virtual double get_max() const
+			{	return owner->_model ? static_cast<double>(owner->_model->get_count()) : 0;	}
 
-			listview_core *owner;
+			virtual void set_window(double window_min)
+			{	owner->_offset.dy = window_min;	}
 		};
 
-		struct listview_core::horizontal_scroll_model : scroll_model
+		struct listview_core::horizontal_scroll_model : base_scroll_model
 		{
-			virtual pair<double /*range_min*/, double /*range_width*/> get_range() const
-			{
-				double total = 0;
-
-				if (owner)
-				{
-					if (const auto cmodel = owner->_cmodel)
-					{
-						for (columns_model::index_type i = 0, count = cmodel->get_count(); i != count; ++i)
-						{
-							short w = 0;
-
-							cmodel->get_value(i, w);
-							total += w;
-						}
-					}
-				}
-				return make_pair(0, total);
-			}
-
-			virtual pair<double /*window_min*/, double /*window_width*/> get_window() const
-			{	return make_pair(0, owner ? owner->_size.w : 0);	}
+			virtual range get_window() const
+			{	return owner ? range(owner->_offset.dx, owner->_size.w) : range(0, 0);	}
 
 			virtual void scrolling(bool /*begins*/)
 			{	}
 
-			virtual void scroll_window(double /*window_min*/, double /*window_width*/)
-			{	}
+			virtual double get_max() const
+			{
+				double total = 0;
 
-			listview_core* owner;
+				if (const auto cmodel = owner->_cmodel)
+				{
+					for (columns_model::index_type i = 0, count = cmodel->get_count(); i != count; ++i)
+					{
+						short w = 0;
+
+						cmodel->get_value(i, w);
+						total += w;
+					}
+				}
+				return total;
+			}
+
+			virtual void set_window(double window_min)
+			{	owner->_offset.dx = window_min;	}
 		};
 
 
 		listview_core::listview_core()
-			: _first_visible(0), _vsmodel(new vertical_scroll_model), _hsmodel(new horizontal_scroll_model),
-				_state_vscrolling(false)
+			: _vsmodel(new vertical_scroll_model), _hsmodel(new horizontal_scroll_model), _state_vscrolling(false)
 		{
+			_offset.dx = 0, _offset.dy = 0;
 			_size.w = 0, _size.h = 0;
 			_vsmodel->owner = this;
 			_hsmodel->owner = this;
@@ -138,7 +150,7 @@ namespace wpl
 		{
 			if (is_visible(item) | _state_vscrolling | (npos() == item))
 				return;
-			_first_visible = static_cast<double>(item < _first_visible ? item : item - _size.h / get_item_height() + 1);
+			_offset.dy = static_cast<double>(item < _offset.dy ? item : item - _size.h / get_item_height() + 1);
 			_vsmodel->invalidated();
 			invalidate_();
 		}
@@ -207,13 +219,14 @@ namespace wpl
 			const real_t item_height = get_item_height();
 			const index_type focused_item = _focused ? _focused->index() : npos();
 			real_t total_width = 0.0f;
-			index_type r = (max)(0, static_cast<int>(_first_visible));
-			rect_r box = { 0.0f, item_height * static_cast<real_t>(r - _first_visible), 0.0f, 0.0f };
+			index_type r = (max)(0, static_cast<int>(_offset.dy));
+			rect_r box = { 0.0f, item_height * static_cast<real_t>(r - _offset.dy), 0.0f, 0.0f };
 
 			_widths.clear();
 			for (columns_model::index_type c = 0; c != columns; ++c)
 			{
 				short int width;
+
 				_cmodel->get_value(c, width);
 				_widths.push_back(width);
 				total_width += width;
@@ -222,19 +235,23 @@ namespace wpl
 			{
 				const unsigned state = (is_selected(r) ? selected : 0) | (focused_item == r ? focused : 0);
 
-				box.x1 = 0.0f, box.x2 = total_width;
+				box.x2 = box.x1 = -static_cast<agge::real_t>(_offset.dx), box.x2 += total_width;
 				draw_item_background(ctx, ras, box, r, state);
 				for (columns_model::index_type c = 0; c != columns; box.x1 = box.x2, ++c)
 				{
 					box.x2 = box.x1 + _widths[c];
+					if (box.x2 < 0.0 || box.x1 >= _size.w - c_tolerance)
+						continue;
 					draw_subitem_background(ctx, ras, box, r, state, c);
 				}
-				box.x1 = 0.0f, box.x2 = total_width;
+				box.x2 = box.x1 = -static_cast<agge::real_t>(_offset.dx), box.x2 += total_width;
 				draw_item(ctx, ras, box, r, state);
 				for (columns_model::index_type c = 0; c != columns; box.x1 = box.x2, ++c)
 				{
-					_model->get_text(r, c, _text_buffer);
 					box.x2 = box.x1 + _widths[c];
+					if (box.x2 < 0.0 || box.x1 >= _size.w - c_tolerance)
+						continue;
+					_model->get_text(r, c, _text_buffer);
 					draw_subitem(ctx, ras, box, r, state, c, _text_buffer);
 				}
 			}
@@ -254,7 +271,10 @@ namespace wpl
 
 		void listview_core::set_columns_model(shared_ptr<columns_model> cmodel)
 		{
-			_cmodel_invalidation = cmodel ? cmodel->invalidated += [this] {	invalidate_();	} : nullptr;
+			_cmodel_invalidation = cmodel ? cmodel->invalidated += [this] {
+				invalidate_();
+				_hsmodel->invalidated();
+			} : nullptr;
 			_cmodel = cmodel;
 			_hsmodel->invalidated();
 		}
@@ -333,7 +353,7 @@ namespace wpl
 		listview_core::index_type listview_core::get_item(int y) const
 		{
 			const auto item_height = get_item_height();
-			const auto item = (y + _first_visible * item_height + 0.5) / item_height;
+			const auto item = (y + _offset.dy * item_height + 0.5) / item_height;
 
 			return _model && 0 <= item && item < _model->get_count() ? static_cast<index_type>(item) : table_model::npos();
 		}
@@ -343,11 +363,10 @@ namespace wpl
 
 		bool listview_core::is_visible(index_type item) const
 		{
-			const real_t tolerance = 0.001f;
 			const real_t item_height = get_item_height();
-			const real_t lower = item_height * static_cast<real_t>(item - _first_visible), upper = lower + item_height;
+			const real_t lower = item_height * static_cast<real_t>(item - _offset.dy), upper = lower + item_height;
 
-			return (-tolerance < lower) & (upper < _size.h + tolerance);
+			return (-c_tolerance < lower) & (upper < _size.h + c_tolerance);
 		}
 	}
 }
