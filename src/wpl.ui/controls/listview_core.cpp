@@ -21,6 +21,7 @@
 #include <wpl/controls/listview_core.h>
 
 #include <algorithm>
+#include <numeric>
 #include <cmath>
 
 using namespace agge;
@@ -80,16 +81,35 @@ namespace wpl
 		struct listview_core::horizontal_scroll_model : scroll_model
 		{
 			virtual pair<double /*range_min*/, double /*range_width*/> get_range() const
-			{	return make_pair(0, 0);	}
+			{
+				double total = 0;
+
+				if (owner)
+				{
+					if (const auto cmodel = owner->_cmodel)
+					{
+						for (columns_model::index_type i = 0, count = cmodel->get_count(); i != count; ++i)
+						{
+							short w = 0;
+
+							cmodel->get_value(i, w);
+							total += w;
+						}
+					}
+				}
+				return make_pair(0, total);
+			}
 
 			virtual pair<double /*window_min*/, double /*window_width*/> get_window() const
-			{	return make_pair(0, 0);	}
+			{	return make_pair(0, owner ? owner->_size.w : 0);	}
 
 			virtual void scrolling(bool /*begins*/)
 			{	}
 
 			virtual void scroll_window(double /*window_min*/, double /*window_width*/)
 			{	}
+
+			listview_core* owner;
 		};
 
 
@@ -99,10 +119,14 @@ namespace wpl
 		{
 			_size.w = 0, _size.h = 0;
 			_vsmodel->owner = this;
+			_hsmodel->owner = this;
 		}
 
 		listview_core::~listview_core()
-		{	_vsmodel->owner = nullptr;	}
+		{
+			_vsmodel->owner = nullptr;
+			_hsmodel->owner = nullptr;
+		}
 
 		shared_ptr<scroll_model> listview_core::get_vscroll_model()
 		{	return _vsmodel;	}
@@ -222,6 +246,7 @@ namespace wpl
 			_size.h = static_cast<real_t>(cy);
 			invalidate_();
 			_vsmodel->invalidated();
+			_hsmodel->invalidated();
 		}
 
 		shared_ptr<view> listview_core::get_view()
@@ -231,6 +256,7 @@ namespace wpl
 		{
 			_cmodel_invalidation = cmodel ? cmodel->invalidated += [this] {	invalidate_();	} : nullptr;
 			_cmodel = cmodel;
+			_hsmodel->invalidated();
 		}
 
 		void listview_core::set_model(shared_ptr<table_model> model)

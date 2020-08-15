@@ -459,6 +459,29 @@ namespace wpl
 			}
 
 
+			test( DestructionOfTheCoreLeavesHorizontalScrollFunctional )
+			{
+				// INIT
+				shared_ptr<tracking_listview> lv(new tracking_listview);
+				const auto sm = lv->get_hscroll_model();
+				const auto m = create_model(1, 1);
+
+				lv->resize(1000, 31, nviews);
+				lv->item_height = 15.4;
+				lv->set_columns_model(mocks::columns_model::create(L"", 10));
+				lv->set_model(m);
+
+				// ACT
+				lv.reset();
+
+				// ACT / ASSERT
+				sm->scrolling(true); // nothing happens
+				sm->scroll_window(2, 10); // nothing happends
+				assert_equal_pred(make_pair(0, 0), sm->get_range(), eq());
+				assert_equal_pred(make_pair(0, 0), sm->get_window(), eq());
+			}
+
+
 			test( VerticalScrollModelRangeIsZeroToItemCount )
 			{
 				// INIT
@@ -479,6 +502,105 @@ namespace wpl
 
 				// ACT / ASSERT
 				assert_equal_pred(make_pair(0, 17), sm->get_range(), eq());
+			}
+
+
+			test( HorizontalScrollModelRangeEqualsTotalColumnsWidth )
+			{
+				// INIT
+				tracking_listview lv;
+				const auto sm = lv.get_hscroll_model();
+				const auto m(create_model(1, 1));
+				column_t columns1[] = { column_t(L"", 19), column_t(L"", 13), column_t(L"", 37), };
+
+				lv.resize(1000, 31, nviews);
+				lv.set_columns_model(mocks::columns_model::create(columns1, columns_model::npos(), true));
+
+				// ACT / ASSERT
+				assert_equal_pred(make_pair(0, 69), sm->get_range(), eq());
+
+				// INIT
+				column_t columns2[] = { column_t(L"", 19), column_t(L"", 37), };
+
+				lv.set_columns_model(mocks::columns_model::create(columns2, columns_model::npos(), true));
+
+				// ACT / ASSERT
+				assert_equal_pred(make_pair(0, 56), sm->get_range(), eq());
+			}
+
+
+			test( HorizontalScrollModelWindowEqualsToWidth )
+			{
+				// INIT
+				tracking_listview lv;
+				const auto sm = lv.get_hscroll_model();
+				const auto m(create_model(1, 1));
+
+				// ACT
+				lv.resize(1000, 31, nviews);
+
+				// ACT / ASSERT
+				assert_equal_pred(make_pair(0, 1000), sm->get_window(), eq());
+
+				// ACT
+				lv.resize(171, 31, nviews);
+
+				// ACT / ASSERT
+				assert_equal_pred(make_pair(0, 171), sm->get_window(), eq());
+			}
+
+
+			test( HorizontalScrollModelIsInvalidatedOnSettingColumnsModel )
+			{
+				// INIT
+				auto invalidations = 0;
+				tracking_listview lv;
+				const auto sm = lv.get_hscroll_model();
+				const auto m(create_model(1, 1));
+
+				lv.resize(1000, 31, nviews);
+
+				const auto c = sm->invalidated += [&] { invalidations++; };
+
+				// ACT
+				lv.set_columns_model(mocks::columns_model::create(L"", 123));
+
+				// ACT / ASSERT
+				assert_equal(1, invalidations);
+
+				// ACT
+				lv.set_columns_model(mocks::columns_model::create(L"", 123));
+				lv.set_columns_model(mocks::columns_model::create(L"", 127));
+
+				// ACT / ASSERT
+				assert_equal(3, invalidations);
+			}
+
+
+			test( HorizontalScrollModelIsInvalidatedOnResize )
+			{
+				// INIT
+				auto invalidations = 0;
+				tracking_listview lv;
+				const auto sm = lv.get_hscroll_model();
+				const auto m(create_model(1, 1));
+
+				lv.set_columns_model(mocks::columns_model::create(L"", 123));
+
+				const auto c = sm->invalidated += [&] { invalidations++; };
+
+				// ACT
+				lv.resize(1000, 31, nviews);
+
+				// ACT / ASSERT
+				assert_equal(1, invalidations);
+
+				// ACT
+				lv.resize(1000, 31, nviews);
+				lv.resize(100, 100, nviews);
+
+				// ACT / ASSERT
+				assert_equal(3, invalidations);
 			}
 
 
