@@ -28,7 +28,7 @@ namespace wpl
 	namespace controls
 	{
 		header::header()
-			: _resizing_colum(make_pair(npos(), 0))
+			: _offset(0.0f), _resizing_colum(make_pair(npos(), 0))
 		{	}
 
 		void header::set_model(const shared_ptr<columns_model> &model)
@@ -47,6 +47,12 @@ namespace wpl
 			{
 				_model_invalidation = nullptr;
 			}
+		}
+
+		void header::set_offset(double offset)
+		{
+			_offset = static_cast<agge::real_t>(offset);
+			invalidate(nullptr);
 		}
 
 		void header::mouse_move(int /*depressed*/, int x, int /*y*/)
@@ -89,7 +95,7 @@ namespace wpl
 		{
 			if (_model)
 			{
-				rect_r rc = { 0.0f, 0.0f, 0.0f, _size.h };
+				rect_r rc = { 0.0f, 0.0f, -_offset, _size.h };
 				columns_model::column c;
 
 				for (index_type i = 0, n = _model->get_count(); i != n; ++i)
@@ -115,6 +121,7 @@ namespace wpl
 
 		pair<header::index_type, header::handle_type> header::handle_from_point(int x) const
 		{
+			x += static_cast<int>(_offset);
 			for (index_type i = 0, n = _model ? _model->get_count() : 0; i != n; ++i)
 			{
 				short w;

@@ -62,7 +62,12 @@ namespace wpl
 		public:
 			external_view_contol(const std::shared_ptr<HeaderT> &header_)
 				: _header(header_)
-			{	}
+			{
+				_scroll_connection = this->get_hscroll_model()->invalidated += [this] {
+					_header->set_offset(this->get_hscroll_model()->get_window().first);
+				};
+				_header->set_offset(this->get_hscroll_model()->get_window().first);
+			}
 
 		public:
 			std::weak_ptr<view> external_view;
@@ -79,9 +84,10 @@ namespace wpl
 
 		private:
 			std::shared_ptr<HeaderT> _header;
+			wpl::slot_connection _scroll_connection;
 		};
 
-		struct redirecting_keyboard_container : container
+		struct composite_container : container
 		{
 			virtual void key_down(unsigned code, int modifiers)
 			{	input->key_down(code, modifiers);	}
@@ -108,7 +114,7 @@ namespace wpl
 			using namespace std;
 
 			shared_ptr<listview_complex_layout> layout(new listview_complex_layout);
-			shared_ptr<redirecting_keyboard_container> composite(new redirecting_keyboard_container);
+			shared_ptr<composite_container> composite(new composite_container);
 			shared_ptr<HeaderT> header(new HeaderT);
 			shared_ptr< external_view_contol<ControlT, HeaderT> > lv(new external_view_contol<ControlT, HeaderT>(header));
 			shared_ptr<scroller> hscroller(new scroller(scroller::horizontal));

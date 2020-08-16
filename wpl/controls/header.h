@@ -40,6 +40,8 @@ namespace wpl
 
 			void set_model(const std::shared_ptr<columns_model> &model);
 
+			void set_offset(double offset);
+
 			// mouse_input methods
 			virtual void mouse_move(int depressed, int x, int y);
 			virtual void mouse_down(mouse_buttons button, int buttons, int x, int y);
@@ -64,6 +66,7 @@ namespace wpl
 		private:
 			std::shared_ptr<columns_model> _model;
 			agge::box_r _size;
+			agge::real_t _offset;
 			std::pair<index_type, int /* click point */> _resizing_colum;
 			std::shared_ptr<void> _resizing_capture;
 			std::pair<index_type, bool /*ascending*/> _sorted_column;

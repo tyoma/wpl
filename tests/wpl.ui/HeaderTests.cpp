@@ -515,6 +515,108 @@ namespace wpl
 				assert_equal(3, invalidations);
 			}
 
+
+			test( OffsettingViewDrawsColumnsAtOffsetPositions )
+			{
+				// INIT
+				tracking_header hdr;
+				column_t c[] = { column_t(L"a", 10), column_t(L"b", 13), column_t(L"Z A", 17), };
+				shared_ptr<mocks::columns_model> m = mocks::columns_model::create(c, 2, true);
+
+				hdr.resize(1000, 33, nviews);
+				hdr.set_model(m);
+
+				// ACT
+				hdr.set_offset(13.7f);
+				hdr.draw(*ctx, ras);
+
+				// ASSERT
+				tracking_header::drawing_event reference1[] = {
+					tracking_header::drawing_event(item_background, *ctx, ras, make_rect(-13.7, 0.0, -3.7, 33.0), 0, 0),
+					tracking_header::drawing_event(item_self, *ctx, ras, make_rect(-13.7, 0.0, -3.7, 33.0), 0, 0, L"a"),
+					tracking_header::drawing_event(item_background, *ctx, ras, make_rect(-3.7, 0.0, 9.3, 33.0), 1, 0),
+					tracking_header::drawing_event(item_self, *ctx, ras, make_rect(-3.7, 0.0, 9.3, 33.0), 1, 0, L"b"),
+					tracking_header::drawing_event(item_background, *ctx, ras, make_rect(9.3, 0.0, 26.3, 33.0), 2,
+						controls::header::ascending | controls::header::sorted),
+					tracking_header::drawing_event(item_self, *ctx, ras, make_rect(9.3, 0.0, 26.3, 33.0), 2,
+						controls::header::ascending | controls::header::sorted, L"Z A"),
+				};
+
+				assert_equal_pred(reference1, hdr.events, rect_eq());
+
+				// INIT
+				hdr.events.clear();
+
+				// ACT
+				hdr.set_offset(-1.0f);
+				hdr.draw(*ctx, ras);
+
+				// ASSERT
+				tracking_header::drawing_event reference2[] = {
+					tracking_header::drawing_event(item_background, *ctx, ras, make_rect(1, 0, 11, 33), 0, 0),
+					tracking_header::drawing_event(item_self, *ctx, ras, make_rect(1, 0, 11, 33), 0, 0, L"a"),
+					tracking_header::drawing_event(item_background, *ctx, ras, make_rect(11, 0, 24, 33), 1, 0),
+					tracking_header::drawing_event(item_self, *ctx, ras, make_rect(11, 0, 24, 33), 1, 0, L"b"),
+					tracking_header::drawing_event(item_background, *ctx, ras, make_rect(24, 0, 41, 33), 2,
+						controls::header::ascending | controls::header::sorted),
+					tracking_header::drawing_event(item_self, *ctx, ras, make_rect(24, 0, 41, 33), 2,
+						controls::header::ascending | controls::header::sorted, L"Z A"),
+				};
+
+				assert_equal_pred(reference2, hdr.events, rect_eq());
+			}
+
+
+			test( OffsettingViewProcessesColumnClicksAtNewPositions )
+			{
+				// INIT
+				tracking_header hdr;
+				column_t c[] = { column_t(L"a", 10), column_t(L"b", 13), column_t(L"Z A", 17), };
+				shared_ptr<mocks::columns_model> m = mocks::columns_model::create(c, 2, true);
+
+				hdr.resize(1000, 33, nviews);
+				hdr.set_model(m);
+
+				// ACT
+				hdr.set_offset(-25.0f);
+				hdr.mouse_up(mouse_input::left, 0, 30, 0);
+				hdr.mouse_up(mouse_input::left, 0, 41, 0);
+				hdr.mouse_up(mouse_input::left, 0, 56, 0);
+
+				// ASSERT
+				short int reference[] = { 0, 1, 2, };
+
+				assert_equal(reference, m->column_activation_log);
+			}
+
+
+			test( OffsettingViewInvalidatesIt )
+			{
+				// INIT
+				tracking_header hdr;
+				auto invalidations = 0;
+				column_t columns[] = { column_t(L"a", 10), column_t(L"b", 13), column_t(L"Z A", 17), };
+				shared_ptr<mocks::columns_model> m = mocks::columns_model::create(columns, 2, true);
+
+				hdr.resize(1000, 33, nviews);
+				hdr.set_model(mocks::columns_model::create(columns, 2, true));
+
+				auto c = hdr.invalidate += [&] (const void *r) { assert_null(r); invalidations++; };
+
+				// ACT
+				hdr.set_offset(-25.0f);
+
+				// ASSERT
+				assert_equal(1, invalidations);
+
+				// ACT
+				hdr.set_offset(-20.0f);
+				hdr.set_offset(5.0f);
+
+				// ASSERT
+				assert_equal(3, invalidations);
+			}
+
 		end_test_suite
 	}
 }
