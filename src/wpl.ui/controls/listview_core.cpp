@@ -295,6 +295,7 @@ namespace wpl
 			_model = model;
 			_focused = nullptr;
 			_selected.clear();
+			invalidate_();
 		}
 
 		void listview_core::adjust_column_widths()

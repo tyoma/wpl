@@ -169,6 +169,31 @@ namespace wpl
 			}
 
 
+			test( ListViewIsInvalidatedWhenModelIsSet )
+			{
+				// INIT
+				auto invalidations = 0;
+				tracking_listview lv;
+
+				lv.resize(1000, 1000, nviews);
+
+				auto c = lv.invalidate += [&] (const void* p) { assert_null(p); invalidations++; };
+
+				// ACT
+				lv.set_model(create_model(10));
+
+				// ASSERT
+				assert_equal(1, invalidations);
+
+				// ACT
+				lv.set_model(create_model(10));
+				lv.set_model(create_model(100));
+
+				// ASSERT
+				assert_equal(3, invalidations);
+			}
+
+
 			test( DrawingSequenceIsItemBgSubitemBgItemFgSubitemFg )
 			{
 				// INIT
@@ -842,7 +867,6 @@ namespace wpl
 			test( ListViewIsInvalidatedOnModelInvalidation )
 			{
 				// INIT
-				auto invalidations = 0;
 				tracking_listview lv;
 				const auto m = create_model(1000, 1);
 
@@ -852,7 +876,10 @@ namespace wpl
 				lv.set_columns_model(mocks::columns_model::create(L"", 100));
 				lv.set_model(m);
 
-				const auto c = lv.invalidate += [&] (const void *r) { assert_null(r); invalidations++; };
+				auto invalidations = 0;
+				const auto c = lv.invalidate += [&] (const void *r) {
+					assert_null(r); invalidations++;
+				};
 
 				// ACT
 				m->invalidated(10);
@@ -860,12 +887,15 @@ namespace wpl
 				// ASSERT
 				assert_equal(1, invalidations);
 
-				// ACT
+				// INIT
 				lv.set_model(shared_ptr<table_model>());
+				invalidations = 0;
+
+				// ACT
 				m->invalidated(100);
 
 				// ASSERT
-				assert_equal(1, invalidations);
+				assert_equal(0, invalidations);
 			}
 
 
