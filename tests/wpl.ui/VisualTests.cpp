@@ -44,7 +44,7 @@ namespace wpl
 
 				rasterizer.reset(new gcontext::rasterizer_type);
 				renderer.reset(new gcontext::renderer_type(1));
-				o = zero();
+				x = o = zero();
 				blender_t(color::make(255, 255, 255))(&x, 0, 0, 1, &c);
 			}
 
@@ -215,6 +215,70 @@ namespace wpl
 					gcontext(s, *renderer, agge::zero(), &w1).translate(1, 3).update_area());
 				assert_equal(make_rect(30, 30, 61, 48),
 					gcontext(s, *renderer, agge::zero(), &w2).translate(-10, -7).update_area());
+			}
+
+
+			test( UpdateAreaInWindowedContextEqualsToWindow )
+			{
+				// INIT
+				gcontext::surface_type s(200, 200, 0);
+				rect_i w1 = { 10, 13, 50, 40 };
+				rect_i w2 = { 20, 23, 51, 41 };
+
+				// ACT / ASSERT
+				assert_equal(make_rect(11, 17, 40, 37),
+					gcontext(s, *renderer, agge::zero(), &w1).window(11, 17, 40, 37).update_area());
+				assert_equal(make_rect(23, 27, 50, 40),
+					gcontext(s, *renderer, agge::zero(), &w2).window(23, 27, 50, 40).update_area());
+			}
+
+
+			test(WindowedRenderDoesNotAffectPixelsOutsideWindow)
+			{
+				// INIT
+				gcontext::surface_type s(8, 8, 0);
+				gcontext ctx(s, *renderer, agge::zero());
+
+				// ACT
+				gcontext ctx2 = ctx.window(1, 2, 7, 8);
+				rectangle(ctx2, 0, 0, 3, 3);
+				rectangle(ctx2, 6, 4, 8, 6);
+
+				// ASSERT
+				const gcontext::pixel_type reference1[] = {
+					o, o, o, o, o, o, o, o,
+					o, o, o, o, o, o, o, o,
+					o, x, x, o, o, o, o, o,
+					o, o, o, o, o, o, o, o,
+					o, o, o, o, o, o, x, o,
+					o, o, o, o, o, o, x, o,
+					o, o, o, o, o, o, o, o,
+					o, o, o, o, o, o, o, o,
+				};
+
+				assert_equal(reference1, s);
+
+				// INIT
+				reset(s);
+
+				// ACT
+				gcontext ctx3 = ctx.translate(1, -1).window(1, 0, 6, 5);
+				rectangle(ctx3, 0, 0, 3, 3);
+				rectangle(ctx3, 4, 4, 8, 6);
+
+				// ASSERT
+				const gcontext::pixel_type reference2[] = {
+					o, o, x, x, o, o, o, o,
+					o, o, x, x, o, o, o, o,
+					o, o, o, o, o, o, o, o,
+					o, o, o, o, o, x, x, o,
+					o, o, o, o, o, o, o, o,
+					o, o, o, o, o, o, o, o,
+					o, o, o, o, o, o, o, o,
+					o, o, o, o, o, o, o, o,
+				};
+
+				assert_equal(reference2, s);
 			}
 		end_test_suite
 	}

@@ -25,9 +25,10 @@ namespace wpl
 
 	public:
 		gcontext(surface_type &surface, renderer_type &renderer, const agge::vector_i &offset,
-			const agge::rect_i *window = 0) throw();
+			const agge::rect_i *window_ = 0) throw();
 
 		gcontext translate(int offset_x, int offset_y) const throw();
+		gcontext window(int x1, int y1, int x2, int y2) const throw();
 
 		agge::rect_i update_area() const throw();
 
@@ -82,7 +83,7 @@ namespace wpl
 	inline void gcontext::operator ()(rasterizer_ptr &rasterizer, const BlenderT &blender, const AlphaFn &alpha)
 	{
 		rasterizer->sort();
-		_renderer(_surface, _offset, 0, *rasterizer, blender, alpha);
+		_renderer(_surface, _offset, &_window, *rasterizer, blender, alpha);
 		rasterizer->reset();
 	}
 }
