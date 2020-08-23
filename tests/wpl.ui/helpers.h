@@ -103,6 +103,13 @@ namespace wpl
 		{	return (unsigned short)x | ((unsigned int )(unsigned short)y << 16);	}
 
 		template <typename T>
+		inline agge::agge_vector<T> make_vector(T dx, T dy)
+		{
+			agge::agge_vector<T> v = { dx, dy };
+			return v;
+		}
+
+		template <typename T>
 		inline agge::rect<T> make_rect(T x1, T y1, T x2, T y2)
 		{
 			agge::rect<T> r = { x1, y1, x2, y2 };

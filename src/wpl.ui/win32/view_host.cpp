@@ -165,6 +165,7 @@ namespace wpl
 
 				case WM_PAINT:
 					paint_sequence ps(_window->hwnd());
+					vector_i offset = { ps.rcPaint.left, ps.rcPaint.top };
 					rect_i update_area = { ps.rcPaint.left, ps.rcPaint.top, ps.rcPaint.right, ps.rcPaint.bottom };
 					rect_i update_size = { 0, 0, update_area.x2 - update_area.x1, update_area.y2 - update_area.y1 };
 
@@ -172,7 +173,7 @@ namespace wpl
 					fill(_surface, update_size,
 						blender_solid_color<simd::blender_solid_color, order_bgra>(_background_color));
 
-					gcontext ctx(_surface, _renderer, update_area);
+					gcontext ctx(_surface, _renderer, offset, &update_area);
 
 					_rasterizer->reset();
 					_view->draw(ctx, _rasterizer);

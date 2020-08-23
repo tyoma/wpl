@@ -61,7 +61,7 @@ namespace wpl
 				gcontext::surface_type surface(1000, 1000, 0);
 				gcontext::renderer_type ren(1);
 				gcontext::rasterizer_ptr ras(new gcontext::rasterizer_type);
-				gcontext ctx(surface, ren, make_rect(103, 71, 130, 110));
+				gcontext ctx(surface, ren, make_vector(103, 71));
 
 				// ACT / ASSERT
 				s.draw(ctx, ras);
@@ -102,7 +102,7 @@ namespace wpl
 				gcontext::surface_type surface(1000, 1000, 0);
 				gcontext::renderer_type ren(1);
 				gcontext::rasterizer_ptr ras(new gcontext::rasterizer_type);
-				gcontext ctx(surface, ren, make_rect(103, 71, 130, 110));
+				gcontext ctx(surface, ren, make_vector(103, 71));
 
 				m->range = make_pair(0, 100);
 
@@ -141,7 +141,7 @@ namespace wpl
 				gcontext::surface_type surface(1000, 1000, 0);
 				gcontext::renderer_type ren(1);
 				gcontext::rasterizer_ptr ras(new gcontext::rasterizer_type);
-				gcontext ctx(surface, ren, make_rect(0, 0, 100, 10));
+				gcontext ctx(surface, ren, agge::zero());
 
 				memset(surface.row_ptr(0), 0, sizeof(gcontext::surface_type::pixel) * 1000 * 1000);
 				s.resize(100, 10, dummy_nviews);

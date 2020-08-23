@@ -40,7 +40,7 @@ namespace wpl
 	{
 		for (auto i = _children.begin(); i != _children.end(); ++i)
 		{
-			gcontext child_ctx = ctx.transform(i->location.left, i->location.top);
+			gcontext child_ctx = ctx.translate(i->location.left, i->location.top);
 			i->child->draw(child_ctx, rasterizer);
 		}
 	}

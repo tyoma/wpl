@@ -59,6 +59,7 @@
     <ClCompile Include="ScrollerTests.cpp" />
     <ClCompile Include="helpers.cpp" />
     <ClCompile Include="Mockups.cpp" />
+    <ClCompile Include="VisualTests.cpp" />
     <ClCompile Include="WindowingTests.cpp" />
   </ItemGroup>
   <ItemGroup>

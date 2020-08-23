@@ -10,6 +10,7 @@ set(WPL_UI_TEST_SOURCES
 	Mockups.cpp
 	MockupsListView.cpp
 	ScrollerTests.cpp
+	VisualTests.cpp
 )
 
 if (WIN32)

@@ -1,22 +1,45 @@
 #include <wpl/visual.h>
 
+using namespace agge;
 using namespace std;
+
+namespace agge
+{
+	template <typename T>
+	inline rect<T> operator -(rect<T> lhs, const agge_vector<T> &rhs)
+	{	return lhs.x1 -= rhs.dx, lhs.y1 -= rhs.dy, lhs.x2 -= rhs.dx, lhs.y2 -= rhs.dy, lhs;	}
+
+	template <typename T>
+	inline agge_vector<T> operator -(agge_vector<T> lhs, const agge_vector<T> &rhs)
+	{	return lhs.dx -= rhs.dx, lhs.dy -= rhs.dy, lhs;	}
+}
 
 namespace wpl
 {
-	gcontext::gcontext(surface_type &surface, renderer_type &renderer, const agge::rect_i &window)
-		: _surface(surface), _renderer(renderer), _window(window)
-	{	}
-
-	gcontext gcontext::transform(int offset_x, int offset_y) const
+	namespace
 	{
-		agge::rect_i window2 = {
-			_window.x1 - offset_x, _window.y1 - offset_y, _window.x2 - offset_x, _window.y2 - offset_y
-		};
-		return gcontext(_surface, _renderer, window2);
+		rect_i make_rect(int x1, int y1, int x2, int y2)
+		{
+			rect_i r = { x1, y1, x2, y2 };
+			return r;
+		}
 	}
 
-	agge::rect_i gcontext::update_area() const
+	gcontext::gcontext(surface_type &surface, renderer_type &renderer_, const vector_i &offset,
+			const rect_i *window) throw()
+		: _surface(surface), _renderer(renderer_), _offset(offset),
+			_window(window ? *window : make_rect(0, 0, surface.width(), surface.height()) - offset)
+	{	}
+
+	gcontext gcontext::translate(int offset_x, int offset_y) const throw()
+	{
+		const vector_i offset = { offset_x, offset_y };
+		const rect_i w = _window - offset;
+
+		return gcontext(_surface, _renderer, _offset - offset, &w);
+	}
+
+	rect_i gcontext::update_area() const throw()
 	{	return _window;	}
 
 

@@ -167,11 +167,11 @@ namespace wpl
 				shared_ptr<mocks::logging_layout_manager> lm2(new mocks::logging_layout_manager);
 				shared_ptr< mocks::logging_visual<view> > v1(new mocks::logging_visual<view>());
 				shared_ptr< mocks::logging_visual<view> > v2(new mocks::logging_visual<view>());
-				gcontext::surface_type surface(1000, 1000, 0);
+				gcontext::surface_type surface(150, 100, 0);
 				gcontext::renderer_type ren(1);
 				gcontext::rasterizer_ptr ras(new gcontext::rasterizer_type);
 
-				gcontext ctx(surface, ren, make_rect(103, 71, 130, 110));
+				gcontext ctx(surface, ren, make_vector(103, 71));
 
 				lm1->positions.push_back(make_position(13, 17, 1000, 1000));
 				lm2->positions.push_back(make_position(90, 40, 1000, 1000));
@@ -189,14 +189,14 @@ namespace wpl
 
 				// ASSERT
 				assert_equal(1u, v1->update_area_log.size());
-				assert_equal(make_rect(103 - 13, 71 - 17, 130 - 13, 110 - 17), v1->update_area_log[0]);
+				assert_equal(make_rect(-116, -88, 34, 12), v1->update_area_log[0]);
 
 				// ACT
 				c2.draw(ctx, ras);
 
 				// ASSERT
 				assert_equal(1u, v2->update_area_log.size());
-				assert_equal(make_rect(103 - 90, 71 - 40, 130 - 90, 110 - 40), v2->update_area_log[0]);
+				assert_equal(make_rect(-193, -111, -43, -11), v2->update_area_log[0]);
 			}
 
 
@@ -207,11 +207,11 @@ namespace wpl
 				shared_ptr<mocks::logging_layout_manager> lm(new mocks::logging_layout_manager);
 				shared_ptr< mocks::logging_visual<view> > v1(new mocks::logging_visual<view>());
 				shared_ptr< mocks::logging_visual<view> > v2(new mocks::logging_visual<view>());
-				gcontext::surface_type surface(1000, 1000, 0);
+				gcontext::surface_type surface(200, 150, 0);
 				gcontext::renderer_type ren(1);
 				gcontext::rasterizer_ptr ras(new gcontext::rasterizer_type);
 
-				gcontext ctx(surface, ren, make_rect(13, 17, 137, 100));
+				gcontext ctx(surface, ren, make_vector(13, 17));
 
 				lm->positions.push_back(make_position(13, 17, 1000, 1000));
 				lm->positions.push_back(make_position(91, 45, 1000, 1000));
@@ -227,9 +227,9 @@ namespace wpl
 
 				// ASSERT
 				assert_equal(1u, v1->update_area_log.size());
-				assert_equal(make_rect(13 - 13, 17 - 17, 137 - 13, 100 - 17), v1->update_area_log[0]);
+				assert_equal(make_rect(-26, -34, 174, 116), v1->update_area_log[0]);
 				assert_equal(1u, v2->update_area_log.size());
-				assert_equal(make_rect(13 - 91, 17 - 45, 137 - 91, 100 - 45), v2->update_area_log[0]);
+				assert_equal(make_rect(-104, -62, 96, 88), v2->update_area_log[0]);
 			}
 
 

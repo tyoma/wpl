@@ -24,11 +24,12 @@ namespace wpl
 		typedef agge::renderer_parallel renderer_type;
 
 	public:
-		gcontext(surface_type &surface, renderer_type &renderer, const agge::rect_i &window);
+		gcontext(surface_type &surface, renderer_type &renderer, const agge::vector_i &offset,
+			const agge::rect_i *window = 0) throw();
 
-		gcontext transform(int offset_x, int offset_y) const;
+		gcontext translate(int offset_x, int offset_y) const throw();
 
-		agge::rect_i update_area() const;
+		agge::rect_i update_area() const throw();
 
 		template <typename BlenderT, typename AlphaFn>
 		void operator ()(rasterizer_ptr &rasterizer, const BlenderT &blender, const AlphaFn &alpha);
@@ -39,6 +40,7 @@ namespace wpl
 	private:
 		surface_type &_surface;
 		renderer_type &_renderer;
+		const agge::vector_i _offset;
 		const agge::rect_i _window;
 	};
 
@@ -80,7 +82,7 @@ namespace wpl
 	inline void gcontext::operator ()(rasterizer_ptr &rasterizer, const BlenderT &blender, const AlphaFn &alpha)
 	{
 		rasterizer->sort();
-		_renderer(_surface, &_window, *rasterizer, blender, alpha);
+		_renderer(_surface, _offset, 0, *rasterizer, blender, alpha);
 		rasterizer->reset();
 	}
 }

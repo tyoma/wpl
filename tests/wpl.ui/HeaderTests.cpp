@@ -105,7 +105,7 @@ namespace wpl
 			{
 				surface.reset(new gcontext::surface_type(1000, 1000, 0));
 				ren.reset(new gcontext::renderer_type(1));
-				ctx.reset(new gcontext(*surface, *ren, make_rect(0, 0, 1000, 1000)));
+				ctx.reset(new gcontext(*surface, *ren, agge::zero()));
 				ras.reset(new gcontext::rasterizer_type);
 			}
 
