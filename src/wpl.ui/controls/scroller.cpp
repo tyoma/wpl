@@ -79,17 +79,34 @@ namespace wpl
 
 	scroller::thumb scroller::get_thumb() const
 	{
-		const pair<double, double> r(_model->get_range()), w(_model->get_window());
-		const thumb t = { 0.7f * _width, to_screen(r, w.first), to_screen(r, w.first + w.second) };
+		if (_model)
+		{
+			const pair<double, double> r(_model->get_range()), w(_model->get_window());
 
+			if (w.second < r.second)
+			{
+				thumb t = {
+					true,
+					0.7f * _width,
+					to_screen(r, w.first),
+					to_screen(r, w.first + w.second)
+				};
+
+				return t;
+			}
+		}
+
+		thumb t = { false, };
+	
 		return t;
 	}
 
 	void scroller::mouse_down(mouse_buttons /*button*/, int /*depressed*/, int x, int y)
 	{
-		if (_model)
+		const thumb t =  get_thumb();
+
+		if (t.active)
 		{
-			const thumb t =  get_thumb();
 			const int c = _orientation == horizontal ? x : y;
 
 			if (c < static_cast<int>(t.lbound))
@@ -124,7 +141,7 @@ namespace wpl
 
 	void scroller::mouse_up(mouse_buttons /*button*/, int /*depressed*/, int /*x*/, int /*y*/)
 	{
-		if (_model)
+		if (_capture)
 		{
 			_capture.reset();
 			_model->scrolling(false);
@@ -133,10 +150,11 @@ namespace wpl
 
 	void scroller::draw(gcontext &ctx, gcontext::rasterizer_ptr &rasterizer_) const
 	{
-		if (_model && _model->get_window().second < _model->get_range().second)
+		const thumb t = get_thumb();
+
+		if (t.active)
 		{
 			const bool horz = _orientation == horizontal;
-			const thumb t = get_thumb();
 			const real_t hw = 0.5f * _width;
 			const pair<real_t, real_t> c(hw, _extent - hw);
 			line l_channel(horz ? c.first : hw, horz ? hw : c.first, horz ? c.second : hw, horz ? hw : c.second);

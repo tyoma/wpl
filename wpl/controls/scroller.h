@@ -35,6 +35,7 @@ namespace wpl
 
 		struct thumb
 		{
+			bool active;
 			agge::real_t width, lbound, ubound;
 		};
 

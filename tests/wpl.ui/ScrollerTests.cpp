@@ -22,7 +22,13 @@ namespace wpl
 		{
 			scroller::thumb make_thumb(double width, double lbound, double ubound)
 			{
-				scroller::thumb t = { static_cast<real_t>(width), static_cast<real_t>(lbound), static_cast<real_t>(ubound) };
+				scroller::thumb t = {
+					true,
+					static_cast<real_t>(width),
+					static_cast<real_t>(lbound),
+					static_cast<real_t>(ubound)
+				};
+
 				return t;
 			}
 
@@ -36,7 +42,7 @@ namespace wpl
 
 				bool operator ()(scroller::thumb lhs, scroller::thumb rhs) const
 				{
-					return (*this)(lhs.width, rhs.width) && (*this)(lhs.lbound, rhs.lbound)
+					return lhs.active == rhs.active && (*this)(lhs.width, rhs.width) && (*this)(lhs.lbound, rhs.lbound)
 						&& (*this)(lhs.ubound, rhs.ubound);
 				}
 			};
@@ -210,6 +216,51 @@ namespace wpl
 				// ASSERT
 				assert_equal(1u, ilogv.size());
 				assert_is_false(ilogv[0].first);
+			}
+
+
+			test( ThumbIsInactiveIfNoModelIsNotSet )
+			{
+				// INIT
+				scroller sh(scroller::horizontal), sv(scroller::vertical);
+
+				// ACT / ASSERT
+				assert_is_false(sh.get_thumb().active);
+				assert_is_false(sv.get_thumb().active);
+			}
+
+
+			test( ThumbIsInactiveIfWindowIsNotSmallerThanTheRange )
+			{
+				// INIT
+				shared_ptr<mocks::scroll_model> m(new mocks::scroll_model);
+				scroller s(scroller::horizontal);
+
+				s.set_model(m);
+				m->range = make_pair(10.1, 100.7);
+				m->window = make_pair(10.1, 100.7);
+
+				// ACT / ASSERT
+				assert_is_false(s.get_thumb().active);
+
+				// INIT
+				m->window = make_pair(30.1, 100.7);
+
+				// ACT / ASSERT
+				assert_is_false(s.get_thumb().active);
+
+				// INIT
+				m->range = make_pair(3.1, 7.1);
+				m->window = make_pair(3.1, 10.7);
+
+				// ACT / ASSERT
+				assert_is_false(s.get_thumb().active);
+
+				// INIT
+				m->window = make_pair(3.1, 6.7);
+
+				// ACT / ASSERT
+				assert_is_true(s.get_thumb().active);
 			}
 
 
@@ -444,7 +495,42 @@ namespace wpl
 			}
 
 
-			// TODO: no capture is obtained if outside the thumb
+			test( NothingHappensOnClickWhenThumbIsInactive )
+			{
+				// INIT
+				mocks::capture_provider cp;
+				invalidations_log ilog;
+				shared_ptr<mocks::scroll_model> m(new mocks::scroll_model);
+				scroller s(scroller::vertical);
+
+				m->range = make_pair(0, 56);
+				m->window = make_pair(0, 57);
+				s.resize(30, 280, dummy_nviews);
+				s.set_model(m);
+
+				// ASSERT
+				m->on_scrolling = [&] (bool) { assert_is_true(false);	};
+				m->on_scroll = [&] (double, double) { assert_is_true(false); };
+
+				// ACT
+				s.mouse_down(mouse_input::left, 0, 15, 140);
+				s.mouse_down(mouse_input::left, 0, 15, 140);
+
+				// ASSERT
+				assert_is_empty(cp.log);
+
+				// ACT
+				s.mouse_move(mouse_input::left, 15, 138);
+
+				// ASSERT
+				assert_is_empty(cp.log);
+
+				// ACT
+				s.mouse_up(mouse_input::left, 0, 15, 138);
+
+				// ASSERT
+				assert_is_empty(cp.log);
+			}
 
 
 			test( LButtonCycleWithinThumbCapturesReleasesMouse )
