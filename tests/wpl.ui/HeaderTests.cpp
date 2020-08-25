@@ -1,6 +1,7 @@
 #include <wpl/controls/header.h>
 
 #include "helpers.h"
+#include "helpers-visual.h"
 #include "MockupsListView.h"
 #include "predicates.h"
 

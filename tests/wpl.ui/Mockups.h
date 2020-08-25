@@ -1,6 +1,7 @@
 #pragma once
 
 #include "helpers.h"
+#include "helpers-visual.h"
 
 #include <agge/color.h>
 #include <agge/filling_rules.h>
@@ -104,6 +105,22 @@ namespace wpl
 			};
 
 
+			template <typename BaseT>
+			class filling_visual : public BaseT
+			{
+			public:
+				filling_visual(agge::color color);
+
+			private:
+				virtual void draw(gcontext &ctx, gcontext::rasterizer_ptr &rasterizer) const;
+				virtual void resize(unsigned cx, unsigned cy, visual::positioned_native_views &nviews);
+
+			private:
+				agge::color _color;
+				unsigned _cx, _cy;
+			};
+
+
 			class visual_with_native_view : public view
 			{
 			private:
@@ -188,6 +205,20 @@ namespace wpl
 			template <typename BaseT>
 			inline void logging_visual<BaseT>::resize(unsigned cx, unsigned cy, visual::positioned_native_views &/*nviews*/)
 			{	resize_log.push_back(std::make_pair(cx, cy));	}
+
+
+			template <typename BaseT>
+			inline filling_visual<BaseT>::filling_visual(agge::color color)
+				: _color(color)
+			{	}
+
+			template <typename BaseT>
+			void filling_visual<BaseT>::draw(gcontext &ctx, gcontext::rasterizer_ptr &/*rasterizer*/) const
+			{	rectangle(ctx, _color, 0, 0, _cx, _cy);	}
+
+			template <typename BaseT>
+			void filling_visual<BaseT>::resize(unsigned cx, unsigned cy, visual::positioned_native_views &/*nviews*/)
+			{	_cx = cx, _cy = cy;	}
 
 
 			inline mouse_event me_down(mouse_input::mouse_buttons button, int already_depressed, int x, int y)

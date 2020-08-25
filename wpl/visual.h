@@ -56,10 +56,13 @@ namespace wpl
 		struct positioned_native_view;
 		typedef std::vector<positioned_native_view> positioned_native_views;
 
-		virtual ~visual() {	}
+		visual();
+		virtual ~visual();
 
 		virtual void draw(gcontext &ctx, gcontext::rasterizer_ptr &rasterizer) const;
 		virtual void resize(unsigned cx, unsigned cy, positioned_native_views &native_views);
+
+		bool transcending;
 
 		signal<void(const agge::rect_i *window)> invalidate;
 		signal<void()> force_layout;

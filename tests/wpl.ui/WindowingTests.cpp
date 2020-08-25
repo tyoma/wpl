@@ -1,6 +1,6 @@
 #include <wpl/win32/window.h>
 
-#include "helpers.h"
+#include "helpers-win32.h"
 
 #include <functional>
 #include <tchar.h>

@@ -3,7 +3,7 @@
 #include <wpl/win32/controls.h>
 #include <wpl/win32/native_view.h>
 
-#include "helpers.h"
+#include "helpers-win32.h"
 
 #include <functional>
 #include <windows.h>

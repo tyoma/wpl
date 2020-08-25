@@ -1,10 +1,11 @@
 #include <wpl/controls/scroller.h>
 
-#include "helpers.h"
+#include "helpers-visual.h"
 #include "Mockups.h"
 #include "MockupsScroller.h"
 #include "predicates.h"
 
+#include <string.h>
 #include <functional>
 #include <ut/assert.h>
 #include <ut/test.h>

@@ -1,7 +1,8 @@
 #include <wpl/view_host.h>
 #include <wpl/win32/controls.h>
 
-#include "helpers.h"
+#include "helpers-visual.h"
+#include "helpers-win32.h"
 #include "Mockups.h"
 #include "MockupsNative.h"
 

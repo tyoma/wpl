@@ -1,6 +1,6 @@
 #include <wpl/layout.h>
 
-#include "helpers.h"
+#include "helpers-visual.h"
 #include "Mockups.h"
 
 #include <ut/assert.h>

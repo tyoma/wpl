@@ -1,6 +1,6 @@
 #include <wpl/controls/listview_core.h>
 
-#include "helpers.h"
+#include "helpers-visual.h"
 #include "MockupsListView.h"
 #include "predicates.h"
 

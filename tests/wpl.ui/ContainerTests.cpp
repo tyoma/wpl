@@ -1,6 +1,6 @@
 #include <wpl/container.h>
 
-#include "helpers.h"
+#include "helpers-visual.h"
 #include "Mockups.h"
 
 #include <ut/assert.h>
@@ -21,6 +21,16 @@ namespace wpl
 	{
 		begin_test_suite( ContainerTests )
 			vector<visual::positioned_native_view> nviews;
+
+			test( ContainersAreTranscendingViews )
+			{
+				// INIT
+				container c;
+
+				// ACT / ASSERT
+				assert_is_true(c.transcending);
+			}
+
 
 			test( NoLayoutIsMadeOnResizingEmptyContainer )
 			{
@@ -178,8 +188,10 @@ namespace wpl
 
 				// INIT / ACT
 				c1.set_layout(lm1);
+				v1->transcending = true;
 				c1.add_view(v1);
 				c2.set_layout(lm2);
+				v2->transcending = true;
 				c2.add_view(v2);
 				c1.resize(1000, 1000, nviews);
 				c2.resize(1000, 1000, nviews);
@@ -188,15 +200,17 @@ namespace wpl
 				c1.draw(ctx, ras);
 
 				// ASSERT
-				assert_equal(1u, v1->update_area_log.size());
-				assert_equal(make_rect(-116, -88, 34, 12), v1->update_area_log[0]);
+				agge::rect_i reference1[] = { { -116, -88, 34, 12 }, };
+
+				assert_equal(reference1, v1->update_area_log);
 
 				// ACT
 				c2.draw(ctx, ras);
 
 				// ASSERT
-				assert_equal(1u, v2->update_area_log.size());
-				assert_equal(make_rect(-193, -111, -43, -11), v2->update_area_log[0]);
+				agge::rect_i reference2[] = { { -193, -111, -43, -11 }, };
+
+				assert_equal(reference2, v2->update_area_log);
 			}
 
 
@@ -218,7 +232,9 @@ namespace wpl
 
 				// INIT / ACT
 				c.set_layout(lm);
+				v1->transcending = true;
 				c.add_view(v1);
+				v2->transcending = true;
 				c.add_view(v2);
 				c.resize(1000, 1000, nviews);
 
@@ -226,10 +242,119 @@ namespace wpl
 				c.draw(ctx, ras);
 
 				// ASSERT
-				assert_equal(1u, v1->update_area_log.size());
-				assert_equal(make_rect(-26, -34, 174, 116), v1->update_area_log[0]);
-				assert_equal(1u, v2->update_area_log.size());
-				assert_equal(make_rect(-104, -62, 96, 88), v2->update_area_log[0]);
+				agge::rect_i reference11[] = { { -26, -34, 174, 116 }, };
+				agge::rect_i reference12[] = { { -104, -62, 96, 88 }, };
+
+				assert_equal(reference11, v1->update_area_log);
+				assert_equal(reference12, v2->update_area_log);
+			}
+
+
+			test( ContextIsWindowedForNonTranscendingViews )
+			{
+				// INIT
+				container c;
+				shared_ptr<mocks::logging_layout_manager> lm(new mocks::logging_layout_manager);
+				shared_ptr< mocks::logging_visual<view> > v1(new mocks::logging_visual<view>());
+				shared_ptr< mocks::logging_visual<view> > v2(new mocks::logging_visual<view>());
+				shared_ptr< mocks::logging_visual<view> > v3(new mocks::logging_visual<view>());
+				gcontext::surface_type surface(1000, 1000, 0);
+				gcontext::renderer_type ren(1);
+				gcontext::rasterizer_ptr ras(new gcontext::rasterizer_type);
+
+				gcontext ctx(surface, ren, agge::zero());
+
+				lm->positions.push_back(make_position(13, 17, 10, 11));
+				lm->positions.push_back(make_position(91, 45, 90, 20));
+				lm->positions.push_back(make_position(80, 60, 70, 30));
+
+				c.set_layout(lm);
+				static_cast<visual &>(*v1).transcending = true;
+				c.add_view(v1);
+				static_cast<visual &>(*v2).transcending = false;
+				c.add_view(v2);
+				v3->transcending = false;
+				c.add_view(v3);
+				c.resize(1000, 1000, nviews);
+
+				// ACT
+				c.draw(ctx, ras);
+
+				// ASSERT
+				agge::rect_i reference11[] = { { -13, -17, 987, 983 }, };
+				agge::rect_i reference12[] = { { 0, 0, 90, 20 }, };
+				agge::rect_i reference13[] = { { 0, 0, 70, 30 }, };
+
+				assert_equal(reference11, v1->update_area_log);
+				assert_equal(reference12, v2->update_area_log);
+				assert_equal(reference13, v3->update_area_log);
+
+				// INIT
+				v1->transcending = false;
+				v2->transcending = true;
+
+				// ACT
+				c.draw(ctx, ras);
+
+				// ASSERT
+				agge::rect_i reference21[] = { { -13, -17, 987, 983 }, { 0, 0, 10, 11 }, };
+				agge::rect_i reference22[] = { { 0, 0, 90, 20 }, { -91, -45, 909, 955 }, };
+				agge::rect_i reference23[] = { { 0, 0, 70, 30 }, { 0, 0, 70, 30 }, };
+
+				assert_equal(reference21, v1->update_area_log);
+				assert_equal(reference22, v2->update_area_log);
+				assert_equal(reference23, v3->update_area_log);
+			}
+
+
+			test( ViewsAreRenderedAsExpected )
+			{
+				// INIT
+				container container_;
+				agge::color color_o = agge::color::make(0, 0, 0);
+				gcontext::pixel_type o = make_pixel_real(color_o);
+				agge::color color_a = agge::color::make(255, 0, 0);
+				gcontext::pixel_type a = make_pixel_real(color_a);
+				agge::color color_b = agge::color::make(0, 255, 0);
+				gcontext::pixel_type b = make_pixel_real(color_b);
+				agge::color color_c = agge::color::make(0, 0, 255);
+				gcontext::pixel_type c = make_pixel_real(color_c);
+				shared_ptr<mocks::logging_layout_manager> lm(new mocks::logging_layout_manager);
+				shared_ptr< mocks::filling_visual<view> > v1(new mocks::filling_visual<view>(color_a));
+				shared_ptr< mocks::filling_visual<view> > v2(new mocks::filling_visual<view>(color_b));
+				shared_ptr< mocks::filling_visual<view> > v3(new mocks::filling_visual<view>(color_c));
+				gcontext::surface_type surface(10, 7, 0);
+				gcontext::renderer_type ren(1);
+				gcontext::rasterizer_ptr ras(new gcontext::rasterizer_type);
+				gcontext ctx(surface, ren, agge::zero());
+
+				lm->positions.push_back(make_position(3, 1, 6, 5));
+				lm->positions.push_back(make_position(1, 2, 3, 3));
+				lm->positions.push_back(make_position(5, 4, 5, 2));
+
+				container_.set_layout(lm);
+				container_.add_view(v1);
+				container_.add_view(v2);
+				container_.add_view(v3);
+				container_.resize(10, 7, nviews);
+
+				reset(surface, o);
+
+				// ACT
+				container_.draw(ctx, ras);
+
+				// ASSERT
+				const gcontext::pixel_type reference[] = {
+					o, o, o, o, o, o, o, o, o, o,
+					o, o, o, a, a, a, a, a, a, o,
+					o, b, b, b, a, a, a, a, a, o,
+					o, b, b, b, a, a, a, a, a, o,
+					o, b, b, b, a, c, c, c, c, c,
+					o, o, o, a, a, c, c, c, c, c,
+					o, o, o, o, o, o, o, o, o, o,
+				};
+
+				assert_equal(reference, surface);
 			}
 
 

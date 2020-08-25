@@ -1,6 +1,6 @@
 #include "Mockups.h"
 
-#include "helpers.h"
+#include "helpers-visual.h"
 
 #include <string.h>
 

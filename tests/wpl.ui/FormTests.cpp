@@ -2,7 +2,8 @@
 #include <wpl/win32/native_view.h>
 #include <wpl/win32/form.h>
 
-#include "helpers.h"
+#include "helpers-visual.h"
+#include "helpers-win32.h"
 #include "Mockups.h"
 #include "MockupsNative.h"
 

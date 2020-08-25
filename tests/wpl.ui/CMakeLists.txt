@@ -5,6 +5,8 @@ include(test)
 set(WPL_UI_TEST_SOURCES
 	ContainerTests.cpp
 	HeaderTests.cpp
+	helpers.cpp
+	helpers-visual.cpp
 	LayoutTests.cpp
 	ListViewCoreTests.cpp
 	Mockups.cpp
@@ -17,7 +19,7 @@ if (WIN32)
 	set(WPL_UI_TEST_SOURCES ${WPL_UI_TEST_SOURCES}
 		ComboboxTests.cpp
 		FormTests.cpp
-		helpers.cpp
+		helpers-win32.cpp
 		IntegrationTests.cpp
 		LayoutTests.cpp
 		MockupsNative.cpp

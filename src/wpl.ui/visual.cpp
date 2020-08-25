@@ -50,6 +50,13 @@ namespace wpl
 	{	return _window;	}
 
 
+	visual::visual()
+		: transcending(false)
+	{	}
+
+	visual::~visual()
+	{	}
+
 	void visual::draw(gcontext &/*ctx*/, gcontext::rasterizer_ptr &/*rasterizer*/) const
 	{	}
 

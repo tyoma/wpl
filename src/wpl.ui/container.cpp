@@ -14,7 +14,7 @@ namespace wpl
 
 	container::container()
 		: _capture_target(npos)
-	{	}
+	{	transcending = true;	}
 
 	void container::add_view(const shared_ptr<view> &child, int tab_order)
 	{
@@ -41,7 +41,17 @@ namespace wpl
 		for (auto i = _children.begin(); i != _children.end(); ++i)
 		{
 			gcontext child_ctx = ctx.translate(i->location.left, i->location.top);
-			i->child->draw(child_ctx, rasterizer);
+
+			if (i->child->transcending)
+			{
+				i->child->draw(child_ctx, rasterizer);
+			}
+			else
+			{
+				gcontext child_ctx_windowed = child_ctx.window(0, 0, i->location.width, i->location.height);
+
+				i->child->draw(child_ctx_windowed, rasterizer);
+			}
 		}
 	}
 
