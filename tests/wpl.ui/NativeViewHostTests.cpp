@@ -1051,6 +1051,222 @@ namespace wpl
 				assert_equal(reference_inout, v2->events);
 				assert_equal(reference_in, v3->events);
 			}
+
+
+			test( FocusIsSetToTheControlSpecifiedByRequest )
+			{
+				// INIT
+				hosting_window f;
+				shared_ptr<container> c(new container);
+				shared_ptr< mocks::logging_key_input<view> > v1(new mocks::logging_key_input<view>);
+				shared_ptr< mocks::logging_key_input<view> > v2(new mocks::logging_key_input<view>);
+				shared_ptr< mocks::logging_key_input<view> > v3(new mocks::logging_key_input<view>);
+				shared_ptr<stack> s(new stack(0, true));
+
+				c->set_layout(s);
+				c->add_view(v1, 3), s->add(10);
+				c->add_view(v2, 2), s->add(10);
+				c->add_view(v3, 1), s->add(10);
+				f.host->set_view(c);
+				::ValidateRect(f.hwnd, NULL);
+
+				// ACT
+				c->request_focus(v2);
+
+				// ASSERT
+				mocks::keyboard_event reference_in[] = {
+					{ mocks::keyboard_event::focusin, 0, 0 },
+				};
+
+				assert_is_empty(v1->events);
+				assert_equal(reference_in, v2->events);
+				assert_is_empty(v3->events);
+
+				// ACT
+				c->request_focus(v1);
+
+				// ASSERT
+				mocks::keyboard_event reference_inout[] = {
+					{ mocks::keyboard_event::focusin, 0, 0 },
+					{ mocks::keyboard_event::focusout, 0, 0 },
+				};
+
+				assert_equal(reference_in, v1->events);
+				assert_equal(reference_inout, v2->events);
+				assert_is_empty(v3->events);
+
+				// ACT
+				c->request_focus(v3);
+
+				// ASSERT
+				assert_equal(reference_inout, v1->events);
+				assert_equal(reference_inout, v2->events);
+				assert_equal(reference_in, v3->events);
+			}
+
+
+			test( FocusMovesAccordinglyToTabOrderAfterFocusRequest )
+			{
+				// INIT
+				hosting_window f;
+				shared_ptr<container> c(new container);
+				shared_ptr< mocks::logging_key_input<view> > v1(new mocks::logging_key_input<view>);
+				shared_ptr< mocks::logging_key_input<view> > v2(new mocks::logging_key_input<view>);
+				shared_ptr< mocks::logging_key_input<view> > v3(new mocks::logging_key_input<view>);
+				shared_ptr<stack> s(new stack(0, true));
+
+				c->set_layout(s);
+				c->add_view(v1, 3), s->add(10);
+				c->add_view(v2, 2), s->add(10);
+				c->add_view(v3, 1), s->add(10);
+				f.host->set_view(c);
+				::ValidateRect(f.hwnd, NULL);
+
+				c->request_focus(v2);
+
+				// ACT
+				::SendMessage(f.hwnd, WM_KEYDOWN, VK_TAB, 0);
+
+				// ASSERT
+				mocks::keyboard_event reference_in[] = {
+					{ mocks::keyboard_event::focusin, 0, 0 },
+				};
+				mocks::keyboard_event reference_inout[] = {
+					{ mocks::keyboard_event::focusin, 0, 0 },
+					{ mocks::keyboard_event::focusout, 0, 0 },
+				};
+
+				assert_equal(reference_in, v1->events);
+				assert_equal(reference_inout, v2->events);
+				assert_is_empty(v3->events);
+
+				// ACT
+				::SendMessage(f.hwnd, WM_KEYDOWN, VK_TAB, 0);
+
+				// ASSERT
+				assert_equal(reference_inout, v1->events);
+				assert_equal(reference_inout, v2->events);
+				assert_equal(reference_in, v3->events);
+
+				// INIT
+				c->request_focus(v3);
+				v1->events.clear();
+				v2->events.clear();
+				v3->events.clear();
+
+				// ACT
+				::SendMessage(f.hwnd, WM_KEYDOWN, VK_SHIFT, 0);
+				::SendMessage(f.hwnd, WM_KEYDOWN, VK_TAB, 0);
+
+				// ASSERT
+				mocks::keyboard_event reference_out[] = {
+					{ mocks::keyboard_event::focusout, 0, 0 },
+				};
+
+				assert_equal(reference_in, v1->events);
+				assert_is_empty(v2->events);
+				assert_equal(reference_out, v3->events);
+			}
+
+
+			test( FocusDoesNotMoveIfSetToTheSameControl )
+			{
+				// INIT
+				hosting_window f;
+				shared_ptr<container> c(new container);
+				shared_ptr< mocks::logging_key_input<view> > v1(new mocks::logging_key_input<view>);
+				shared_ptr< mocks::logging_key_input<view> > v2(new mocks::logging_key_input<view>);
+				shared_ptr< mocks::logging_key_input<view> > v3(new mocks::logging_key_input<view>);
+				shared_ptr<stack> s(new stack(0, true));
+
+				c->set_layout(s);
+				c->add_view(v1, 3), s->add(10);
+				c->add_view(v2, 2), s->add(10);
+				c->add_view(v3, 1), s->add(10);
+				f.host->set_view(c);
+				::ValidateRect(f.hwnd, NULL);
+
+				c->request_focus(v2);
+				v2->events.clear();
+
+				// ACT
+				c->request_focus(v2);
+
+				// ASSERT
+				assert_is_empty(v1->events);
+				assert_is_empty(v2->events);
+				assert_is_empty(v3->events);
+			}
+
+
+			test( FocusDoesNotMoveIfUnregisteredControlRequestsForFocus )
+			{
+				// INIT
+				hosting_window f;
+				shared_ptr<container> c(new container);
+				shared_ptr< mocks::logging_key_input<view> > v1(new mocks::logging_key_input<view>);
+				shared_ptr< mocks::logging_key_input<view> > v2(new mocks::logging_key_input<view>);
+				shared_ptr< mocks::logging_key_input<view> > v3(new mocks::logging_key_input<view>);
+				shared_ptr<stack> s(new stack(0, true));
+
+				c->set_layout(s);
+				c->add_view(v1, 3), s->add(10);
+				c->add_view(v2, 2), s->add(10);
+				f.host->set_view(c);
+				::ValidateRect(f.hwnd, NULL);
+
+				c->request_focus(v2);
+				v2->events.clear();
+
+				// ACT
+				c->request_focus(v3);
+
+				// ASSERT
+				assert_is_empty(v1->events);
+				assert_is_empty(v2->events);
+				assert_is_empty(v3->events);
+			}
+
+
+			test( WindowObtainsFocusOnFocusRequest )
+			{
+				// INIT
+				hosting_window f1;
+				hosting_window f2;
+				shared_ptr<container> c1(new container);
+				shared_ptr<container> c2(new container);
+				shared_ptr< mocks::logging_key_input<view> > v1(new mocks::logging_key_input<view>);
+				shared_ptr< mocks::logging_key_input<view> > v2(new mocks::logging_key_input<view>);
+				shared_ptr<stack> s1(new stack(0, true));
+				shared_ptr<stack> s2(new stack(0, true));
+
+				c1->set_layout(s1);
+				c1->add_view(v1, 3); s1->add(10);
+				c2->set_layout(s2);
+				c2->add_view(v2, 2); s2->add(10);
+				f1.host->set_view(c1);
+				f2.host->set_view(c2);
+				::ValidateRect(f1.hwnd, NULL);
+				::ValidateRect(f2.hwnd, NULL);
+
+				// ACT
+				c1->request_focus(v1);
+
+				// ASSERT
+				assert_equal(f1.hwnd, GetFocus());
+
+				// ACT
+				c2->request_focus(v2);
+
+				// ASSERT
+				assert_equal(f2.hwnd, GetFocus());
+
+				// ACT (no change on requesting invalid child)
+				c1->request_focus(v2);
+
+				// ASSERT
+				assert_equal(f2.hwnd, GetFocus());
+			}
 		end_test_suite
 	}
 }

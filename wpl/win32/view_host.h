@@ -49,6 +49,7 @@ namespace wpl
 
 			void resize_view(unsigned cx, unsigned cy) throw();
 			static mouse_input::mouse_buttons get_button(UINT message);
+			void set_focus(std::vector<keyboard_input::tabbed_control>::const_iterator focus_i);
 
 		private:
 			window::user_handler_t _user_handler;

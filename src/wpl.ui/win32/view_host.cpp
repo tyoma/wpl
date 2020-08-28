@@ -112,6 +112,19 @@ namespace wpl
 				::GetClientRect(_window->hwnd(), &rc);
 				resize_view(rc.right, rc.bottom);
 			});
+			_connections.push_back(v->request_focus += [this] (const shared_ptr<keyboard_input> &v) {
+				if (_focus != v)
+				{
+					auto focus_i = find_if(_tabbed_controls.begin(), _tabbed_controls.end(),
+						[&v] (const keyboard_input::tabbed_control &ctl) {	return ctl.second == v;	});
+
+					if (focus_i != _tabbed_controls.end())
+					{
+						::SetFocus(_window->hwnd());
+						set_focus(focus_i);
+					}
+				}
+			});
 			v->force_layout();
 		}
 
@@ -231,21 +244,20 @@ namespace wpl
 				return;
 			}
 
-			if (_focus)
-				_focus->lost_focus();
+			auto focus_i = _focus_i;
+
 			if (keyboard_input::shift & _input_modifiers)
 			{
-				if (_focus_i == _tabbed_controls.begin())
-					_focus_i = _tabbed_controls.end();
-				--_focus_i;
+				if (focus_i == _tabbed_controls.begin())
+					focus_i = _tabbed_controls.end();
+				--focus_i;
 			}
 			else
 			{
-				if (_focus_i == _tabbed_controls.end() || ++_focus_i == _tabbed_controls.end())
-					_focus_i = _tabbed_controls.begin();
+				if (focus_i == _tabbed_controls.end() || ++focus_i == _tabbed_controls.end())
+					focus_i = _tabbed_controls.begin();
 			}
-			_focus = _focus_i->second;
-			_focus->got_focus();
+			set_focus(focus_i);
 		}
 
 		void view_host::dispatch_mouse(UINT message, WPARAM /*wparam*/, LPARAM lparam)
@@ -315,6 +327,15 @@ namespace wpl
 			case WM_RBUTTONDOWN: case WM_RBUTTONUP: case WM_RBUTTONDBLCLK: return mouse_input::right;
 			default: return mouse_input::base;
 			}
+		}
+
+		void view_host::set_focus(vector<keyboard_input::tabbed_control>::const_iterator focus_i)
+		{
+			if (_focus)
+				_focus->lost_focus();
+			focus_i->second->got_focus();
+			_focus = focus_i->second;
+			_focus_i = focus_i;
 		}
 	}
 
