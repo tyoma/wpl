@@ -39,6 +39,10 @@ namespace wpl
 			virtual void set_background_color(agge::color color);
 
 		private:
+			typedef std::vector<keyboard_input::tabbed_control> tabbed_controls;
+			typedef tabbed_controls::const_iterator tabbed_controls_iterator;
+
+		private:
 			LRESULT wndproc(UINT message, WPARAM wparam, LPARAM lparam, const window::original_handler_t &previous);
 				
 			void dispatch_key(UINT message, WPARAM wparam, LPARAM lparam);
@@ -50,14 +54,16 @@ namespace wpl
 			void resize_view(unsigned cx, unsigned cy) throw();
 			static mouse_input::mouse_buttons get_button(UINT message);
 			void set_focus(std::vector<keyboard_input::tabbed_control>::const_iterator focus_i);
+			tabbed_controls_iterator find(const std::shared_ptr<keyboard_input> &v) const;
+			tabbed_controls_iterator find_next(tabbed_controls_iterator reference) const;
+			tabbed_controls_iterator find_previous(tabbed_controls_iterator reference) const;
 
 		private:
 			window::user_handler_t _user_handler;
 			std::shared_ptr<window> _window;
 			std::shared_ptr<view> _view;
-			std::vector<keyboard_input::tabbed_control> _tabbed_controls;
-			std::vector<keyboard_input::tabbed_control>::const_iterator _focus_i;
-			std::shared_ptr<keyboard_input> _focus;
+			tabbed_controls _tabbed_controls;
+			tabbed_controls_iterator _focus;
 			gcontext::surface_type _surface;
 			gcontext::rasterizer_ptr _rasterizer;
 			gcontext::renderer_type _renderer;

@@ -508,6 +508,32 @@ namespace wpl
 			}
 
 
+			test( KeyboardInputIsRedirectedToTheViewIfNoTabbedControls )
+			{
+				// INIT
+				hosting_window f;
+				shared_ptr< mocks::logging_key_input<view> > v(new mocks::logging_key_input<view>);
+
+				f.host->set_view(v);
+				::ValidateRect(f.hwnd, NULL);
+
+				// ACT
+				::SendMessage(f.hwnd, WM_KEYDOWN, VK_TAB, 0);
+				::SendMessage(f.hwnd, WM_KEYUP, VK_TAB, 0);
+				::SendMessage(f.hwnd, WM_KEYDOWN, 'Z', 0);
+				::SendMessage(f.hwnd, WM_KEYUP, 'Z', 0);
+
+				// ASSERT
+				mocks::keyboard_event reference[] = {
+					{ mocks::keyboard_event::focusin, 0, 0 },
+					{ mocks::keyboard_event::keydown, 'Z', 0 },
+					{ mocks::keyboard_event::keyup, 'Z', 0 },
+				};
+
+				assert_equal(reference, v->events);
+			}
+
+
 			test( KeyMessagesGetKeyInputCallbacksCalled )
 			{
 				// INIT
@@ -515,6 +541,8 @@ namespace wpl
 				hosting_window f;
 
 				f.host->set_view(v);
+				v->request_focus(v);
+				v->events.clear();
 
 				// ACT
 				::SendMessage(f.hwnd, WM_KEYDOWN, VK_LEFT, 0);
@@ -567,6 +595,8 @@ namespace wpl
 				hosting_window f;
 
 				f.host->set_view(v);
+				v->request_focus(v);
+				v->events.clear();
 
 				// ACT
 				::SendMessage(f.hwnd, WM_KEYDOWN, VK_CONTROL, 0);
@@ -605,6 +635,8 @@ namespace wpl
 				hosting_window f;
 
 				f.host->set_view(v);
+				v->request_focus(v);
+				v->events.clear();
 
 				::SendMessage(f.hwnd, WM_KEYDOWN, VK_CONTROL, 0);
 				::SendMessage(f.hwnd, WM_KEYDOWN, VK_SHIFT, 0);
@@ -924,26 +956,6 @@ namespace wpl
 				assert_is_empty(v1->events);
 				assert_equal(reference2, v2->events);
 				assert_is_empty(v3->events);
-			}
-
-
-			test( KeyboardInputIsRedirectedToNullIfNoTabbedControls )
-			{
-				// INIT
-				hosting_window f;
-				shared_ptr< mocks::logging_key_input<view> > v(new mocks::logging_key_input<view>);
-
-				f.host->set_view(v);
-				::ValidateRect(f.hwnd, NULL);
-
-				// ACT
-				::SendMessage(f.hwnd, WM_KEYDOWN, VK_TAB, 0);
-				::SendMessage(f.hwnd, WM_KEYUP, VK_TAB, 0);
-				::SendMessage(f.hwnd, WM_KEYDOWN, 'Z', 0);
-				::SendMessage(f.hwnd, WM_KEYUP, 'Z', 0);
-
-				// ASSERT
-				assert_is_empty(v->events);
 			}
 
 

@@ -86,13 +86,14 @@ namespace wpl
 		void view_host::set_view(const shared_ptr<view> &v)
 		{
 			_view = v;
-			_focus = v;
 			_connections.clear();
+			_tabbed_controls.clear();
 			if (!v)
 				return;
+			_tabbed_controls.assign(1, make_pair(0, v));
 			v->get_tabbed_controls(_tabbed_controls);
 			sort(_tabbed_controls.begin(), _tabbed_controls.end());
-			_focus_i = _tabbed_controls.end();
+			_focus = _tabbed_controls.end();
 			_connections.push_back(v->invalidate += [this] (const agge::rect_i *rc) {
 				RECT rc2;
 
@@ -113,16 +114,12 @@ namespace wpl
 				resize_view(rc.right, rc.bottom);
 			});
 			_connections.push_back(v->request_focus += [this] (const shared_ptr<keyboard_input> &v) {
-				if (_focus != v)
-				{
-					auto focus_i = find_if(_tabbed_controls.begin(), _tabbed_controls.end(),
-						[&v] (const keyboard_input::tabbed_control &ctl) {	return ctl.second == v;	});
+				tabbed_controls_iterator focus = this->find(v);
 
-					if (focus_i != _tabbed_controls.end())
-					{
-						::SetFocus(_window->hwnd());
-						set_focus(focus_i);
-					}
+				if (focus != _tabbed_controls.end() && focus != _focus)
+				{
+					::SetFocus(_window->hwnd());
+					set_focus(focus);
 				}
 			});
 			v->force_layout();
@@ -218,13 +215,13 @@ namespace wpl
 			default: code = static_cast<int>(wparam); break;
 			}
 
-			if (!_focus)
+			if (_focus == _tabbed_controls.end())
 				return;
 
 			switch (message)
 			{
-			case WM_KEYDOWN: _focus->key_down(code, _input_modifiers); break;
-			case WM_KEYUP: _focus->key_up(code, _input_modifiers); break;
+			case WM_KEYDOWN: _focus->second->key_down(code, _input_modifiers); break;
+			case WM_KEYUP: _focus->second->key_up(code, _input_modifiers); break;
 			}
 		}
 
@@ -239,25 +236,11 @@ namespace wpl
 		void view_host::dispatch_tab()
 		{
 			if (_tabbed_controls.empty())
-			{
-				_focus = nullptr;
 				return;
-			}
-
-			auto focus_i = _focus_i;
-
-			if (keyboard_input::shift & _input_modifiers)
-			{
-				if (focus_i == _tabbed_controls.begin())
-					focus_i = _tabbed_controls.end();
-				--focus_i;
-			}
+			else if (keyboard_input::shift & _input_modifiers)
+				set_focus(find_previous(_focus));
 			else
-			{
-				if (focus_i == _tabbed_controls.end() || ++focus_i == _tabbed_controls.end())
-					focus_i = _tabbed_controls.begin();
-			}
-			set_focus(focus_i);
+				set_focus(find_next(_focus));
 		}
 
 		void view_host::dispatch_mouse(UINT message, WPARAM /*wparam*/, LPARAM lparam)
@@ -329,13 +312,33 @@ namespace wpl
 			}
 		}
 
-		void view_host::set_focus(vector<keyboard_input::tabbed_control>::const_iterator focus_i)
+		void view_host::set_focus(vector<keyboard_input::tabbed_control>::const_iterator focus)
 		{
-			if (_focus)
-				_focus->lost_focus();
-			focus_i->second->got_focus();
-			_focus = focus_i->second;
-			_focus_i = focus_i;
+			if (_focus != _tabbed_controls.end())
+				_focus->second->lost_focus();
+			focus->second->got_focus();
+			_focus = focus;
+		}
+
+		view_host::tabbed_controls_iterator view_host::find(const std::shared_ptr<keyboard_input> &v) const
+		{
+			return find_if(_tabbed_controls.begin(), _tabbed_controls.end(),
+				[&v] (const keyboard_input::tabbed_control &ctl) {	return ctl.second == v;	});
+		}
+
+		view_host::tabbed_controls_iterator view_host::find_next(tabbed_controls_iterator reference) const
+		{
+			if (reference == _tabbed_controls.end() || ++reference == _tabbed_controls.end())
+				reference = _tabbed_controls.begin();
+			return reference;
+		}
+
+		view_host::tabbed_controls_iterator view_host::find_previous(tabbed_controls_iterator reference) const
+		{
+			if (reference == _tabbed_controls.begin())
+				reference = _tabbed_controls.end();
+			--reference;
+			return reference;
 		}
 	}
 
