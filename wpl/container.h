@@ -17,6 +17,7 @@ namespace wpl
 			slot_connection invalidate_connection;
 			slot_connection force_layout_connection;
 			slot_connection capture_connection;
+			slot_connection request_focus_connection;
 		};
 
 	public:
@@ -41,7 +42,6 @@ namespace wpl
 
 	private:
 		void on_invalidate(unsigned index, const agge::rect_i *area);
-		void on_force_layout();
 		void on_capture(unsigned index, std::shared_ptr<void> &capture_handle);
 		std::shared_ptr<view> child_from_point(int &x, int &y) const;
 		std::shared_ptr<view> switch_mouse_over(int &x, int &y);

@@ -23,8 +23,9 @@ namespace wpl
 			child,
 			tab_order,
 			child->invalidate += bind(&container::on_invalidate, this, static_cast<unsigned>(_children.size()), _1),
-			child->force_layout += bind(&container::on_force_layout, this),
+			child->force_layout += [this] { force_layout(); },
 			child->capture += bind(&container::on_capture, this, static_cast<unsigned>(_children.size()), _1),
+			child->request_focus += [this] (const shared_ptr<keyboard_input> &v) { request_focus(v); },
 		};
 
 		_children.push_back(c);
@@ -34,6 +35,7 @@ namespace wpl
 	void container::set_layout(const shared_ptr<layout_manager> &layout)
 	{
 		_layout = layout;
+		force_layout();
 	}
 
 	void container::draw(gcontext &ctx, gcontext::rasterizer_ptr &rasterizer) const
@@ -98,7 +100,10 @@ namespace wpl
 	void container::mouse_down(mouse_buttons button, int depressed, int x, int y)
 	{
 		if (shared_ptr<view> v = switch_mouse_over(x, y))
+		{
+			request_focus(v);
 			v->mouse_down(button, depressed, x, y);
+		}
 	}
 
 	void container::mouse_up(mouse_buttons button, int depressed, int x, int y)
@@ -123,9 +128,6 @@ namespace wpl
 		area2.x1 += v.location.left, area2.y1 += v.location.top, area2.x2 += v.location.left, area2.y2 += v.location.top;
 		invalidate(&area2);
 	}
-
-	void container::on_force_layout()
-	{	force_layout();	}
 
 	void container::on_capture(unsigned index, shared_ptr<void> &capture_handle)
 	{

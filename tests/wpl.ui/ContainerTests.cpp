@@ -48,6 +48,29 @@ namespace wpl
 			}
 
 
+			test( ForceLayoutRequestIsMadeOnSettingLayout )
+			{
+				// INIT
+				auto force_layouts = 0;
+				container c;
+				shared_ptr<mocks::logging_layout_manager> lm(new mocks::logging_layout_manager);
+				const auto conn = c.force_layout += [&] { force_layouts++; };
+
+				// ACT
+				c.set_layout(lm);
+
+				// ASSERT
+				assert_equal(1, force_layouts);
+
+				// ACT
+				c.set_layout(lm);
+				c.set_layout(lm);
+
+				// ASSERT
+				assert_equal(3, force_layouts);
+			}
+
+
 			test( AddingAViewForcesLayoutRecalculate )
 			{
 				// INIT
@@ -988,6 +1011,85 @@ namespace wpl
 				};
 
 				assert_equal(reference, actual);
+			}
+
+
+			test( FocusRequestSignalIsRaisedOnMouseDownAndDoubleClickingOnAView )
+			{
+				// INIT
+				vector< shared_ptr<keyboard_input> > log;
+				shared_ptr<mocks::logging_layout_manager> lm(new mocks::logging_layout_manager);
+				shared_ptr<container> c(new container);
+				shared_ptr<view> v1(new view());
+				shared_ptr<view> v2(new view());
+				shared_ptr<view> v3(new view());
+				auto conn = c->request_focus += [&] (shared_ptr<keyboard_input> v) {	log.push_back(v);	};
+
+				c->set_layout(lm);
+
+				lm->positions.push_back(make_position(0, 0, 100, 55));
+				c->add_view(v1);
+				lm->positions.push_back(make_position(70, 30, 80, 70));
+				c->add_view(v2);
+				lm->positions.push_back(make_position(30, 60, 50, 20));
+				c->add_view(v3);
+				c->resize(1000, 1000, nviews);
+
+				// ACT
+				c->mouse_down(mouse_input::left, 0, 10, 2);
+
+				// ASSERT
+				shared_ptr<keyboard_input> reference1[] = { v1, };
+
+				assert_equal(reference1, log);
+
+				// ACT
+				c->mouse_down(mouse_input::right, 0, 31, 62);
+
+				// ASSERT
+				shared_ptr<keyboard_input> reference2[] = { v1, v3, };
+
+				assert_equal(reference2, log);
+
+				// ACT
+				c->mouse_down(mouse_input::middle, 0, 75, 59);
+
+				// ASSERT
+				shared_ptr<keyboard_input> reference3[] = { v1, v3, v2, };
+
+				assert_equal(reference3, log);
+			}
+
+
+			test( RequestFocusBobblesUpThehierarchy )
+			{
+				// INIT
+				vector< shared_ptr<keyboard_input> > log;
+				shared_ptr<mocks::logging_layout_manager> lm(new mocks::logging_layout_manager);
+				shared_ptr<container> c(new container);
+				shared_ptr<view> v1(new view());
+				shared_ptr<view> v2(new view());
+				shared_ptr<view> v3(new view());
+				auto conn = c->request_focus += [&] (shared_ptr<keyboard_input> v) {	log.push_back(v);	};
+
+				c->add_view(v1);
+				c->add_view(v2);
+
+				// ACT
+				v1->request_focus(v3);
+
+				// ASSERT
+				shared_ptr<keyboard_input> reference1[] = { v3, };
+
+				assert_equal(reference1, log);
+
+				// ACT
+				v2->request_focus(v1);
+
+				// ASSERT
+				shared_ptr<keyboard_input> reference2[] = { v3, v1, };
+
+				assert_equal(reference2, log);
 			}
 
 		end_test_suite
