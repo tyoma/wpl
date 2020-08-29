@@ -20,6 +20,7 @@
 
 #include <wpl/controls/listview_core.h>
 
+#include <agge/math.h>
 #include <algorithm>
 #include <numeric>
 #include <cmath>
@@ -34,6 +35,7 @@ namespace wpl
 		namespace
 		{
 			const real_t c_tolerance = 0.001f;
+
 		}
 
 		struct listview_core::trackable_less
@@ -158,6 +160,8 @@ namespace wpl
 		void listview_core::key_down(unsigned code, int modifiers)
 		{
 			index_type item = _focused ? _focused->index() : npos();
+			const index_type scroll_size = agge::iround(_size.h / get_item_height());
+			const index_type item_count = _model->get_count();
 
 			switch (code)
 			{
@@ -168,9 +172,29 @@ namespace wpl
 					item++;
 				break;
 
+			case page_down:
+				if (item == npos())
+					item = scroll_size - 1;
+				else if (item + 1 == item_count)
+					{	}
+				else if (!is_visible(item + 1))
+					item = item + scroll_size < item_count ? item + scroll_size : item_count - 1;
+				else
+					item = get_item(static_cast<int>(_size.h - 1)), item = item == npos() ? item_count - 1 : item;;
+				break;
+
 			case up:
 				if (npos() != item && item)
 					item--;
+				break;
+
+			case page_up:
+				if (item == npos() || item == 0)
+					item = 0;
+				else if (!is_visible(item - 1))
+					item = item > scroll_size ? item - scroll_size : 0;
+				else
+					item = get_item(0), item = item == npos() ? 0 : item;
 				break;
 			}
 

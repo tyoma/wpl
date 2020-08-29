@@ -546,10 +546,12 @@ namespace wpl
 
 				// ACT
 				::SendMessage(f.hwnd, WM_KEYDOWN, VK_LEFT, 0);
+				::SendMessage(f.hwnd, WM_KEYDOWN, VK_NEXT, 0);
 
 				// ASSERT
 				mocks::keyboard_event reference1[] = {
 					{ mocks::keyboard_event::keydown, keyboard_input::left, 0 },
+					{ mocks::keyboard_event::keydown, keyboard_input::page_down, 0 },
 				};
 
 				assert_equal(reference1, v->events);
@@ -558,13 +560,16 @@ namespace wpl
 				::SendMessage(f.hwnd, WM_KEYUP, VK_RIGHT, 0);
 				::SendMessage(f.hwnd, WM_KEYDOWN, VK_UP, 0);
 				::SendMessage(f.hwnd, WM_KEYUP, VK_DOWN, 0);
+				::SendMessage(f.hwnd, WM_KEYUP, VK_PRIOR, 0);
 
 				// ASSERT
 				mocks::keyboard_event reference2[] = {
 					{ mocks::keyboard_event::keydown, keyboard_input::left, 0 },
+					{ mocks::keyboard_event::keydown, keyboard_input::page_down, 0 },
 					{ mocks::keyboard_event::keyup, keyboard_input::right, 0 },
 					{ mocks::keyboard_event::keydown, keyboard_input::up, 0 },
 					{ mocks::keyboard_event::keyup, keyboard_input::down, 0 },
+					{ mocks::keyboard_event::keyup, keyboard_input::page_up, 0 },
 				};
 
 				assert_equal(reference2, v->events);

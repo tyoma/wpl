@@ -90,8 +90,9 @@ namespace wpl
 			_tabbed_controls.clear();
 			if (!v)
 				return;
-			_tabbed_controls.assign(1, make_pair(0, v));
 			v->get_tabbed_controls(_tabbed_controls);
+			if (_tabbed_controls.empty())
+				_tabbed_controls.assign(1, make_pair(0, v));
 			sort(_tabbed_controls.begin(), _tabbed_controls.end());
 			_focus = _tabbed_controls.end();
 			_connections.push_back(v->invalidate += [this] (const agge::rect_i *rc) {
@@ -208,6 +209,8 @@ namespace wpl
 			case VK_RIGHT: code = keyboard_input::right; break;
 			case VK_UP: code = keyboard_input::up; break;
 			case VK_DOWN: code = keyboard_input::down; break;
+			case VK_PRIOR: code = keyboard_input::page_up; break;
+			case VK_NEXT: code = keyboard_input::page_down; break;
 			case VK_HOME: code = keyboard_input::home; break;
 			case VK_END: code = keyboard_input::end; break;
 			case VK_RETURN: code = keyboard_input::enter; break;

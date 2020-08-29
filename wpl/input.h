@@ -9,7 +9,7 @@ namespace wpl
 		typedef std::pair< int /*tab index*/, std::shared_ptr<keyboard_input> > tabbed_control;
 
 		enum special_keys {
-			left, up, right, down, enter, tab, home, end,
+			left, up, right, down, enter, tab, home, end, page_down, page_up,
 		};
 
 		enum modifier_keys {

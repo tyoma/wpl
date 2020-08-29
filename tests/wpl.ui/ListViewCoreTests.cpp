@@ -1815,6 +1815,283 @@ namespace wpl
 			}
 
 
+			test( FirstVisibleIsFocusedOnPageUpNotFromTop )
+			{
+				// INIT
+				tracking_listview lv;
+
+				lv.resize(100, 33, nviews);
+				lv.item_height = 7;
+				lv.reported_events = item_self;
+				lv.set_columns_model(mocks::columns_model::create(L"", 1));
+				lv.set_model(create_model(1000, 1));
+
+				// ACT
+				lv.key_down(keyboard_input::page_up, keyboard_input::control);
+
+				// ASSERT
+				pair<table_model::index_type, unsigned /*state*/> reference1[] = {
+					make_pair(0, controls::listview_core::focused),
+				};
+
+				assert_equal(reference1, get_visible_states_raw(lv));
+
+				// INIT
+				lv.focus(37);
+				lv.focus(29); // < becomes first visible
+				lv.focus(32); // somewhere in the middle of the window
+
+				// ACT
+				lv.key_down(keyboard_input::page_up, 0);
+
+				// ASSERT
+				pair<table_model::index_type, unsigned /*state*/> reference2[] = {
+					make_pair(29, controls::listview_core::selected | controls::listview_core::focused),
+				};
+
+				assert_equal(reference2, get_visible_states_raw(lv));
+			}
+
+
+			test( PreviousPageIsDisplayedOnPageUpFromTop )
+			{
+				// INIT
+				tracking_listview lv;
+
+				lv.resize(100, 33, nviews);
+				lv.item_height = 8;
+				lv.reported_events = item_self;
+				lv.set_columns_model(mocks::columns_model::create(L"", 1));
+				lv.set_model(create_model(1000, 1));
+
+				lv.focus(100);
+
+				// ACT
+				lv.key_down(keyboard_input::page_up, keyboard_input::control);
+
+				// ASSERT
+				pair<table_model::index_type, unsigned /*state*/> reference1[] = {
+					make_pair(96, controls::listview_core::focused),
+				};
+
+				assert_equal(reference1, get_visible_states_raw(lv));
+
+				// ACT
+				lv.key_down(keyboard_input::page_up, 0);
+
+				// ASSERT
+				pair<table_model::index_type, unsigned /*state*/> reference2[] = {
+					make_pair(92, controls::listview_core::selected | controls::listview_core::focused),
+				};
+
+				assert_equal(reference2, get_visible_states_raw(lv));
+
+				// INIT
+				lv.resize(100, 39, nviews);
+				lv.focus(61);
+
+				// ACT
+				lv.key_down(keyboard_input::page_up, keyboard_input::control);
+
+				// ASSERT
+				pair<table_model::index_type, unsigned /*state*/> reference3[] = {
+					make_pair(56, controls::listview_core::focused),
+				};
+
+				assert_equal(reference3, get_visible_states_raw(lv));
+			}
+
+
+			test( FocusDoesNoGoBelowZeroOnPageUp )
+			{
+				// INIT
+				tracking_listview lv;
+
+				lv.resize(100, 33, nviews);
+				lv.item_height = 7;
+				lv.reported_events = item_self;
+				lv.set_columns_model(mocks::columns_model::create(L"", 1));
+				lv.set_model(create_model(1000, 1));
+
+				lv.focus(0);
+
+				// ACT
+				lv.key_down(keyboard_input::page_up, keyboard_input::control);
+
+				// ASSERT
+				pair<table_model::index_type, unsigned /*state*/> reference[] = {
+					make_pair(0, controls::listview_core::focused),
+				};
+
+				assert_equal(reference, get_visible_states_raw(lv));
+			}
+
+
+			test( FocusDoesNoGoBelowZeroOnPageUpOfOverhangScroll )
+			{
+				// INIT
+				tracking_listview lv;
+				auto sm = lv.get_vscroll_model();
+
+				lv.resize(100, 33, nviews);
+				lv.item_height = 7;
+				lv.reported_events = item_self;
+				lv.set_columns_model(mocks::columns_model::create(L"", 1));
+				lv.set_model(create_model(1000, 1));
+
+				sm->scroll_window(-1, 4.71);
+				lv.focus(2);
+
+				// ACT
+				lv.key_down(keyboard_input::page_up, keyboard_input::control);
+
+				// ASSERT
+				pair<table_model::index_type, unsigned /*state*/> reference[] = {
+					make_pair(0, controls::listview_core::focused),
+				};
+
+				assert_equal(reference, get_visible_states_raw(lv));
+			}
+
+
+			test( LastVisibleIsFocusedOnPageDownNotFromBottom )
+			{
+				// INIT
+				tracking_listview lv;
+
+				lv.resize(100, 33, nviews);
+				lv.item_height = 7;
+				lv.reported_events = item_self;
+				lv.set_columns_model(mocks::columns_model::create(L"", 1));
+				lv.set_model(create_model(1000, 1));
+
+				// ACT
+				lv.key_down(keyboard_input::page_down, keyboard_input::control);
+
+				// ASSERT
+				pair<table_model::index_type, unsigned /*state*/> reference1[] = {
+					make_pair(4, controls::listview_core::focused),
+				};
+
+				assert_equal(reference1, get_visible_states_raw(lv));
+
+				// INIT
+				lv.focus(17); // < becomes last visible
+				lv.focus(14); // somewhere in the middle of the window
+
+				// ACT
+				lv.key_down(keyboard_input::page_down, 0);
+
+				// ASSERT
+				pair<table_model::index_type, unsigned /*state*/> reference2[] = {
+					make_pair(17, controls::listview_core::selected | controls::listview_core::focused),
+				};
+
+				assert_equal(reference2, get_visible_states_raw(lv));
+			}
+
+
+			test( NextPageIsDisplayedOnPageDownFromBottom )
+			{
+				// INIT
+				tracking_listview lv;
+
+				lv.resize(100, 33, nviews);
+				lv.item_height = 5;
+				lv.reported_events = item_self;
+				lv.set_columns_model(mocks::columns_model::create(L"", 1));
+				lv.set_model(create_model(1000, 1));
+
+				lv.focus(10);
+
+				// ACT
+				lv.key_down(keyboard_input::page_down, keyboard_input::control);
+
+				// ASSERT
+				pair<table_model::index_type, unsigned /*state*/> reference1[] = {
+					make_pair(17, controls::listview_core::focused),
+				};
+
+				assert_equal(reference1, get_visible_states_raw(lv));
+
+				// ACT
+				lv.key_down(keyboard_input::page_down, 0);
+
+				// ASSERT
+				pair<table_model::index_type, unsigned /*state*/> reference2[] = {
+					make_pair(24, controls::listview_core::selected | controls::listview_core::focused),
+				};
+
+				assert_equal(reference2, get_visible_states_raw(lv));
+
+				// INIT
+				lv.resize(100, 32, nviews);
+				lv.focus(61);
+
+				// ACT
+				lv.key_down(keyboard_input::page_down, keyboard_input::control);
+
+				// ASSERT
+				pair<table_model::index_type, unsigned /*state*/> reference3[] = {
+					make_pair(67, controls::listview_core::focused),
+				};
+
+				assert_equal(reference3, get_visible_states_raw(lv));
+			}
+
+
+			test( FocusDoesNoGoAboveMaxElementOnPageDown )
+			{
+				// INIT
+				tracking_listview lv;
+
+				lv.resize(100, 33, nviews);
+				lv.item_height = 7;
+				lv.reported_events = item_self;
+				lv.set_columns_model(mocks::columns_model::create(L"", 1));
+				lv.set_model(create_model(100, 1));
+
+				lv.focus(99);
+
+				// ACT
+				lv.key_down(keyboard_input::page_down, keyboard_input::control);
+
+				// ASSERT
+				pair<table_model::index_type, unsigned /*state*/> reference[] = {
+					make_pair(99, controls::listview_core::focused),
+				};
+
+				assert_equal(reference, get_visible_states_raw(lv));
+			}
+
+
+			test( FocusDoesNoGoAboveMaxElementOnPageDownOfOverhangScroll )
+			{
+				// INIT
+				tracking_listview lv;
+				auto sm = lv.get_vscroll_model();
+
+				lv.resize(100, 33, nviews);
+				lv.item_height = 7;
+				lv.reported_events = item_self;
+				lv.set_columns_model(mocks::columns_model::create(L"", 1));
+				lv.set_model(create_model(100, 1));
+
+				sm->scroll_window(96, 4.71);
+				lv.focus(96);
+
+				// ACT
+				lv.key_down(keyboard_input::page_down, keyboard_input::control);
+
+				// ASSERT
+				pair<table_model::index_type, unsigned /*state*/> reference[] = {
+					make_pair(99, controls::listview_core::focused),
+				};
+
+				assert_equal(reference, get_visible_states_raw(lv));
+			}
+
+
 			test( SelectionIsNotChangedOnGoingLowerThanZero )
 			{
 				// INIT
