@@ -936,7 +936,7 @@ namespace wpl
 			}
 
 
-			test( ScrollModelsAndListViewAreInvalidatedOnResize )
+			test( ScrollModelsAreInvalidatedOnResize )
 			{
 				// INIT
 				auto invalidations = 0;
@@ -957,7 +957,7 @@ namespace wpl
 				lv.resize(100, 40, nviews);
 
 				// ASSERT
-				assert_equal(1, invalidations);
+				assert_equal(0, invalidations);
 				assert_equal(1, scroll_invalidations);
 			}
 
@@ -1297,6 +1297,55 @@ namespace wpl
 				// ACT / ASSERT
 				lv.mouse_double_click(mouse_input::left, 0, 13, -1);
 				lv.mouse_double_click(mouse_input::left, 0, 18, 35);
+			}
+
+
+			test( KeyboardEventsDoNothingOnNoModel )
+			{
+				// INIT
+				tracking_listview lv;
+				const auto cm = mocks::columns_model::create(L"", 13);
+				const auto c1 = lv.selection_changed += [&] (...) { assert_is_true(false); };
+				const auto c2 = lv.item_activate += [&] (...) { assert_is_true(false); };
+
+				lv.set_columns_model(cm);
+
+				// ACT / ASSERT
+				lv.key_down(keyboard_input::up, keyboard_input::control);
+				lv.key_down(keyboard_input::up, 0);
+				lv.key_down(keyboard_input::down, keyboard_input::control);
+				lv.key_down(keyboard_input::down, 0);
+				lv.key_down(keyboard_input::page_up, keyboard_input::control);
+				lv.key_down(keyboard_input::page_up, 0);
+				lv.key_down(keyboard_input::page_down, keyboard_input::control);
+				lv.key_down(keyboard_input::page_down, 0);
+			}
+
+
+			test( KeyboardEventsDoNothingOnEmptyModel )
+			{
+				// INIT
+				tracking_listview lv;
+				const auto cm = mocks::columns_model::create(L"", 13);
+				const shared_ptr<mocks::listview_model> m(new mocks::listview_model(0, 1));
+				const auto c1 = lv.selection_changed += [&] (...) { assert_is_true(false); };
+				const auto c2 = lv.item_activate += [&] (...) { assert_is_true(false); };
+
+				lv.set_columns_model(cm);
+				lv.set_model(create_model(0, 1));
+
+				// ACT / ASSERT
+				lv.key_down(keyboard_input::up, keyboard_input::control);
+				lv.key_down(keyboard_input::up, 0);
+				lv.key_down(keyboard_input::down, keyboard_input::control);
+				lv.key_down(keyboard_input::down, 0);
+				lv.key_down(keyboard_input::page_up, keyboard_input::control);
+				lv.key_down(keyboard_input::page_up, 0);
+				lv.key_down(keyboard_input::page_down, keyboard_input::control);
+				lv.key_down(keyboard_input::page_down, 0);
+
+				// ASSERT
+				assert_is_empty(m->tracking_requested);
 			}
 
 		end_test_suite
@@ -1853,6 +1902,32 @@ namespace wpl
 			}
 
 
+			test( FirstVisibleIsFocusedOnPageUpFromNoFocus )
+			{
+				// INIT
+				tracking_listview lv;
+
+				lv.resize(100, 33, nviews);
+				lv.item_height = 7;
+				lv.reported_events = item_self;
+				lv.set_columns_model(mocks::columns_model::create(L"", 1));
+				lv.set_model(create_model(1000, 1));
+
+				lv.make_visible(51);
+				lv.make_visible(10); // leave it unfocused
+
+				// ACT
+				lv.key_down(keyboard_input::page_up, keyboard_input::control);
+
+				// ASSERT
+				pair<table_model::index_type, unsigned /*state*/> reference[] = {
+					make_pair(10, controls::listview_core::focused),
+				};
+
+				assert_equal(reference, get_visible_states_raw(lv));
+			}
+
+
 			test( PreviousPageIsDisplayedOnPageUpFromTop )
 			{
 				// INIT
@@ -1988,6 +2063,31 @@ namespace wpl
 				};
 
 				assert_equal(reference2, get_visible_states_raw(lv));
+			}
+
+
+			test( LastVisibleIsFocusedOnPageDownFromNoFocus )
+			{
+				// INIT
+				tracking_listview lv;
+
+				lv.resize(100, 33, nviews);
+				lv.item_height = 7;
+				lv.reported_events = item_self;
+				lv.set_columns_model(mocks::columns_model::create(L"", 1));
+				lv.set_model(create_model(1000, 1));
+
+				lv.make_visible(51); // leave it unfocused
+
+				// ACT
+				lv.key_down(keyboard_input::page_down, keyboard_input::control);
+
+				// ASSERT
+				pair<table_model::index_type, unsigned /*state*/> reference[] = {
+					make_pair(51, controls::listview_core::focused),
+				};
+
+				assert_equal(reference, get_visible_states_raw(lv));
 			}
 
 

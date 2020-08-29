@@ -94,6 +94,8 @@ namespace wpl
 
 			void invalidate_();
 			void toggle_selection(index_type item);
+			index_type first_partially_visible() const;
+			index_type last_partially_visible() const;
 			index_type get_item(int y) const;
 			bool is_selected(index_type item) const;
 			bool is_visible(index_type item) const;

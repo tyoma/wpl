@@ -159,48 +159,62 @@ namespace wpl
 
 		void listview_core::key_down(unsigned code, int modifiers)
 		{
-			index_type item = _focused ? _focused->index() : npos();
-			const index_type scroll_size = agge::iround(_size.h / get_item_height());
-			const index_type item_count = _model->get_count();
-
-			switch (code)
+			if (_model)
 			{
-			case down:
-				if (npos() == item)
-					item = 0;
-				else if (item + 1 < _model->get_count())
-					item++;
-				break;
+				if (const index_type item_count = _model->get_count())
+				{
+					index_type focused = _focused ? _focused->index() : npos();
+					const index_type scroll_size = agge::iround(_size.h / get_item_height());
+					const index_type last = item_count - 1;
+					const index_type first_visible = first_partially_visible();
+					const index_type last_visible = last_partially_visible();
 
-			case page_down:
-				if (item == npos())
-					item = scroll_size - 1;
-				else if (item + 1 == item_count)
-					{	}
-				else if (!is_visible(item + 1))
-					item = item + scroll_size < item_count ? item + scroll_size : item_count - 1;
-				else
-					item = get_item(static_cast<int>(_size.h - 1)), item = item == npos() ? item_count - 1 : item;;
-				break;
+					switch (code)
+					{
+					case up:
+						if (npos() != focused && focused)
+							focused--;
+						break;
 
-			case up:
-				if (npos() != item && item)
-					item--;
-				break;
+					case page_up:
+						if (npos() == focused)
+							focused = first_visible;
+						else if (npos() == first_visible)
+							focused = 0;
+						else if (focused > first_visible)
+							focused = first_visible;
+						else if (focused > scroll_size)
+							focused -= scroll_size;
+						else
+							focused = 0;
+						break;
 
-			case page_up:
-				if (item == npos() || item == 0)
-					item = 0;
-				else if (!is_visible(item - 1))
-					item = item > scroll_size ? item - scroll_size : 0;
-				else
-					item = get_item(0), item = item == npos() ? 0 : item;
-				break;
+					case down:
+						if (npos() == focused)
+							focused = 0;
+						else if (focused < last)
+							focused++;
+						break;
+
+					case page_down:
+						if (npos() == focused)
+							focused = last_visible;
+						else if (npos() == last_visible)
+							focused = last;
+						else if (focused < last_visible)
+							focused = last_visible;
+						else if (focused + scroll_size < item_count)
+							focused += scroll_size;
+						else
+							focused = last;
+						break;
+					}
+
+					focus(focused);
+					if (!(keyboard_input::control & modifiers))
+						select(focused, true);
+				}
 			}
-
-			focus(item);
-			if (!(keyboard_input::control & modifiers))
-				select(item, true);
 		}
 
 		void listview_core::mouse_down(mouse_buttons /*button*/, int depressed, int /*x*/, int y)
@@ -238,7 +252,7 @@ namespace wpl
 			if (!_model | !_cmodel)
 				return;
 
-			const index_type rows = _model->get_count();
+			const index_type item_count = _model->get_count();
 			const columns_model::index_type columns = _cmodel->get_count();
 			const real_t item_height = get_item_height();
 			const index_type focused_item = _focused ? _focused->index() : npos();
@@ -255,7 +269,7 @@ namespace wpl
 				_widths.push_back(width);
 				total_width += width;
 			}
-			for (; box.y2 = box.y1 + item_height, r < rows && box.y1 < _size.h; ++r, box.y1 = box.y2)
+			for (; box.y2 = box.y1 + item_height, r < item_count && box.y1 < _size.h; ++r, box.y1 = box.y2)
 			{
 				const unsigned state = (is_selected(r) ? selected : 0) | (focused_item == r ? focused : 0);
 
@@ -285,7 +299,6 @@ namespace wpl
 		{
 			_size.w = static_cast<real_t>(cx);
 			_size.h = static_cast<real_t>(cy);
-			invalidate_();
 			_vsmodel->invalidated();
 			_hsmodel->invalidated();
 		}
@@ -374,6 +387,12 @@ namespace wpl
 			else
 				select(item, false);
 		}
+
+		listview_core::index_type listview_core::first_partially_visible() const
+		{	return _offset.dy >= 0.0f ? static_cast<index_type>(_offset.dy) : npos();	}
+
+		listview_core::index_type listview_core::last_partially_visible() const
+		{	return get_item(static_cast<int>(_size.h - 1));	}
 
 		listview_core::index_type listview_core::get_item(int y) const
 		{
