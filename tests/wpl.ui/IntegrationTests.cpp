@@ -1,7 +1,4 @@
-#include <wpl/listview.h>
-#include <wpl/form.h>
-
-#include <wpl/win32/controls.h>
+#include <wpl/win32/listview.h>
 #include <wpl/win32/form.h>
 
 #include "helpers-win32.h"
@@ -26,7 +23,7 @@ namespace wpl
 			form_and_handle create_form_with_handle()
 			{
 				window_tracker wt(L"#32770");
-				shared_ptr<form> f(create_form());
+				shared_ptr<form> f(new win32::form());
 
 				wt.checkpoint();
 
@@ -46,7 +43,7 @@ namespace wpl
 				// INIT
 				form_and_handle f = create_form_with_handle();
 				window_tracker wt;
-				shared_ptr<listview> lv = wpl::create_listview();
+				shared_ptr<listview> lv(new win32::listview());
 				vector<table_model::index_type> selections;
 				slot_connection c =
 					lv->selection_changed += bind(&push_back<table_model::index_type>, ref(selections), _1);

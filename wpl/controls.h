@@ -21,6 +21,7 @@
 #pragma once
 
 #include "control.h"
+#include "models.h"
 #include "signals.h"
 
 #include <string>
@@ -44,5 +45,29 @@ namespace wpl
 	struct link : control, text_container
 	{
 		signal<void (size_t item, const std::wstring &link_text)> clicked;
+	};
+
+	struct combobox : control
+	{
+		typedef list_model<std::wstring> model_t;
+
+		virtual void set_model(const std::shared_ptr<model_t> &model) = 0;
+		virtual void select(model_t::index_type item) = 0;
+
+		signal<void (model_t::index_type item)> selection_changed;
+	};
+
+	struct listview : control
+	{
+		virtual void set_columns_model(std::shared_ptr<columns_model> model) = 0;
+		virtual void set_model(std::shared_ptr<table_model> model) = 0;
+
+		virtual void adjust_column_widths() = 0;
+
+		virtual void select(table_model::index_type item, bool reset_previous) = 0;
+		virtual void focus(table_model::index_type item) = 0;
+
+		signal<void (table_model::index_type /*item*/)> item_activate;
+		signal<void (table_model::index_type /*item*/, bool /*became selected*/)> selection_changed;
 	};
 }

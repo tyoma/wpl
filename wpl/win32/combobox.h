@@ -22,18 +22,18 @@
 
 #include "native_view.h"
 
-#include "../combobox.h"
+#include "../controls.h"
 
 namespace wpl
 {
 	namespace win32
 	{
-		class combobox_impl : public combobox, public native_view
+		class combobox : public wpl::combobox, public native_view
 		{
 		public:
 			virtual std::shared_ptr<view> get_view();
 			virtual void set_model(const std::shared_ptr<model_t> &model);
-			virtual void select(index_type index);
+			virtual void select(model_t::index_type index);
 
 		private:
 			virtual HWND materialize(HWND hparent);

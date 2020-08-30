@@ -22,9 +22,6 @@
 
 #include <wpl/win32/native_view.h>
 
-#include <wpl/visual.h>
-#include <wpl/win32/window.h>
-
 #include <functional>
 
 namespace wpl

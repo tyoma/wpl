@@ -20,18 +20,19 @@
 
 #pragma once
 
-#include "models.h"
-#include "control.h"
+#include "signals.h"
+
+#include <agge/color.h>
+#include <agge.text/font.h>
 
 namespace wpl
 {
-	struct combobox : control, index_traits
+	struct stylesheet
 	{
-		typedef list_model<std::wstring> model_t;
+		virtual agge::color get_color(const char *id) const = 0;
+		virtual std::shared_ptr<agge::font> get_font(const char *id) const = 0;
+		virtual agge::real_t get_value(const char *id) const = 0;
 
-		virtual void set_model(const std::shared_ptr<model_t> &model) = 0;
-		virtual void select(index_type item) = 0;
-
-		signal<void (index_type item)> selection_changed;
+		signal<void ()> changed;
 	};
 }

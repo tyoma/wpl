@@ -132,6 +132,10 @@ namespace wpl
 			::InvalidateRect(_window->hwnd(), NULL, TRUE);
 		}
 
+		LRESULT view_host::passthrough(UINT message, WPARAM wparam, LPARAM lparam,
+			const window::original_handler_t &previous)
+		{	return previous(message, wparam, lparam);	}
+
 		LRESULT view_host::wndproc(UINT message, WPARAM wparam, LPARAM lparam, const window::original_handler_t &previous)
 		{
 			switch (message)
@@ -344,7 +348,4 @@ namespace wpl
 			return reference;
 		}
 	}
-
-	shared_ptr<view_host> wrap_view_host(HWND hwnd)
-	{	return shared_ptr<view_host>(new win32::view_host(hwnd, &win32::passthrough));	}
 }

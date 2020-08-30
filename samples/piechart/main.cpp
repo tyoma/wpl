@@ -3,12 +3,9 @@
 
 #include <samples/common/platform.h>
 #include <wpl/container.h>
+#include <wpl/factory.h>
 #include <wpl/form.h>
 #include <wpl/layout.h>
-#include <wpl/listview.h>
-
-#include <wpl/win32/form.h>
-#include <wpl/win32/controls.h>
 
 using namespace std;
 using namespace wpl;
@@ -35,7 +32,8 @@ private:
 
 int main()
 {
-	shared_ptr<form> f = create_form();
+	auto fct = factory::create_default(nullptr);
+	shared_ptr<form> f = fct->create_form();
 	shared_ptr<container> cc[] = {
 		shared_ptr<container>(new view_fill<container>),
 		shared_ptr<container>(new view_fill<container>),
@@ -55,7 +53,7 @@ int main()
 	lm2->add(400);
 	cc[1]->add_view(charts[0]);
 	lm2->add(-100);
-	cc[1]->add_view(create_listview()->get_view());
+	cc[1]->add_view(shared_ptr<view>(new view));
 	lm2->add(400);
 	cc[1]->add_view(charts[2]);
 	f->set_view(cc[0]);

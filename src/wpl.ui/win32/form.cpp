@@ -18,9 +18,7 @@
 //	OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //	THE SOFTWARE.
 
-#include <wpl/form.h>
-
-#include <wpl/win32/view_host.h>
+#include <wpl/win32/form.h>
 
 #include <tchar.h>
 
@@ -52,36 +50,6 @@ namespace wpl
 				return agge::color::make(GetRValue(c), GetGValue(c), GetBValue(c));
 			}
 		}
-
-		class form : public wpl::form
-		{
-		public:
-			form(HWND howner);
-			~form();
-
-		private:
-			// view_host methods
-			virtual void set_view(const shared_ptr<view> &v);
-			virtual void set_background_color(agge::color color);
-
-			// form methods
-			virtual view_location get_location() const;
-			virtual void set_location(const view_location &location);
-			virtual void set_visible(bool value);
-			virtual void set_caption(const wstring &caption);
-			virtual void set_caption_icon(const gcontext::surface_type &icon);
-			virtual void set_task_icon(const gcontext::surface_type &icon);
-			virtual shared_ptr<wpl::form> create_child();
-			virtual void set_style(unsigned /*styles*/ style);
-			virtual void set_font(const font &font_);
-
-			LRESULT wndproc(UINT message, WPARAM wparam, LPARAM lparam, const window::original_handler_t &previous);
-
-		private:
-			HWND _hwnd;
-			shared_ptr<win32::view_host> _host;
-			shared_ptr<void> _font;
-		};
 
 
 
@@ -175,7 +143,4 @@ namespace wpl
 			return previous(message, wparam, lparam);
 		}
 	}
-
-	shared_ptr<form> create_form(HWND howner)
-	{	return shared_ptr<form>(new win32::form(howner));	}
 }

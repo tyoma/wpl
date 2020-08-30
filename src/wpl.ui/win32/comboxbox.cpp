@@ -32,15 +32,15 @@ namespace wpl
 {
 	namespace win32
 	{
-		shared_ptr<view> combobox_impl::get_view()
+		shared_ptr<view> combobox::get_view()
 		{	return shared_from_this();	}
 
-		void combobox_impl::set_model(const shared_ptr<model_t> &model)
+		void combobox::set_model(const shared_ptr<model_t> &model)
 		{
 			_model = model;
 			_selected_item.reset();
 			_invalidated_connection = model
-				? model->invalidated += bind(&combobox_impl::on_invalidated, this, model.get())
+				? model->invalidated += bind(&combobox::on_invalidated, this, model.get())
 				: shared_ptr<void>();
 			if (const HWND hcombobox = get_window())
 			{
@@ -49,16 +49,16 @@ namespace wpl
 			}
 		}
 
-		void combobox_impl::select(index_type index)
+		void combobox::select(model_t::index_type index)
 		{
 			if (!_model)
 				throw logic_error("Model is required to perform select!");
-			_selected_item = npos() == index ? shared_ptr<trackable>() : _model->track(index);
+			_selected_item = model_t::npos() == index ? shared_ptr<trackable>() : _model->track(index);
 			if (const HWND hcombobox = get_window())
 				update_selection(hcombobox, _selected_item);
 		}
 
-		HWND combobox_impl::materialize(HWND hparent)
+		HWND combobox::materialize(HWND hparent)
 		{
 			HWND hwnd = ::CreateWindow(WC_COMBOBOXEX, NULL, WS_CHILD | WS_VISIBLE | CBS_DROPDOWNLIST, 0, 0, 100, 100,
 				hparent, NULL, NULL, NULL);
@@ -71,7 +71,7 @@ namespace wpl
 			return hwnd;
 		}
 
-		LRESULT combobox_impl::on_message(UINT message, WPARAM wparam, LPARAM lparam,
+		LRESULT combobox::on_message(UINT message, WPARAM wparam, LPARAM lparam,
 			const window::original_handler_t &handler)
 		{
 			switch (message)
@@ -84,7 +84,7 @@ namespace wpl
 
 					_selected_item = _model && selected_item != CB_ERR ? _model->track(selected_item)
 						: shared_ptr<trackable>();
-					selection_changed(_selected_item ? selected_item : npos());
+					selection_changed(_selected_item ? selected_item : model_t::npos());
 					return 0;
 				}
 				break;
@@ -106,32 +106,32 @@ namespace wpl
 			return handler(message, wparam, lparam);
 		}
 
-		void combobox_impl::on_invalidated(const model_t *model)
+		void combobox::on_invalidated(const model_t *model)
 		{
 			update(get_window(), model);
 			update_selection(get_window(), _selected_item);
 		}
 
-		void combobox_impl::update(HWND hcombobox, const model_t *model) const
+		void combobox::update(HWND hcombobox, const model_t *model) const
 		{
-			const index_type count = model ? model->get_count() : 0u;
-			const index_type previous_count = ComboBox_GetCount(hcombobox);
+			const model_t::index_type count = model ? model->get_count() : 0u;
+			const model_t::index_type previous_count = ComboBox_GetCount(hcombobox);
 			const COMBOBOXEXITEM new_item = { CBEIF_TEXT, -1, LPSTR_TEXTCALLBACK, };
 			const HWND hchild = reinterpret_cast<HWND>(::SendMessage(hcombobox, CBEM_GETCOMBOCONTROL, 0, 0));
 			COMBOBOXINFO cbi = { sizeof(COMBOBOXINFO), };
 
-			for (index_type i = previous_count; i < count; ++i)
+			for (model_t::index_type i = previous_count; i < count; ++i)
 				::SendMessage(hcombobox, CBEM_INSERTITEM, 0, reinterpret_cast<LPARAM>(&new_item));
-			for (index_type i = count; i < previous_count; ++i)
+			for (model_t::index_type i = count; i < previous_count; ++i)
 				::SendMessage(hcombobox, CBEM_DELETEITEM, count, 0);
 			::GetComboBoxInfo(hchild, &cbi);
 			::InvalidateRect(cbi.hwndList, NULL, FALSE);
 			::InvalidateRect(hcombobox, NULL, FALSE);
 		}
 
-		void combobox_impl::update_selection(HWND hcombobox, shared_ptr<const trackable> &selected_item)
+		void combobox::update_selection(HWND hcombobox, shared_ptr<const trackable> &selected_item)
 		{
-			const index_type i = selected_item ? selected_item->index() : trackable::npos();
+			const model_t::index_type i = selected_item ? selected_item->index() : trackable::npos();
 			const int selection = i == trackable::npos() ? selected_item.reset(), CB_ERR : static_cast<int>(i);
 			const HWND hchild = reinterpret_cast<HWND>(::SendMessage(hcombobox, CBEM_GETCOMBOCONTROL, 0, 0));
 			COMBOBOXINFO cbi = { sizeof(COMBOBOXINFO), };
@@ -140,11 +140,5 @@ namespace wpl
 			if (!::IsWindowVisible(cbi.hwndList))
 				ComboBox_SetCurSel(hcombobox, selection);
 		}
-
-		shared_ptr<combobox> create_combobox()
-		{	return shared_ptr<combobox>(new win32::combobox_impl);	}
 	}
-
-	shared_ptr<combobox> create_combobox()
-	{	return shared_ptr<combobox>(new win32::combobox_impl);	}
 }

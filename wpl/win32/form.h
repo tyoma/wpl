@@ -20,13 +20,43 @@
 
 #pragma once
 
-#include "types.h"
+#include "view_host.h"
 
+#include "../form.h"
 #include <memory>
 
 namespace wpl
 {
-	struct form;
+	namespace win32
+	{
+		class form : public wpl::form
+		{
+		public:
+			form(HWND howner = NULL);
+			~form();
 
-	std::shared_ptr<form> create_form(HWND howner = 0);
+		private:
+			// view_host methods
+			virtual void set_view(const std::shared_ptr<view> &v);
+			virtual void set_background_color(agge::color color);
+
+			// form methods
+			virtual view_location get_location() const;
+			virtual void set_location(const view_location &location);
+			virtual void set_visible(bool value);
+			virtual void set_caption(const std::wstring &caption);
+			virtual void set_caption_icon(const gcontext::surface_type &icon);
+			virtual void set_task_icon(const gcontext::surface_type &icon);
+			virtual std::shared_ptr<wpl::form> create_child();
+			virtual void set_style(unsigned /*styles*/ style);
+			virtual void set_font(const font &font_);
+
+			LRESULT wndproc(UINT message, WPARAM wparam, LPARAM lparam, const window::original_handler_t &previous);
+
+		private:
+			HWND _hwnd;
+			std::shared_ptr<win32::view_host> _host;
+			std::shared_ptr<void> _font;
+		};
+	}
 }

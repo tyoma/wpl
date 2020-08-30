@@ -45,7 +45,7 @@ namespace wpl
 			form_and_handle create_form_with_handle(HWND howner = 0)
 			{
 				window_tracker wt(L"#32770");
-				shared_ptr<form> f(create_form(howner));
+				shared_ptr<form> f(new win32::form(howner));
 
 				wt.checkpoint();
 
@@ -125,7 +125,7 @@ namespace wpl
 				window_tracker wt(L"#32770");
 
 				// ACT
-				shared_ptr<form> f1 = create_form();
+				shared_ptr<form> f1(new win32::form);
 
 				// ASSERT
 				wt.checkpoint();
@@ -134,8 +134,8 @@ namespace wpl
 				assert_is_empty(wt.destroyed);
 
 				// ACT
-				shared_ptr<form> f2 = create_form();
-				shared_ptr<form> f3 = create_form();
+				shared_ptr<form> f2(new win32::form);
+				shared_ptr<form> f3(new win32::form);
 
 				// ASSERT
 				wt.checkpoint();
@@ -145,18 +145,11 @@ namespace wpl
 			}
 
 
-			test( FormConstructionReturnsNonNullObject )
-			{
-				// INIT / ACT / ASSERT
-				assert_not_null(create_form());
-			}
-
-
 			test( FormDestructionDestroysItsWindow )
 			{
 				// INIT
-				shared_ptr<form> f1 = create_form();
-				shared_ptr<form> f2 = create_form();
+				shared_ptr<form> f1(new win32::form);
+				shared_ptr<form> f2(new win32::form);
 				window_tracker wt(L"#32770");
 
 				// ACT

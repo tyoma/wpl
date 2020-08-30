@@ -1,7 +1,4 @@
-#include <wpl/combobox.h>
-
-#include <wpl/win32/controls.h>
-#include <wpl/win32/native_view.h>
+#include <wpl/win32/combobox.h>
 
 #include "helpers.h"
 #include "helpers-win32.h"
@@ -86,7 +83,7 @@ namespace wpl
 			test( ComboboxControlIsANativeView )
 			{
 				// INIT
-				shared_ptr<combobox> cb = create_combobox();
+				shared_ptr<combobox> cb(new win32::combobox);
 				window_tracker wt;
 
 				// ACT
@@ -116,7 +113,7 @@ namespace wpl
 			{
 				// INIT
 				const unsigned required_style = CBS_DROPDOWNLIST;
-				shared_ptr<combobox> cb = create_combobox();
+				shared_ptr<combobox> cb(new win32::combobox);
 				window_tracker wt;
 
 				// ACT
@@ -133,8 +130,8 @@ namespace wpl
 				wstring items1[] = { L"foo", L"bar" };
 				wstring items2[] = { L"Lorem ipsum", L"amet dolor", L"sit amet, consectetur adipiscing elit", };
 				shared_ptr<mocks::list_model> m(new mocks::list_model);
-				shared_ptr<combobox> cb1 = create_combobox();
-				shared_ptr<combobox> cb2 = create_combobox();
+				shared_ptr<combobox> cb1(new win32::combobox);
+				shared_ptr<combobox> cb2(new win32::combobox);
 
 				// ACT
 				m->items = mkvector(items1);
@@ -165,7 +162,7 @@ namespace wpl
 				wstring items1[] = { L"foo", L"bar" };
 				wstring items2[] = { L"Lorem ipsum", L"amet dolor", L"sit amet, consectetur adipiscing elit", };
 				shared_ptr<mocks::list_model> m(new mocks::list_model);
-				shared_ptr<combobox> cb = create_combobox();
+				shared_ptr<combobox> cb(new win32::combobox);
 
 				HWND hwnd = get_window_and_resize(parent, *cb, 100, 20);
 
@@ -194,7 +191,7 @@ namespace wpl
 			{
 				// INIT
 				shared_ptr<mocks::list_model> m(new mocks::list_model);
-				shared_ptr<combobox> cb = create_combobox();
+				shared_ptr<combobox> cb(new win32::combobox);
 
 				HWND hwnd = get_window_and_resize(parent, *cb, 100, 20);
 				cb->set_model(m);
@@ -231,7 +228,7 @@ namespace wpl
 			{
 				// INIT
 				shared_ptr<mocks::list_model> m(new mocks::list_model);
-				shared_ptr<combobox> cb = create_combobox();
+				shared_ptr<combobox> cb(new win32::combobox);
 
 				HWND hwnd = get_window_and_resize(parent, *cb, 100, 20);
 				m->items.resize(2);
@@ -254,7 +251,7 @@ namespace wpl
 			test( SelectionIsImpossibleIfNoModelIsSet )
 			{
 				// INIT
-				shared_ptr<combobox> cb = create_combobox();
+				shared_ptr<combobox> cb(new win32::combobox);
 
 				// ACT / ASSERT
 				assert_throws(cb->select(0), logic_error);
@@ -275,7 +272,7 @@ namespace wpl
 				// INIT
 				wstring items[] = { L"Lorem ipsum", L"amet dolor", L"sit amet, consectetur adipiscing elit", L"one two" };
 				shared_ptr<mocks::list_model> m(new mocks::list_model);
-				shared_ptr<combobox> cb = create_combobox();
+				shared_ptr<combobox> cb(new win32::combobox);
 				HWND hwnd =  get_window_and_resize(parent, *cb, 100, 20);
 
 				m->items = mkvector(items);
@@ -294,7 +291,7 @@ namespace wpl
 				assert_equal(3, ComboBox_GetCurSel(hwnd));
 
 				// ACT
-				cb->select(combobox::npos());
+				cb->select(combobox::model_t::npos());
 
 				// ASSERT
 				assert_equal(CB_ERR, ComboBox_GetCurSel(hwnd));
@@ -306,7 +303,7 @@ namespace wpl
 				// INIT
 				wstring items[] = { L"Lorem ipsum", L"amet dolor", L"sit amet, consectetur adipiscing elit", L"one two" };
 				shared_ptr<mocks::list_model> m(new mocks::list_model);
-				shared_ptr<combobox> cb = create_combobox();
+				shared_ptr<combobox> cb(new win32::combobox);
 
 				m->items = mkvector(items);
 				cb->set_model(m);
@@ -334,11 +331,11 @@ namespace wpl
 			test( ChangingSelectionLeadsToNotification )
 			{
 				// INIT
-				vector<combobox::index_type> selection_log;
+				vector<combobox::model_t::index_type> selection_log;
 				wstring items[] = { L"1", L"2", L"3", L"4", L"5", };
 				shared_ptr<mocks::list_model> m(new mocks::list_model);
-				shared_ptr<combobox> cb = create_combobox();
-				slot_connection c = cb->selection_changed += [&] (combobox::index_type s) {
+				shared_ptr<combobox> cb(new win32::combobox);
+				slot_connection c = cb->selection_changed += [&] (combobox::model_t::index_type s) {
 					selection_log.push_back(s);
 				};
 
@@ -355,7 +352,7 @@ namespace wpl
 				::SendMessage(parent, WM_COMMAND, CBN_SELCHANGE << 16, reinterpret_cast<LPARAM>(hwnd));
 
 				// ASSERT
-				combobox::index_type reference1[] = { 3u, };
+				combobox::model_t::index_type reference1[] = { 3u, };
 
 				assert_equal(reference1, selection_log);
 
@@ -364,7 +361,7 @@ namespace wpl
 				::SendMessage(parent, WM_COMMAND, CBN_SELCHANGE << 16, reinterpret_cast<LPARAM>(hwnd));
 
 				// ASSERT
-				combobox::index_type reference2[] = { 3u, 1u, };
+				combobox::model_t::index_type reference2[] = { 3u, 1u, };
 
 				assert_equal(reference2, selection_log);
 
@@ -373,7 +370,7 @@ namespace wpl
 				::SendMessage(parent, WM_COMMAND, CBN_SELCHANGE << 16, reinterpret_cast<LPARAM>(hwnd));
 
 				// ASSERT
-				combobox::index_type reference3[] = { 3u, 1u, combobox::npos() };
+				combobox::model_t::index_type reference3[] = { 3u, 1u, combobox::model_t::npos() };
 
 				assert_equal(reference3, selection_log);
 			}
@@ -382,10 +379,10 @@ namespace wpl
 			test( RecreationOfComboboxPreservesSelectionIfWasChangedByUser )
 			{
 				// INIT
-				vector<combobox::index_type> selection_log;
+				vector<combobox::model_t::index_type> selection_log;
 				wstring items[] = { L"1", L"2", L"3", L"4", L"5", };
 				shared_ptr<mocks::list_model> m(new mocks::list_model);
-				shared_ptr<combobox> cb = create_combobox();
+				shared_ptr<combobox> cb(new win32::combobox);
 				HWND hwnd = get_window_and_resize(parent, *cb, 100, 20);
 
 				m->items = mkvector(items);
@@ -420,7 +417,7 @@ namespace wpl
 			{
 				// INIT
 				shared_ptr<mocks::list_model> m(new mocks::list_model);
-				shared_ptr<combobox> cb = create_combobox();
+				shared_ptr<combobox> cb(new win32::combobox);
 
 				get_window_and_resize(parent, *cb, 100, 20);
 				m->items.resize(5);
@@ -445,7 +442,7 @@ namespace wpl
 			{
 				// INIT
 				shared_ptr<mocks::list_model> m(new mocks::list_model);
-				shared_ptr<combobox> cb = create_combobox();
+				shared_ptr<combobox> cb(new win32::combobox);
 				HWND hwnd = get_window_and_resize(parent, *cb, 100, 20);
 
 				m->items.resize(5);
@@ -470,7 +467,7 @@ namespace wpl
 			{
 				// INIT
 				shared_ptr<mocks::list_model> m(new mocks::list_model);
-				shared_ptr<combobox> cb = create_combobox();
+				shared_ptr<combobox> cb(new win32::combobox);
 				HWND hwnd = get_window_and_resize(parent, *cb, 100, 20);
 
 				m->items.resize(5);
@@ -498,7 +495,7 @@ namespace wpl
 			{
 				// INIT
 				shared_ptr<mocks::list_model> m(new mocks::list_model);
-				shared_ptr<combobox> cb = create_combobox();
+				shared_ptr<combobox> cb(new win32::combobox);
 				HWND hwnd = get_window_and_resize(parent, *cb, 100, 20);
 
 				m->items.resize(5);
@@ -521,7 +518,7 @@ namespace wpl
 				// INIT
 				shared_ptr<mocks::list_model> m(new mocks::list_model);
 				shared_ptr<mocks::list_model> m2(new mocks::list_model);
-				shared_ptr<combobox> cb = create_combobox();
+				shared_ptr<combobox> cb(new win32::combobox);
 				HWND hwnd = get_window_and_resize(parent, *cb, 100, 20);
 
 				m->items.resize(5);

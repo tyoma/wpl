@@ -10,6 +10,12 @@
 #include <agge/renderer_parallel.h>
 #include <string>
 
+namespace agge
+{
+	template <typename RasterizerT>
+	class text_engine;
+}
+
 namespace wpl
 {
 	class native_view;
@@ -22,6 +28,7 @@ namespace wpl
 		typedef agge::rasterizer< agge::clipper<int> > rasterizer_type;
 		typedef std::auto_ptr<rasterizer_type> rasterizer_ptr;
 		typedef agge::renderer_parallel renderer_type;
+		typedef agge::text_engine<rasterizer_type> text_engine_type;
 
 	public:
 		gcontext(surface_type &surface, renderer_type &renderer, const agge::vector_i &offset,

@@ -18,7 +18,7 @@
 //	OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //	THE SOFTWARE.
 
-#include <wpl/controls.h>
+#include <wpl/win32/controls.h>
 
 #include <wpl/win32/native_view.h>
 
@@ -32,72 +32,19 @@ namespace wpl
 {
 	namespace win32
 	{
-		template <typename BaseT>
-		class text_container_impl : public BaseT, public native_view
-		{
-			virtual void set_text(const wstring &text)
-			{
-				_text = text;
-				::SetWindowTextW(get_window(), _text.c_str());
-			}
-
-		protected:
-			typedef text_container_impl text_container;
-
-		protected:
-			virtual void set_align(wpl::text_container::halign value)
-			{	_halign = value;	}
-
-		protected:
-			wstring _text;
-			wpl::text_container::halign _halign;
-		};
-
-
-		class button_impl : public text_container_impl<button>
-		{
-		public:
-			button_impl();
-
-		private:
-			virtual shared_ptr<view> get_view();
-
-			virtual HWND materialize(HWND hparent);
-			virtual LRESULT on_message(UINT message, WPARAM wparam, LPARAM lparam,
-				const window::original_handler_t &handler);
-		};
-
-
-		class link_impl : public text_container_impl<link>
-		{
-		public:
-			link_impl();
-
-		private:
-			virtual shared_ptr<view> get_view();
-
-			virtual HWND materialize(HWND hparent);
-			virtual LRESULT on_message(UINT message, WPARAM wparam, LPARAM lparam,
-				const window::original_handler_t &handler);
-
-			virtual void set_align(halign value);
-		};
-
-
-
-		button_impl::button_impl()
+		button::button()
 		{	}
 
-		shared_ptr<view> button_impl::get_view()
+		shared_ptr<view> button::get_view()
 		{	return shared_from_this();	}
 
-		HWND button_impl::materialize(HWND hparent)
+		HWND button::materialize(HWND hparent)
 		{
 			return ::CreateWindow(WC_BUTTON, _text.c_str(), WS_CHILD | WS_VISIBLE, 0, 0, 100, 100, hparent, NULL, NULL,
 				NULL);
 		}
 
-		LRESULT button_impl::on_message(UINT message, WPARAM wparam, LPARAM lparam,
+		LRESULT button::on_message(UINT message, WPARAM wparam, LPARAM lparam,
 			const window::original_handler_t &handler)
 		{
 			switch (message)
@@ -113,19 +60,19 @@ namespace wpl
 		}
 
 
-		link_impl::link_impl()
+		link::link()
 		{	_halign = wpl::text_container::left;	}
 
-		shared_ptr<view> link_impl::get_view()
+		shared_ptr<view> link::get_view()
 		{	return shared_from_this();	}
 
-		HWND link_impl::materialize(HWND hparent)
+		HWND link::materialize(HWND hparent)
 		{
 			return ::CreateWindow(WC_LINK, _text.c_str(), WS_CHILD | WS_VISIBLE
 				| (wpl::text_container::right == _halign ? LWS_RIGHT : 0), 0, 0, 100, 100, hparent, NULL, NULL, NULL);
 		}
 
-		LRESULT link_impl::on_message(UINT message, WPARAM wparam, LPARAM lparam,
+		LRESULT link::on_message(UINT message, WPARAM wparam, LPARAM lparam,
 			const window::original_handler_t &handler)
 		{
 			switch (message)
@@ -142,7 +89,7 @@ namespace wpl
 			}
 		}
 
-		void link_impl::set_align(halign value)
+		void link::set_align(halign value)
 		{
 			text_container::set_align(value);
 			switch (value)
@@ -157,10 +104,4 @@ namespace wpl
 			}
 		}
 	}
-
-	shared_ptr<button> create_button()
-	{	return shared_ptr<button>(new win32::button_impl);	}
-
-	shared_ptr<link> create_link()
-	{	return shared_ptr<link>(new win32::link_impl);	}
 }

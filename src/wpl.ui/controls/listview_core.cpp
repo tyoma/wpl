@@ -159,61 +159,58 @@ namespace wpl
 
 		void listview_core::key_down(unsigned code, int modifiers)
 		{
-			if (_model)
+			if (const index_type item_count = _model ? _model->get_count() : index_type())
 			{
-				if (const index_type item_count = _model->get_count())
+				index_type focused = _focused ? _focused->index() : npos();
+				const index_type scroll_size = agge::iround(_size.h / get_item_height());
+				const index_type last = item_count - 1;
+				const index_type first_visible = first_partially_visible();
+				const index_type last_visible = last_partially_visible();
+
+				switch (code)
 				{
-					index_type focused = _focused ? _focused->index() : npos();
-					const index_type scroll_size = agge::iround(_size.h / get_item_height());
-					const index_type last = item_count - 1;
-					const index_type first_visible = first_partially_visible();
-					const index_type last_visible = last_partially_visible();
+				case up:
+					if (npos() != focused && focused)
+						focused--;
+					break;
 
-					switch (code)
-					{
-					case up:
-						if (npos() != focused && focused)
-							focused--;
-						break;
+				case page_up:
+					if (npos() == focused)
+						focused = first_visible;
+					else if (npos() == first_visible)
+						focused = 0;
+					else if (focused > first_visible)
+						focused = first_visible;
+					else if (focused > scroll_size)
+						focused -= scroll_size;
+					else
+						focused = 0;
+					break;
 
-					case page_up:
-						if (npos() == focused)
-							focused = first_visible;
-						else if (npos() == first_visible)
-							focused = 0;
-						else if (focused > first_visible)
-							focused = first_visible;
-						else if (focused > scroll_size)
-							focused -= scroll_size;
-						else
-							focused = 0;
-						break;
+				case down:
+					if (npos() == focused)
+						focused = 0;
+					else if (focused < last)
+						focused++;
+					break;
 
-					case down:
-						if (npos() == focused)
-							focused = 0;
-						else if (focused < last)
-							focused++;
-						break;
-
-					case page_down:
-						if (npos() == focused)
-							focused = last_visible;
-						else if (npos() == last_visible)
-							focused = last;
-						else if (focused < last_visible)
-							focused = last_visible;
-						else if (focused + scroll_size < item_count)
-							focused += scroll_size;
-						else
-							focused = last;
-						break;
-					}
-
-					focus(focused);
-					if (!(keyboard_input::control & modifiers))
-						select(focused, true);
+				case page_down:
+					if (npos() == focused)
+						focused = last_visible;
+					else if (npos() == last_visible)
+						focused = last;
+					else if (focused < last_visible)
+						focused = last_visible;
+					else if (focused + scroll_size < item_count)
+						focused += scroll_size;
+					else
+						focused = last;
+					break;
 				}
+
+				focus(focused);
+				if (!(keyboard_input::control & modifiers))
+					select(focused, true);
 			}
 		}
 

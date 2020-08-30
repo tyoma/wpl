@@ -32,11 +32,14 @@ namespace wpl
 		class view_host : public wpl::view_host
 		{
 		public:
-			view_host(HWND hwnd, const window::user_handler_t &user_handler);
+			view_host(HWND hwnd, const window::user_handler_t &user_handler = &view_host::passthrough);
 			~view_host();
 
 			virtual void set_view(const std::shared_ptr<view> &v);
 			virtual void set_background_color(agge::color color);
+
+			static LRESULT passthrough(UINT message, WPARAM wparam, LPARAM lparam,
+				const window::original_handler_t &previous);
 
 		private:
 			typedef std::vector<keyboard_input::tabbed_control> tabbed_controls;

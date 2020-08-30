@@ -62,12 +62,6 @@ namespace wpl
 			init();
 		}
 
-		listview::listview(HWND hwnd)
-		{
-			attach(hwnd);
-			init();
-		}
-
 		void listview::init()
 		{
 			_avoid_notifications = false,
@@ -372,10 +366,4 @@ namespace wpl
 			Header_SetItem(hheader, column, &item);
 		}
 	}
-
-	shared_ptr<listview> wrap_listview(HWND hwnd)
-	{	return shared_ptr<listview>(new win32::listview(hwnd));	}
-		
-	shared_ptr<listview> create_listview()
-	{	return shared_ptr<listview>(new win32::listview());	}
 }

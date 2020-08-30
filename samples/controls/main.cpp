@@ -1,11 +1,9 @@
-#include <wpl/combobox.h>
+#include <wpl/controls.h>
 #include <wpl/container.h>
+#include <wpl/factory.h>
 #include <wpl/form.h>
 #include <wpl/layout.h>
 #include <wpl/controls/scroller.h>
-
-#include <wpl/win32/controls.h>
-#include <wpl/win32/form.h>
 
 #include <samples/common/platform.h>
 #include <samples/common/timer.h>
@@ -94,15 +92,16 @@ namespace
 
 int main()
 {
+	auto fct = factory::create_default(nullptr);
 	font fnt = { L"", 8 };
 	view_location l = { 100, 100, 300, 200 };
-	shared_ptr<form> f = create_form();
+	shared_ptr<form> f = fct->create_form();
 	slot_connection c = f->close += &exit_message_loop;
 	shared_ptr<container> root(new container);
 	shared_ptr<stack> root_layout(new stack(5, false));
 	shared_ptr<container> fill(new container);
 	shared_ptr<stack> fill_layout(new stack(5, true));
-	shared_ptr<combobox> cb = create_combobox();
+	shared_ptr<combobox> cb = static_pointer_cast<combobox>(fct->create_control("combobox"));
 	shared_ptr<scroller> scrl(new scroller(scroller::horizontal));
 	shared_ptr<scroller> scrl2(new scroller(scroller::vertical));
 

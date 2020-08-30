@@ -22,7 +22,7 @@
 
 #include "native_view.h"
 
-#include "../listview.h"
+#include "../controls.h"
 
 namespace wpl
 {
@@ -32,7 +32,6 @@ namespace wpl
 		{
 		public:
 			listview();
-			listview(HWND hwnd);
 
 		private:
 			enum sort_direction	{	dir_none, dir_ascending, dir_descending	};

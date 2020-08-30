@@ -18,24 +18,38 @@
 //	OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //	THE SOFTWARE.
 
-#pragma once
+#include <wpl/factory.h>
 
-#include "control.h"
-#include "models.h"
+#include <wpl/win32/combobox.h>
+#include <wpl/win32/controls.h>
+#include <wpl/win32/form.h>
+#include <wpl/win32/listview.h>
+
+using namespace std;
 
 namespace wpl
 {
-	struct listview : control
+	shared_ptr<factory> factory::create_default(const shared_ptr<stylesheet> &stylesheet_)
 	{
-		virtual void set_columns_model(std::shared_ptr<columns_model> cm) = 0;
-		virtual void set_model(std::shared_ptr<table_model> ds) = 0;
+		shared_ptr<factory> f(new factory(stylesheet_));
 
-		virtual void adjust_column_widths() = 0;
+		f->register_form([] (shared_ptr<gcontext::renderer_type>, shared_ptr<gcontext::surface_type>, shared_ptr<stylesheet>){
+			return shared_ptr<form>(new win32::form);
+		});
 
-		virtual void select(table_model::index_type item, bool reset_previous) = 0;
-		virtual void focus(table_model::index_type item) = 0;
+		f->register_control("button", [] (const factory &, shared_ptr<stylesheet>) {
+			return shared_ptr<button>(new win32::button);
+		});
+		f->register_control("link", [] (const factory &, shared_ptr<stylesheet>) {
+			return shared_ptr<link>(new win32::link);
+		});
+		f->register_control("combobox", [] (const factory &, shared_ptr<stylesheet>) {
+			return shared_ptr<combobox>(new win32::combobox);
+			});
+		f->register_control("listview", [] (const factory &, shared_ptr<stylesheet>) {
+			return shared_ptr<listview>(new win32::listview);
+		});
 
-		signal<void (table_model::index_type /*item*/)> item_activate;
-		signal<void (table_model::index_type /*item*/, bool /*became selected*/)> selection_changed;
-	};
+		return f;
+	}
 }

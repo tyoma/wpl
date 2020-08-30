@@ -20,22 +20,68 @@
 
 #pragma once
 
-#include "types.h"
+#include "native_view.h"
 
+#include "../controls.h"
 #include <memory>
 
 namespace wpl
 {
 	struct button;
-	struct combobox;
 	struct link;
-	struct listview;
 	struct view_host;
 
-	std::shared_ptr<listview> wrap_listview(HWND hwnd);
-	std::shared_ptr<view_host> wrap_view_host(HWND hwnd);
-	std::shared_ptr<listview> create_listview();
-	std::shared_ptr<button> create_button();
-	std::shared_ptr<combobox> create_combobox();
-	std::shared_ptr<link> create_link();
+	namespace win32
+	{
+		template <typename BaseT>
+		class text_container_impl : public BaseT, public native_view
+		{
+			virtual void set_text(const std::wstring &text)
+			{
+				_text = text;
+				::SetWindowTextW(get_window(), _text.c_str());
+			}
+
+		protected:
+			typedef text_container_impl text_container;
+
+		protected:
+			virtual void set_align(wpl::text_container::halign value)
+			{	_halign = value;	}
+
+		protected:
+			std::wstring _text;
+			wpl::text_container::halign _halign;
+		};
+
+
+		class button : public text_container_impl<wpl::button>
+		{
+		public:
+			button();
+
+		private:
+			virtual std::shared_ptr<view> get_view();
+
+			virtual HWND materialize(HWND hparent);
+			virtual LRESULT on_message(UINT message, WPARAM wparam, LPARAM lparam,
+				const window::original_handler_t &handler);
+		};
+
+
+		class link : public text_container_impl<wpl::link>
+		{
+		public:
+			link();
+
+		private:
+			virtual std::shared_ptr<view> get_view();
+
+			virtual HWND materialize(HWND hparent);
+			virtual LRESULT on_message(UINT message, WPARAM wparam, LPARAM lparam,
+				const window::original_handler_t &handler);
+
+			virtual void set_align(halign value);
+		};
+	}
 }

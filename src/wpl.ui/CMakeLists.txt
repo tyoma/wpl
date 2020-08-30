@@ -4,7 +4,7 @@ set(WPL_UI_SOURCES
 	container.cpp
 	layout.cpp
 	visual.cpp
-	
+
 	controls/header.cpp
 	controls/listview_core.cpp
 	controls/scroller.cpp
@@ -14,6 +14,7 @@ if(WIN32)
 	set(WPL_UI_SOURCES ${WPL_UI_SOURCES}
 		win32/comboxbox.cpp
 		win32/controls.cpp
+		win32/factory_win32.cpp
 		win32/form.cpp
 		win32/listview_win32.cpp
 		win32/native_view.cpp

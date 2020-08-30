@@ -20,7 +20,7 @@
 
 #pragma once
 
-#include "../listview.h"
+#include "../controls.h"
 #include "../view.h"
 
 namespace wpl
@@ -50,9 +50,9 @@ namespace wpl
 			virtual void key_down(unsigned code, int modifiers);
 
 			// mouse_input methods
-			virtual void mouse_down(mouse_buttons button, int buttons, int x, int y);
-			virtual void mouse_up(mouse_buttons button, int buttons, int x, int y);
-			virtual void mouse_double_click(mouse_buttons button, int depressed, int x, int y);
+			virtual void mouse_down(mouse_buttons button_, int buttons, int x, int y);
+			virtual void mouse_up(mouse_buttons button_, int buttons, int x, int y);
+			virtual void mouse_double_click(mouse_buttons button_, int depressed, int x, int y);
 
 			// visual methods
 			virtual void draw(gcontext &ctx, gcontext::rasterizer_ptr &rasterizer) const;

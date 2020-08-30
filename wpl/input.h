@@ -51,9 +51,9 @@ namespace wpl
 
 		virtual void mouse_move(int depressed, int x, int y);
 
-		virtual void mouse_down(mouse_buttons button, int depressed, int x, int y);
-		virtual void mouse_up(mouse_buttons button, int depressed, int x, int y);
-		virtual void mouse_double_click(mouse_buttons button, int depressed, int x, int y);
+		virtual void mouse_down(mouse_buttons button_, int depressed, int x, int y);
+		virtual void mouse_up(mouse_buttons button_, int depressed, int x, int y);
+		virtual void mouse_double_click(mouse_buttons button_, int depressed, int x, int y);
 
 		virtual void lost_capture();
 

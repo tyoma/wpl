@@ -1,59 +1,68 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <Filter Include="Source Files">
-      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
-      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
-    </Filter>
     <Filter Include="win32">
       <UniqueIdentifier>{2ac5d412-9518-4444-8596-230f865e27a3}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source Files\win32">
-      <UniqueIdentifier>{c6e0779a-2551-4241-bdca-37edcbd1bc28}</UniqueIdentifier>
     </Filter>
     <Filter Include="controls">
       <UniqueIdentifier>{3af60512-c9fd-4204-a828-766c78bb0a1c}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\controls">
+    <Filter Include="src">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="src\win32">
+      <UniqueIdentifier>{c6e0779a-2551-4241-bdca-37edcbd1bc28}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\controls">
       <UniqueIdentifier>{d30c3096-0faf-4b46-ae36-26e34a4a23d4}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="layout.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>src</Filter>
     </ClCompile>
     <ClCompile Include="visual.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>src</Filter>
     </ClCompile>
     <ClCompile Include="container.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>src</Filter>
     </ClCompile>
     <ClCompile Include="win32\form.cpp">
-      <Filter>Source Files\win32</Filter>
+      <Filter>src\win32</Filter>
     </ClCompile>
     <ClCompile Include="win32\view_host.cpp">
-      <Filter>Source Files\win32</Filter>
+      <Filter>src\win32</Filter>
     </ClCompile>
     <ClCompile Include="win32\window.cpp">
-      <Filter>Source Files\win32</Filter>
+      <Filter>src\win32</Filter>
     </ClCompile>
     <ClCompile Include="win32\controls.cpp">
-      <Filter>Source Files\win32</Filter>
+      <Filter>src\win32</Filter>
     </ClCompile>
     <ClCompile Include="win32\comboxbox.cpp">
-      <Filter>Source Files\win32</Filter>
+      <Filter>src\win32</Filter>
     </ClCompile>
     <ClCompile Include="win32\listview_win32.cpp">
-      <Filter>Source Files\win32</Filter>
+      <Filter>src\win32</Filter>
     </ClCompile>
     <ClCompile Include="controls\listview_core.cpp">
-      <Filter>Source Files\controls</Filter>
+      <Filter>src\controls</Filter>
     </ClCompile>
     <ClCompile Include="controls\header.cpp">
-      <Filter>Source Files\controls</Filter>
+      <Filter>src\controls</Filter>
     </ClCompile>
     <ClCompile Include="controls\scroller.cpp">
-      <Filter>Source Files\controls</Filter>
+      <Filter>src\controls</Filter>
+    </ClCompile>
+    <ClCompile Include="win32\native_view.cpp">
+      <Filter>src\win32</Filter>
+    </ClCompile>
+    <ClCompile Include="factory.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="win32\factory_win32.cpp">
+      <Filter>src\win32</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -75,13 +84,9 @@
     <ClInclude Include="..\..\wpl\win32\native_view.h">
       <Filter>win32</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\wpl\win32\types.h">
-      <Filter>win32</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\wpl\win32\window.h">
       <Filter>win32</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\wpl\combobox.h" />
     <ClInclude Include="..\..\wpl\concepts.h" />
     <ClInclude Include="..\..\wpl\container.h" />
     <ClInclude Include="..\..\wpl\control.h" />
@@ -89,16 +94,12 @@
     <ClInclude Include="..\..\wpl\form.h" />
     <ClInclude Include="..\..\wpl\input.h" />
     <ClInclude Include="..\..\wpl\layout.h" />
-    <ClInclude Include="..\..\wpl\listview.h" />
     <ClInclude Include="..\..\wpl\models.h" />
     <ClInclude Include="..\..\wpl\signals.h" />
     <ClInclude Include="..\..\wpl\types.h" />
     <ClInclude Include="..\..\wpl\view.h" />
     <ClInclude Include="..\..\wpl\view_host.h" />
     <ClInclude Include="..\..\wpl\visual.h" />
-    <ClInclude Include="win32\native_view.cpp">
-      <Filter>Source Files\win32</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\wpl\win32\listview.h">
       <Filter>win32</Filter>
     </ClInclude>
@@ -111,5 +112,7 @@
     <ClInclude Include="..\..\wpl\controls\header.h">
       <Filter>controls</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\wpl\factory.h" />
+    <ClInclude Include="..\..\wpl\stylesheet.h" />
   </ItemGroup>
 </Project>

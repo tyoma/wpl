@@ -1,7 +1,4 @@
-#include <wpl/listview.h>
-
-#include <wpl/win32/controls.h>
-#include <wpl/win32/native_view.h>
+#include <wpl/win32/listview.h>
 
 #include "helpers-visual.h"
 #include "helpers-win32.h"
@@ -102,13 +99,15 @@ namespace wpl
 				return enclosing;
 			}
 
-			HWND get_listview_window(listview &lv, HWND hparent)
+			HWND get_listview_window(control &ctl, HWND hparent, unsigned int width = 1, unsigned int height = 1)
 			{
 				visual::positioned_native_views pnv;
 
-				lv.get_view()->resize(1, 1, pnv);
+				ctl.get_view()->resize(width, height, pnv);
 				assert_equal(1u, pnv.size());
-				return pnv[0].get_view().get_window(hparent);
+				HWND hwnd = pnv[0].get_view().get_window(hparent);
+				::MoveWindow(hwnd, 0, 0, width, height, FALSE);
+				return hwnd;
 			}
 		}
 
@@ -136,62 +135,37 @@ namespace wpl
 				return hwnd;
 			}
 
-			HWND create_listview()
+			pair<shared_ptr<listview>, HWND> create_listview()
 			{
-				return windowManager.create_window(L"SysListView32", hparent,
-					WS_CHILD | WS_VISIBLE | LVS_REPORT | LVS_OWNERDATA, 0);
-			}
+				shared_ptr<listview> lv(new win32::listview);
 
-
-			test( WrongWrappingLeadsToException )
-			{
-				// INIT
-				HWND wrong_hwnd1 = (HWND)0x12345678;
-				HWND wrong_hwnd2 = windowManager.create_window();
-
-				windowManager.destroy_window(wrong_hwnd2);
-
-				// ACT / ASSERT
-				assert_throws(wrap_listview(wrong_hwnd1), invalid_argument);
-				assert_throws(wrap_listview(wrong_hwnd2), invalid_argument);
-			}
-
-
-			test( WrapListViewGetNonNullPtr )
-			{
-				// INIT
-				HWND hlv = windowManager.create_window(L"SysListView32");
-
-				// ACT / ASSERT
-				assert_not_null(wrap_listview(hlv));
+				return make_pair(lv, get_listview_window(*lv, hparent, 200, 150));
 			}
 
 
 			test( ListViewItemsCountSetOnSettingModel )
 			{
 				// INIT
-				HWND hlv = create_listview();
-				shared_ptr<listview> lv(wrap_listview(hlv));
+				auto lv = create_listview();
 
 				// ACT
-				lv->set_model(mocks::model_ptr(new mocks::listview_model(11)));
+				lv.first->set_model(mocks::model_ptr(new mocks::listview_model(11)));
 
 				// ASSERT
-				assert_equal(11, ListView_GetItemCount(hlv));
+				assert_equal(11, ListView_GetItemCount(lv.second));
 
 				// ACT
-				lv->set_model(mocks::model_ptr(new mocks::listview_model(23)));
+				lv.first->set_model(mocks::model_ptr(new mocks::listview_model(23)));
 
 				// ASSERT
-				assert_equal(23, ListView_GetItemCount(hlv));
+				assert_equal(23, ListView_GetItemCount(lv.second));
 			}
 
 
 			test( ColumnsByTextAreBeingAddedAccordinglyToTheColumnsModel )
 			{
 				// INIT
-				HWND hlv = create_listview();
-				shared_ptr<listview> lv(wrap_listview(hlv));
+				auto lv = create_listview();
 				column_def columns[] = {
 					column_def(L"Contract"),
 					column_def(L"Price"),
@@ -199,129 +173,123 @@ namespace wpl
 				};
 					
 				// ACT
-				lv->set_columns_model(mocks::columns_model::create(columns, columns_model::npos(), false));
+				lv.first->set_columns_model(mocks::columns_model::create(columns, columns_model::npos(), false));
 
 				// ASSERT
-				assert_equal(3u, get_columns_count(hlv));
-				assert_equal(_T("Contract"), get_column_text(hlv, 0));
-				assert_equal(_T("Price"), get_column_text(hlv, 1));
-				assert_equal(_T("Volume"), get_column_text(hlv, 2));
+				assert_equal(3u, get_columns_count(lv.second));
+				assert_equal(_T("Contract"), get_column_text(lv.second, 0));
+				assert_equal(_T("Price"), get_column_text(lv.second, 1));
+				assert_equal(_T("Volume"), get_column_text(lv.second, 2));
 			}
 
 
 			test( ColumnsAreResetOnNewColumnsModelSetting )
 			{
 				// INIT
-				HWND hlv = create_listview();
-				shared_ptr<listview> lv(wrap_listview(hlv));
+				auto lv = create_listview();
 				column_def columns[] = {
 					column_def(L"Contract"),
 					column_def(L"Price"),
 				};
 					
 				// ACT
-				lv->set_columns_model(mocks::columns_model::create(columns, columns_model::npos(), false));
-				lv->set_columns_model(mocks::columns_model::create(L"Team"));
+				lv.first->set_columns_model(mocks::columns_model::create(columns, columns_model::npos(), false));
+				lv.first->set_columns_model(mocks::columns_model::create(L"Team"));
 
 				// ASSERT
-				assert_equal(1u, get_columns_count(hlv));
-				assert_equal(_T("Team"), get_column_text(hlv, 0));
+				assert_equal(1u, get_columns_count(lv.second));
+				assert_equal(_T("Team"), get_column_text(lv.second, 0));
 			}
 
 
 			test( ListViewInvalidatedOnModelInvalidate )
 			{
 				// INIT
-				HWND hlv = create_listview();
-				shared_ptr<listview> lv(wrap_listview(hlv));
+				auto lv = create_listview();
 				mocks::model_ptr m(new mocks::listview_model(11, 1));
 
-				lv->set_columns_model(mocks::columns_model::create(L"test", 13));
-				lv->set_model(m);
+				lv.first->set_columns_model(mocks::columns_model::create(L"test", 13));
+				lv.first->set_model(m);
 
 				// ACT
-				::UpdateWindow(hlv);
+				::UpdateWindow(lv.second);
 
 				// ASSERT
-				assert_is_false(!!::GetUpdateRect(hlv, NULL, FALSE));
+				assert_is_false(!!::GetUpdateRect(lv.second, NULL, FALSE));
 
 				// ACT
 				m->invalidated(11);
 
 				// ASSERT
-				assert_is_true(!!::GetUpdateRect(hlv, NULL, FALSE));
+				assert_is_true(!!::GetUpdateRect(lv.second, NULL, FALSE));
 			}
 
 
 			test( ChangingItemsCountIsTrackedByListView )
 			{
 				// INIT
-				HWND hlv = create_listview();
-				shared_ptr<listview> lv(wrap_listview(hlv));
+				auto lv = create_listview();
 				mocks::model_ptr m(new mocks::listview_model(0));
 
-				lv->set_model(m);
+				lv.first->set_model(m);
 
 				// ACT
 				m->set_count(3);
 
 				// ASSERT
-				assert_equal(3, ListView_GetItemCount(hlv));
+				assert_equal(3, ListView_GetItemCount(lv.second));
 
 				// ACT
 				m->set_count(13);
 
 				// ASSERT
-				assert_equal(13, ListView_GetItemCount(hlv));
+				assert_equal(13, ListView_GetItemCount(lv.second));
 			}
 
 
 			test( InvalidationsFromOldModelsAreNotAccepted )
 			{
 				// INIT
-				HWND hlv = create_listview();
-				shared_ptr<listview> lv(wrap_listview(hlv));
+				auto lv = create_listview();
 				mocks::model_ptr m1(new mocks::listview_model(5)), m2(new mocks::listview_model(7));
 
-				lv->set_model(m1);
+				lv.first->set_model(m1);
 
 				// ACT
-				lv->set_model(m2);
+				lv.first->set_model(m2);
 				m1->set_count(3);
 
 				// ASSERT
-				assert_equal(7, ListView_GetItemCount(hlv));
+				assert_equal(7, ListView_GetItemCount(lv.second));
 			}
 
 
 			test( ResettingModelSetsZeroItemsCountAndDisconnectsFromInvalidationEvent )
 			{
 				// INIT
-				HWND hlv = create_listview();
-				shared_ptr<listview> lv(wrap_listview(hlv));
+				auto lv = create_listview();
 				mocks::model_ptr m(new mocks::listview_model(5));
 
-				lv->set_model(m);
+				lv.first->set_model(m);
 
 				// ACT
-				lv->set_model(shared_ptr<table_model>());
+				lv.first->set_model(shared_ptr<table_model>());
 
 				// ASSERT
-				assert_equal(0, ListView_GetItemCount(hlv));
+				assert_equal(0, ListView_GetItemCount(lv.second));
 
 				// ACT
 				m->set_count(7);
 
 				// ASSERT
-				assert_equal(0, ListView_GetItemCount(hlv));
+				assert_equal(0, ListView_GetItemCount(lv.second));
 			}
 
 
 			test( GettingDispInfoOtherThanTextIsNotFailing )
 			{
 				// INIT
-				HWND hlv = create_listview();
-				shared_ptr<listview> lv(wrap_listview(hlv));
+				auto lv = create_listview();
 				mocks::model_ptr m(new mocks::listview_model(0));
 				NMLVDISPINFO nmlvdi = {
 					{	0, 0, LVN_GETDISPINFO	},
@@ -330,18 +298,17 @@ namespace wpl
 
 				m->set_count(1), m->items[0].resize(3);
 				m->items[0][0] = L"one", m->items[0][1] = L"two", m->items[0][2] = L"three";
-				lv->set_model(m);
+				lv.first->set_model(m);
 
 				// ACT / ASSERT (must not throw)
-				::SendMessage(hlv, OCM_NOTIFY, 0, reinterpret_cast<LPARAM>(&nmlvdi));
+				::SendMessage(lv.second, OCM_NOTIFY, 0, reinterpret_cast<LPARAM>(&nmlvdi));
 			}
 
 
 			test( GettingItemTextNoTruncationANSI )
 			{
 				// INIT
-				HWND hlv = create_listview();
-				shared_ptr<listview> lv(wrap_listview(hlv));
+				auto lv = create_listview();
 				mocks::model_ptr m(new mocks::listview_model(0));
 				char buffer[100] = { 0 };
 				NMLVDISPINFOA nmlvdi = {
@@ -353,43 +320,43 @@ namespace wpl
 				m->items[0][0] = L"one", m->items[0][1] = L"two", m->items[0][2] = L"three";
 				m->items[1][0] = L"four", m->items[1][1] = L"five", m->items[1][2] = L"six";
 				m->items[2][0] = L"seven", m->items[2][1] = L"eight", m->items[2][2] = L"NINE";
-				lv->set_model(m);
+				lv.first->set_model(m);
 
 				// ACT / ASSERT
 				nmlvdi.item.iItem = 0, nmlvdi.item.iSubItem = 0;
-				::SendMessage(hlv, OCM_NOTIFY, 0, reinterpret_cast<LPARAM>(&nmlvdi));
+				::SendMessage(lv.second, OCM_NOTIFY, 0, reinterpret_cast<LPARAM>(&nmlvdi));
 				assert_equal(0, strcmp("one", buffer));
 
 				nmlvdi.item.iItem = 0, nmlvdi.item.iSubItem = 1;
-				::SendMessage(hlv, OCM_NOTIFY, 0, reinterpret_cast<LPARAM>(&nmlvdi));
+				::SendMessage(lv.second, OCM_NOTIFY, 0, reinterpret_cast<LPARAM>(&nmlvdi));
 				assert_equal(0, strcmp("two", buffer));
 
 				nmlvdi.item.iItem = 0, nmlvdi.item.iSubItem = 2;
-				::SendMessage(hlv, OCM_NOTIFY, 0, reinterpret_cast<LPARAM>(&nmlvdi));
+				::SendMessage(lv.second, OCM_NOTIFY, 0, reinterpret_cast<LPARAM>(&nmlvdi));
 				assert_equal(0, strcmp("three", buffer));
 
 				nmlvdi.item.iItem = 1, nmlvdi.item.iSubItem = 0;
-				::SendMessage(hlv, OCM_NOTIFY, 0, reinterpret_cast<LPARAM>(&nmlvdi));
+				::SendMessage(lv.second, OCM_NOTIFY, 0, reinterpret_cast<LPARAM>(&nmlvdi));
 				assert_equal(0, strcmp("four", buffer));
 
 				nmlvdi.item.iItem = 1, nmlvdi.item.iSubItem = 1;
-				::SendMessage(hlv, OCM_NOTIFY, 0, reinterpret_cast<LPARAM>(&nmlvdi));
+				::SendMessage(lv.second, OCM_NOTIFY, 0, reinterpret_cast<LPARAM>(&nmlvdi));
 				assert_equal(0, strcmp("five", buffer));
 
 				nmlvdi.item.iItem = 1, nmlvdi.item.iSubItem = 2;
-				::SendMessage(hlv, OCM_NOTIFY, 0, reinterpret_cast<LPARAM>(&nmlvdi));
+				::SendMessage(lv.second, OCM_NOTIFY, 0, reinterpret_cast<LPARAM>(&nmlvdi));
 				assert_equal(0, strcmp("six", buffer));
 
 				nmlvdi.item.iItem = 2, nmlvdi.item.iSubItem = 0;
-				::SendMessage(hlv, OCM_NOTIFY, 0, reinterpret_cast<LPARAM>(&nmlvdi));
+				::SendMessage(lv.second, OCM_NOTIFY, 0, reinterpret_cast<LPARAM>(&nmlvdi));
 				assert_equal(0, strcmp("seven", buffer));
 
 				nmlvdi.item.iItem = 2, nmlvdi.item.iSubItem = 1;
-				::SendMessage(hlv, OCM_NOTIFY, 0, reinterpret_cast<LPARAM>(&nmlvdi));
+				::SendMessage(lv.second, OCM_NOTIFY, 0, reinterpret_cast<LPARAM>(&nmlvdi));
 				assert_equal(0, strcmp("eight", buffer));
 
 				nmlvdi.item.iItem = 2, nmlvdi.item.iSubItem = 2;
-				::SendMessage(hlv, OCM_NOTIFY, 0, reinterpret_cast<LPARAM>(&nmlvdi));
+				::SendMessage(lv.second, OCM_NOTIFY, 0, reinterpret_cast<LPARAM>(&nmlvdi));
 				assert_equal(0, strcmp("NINE", buffer));
 			}
 
@@ -397,8 +364,7 @@ namespace wpl
 			test( GettingItemTextNoTruncationUnicode )
 			{
 				// INIT
-				HWND hlv = create_listview();
-				shared_ptr<listview> lv(wrap_listview(hlv));
+				auto lv = create_listview();
 				mocks::model_ptr m(new mocks::listview_model(0));
 				wchar_t buffer[100] = { 0 };
 				NMLVDISPINFOW nmlvdi = {
@@ -410,43 +376,43 @@ namespace wpl
 				m->items[0][0] = L"one", m->items[0][1] = L"two", m->items[0][2] = L"three";
 				m->items[1][0] = L"four", m->items[1][1] = L"five", m->items[1][2] = L"six";
 				m->items[2][0] = L"seven", m->items[2][1] = L"eight", m->items[2][2] = L"NINE";
-				lv->set_model(m);
+				lv.first->set_model(m);
 
 				// ACT / ASSERT
 				nmlvdi.item.iItem = 0, nmlvdi.item.iSubItem = 0;
-				::SendMessage(hlv, OCM_NOTIFY, 0, reinterpret_cast<LPARAM>(&nmlvdi));
+				::SendMessage(lv.second, OCM_NOTIFY, 0, reinterpret_cast<LPARAM>(&nmlvdi));
 				assert_equal(0, wcscmp(L"one", buffer));
 
 				nmlvdi.item.iItem = 0, nmlvdi.item.iSubItem = 1;
-				::SendMessage(hlv, OCM_NOTIFY, 0, reinterpret_cast<LPARAM>(&nmlvdi));
+				::SendMessage(lv.second, OCM_NOTIFY, 0, reinterpret_cast<LPARAM>(&nmlvdi));
 				assert_equal(0, wcscmp(L"two", buffer));
 
 				nmlvdi.item.iItem = 0, nmlvdi.item.iSubItem = 2;
-				::SendMessage(hlv, OCM_NOTIFY, 0, reinterpret_cast<LPARAM>(&nmlvdi));
+				::SendMessage(lv.second, OCM_NOTIFY, 0, reinterpret_cast<LPARAM>(&nmlvdi));
 				assert_equal(0, wcscmp(L"three", buffer));
 
 				nmlvdi.item.iItem = 1, nmlvdi.item.iSubItem = 0;
-				::SendMessage(hlv, OCM_NOTIFY, 0, reinterpret_cast<LPARAM>(&nmlvdi));
+				::SendMessage(lv.second, OCM_NOTIFY, 0, reinterpret_cast<LPARAM>(&nmlvdi));
 				assert_equal(0, wcscmp(L"four", buffer));
 
 				nmlvdi.item.iItem = 1, nmlvdi.item.iSubItem = 1;
-				::SendMessage(hlv, OCM_NOTIFY, 0, reinterpret_cast<LPARAM>(&nmlvdi));
+				::SendMessage(lv.second, OCM_NOTIFY, 0, reinterpret_cast<LPARAM>(&nmlvdi));
 				assert_equal(0, wcscmp(L"five", buffer));
 
 				nmlvdi.item.iItem = 1, nmlvdi.item.iSubItem = 2;
-				::SendMessage(hlv, OCM_NOTIFY, 0, reinterpret_cast<LPARAM>(&nmlvdi));
+				::SendMessage(lv.second, OCM_NOTIFY, 0, reinterpret_cast<LPARAM>(&nmlvdi));
 				assert_equal(0, wcscmp(L"six", buffer));
 
 				nmlvdi.item.iItem = 2, nmlvdi.item.iSubItem = 0;
-				::SendMessage(hlv, OCM_NOTIFY, 0, reinterpret_cast<LPARAM>(&nmlvdi));
+				::SendMessage(lv.second, OCM_NOTIFY, 0, reinterpret_cast<LPARAM>(&nmlvdi));
 				assert_equal(0, wcscmp(L"seven", buffer));
 
 				nmlvdi.item.iItem = 2, nmlvdi.item.iSubItem = 1;
-				::SendMessage(hlv, OCM_NOTIFY, 0, reinterpret_cast<LPARAM>(&nmlvdi));
+				::SendMessage(lv.second, OCM_NOTIFY, 0, reinterpret_cast<LPARAM>(&nmlvdi));
 				assert_equal(0, wcscmp(L"eight", buffer));
 
 				nmlvdi.item.iItem = 2, nmlvdi.item.iSubItem = 2;
-				::SendMessage(hlv, OCM_NOTIFY, 0, reinterpret_cast<LPARAM>(&nmlvdi));
+				::SendMessage(lv.second, OCM_NOTIFY, 0, reinterpret_cast<LPARAM>(&nmlvdi));
 				assert_equal(0, wcscmp(L"NINE", buffer));
 			}
 
@@ -454,8 +420,7 @@ namespace wpl
 			test( GettingItemTextWithTruncationANSI )
 			{
 				// INIT
-				HWND hlv = create_listview();
-				shared_ptr<listview> lv(wrap_listview(hlv));
+				auto lv = create_listview();
 				mocks::model_ptr m(new mocks::listview_model(0));
 				char buffer[4] = { 0 };
 				NMLVDISPINFOA nmlvdi = {
@@ -465,19 +430,19 @@ namespace wpl
 
 				m->set_count(3), m->items[0].resize(3);
 				m->items[0][0] = L"one", m->items[0][1] = L"two", m->items[0][2] = L"three";
-				lv->set_model(m);
+				lv.first->set_model(m);
 
 				// ACT / ASSERT
 				nmlvdi.item.iItem = 0, nmlvdi.item.iSubItem = 0;
-				::SendMessage(hlv, OCM_NOTIFY, 0, reinterpret_cast<LPARAM>(&nmlvdi));
+				::SendMessage(lv.second, OCM_NOTIFY, 0, reinterpret_cast<LPARAM>(&nmlvdi));
 				assert_equal(0, strcmp("one", buffer));
 
 				nmlvdi.item.iItem = 0, nmlvdi.item.iSubItem = 1;
-				::SendMessage(hlv, OCM_NOTIFY, 0, reinterpret_cast<LPARAM>(&nmlvdi));
+				::SendMessage(lv.second, OCM_NOTIFY, 0, reinterpret_cast<LPARAM>(&nmlvdi));
 				assert_equal(0, strcmp("two", buffer));
 
 				nmlvdi.item.iItem = 0, nmlvdi.item.iSubItem = 2;
-				::SendMessage(hlv, OCM_NOTIFY, 0, reinterpret_cast<LPARAM>(&nmlvdi));
+				::SendMessage(lv.second, OCM_NOTIFY, 0, reinterpret_cast<LPARAM>(&nmlvdi));
 				assert_equal(0, strcmp("thr", buffer));
 			}
 
@@ -485,8 +450,7 @@ namespace wpl
 			test( GettingItemTextWithTruncationUnicode )
 			{
 				// INIT
-				HWND hlv = create_listview();
-				shared_ptr<listview> lv(wrap_listview(hlv));
+				auto lv = create_listview();
 				mocks::model_ptr m(new mocks::listview_model(0));
 				wchar_t buffer[4] = { 0 };
 				NMLVDISPINFOW nmlvdi = {
@@ -496,19 +460,19 @@ namespace wpl
 
 				m->set_count(3), m->items[0].resize(3);
 				m->items[0][0] = L"one", m->items[0][1] = L"two", m->items[0][2] = L"three";
-				lv->set_model(m);
+				lv.first->set_model(m);
 
 				// ACT / ASSERT
 				nmlvdi.item.iItem = 0, nmlvdi.item.iSubItem = 0;
-				::SendMessage(hlv, OCM_NOTIFY, 0, reinterpret_cast<LPARAM>(&nmlvdi));
+				::SendMessage(lv.second, OCM_NOTIFY, 0, reinterpret_cast<LPARAM>(&nmlvdi));
 				assert_equal(0, wcscmp(L"one", buffer));
 
 				nmlvdi.item.iItem = 0, nmlvdi.item.iSubItem = 1;
-				::SendMessage(hlv, OCM_NOTIFY, 0, reinterpret_cast<LPARAM>(&nmlvdi));
+				::SendMessage(lv.second, OCM_NOTIFY, 0, reinterpret_cast<LPARAM>(&nmlvdi));
 				assert_equal(0, wcscmp(L"two", buffer));
 
 				nmlvdi.item.iItem = 0, nmlvdi.item.iSubItem = 2;
-				::SendMessage(hlv, OCM_NOTIFY, 0, reinterpret_cast<LPARAM>(&nmlvdi));
+				::SendMessage(lv.second, OCM_NOTIFY, 0, reinterpret_cast<LPARAM>(&nmlvdi));
 				assert_equal(0, wcscmp(L"thr", buffer));
 			}
 
@@ -516,8 +480,7 @@ namespace wpl
 			test( ModelIsOrderedAccordinglyToColumnsModelSet )
 			{
 				// INIT
-				HWND hlv = create_listview();
-				shared_ptr<listview> lv(wrap_listview(hlv));
+				auto lv = create_listview();
 				column_def columns[] = {
 					column_def(L"", 10),
 					column_def(L"", 10),
@@ -525,10 +488,10 @@ namespace wpl
 				};
 				mocks::model_ptr m(new mocks::listview_model(0));
 
-				lv->set_model(m);
+				lv.first->set_model(m);
 
 				// ACT
-				lv->set_columns_model(mocks::columns_model::create(columns, 0, true));
+				lv.first->set_columns_model(mocks::columns_model::create(columns, 0, true));
 
 				// ASSERT
 				assert_equal(1u, m->ordering.size());
@@ -536,8 +499,8 @@ namespace wpl
 				assert_equal(true, m->ordering[0].second);
 
 				// ACT
-				lv->set_columns_model(mocks::columns_model::create(columns, 2, false));
-				lv->set_columns_model(mocks::columns_model::create(columns, 1, true));
+				lv.first->set_columns_model(mocks::columns_model::create(columns, 2, false));
+				lv.first->set_columns_model(mocks::columns_model::create(columns, 1, true));
 
 				// ASSERT
 				assert_equal(3u, m->ordering.size());
@@ -551,18 +514,17 @@ namespace wpl
 			test( ModelIsNotOrderedIfColumnsModelIsNotOrdered )
 			{
 				// INIT
-				HWND hlv = create_listview();
-				shared_ptr<listview> lv(wrap_listview(hlv));
+				auto lv = create_listview();
 				column_def columns[] = {
 					column_def(L"", 10),
 					column_def(L"", 10),
 				};
 				mocks::model_ptr m(new mocks::listview_model(0));
 
-				lv->set_model(m);
+				lv.first->set_model(m);
 
 				// ACT
-				lv->set_columns_model(mocks::columns_model::create(columns, columns_model::npos(), true));
+				lv.first->set_columns_model(mocks::columns_model::create(columns, columns_model::npos(), true));
 
 				// ASSERT
 				assert_is_empty(m->ordering);
@@ -572,8 +534,7 @@ namespace wpl
 			test( ModelIsSortedOnSortOrderChangedEvent )
 			{
 				// INIT
-				HWND hlv = create_listview();
-				shared_ptr<listview> lv(wrap_listview(hlv));
+				auto lv = create_listview();
 				column_def columns[] = {
 					column_def(L"", 10),
 					column_def(L"", 10),
@@ -582,8 +543,8 @@ namespace wpl
 				mocks::model_ptr m(new mocks::listview_model(0));
 				mocks::columns_model_ptr cm(mocks::columns_model::create(columns, columns_model::npos(), false));
 
-				lv->set_model(m);
-				lv->set_columns_model(cm);
+				lv.first->set_model(m);
+				lv.first->set_columns_model(cm);
 
 				// ACT
 				cm->set_sort_order(1, false);
@@ -609,8 +570,7 @@ namespace wpl
 			test( ClickingAColumnCausesColumnActivation )
 			{
 				// INIT
-				HWND hlv = create_listview();
-				shared_ptr<listview> lv(wrap_listview(hlv));
+				auto lv = create_listview();
 				column_def columns[] = {
 					column_def(L"", 10),
 					column_def(L"", 10),
@@ -623,12 +583,12 @@ namespace wpl
 					/* iItem = */ LVIF_TEXT /* see if wndproc differentiates notifications */, /* iSubItem = */ 0,
 				};
 
-				lv->set_columns_model(cm);
-				lv->set_model(m);
+				lv.first->set_columns_model(cm);
+				lv.first->set_model(m);
 
 				// ACT
 				nmlvdi.iSubItem = 2;
-				::SendMessage(hlv, OCM_NOTIFY, 0, reinterpret_cast<LPARAM>(&nmlvdi));
+				::SendMessage(lv.second, OCM_NOTIFY, 0, reinterpret_cast<LPARAM>(&nmlvdi));
 
 				// ASSERT
 				assert_equal(1u, cm->column_activation_log.size());
@@ -636,9 +596,9 @@ namespace wpl
 
 				// ACT
 				nmlvdi.iSubItem = 0;
-				::SendMessage(hlv, OCM_NOTIFY, 0, reinterpret_cast<LPARAM>(&nmlvdi));
+				::SendMessage(lv.second, OCM_NOTIFY, 0, reinterpret_cast<LPARAM>(&nmlvdi));
 				nmlvdi.iSubItem = 1;
-				::SendMessage(hlv, OCM_NOTIFY, 0, reinterpret_cast<LPARAM>(&nmlvdi));
+				::SendMessage(lv.second, OCM_NOTIFY, 0, reinterpret_cast<LPARAM>(&nmlvdi));
 
 				// ASSERT
 				assert_equal(3u, cm->column_activation_log.size());
@@ -650,8 +610,7 @@ namespace wpl
 			test( PreorderingOnChangingModel )
 			{
 				// INIT
-				HWND hlv = create_listview();
-				shared_ptr<listview> lv(wrap_listview(hlv));
+				auto lv = create_listview();
 				column_def columns[] = {
 					column_def(L"", 10),
 					column_def(L"", 10),
@@ -659,11 +618,11 @@ namespace wpl
 				mocks::model_ptr m1(new mocks::listview_model(0)), m2(new mocks::listview_model(0));
 				mocks::columns_model_ptr cm(mocks::columns_model::create(columns, 0, true));
 
-				lv->set_model(m1);
-				lv->set_columns_model(cm);
+				lv.first->set_model(m1);
+				lv.first->set_columns_model(cm);
 
 				// ACT
-				lv->set_model(m2);
+				lv.first->set_model(m2);
 
 				// ASSERT
 				assert_equal(1u, m2->ordering.size());
@@ -675,7 +634,7 @@ namespace wpl
 				m1->ordering.clear();
 
 				// ACT
-				lv->set_model(m1);
+				lv.first->set_model(m1);
 
 				// ASSERT
 				assert_equal(1u, m1->ordering.size());
@@ -687,27 +646,25 @@ namespace wpl
 			test( PreorderingHandlesNullModelWell )
 			{
 				// INIT
-				HWND hlv = create_listview();
-				shared_ptr<listview> lv(wrap_listview(hlv));
+				auto lv = create_listview();
 				column_def columns[] = {
 					column_def(L"", 10),
 					column_def(L"", 10),
 				};
 				mocks::model_ptr m(new mocks::listview_model(0));
 
-				lv->set_model(m);
-				lv->set_columns_model(mocks::columns_model::create(columns, 1, false));
+				lv.first->set_model(m);
+				lv.first->set_columns_model(mocks::columns_model::create(columns, 1, false));
 
 				// ACT / ASSERT (must not throw)
-				lv->set_model(shared_ptr<table_model>());
+				lv.first->set_model(shared_ptr<table_model>());
 			}
 
 
 			test( SettingColumnsModelWhithOrderingWhenModelIsMissingIsOkay )
 			{
 				// INIT
-				HWND hlv = create_listview();
-				shared_ptr<listview> lv(wrap_listview(hlv));
+				auto lv = create_listview();
 				column_def columns[] = {
 					column_def(L"", 10),
 					column_def(L"", 10),
@@ -715,15 +672,14 @@ namespace wpl
 				mocks::columns_model_ptr cm(mocks::columns_model::create(columns, 1, true));
 
 				// ACT / ASSERT (must not fail)
-				lv->set_columns_model(cm);
+				lv.first->set_columns_model(cm);
 			}
 
 
 			test( ColumnMarkerIsSetOnResettingColumnsModel )
 			{
 				// INIT
-				HWND hlv = create_listview();
-				shared_ptr<listview> lv(wrap_listview(hlv));
+				auto lv = create_listview();
 				column_def columns[] = {
 					column_def(L"", 10),
 					column_def(L"", 10),
@@ -733,33 +689,32 @@ namespace wpl
 				mocks::columns_model_ptr cm3(mocks::columns_model::create(columns, 1, true));
 
 				// ACT
-				lv->set_columns_model(cm1);
+				lv.first->set_columns_model(cm1);
 
 				// ASSERT
-				assert_equal(dir_none, get_column_direction(hlv, 0));
-				assert_equal(dir_none, get_column_direction(hlv, 1));
+				assert_equal(dir_none, get_column_direction(lv.second, 0));
+				assert_equal(dir_none, get_column_direction(lv.second, 1));
 
 				// ACT
-				lv->set_columns_model(cm2);
+				lv.first->set_columns_model(cm2);
 
 				// ASSERT
-				assert_equal(dir_descending, get_column_direction(hlv, 0));
-				assert_equal(dir_none, get_column_direction(hlv, 1));
+				assert_equal(dir_descending, get_column_direction(lv.second, 0));
+				assert_equal(dir_none, get_column_direction(lv.second, 1));
 
 				// ACT
-				lv->set_columns_model(cm3);
+				lv.first->set_columns_model(cm3);
 
 				// ASSERT
-				assert_equal(dir_none, get_column_direction(hlv, 0));
-				assert_equal(dir_ascending, get_column_direction(hlv, 1));
+				assert_equal(dir_none, get_column_direction(lv.second, 0));
+				assert_equal(dir_ascending, get_column_direction(lv.second, 1));
 			}
 
 
 			test( ColumnMarkerIsSetOnSortChange )
 			{
 				// INIT
-				HWND hlv = create_listview();
-				shared_ptr<listview> lv(wrap_listview(hlv));
+				auto lv = create_listview();
 				column_def columns[] = {
 					column_def(L"", 10),
 					column_def(L"", 10),
@@ -767,59 +722,57 @@ namespace wpl
 				mocks::columns_model_ptr cm(mocks::columns_model::create(columns, columns_model::npos(), false));
 				mocks::model_ptr m(new mocks::listview_model(0));
 
-				lv->set_model(m);
-				lv->set_columns_model(cm);
+				lv.first->set_model(m);
+				lv.first->set_columns_model(cm);
 
 				// ACT
 				cm->set_sort_order(0, true);
 
 				// ASSERT
-				assert_equal(dir_ascending, get_column_direction(hlv, 0));
-				assert_equal(dir_none, get_column_direction(hlv, 1));
+				assert_equal(dir_ascending, get_column_direction(lv.second, 0));
+				assert_equal(dir_none, get_column_direction(lv.second, 1));
 
 				// ACT
 				cm->set_sort_order(1, false);
 
 				// ASSERT
-				assert_equal(dir_none, get_column_direction(hlv, 0));
-				assert_equal(dir_descending, get_column_direction(hlv, 1));
+				assert_equal(dir_none, get_column_direction(lv.second, 0));
+				assert_equal(dir_descending, get_column_direction(lv.second, 1));
 
 				// ACT
 				cm->set_sort_order(1, true);
 
 				// ASSERT
-				assert_equal(dir_none, get_column_direction(hlv, 0));
-				assert_equal(dir_ascending, get_column_direction(hlv, 1));
+				assert_equal(dir_none, get_column_direction(lv.second, 0));
+				assert_equal(dir_ascending, get_column_direction(lv.second, 1));
 			}
 
 
 			test( ColumnMarkersAreChangedOnSortChangeWhenSortedColumnsModelWasInitiallySet )
 			{
 				// INIT
-				HWND hlv = create_listview();
-				shared_ptr<listview> lv(wrap_listview(hlv));
+				auto lv = create_listview();
 				column_def columns[] = {
 					column_def(L"", 10),
 					column_def(L"", 10),
 				};
 				mocks::columns_model_ptr cm(mocks::columns_model::create(columns, 1, false));
 
-				lv->set_columns_model(cm);
+				lv.first->set_columns_model(cm);
 
 				// ACT
 				cm->set_sort_order(0, true);
 
 				// ASSERT
-				assert_equal(dir_ascending, get_column_direction(hlv, 0));
-				assert_equal(dir_none, get_column_direction(hlv, 1));
+				assert_equal(dir_ascending, get_column_direction(lv.second, 0));
+				assert_equal(dir_none, get_column_direction(lv.second, 1));
 			}				
 
 
 			test( TheWholeListViewIsInvalidatedOnReorder )
 			{
 				// INIT
-				HWND hlv = create_listview();
-				shared_ptr<listview> lv(wrap_listview(hlv));
+				auto lv = create_listview();
 				column_def columns[] = {
 					column_def(L"a", 23),
 					column_def(L"b", 15),
@@ -828,27 +781,27 @@ namespace wpl
 				mocks::model_ptr m(new mocks::listview_model(1, 4));
 				RECT rc_invalidated = { 0 };
 
-				lv->set_model(m);
-				lv->set_columns_model(cm);
-				::UpdateWindow(hlv);
+				lv.first->set_model(m);
+				lv.first->set_columns_model(cm);
+				::UpdateWindow(lv.second);
 
 				// ACT
 				cm->set_sort_order(1, true);
 
 				// ASSERT
-				::GetUpdateRect(hlv, &rc_invalidated, FALSE);
-				assert_equal(get_visible_items_rect(hlv), rc_invalidated);
+				::GetUpdateRect(lv.second, &rc_invalidated, FALSE);
+				assert_equal(get_visible_items_rect(lv.second), rc_invalidated);
 
 				// INIT
 				m->set_count(3);
-				::UpdateWindow(hlv);
+				::UpdateWindow(lv.second);
 
 				// ACT
 				cm->set_sort_order(0, false);
 
 				// ASSERT
-				::GetUpdateRect(hlv, &rc_invalidated, FALSE);
-				assert_equal(get_visible_items_rect(hlv), rc_invalidated);
+				::GetUpdateRect(lv.second, &rc_invalidated, FALSE);
+				assert_equal(get_visible_items_rect(lv.second), rc_invalidated);
 			}
 
 
@@ -856,17 +809,16 @@ namespace wpl
 			{
 				// INIT
 				vector<table_model::index_type> selections;
-				HWND hlv = create_listview();
-				shared_ptr<listview> lv(wrap_listview(hlv));
+				auto lv = create_listview();
 				slot_connection c =
-					lv->item_activate += bind(&push_back<table_model::index_type>, ref(selections), _1);
+					lv.first->item_activate += bind(&push_back<table_model::index_type>, ref(selections), _1);
 				NMITEMACTIVATE nm = {	{	0, 0, LVN_ITEMACTIVATE	},	};
 
-				lv->set_model(mocks::model_ptr(new mocks::listview_model(10)));
+				lv.first->set_model(mocks::model_ptr(new mocks::listview_model(10)));
 
 				// ACT
 				nm.iItem = 1;
-				::SendMessage(hlv, OCM_NOTIFY, 0, reinterpret_cast<LPARAM>(&nm));
+				::SendMessage(lv.second, OCM_NOTIFY, 0, reinterpret_cast<LPARAM>(&nm));
 
 				// ASSERT
 				assert_equal(1u, selections.size());
@@ -874,11 +826,11 @@ namespace wpl
 
 				// ACT
 				nm.iItem = 0;
-				::SendMessage(hlv, OCM_NOTIFY, 0, reinterpret_cast<LPARAM>(&nm));
+				::SendMessage(lv.second, OCM_NOTIFY, 0, reinterpret_cast<LPARAM>(&nm));
 				nm.iItem = 3;
-				::SendMessage(hlv, OCM_NOTIFY, 0, reinterpret_cast<LPARAM>(&nm));
+				::SendMessage(lv.second, OCM_NOTIFY, 0, reinterpret_cast<LPARAM>(&nm));
 				nm.iItem = 5;
-				::SendMessage(hlv, OCM_NOTIFY, 0, reinterpret_cast<LPARAM>(&nm));
+				::SendMessage(lv.second, OCM_NOTIFY, 0, reinterpret_cast<LPARAM>(&nm));
 
 				// ASSERT
 				assert_equal(4u, selections.size());
@@ -893,11 +845,10 @@ namespace wpl
 				// INIT
 				vector<table_model::index_type> selection_indices;
 				vector<bool> selection_states;
-				HWND hlv = create_listview();
-				shared_ptr<listview> lv(wrap_listview(hlv));
+				auto lv = create_listview();
 				slot_connection
-					c1 = lv->selection_changed += bind(&push_back<table_model::index_type>, ref(selection_indices), _1),
-					c2 = lv->selection_changed += bind(&push_back<bool>, ref(selection_states), _2);
+					c1 = lv.first->selection_changed += bind(&push_back<table_model::index_type>, ref(selection_indices), _1),
+					c2 = lv.first->selection_changed += bind(&push_back<bool>, ref(selection_states), _2);
 				NMLISTVIEW nmlv = {
 					{	0, 0, LVN_ITEMCHANGED	},
 					/* iItem = */ 0, /* iSubItem = */ 0,
@@ -905,11 +856,11 @@ namespace wpl
 
 				// ACT
 				nmlv.iItem = 0, nmlv.uOldState = LVIS_FOCUSED, nmlv.uNewState = 0;
-				::SendMessage(hlv, OCM_NOTIFY, 0, reinterpret_cast<LPARAM>(&nmlv));
+				::SendMessage(lv.second, OCM_NOTIFY, 0, reinterpret_cast<LPARAM>(&nmlv));
 				nmlv.iItem = 1, nmlv.uOldState = 0, nmlv.uNewState = LVIS_FOCUSED;
-				::SendMessage(hlv, OCM_NOTIFY, 0, reinterpret_cast<LPARAM>(&nmlv));
+				::SendMessage(lv.second, OCM_NOTIFY, 0, reinterpret_cast<LPARAM>(&nmlv));
 				nmlv.iItem = 3, nmlv.uOldState = LVIS_FOCUSED | LVIS_SELECTED, nmlv.uNewState = LVIS_SELECTED;
-				::SendMessage(hlv, OCM_NOTIFY, 0, reinterpret_cast<LPARAM>(&nmlv));
+				::SendMessage(lv.second, OCM_NOTIFY, 0, reinterpret_cast<LPARAM>(&nmlv));
 
 				// ASSERT
 				assert_is_empty(selection_indices);
@@ -921,25 +872,24 @@ namespace wpl
 				// INIT
 				vector<table_model::index_type> selection_indices;
 				vector<bool> selection_states;
-				HWND hlv = create_listview();
-				shared_ptr<listview> lv(wrap_listview(hlv));
+				auto lv = create_listview();
 				slot_connection
-					c1 = lv->selection_changed += bind(&push_back<table_model::index_type>, ref(selection_indices), _1),
-					c2 = lv->selection_changed += bind(&push_back<bool>, ref(selection_states), _2);
+					c1 = lv.first->selection_changed += bind(&push_back<table_model::index_type>, ref(selection_indices), _1),
+					c2 = lv.first->selection_changed += bind(&push_back<bool>, ref(selection_states), _2);
 				NMLISTVIEW nmlv = {
 					{	0, 0, LVN_ITEMCHANGED	},
 					/* iItem = */ 0, /* iSubItem = */ 0,
 				};
 
-				lv->set_model(mocks::model_ptr(new mocks::listview_model(10)));
+				lv.first->set_model(mocks::model_ptr(new mocks::listview_model(10)));
 
 				// ACT
 				nmlv.iItem = 1, nmlv.uOldState = LVIS_FOCUSED | LVIS_SELECTED, nmlv.uNewState = 0;
-				::SendMessage(hlv, OCM_NOTIFY, 0, reinterpret_cast<LPARAM>(&nmlv));
+				::SendMessage(lv.second, OCM_NOTIFY, 0, reinterpret_cast<LPARAM>(&nmlv));
 				nmlv.iItem = 2, nmlv.uOldState = LVIS_SELECTED, nmlv.uNewState = LVIS_FOCUSED;
-				::SendMessage(hlv, OCM_NOTIFY, 0, reinterpret_cast<LPARAM>(&nmlv));
+				::SendMessage(lv.second, OCM_NOTIFY, 0, reinterpret_cast<LPARAM>(&nmlv));
 				nmlv.iItem = 7, nmlv.uOldState = LVIS_FOCUSED, nmlv.uNewState = LVIS_FOCUSED | LVIS_SELECTED;
-				::SendMessage(hlv, OCM_NOTIFY, 0, reinterpret_cast<LPARAM>(&nmlv));
+				::SendMessage(lv.second, OCM_NOTIFY, 0, reinterpret_cast<LPARAM>(&nmlv));
 
 				// ASSERT
 				assert_equal(3u, selection_indices.size());
@@ -953,7 +903,7 @@ namespace wpl
 
 				// ACT
 				nmlv.iItem = 9, nmlv.uOldState = 0, nmlv.uNewState = LVIS_SELECTED;
-				::SendMessage(hlv, OCM_NOTIFY, 0, reinterpret_cast<LPARAM>(&nmlv));
+				::SendMessage(lv.second, OCM_NOTIFY, 0, reinterpret_cast<LPARAM>(&nmlv));
 
 				// ASSERT
 				assert_equal(4u, selection_indices.size());
@@ -966,8 +916,8 @@ namespace wpl
 			test( AutoAdjustColumnWidths )
 			{
 				// INIT
-				HWND hlv1 = create_listview(), hlv2 = create_listview();
-				shared_ptr<listview> lv1(wrap_listview(hlv1)), lv2(wrap_listview(hlv2));
+				auto lv1 = create_listview();
+				auto lv2 = create_listview();
 				column_def columns3[] = {
 					column_def(L"_____ww"),
 					column_def(L"_____wwwwww"),
@@ -978,19 +928,19 @@ namespace wpl
 					column_def(L"_____iiii"),
 				};
 
-				lv1->set_columns_model(mocks::columns_model::create(columns3, columns_model::npos(), false));
-				lv2->set_columns_model(mocks::columns_model::create(columns2, columns_model::npos(), false));
+				lv1.first->set_columns_model(mocks::columns_model::create(columns3, columns_model::npos(), false));
+				lv2.first->set_columns_model(mocks::columns_model::create(columns2, columns_model::npos(), false));
 
 				// ACT
-				lv1->adjust_column_widths();
-				lv2->adjust_column_widths();
+				lv1.first->adjust_column_widths();
+				lv2.first->adjust_column_widths();
 
 				// ASSERT
-				int w10 = get_column_width(hlv1, 0);
-				int w11 = get_column_width(hlv1, 1);
-				int w12 = get_column_width(hlv1, 2);
-				int w20 = get_column_width(hlv2, 0);
-				int w21 = get_column_width(hlv2, 1);
+				int w10 = get_column_width(lv1.second, 0);
+				int w11 = get_column_width(lv1.second, 1);
+				int w12 = get_column_width(lv1.second, 2);
+				int w20 = get_column_width(lv2.second, 0);
+				int w21 = get_column_width(lv2.second, 1);
 
 				assert_is_true(w10 < w11);
 				assert_is_true(w12 < w11);
@@ -1004,8 +954,8 @@ namespace wpl
 			test( ColumnWidthIsSetInPixelsIfSpecifiedInColumn )
 			{
 				// INIT
-				HWND hlv1 = create_listview(), hlv2 = create_listview();
-				shared_ptr<listview> lv1(wrap_listview(hlv1)), lv2(wrap_listview(hlv2));
+				auto lv1 = create_listview();
+				auto lv2 = create_listview();
 				column_def columns3[] = {
 					column_def(L"one", 13),
 					column_def(L"two", 17),
@@ -1016,15 +966,15 @@ namespace wpl
 					column_def(L"Apples", 29),
 				};
 
-				lv1->set_columns_model(mocks::columns_model::create(columns3, columns_model::npos(), false));
-				lv2->set_columns_model(mocks::columns_model::create(columns2, columns_model::npos(), false));
+				lv1.first->set_columns_model(mocks::columns_model::create(columns3, columns_model::npos(), false));
+				lv2.first->set_columns_model(mocks::columns_model::create(columns2, columns_model::npos(), false));
 
 				// ACT
-				int w10 = get_column_width(hlv1, 0);
-				int w11 = get_column_width(hlv1, 1);
-				int w12 = get_column_width(hlv1, 2);
-				int w20 = get_column_width(hlv2, 0);
-				int w21 = get_column_width(hlv2, 1);
+				int w10 = get_column_width(lv1.second, 0);
+				int w11 = get_column_width(lv1.second, 1);
+				int w12 = get_column_width(lv1.second, 2);
+				int w20 = get_column_width(lv2.second, 0);
+				int w21 = get_column_width(lv2.second, 1);
 
 				// ASSERT
 				assert_equal(13, w10);
@@ -1039,8 +989,7 @@ namespace wpl
 			test( ChangingColumnWidthUpdatesColumnsModel )
 			{
 				// INIT
-				HWND hlv = create_listview();
-				shared_ptr<listview> lv(wrap_listview(hlv));
+				auto lv = create_listview();
 				column_def columns[] = {
 					column_def(L"one", 13),
 					column_def(L"two", 17),
@@ -1051,18 +1000,18 @@ namespace wpl
 					HDI_WIDTH,
 				};
 				NMHEADER nmheader = {
-					{ ListView_GetHeader(hlv), static_cast<UINT_PTR>(::GetDlgCtrlID(ListView_GetHeader(hlv))), HDN_ITEMCHANGED },
+					{ ListView_GetHeader(lv.second), static_cast<UINT_PTR>(::GetDlgCtrlID(ListView_GetHeader(lv.second))), HDN_ITEMCHANGED },
 					0,
 					0,
 					&item
 				};
 
-				lv->set_columns_model(cm);
+				lv.first->set_columns_model(cm);
 
 				// ACT
 				nmheader.iItem = 0;
 				item.cxy = 111;
-				::SendMessage(hlv, WM_NOTIFY, 0, reinterpret_cast<LPARAM>(&nmheader));
+				::SendMessage(lv.second, WM_NOTIFY, 0, reinterpret_cast<LPARAM>(&nmheader));
 
 				// ASSERT
 				assert_equal(111, cm->columns[0].width);
@@ -1070,7 +1019,7 @@ namespace wpl
 				// ACT
 				nmheader.iItem = 2;
 				item.cxy = 313;
-				::SendMessage(hlv, WM_NOTIFY, 0, reinterpret_cast<LPARAM>(&nmheader));
+				::SendMessage(lv.second, WM_NOTIFY, 0, reinterpret_cast<LPARAM>(&nmheader));
 
 				// ASSERT
 				assert_equal(313, cm->columns[2].width);
@@ -1080,26 +1029,25 @@ namespace wpl
 			test( NonColumnWidthChangeDoesNotAffectColumnsModel )
 			{
 				// INIT
-				HWND hlv = create_listview();
-				shared_ptr<listview> lv(wrap_listview(hlv));
+				auto lv = create_listview();
 				column_def columns[] = { column_def(L"one", 13),	};
 				mocks::columns_model_ptr cm = mocks::columns_model::create(columns, columns_model::npos(), false);
 				HDITEM item = {
 					HDI_TEXT,
 				};
 				NMHEADER nmheader = {
-					{ ListView_GetHeader(hlv), static_cast<UINT_PTR>(::GetDlgCtrlID(ListView_GetHeader(hlv))), HDN_ITEMCHANGED },
+					{ ListView_GetHeader(lv.second), static_cast<UINT_PTR>(::GetDlgCtrlID(ListView_GetHeader(lv.second))), HDN_ITEMCHANGED },
 					0,
 					0,
 					&item
 				};
 
-				lv->set_columns_model(cm);
+				lv.first->set_columns_model(cm);
 
 				// ACT
 				nmheader.iItem = 0;
 				item.cxy = 111;
-				::SendMessage(hlv, WM_NOTIFY, 0, reinterpret_cast<LPARAM>(&nmheader));
+				::SendMessage(lv.second, WM_NOTIFY, 0, reinterpret_cast<LPARAM>(&nmheader));
 
 				// ASSERT
 				assert_equal(13, cm->columns[0].width);
@@ -1109,49 +1057,47 @@ namespace wpl
 			test( SelectionIsEmptyAtConstruction )
 			{
 				// INIT
-				HWND hlv = create_listview();
-				shared_ptr<listview> lv(wrap_listview(hlv));
+				auto lv = create_listview();
 
 				// ACT
-				lv->set_model(mocks::model_ptr(new mocks::listview_model(7)));
+				lv.first->set_model(mocks::model_ptr(new mocks::listview_model(7)));
 
 				// ASSERT
-				assert_is_empty(get_matching_indices(hlv, LVNI_SELECTED));
+				assert_is_empty(get_matching_indices(lv.second, LVNI_SELECTED));
 			}
 
 
 			test( ResetSelection )
 			{
 				// INIT
-				HWND hlv = create_listview();
-				shared_ptr<listview> lv(wrap_listview(hlv));
+				auto lv = create_listview();
 				vector<size_t> selection;
 
-				lv->set_model(mocks::model_ptr(new mocks::listview_model(7)));
+				lv.first->set_model(mocks::model_ptr(new mocks::listview_model(7)));
 
 				// ACT
-				lv->select(0, true);
+				lv.first->select(0, true);
 
 				// ASSERT
-				selection = get_matching_indices(hlv, LVNI_SELECTED);
+				selection = get_matching_indices(lv.second, LVNI_SELECTED);
 
 				assert_equal(1u, selection.size());
 				assert_equal(0u, selection[0]);
 
 				// ACT
-				lv->select(3, true);
+				lv.first->select(3, true);
 
 				// ASSERT
-				selection = get_matching_indices(hlv, LVNI_SELECTED);
+				selection = get_matching_indices(lv.second, LVNI_SELECTED);
 
 				assert_equal(1u, selection.size());
 				assert_equal(3u, selection[0]);
 
 				// ACT
-				lv->select(5, true);
+				lv.first->select(5, true);
 
 				// ASSERT
-				selection = get_matching_indices(hlv, LVNI_SELECTED);
+				selection = get_matching_indices(lv.second, LVNI_SELECTED);
 
 				assert_equal(1u, selection.size());
 				assert_equal(5u, selection[0]);
@@ -1161,36 +1107,35 @@ namespace wpl
 			test( AppendSelection )
 			{
 				// INIT
-				HWND hlv = create_listview();
-				shared_ptr<listview> lv(wrap_listview(hlv));
+				auto lv = create_listview();
 				vector<size_t> selection;
 
-				lv->set_model(mocks::model_ptr(new mocks::listview_model(7)));
+				lv.first->set_model(mocks::model_ptr(new mocks::listview_model(7)));
 
 				// ACT
-				lv->select(1, false);
+				lv.first->select(1, false);
 
 				// ASSERT
-				selection = get_matching_indices(hlv, LVNI_SELECTED);
+				selection = get_matching_indices(lv.second, LVNI_SELECTED);
 
 				assert_equal(1u, selection.size());
 				assert_equal(1u, selection[0]);
 
 				// ACT
-				lv->select(2, false);
+				lv.first->select(2, false);
 
 				// ASSERT
-				selection = get_matching_indices(hlv, LVNI_SELECTED);
+				selection = get_matching_indices(lv.second, LVNI_SELECTED);
 
 				assert_equal(2u, selection.size());
 				assert_equal(1u, selection[0]);
 				assert_equal(2u, selection[1]);
 
 				// ACT
-				lv->select(6, false);
+				lv.first->select(6, false);
 
 				// ASSERT
-				selection = get_matching_indices(hlv, LVNI_SELECTED);
+				selection = get_matching_indices(lv.second, LVNI_SELECTED);
 
 				assert_equal(3u, selection.size());
 				assert_equal(1u, selection[0]);
@@ -1202,46 +1147,44 @@ namespace wpl
 			test( ClearNonEmptySelection )
 			{
 				// INIT
-				HWND hlv = create_listview();
-				shared_ptr<listview> lv(wrap_listview(hlv));
+				auto lv = create_listview();
 
-				lv->set_model(mocks::model_ptr(new mocks::listview_model(7)));
-
-				// ACT
-				lv->select(1, false);
-				lv->select(table_model::npos(), true);
-
-				// ASSERT
-				assert_is_empty(get_matching_indices(hlv, LVNI_SELECTED));
+				lv.first->set_model(mocks::model_ptr(new mocks::listview_model(7)));
 
 				// ACT
-				lv->select(2, false);
-				lv->select(3, false);
-				lv->select(table_model::npos(), true);
+				lv.first->select(1, false);
+				lv.first->select(table_model::npos(), true);
 
 				// ASSERT
-				assert_is_empty(get_matching_indices(hlv, LVNI_SELECTED));
+				assert_is_empty(get_matching_indices(lv.second, LVNI_SELECTED));
+
+				// ACT
+				lv.first->select(2, false);
+				lv.first->select(3, false);
+				lv.first->select(table_model::npos(), true);
+
+				// ASSERT
+				assert_is_empty(get_matching_indices(lv.second, LVNI_SELECTED));
 			}
 
 
 			test( RequestProperTrackableOnFocusChange )
 			{
 				// INIT
-				HWND hlv = create_listview();
-				shared_ptr<listview> lv(wrap_listview(hlv));
+				auto lv = create_listview();
 				mocks::model_ptr m(new mocks::listview_model(100, 1));
 				NMLISTVIEW nmlv = {
 					{	0, 0, LVN_ITEMCHANGED	},
 					/* iItem = */ 0, /* iSubItem = */ 0,
 				};
 
-				lv->set_model(m);
-				lv->set_columns_model(mocks::columns_model::create(L"iiii"));
-				lv->adjust_column_widths();
+				lv.first->set_model(m);
+				lv.first->set_columns_model(mocks::columns_model::create(L"iiii"));
+				lv.first->adjust_column_widths();
 
 				// ACT
 				nmlv.iItem = 2, nmlv.uOldState = 0, nmlv.uNewState = LVIS_FOCUSED;
-				::SendMessage(hlv, OCM_NOTIFY, 0, reinterpret_cast<LPARAM>(&nmlv));
+				::SendMessage(lv.second, OCM_NOTIFY, 0, reinterpret_cast<LPARAM>(&nmlv));
 
 				// ASSERT
 				assert_equal(1u, m->tracking_requested.size());
@@ -1249,7 +1192,7 @@ namespace wpl
 
 				// ACT
 				nmlv.iItem = 3, nmlv.uOldState = 0, nmlv.uNewState = LVIS_FOCUSED;
-				::SendMessage(hlv, OCM_NOTIFY, 0, reinterpret_cast<LPARAM>(&nmlv));
+				::SendMessage(lv.second, OCM_NOTIFY, 0, reinterpret_cast<LPARAM>(&nmlv));
 
 				// ASSERT
 				assert_equal(2u, m->tracking_requested.size());
@@ -1257,8 +1200,8 @@ namespace wpl
 
 				// ACT
 				nmlv.iItem = 5, nmlv.uOldState = LVIS_SELECTED, nmlv.uNewState = LVIS_SELECTED | LVIS_FOCUSED;
-				::SendMessage(hlv, OCM_NOTIFY, 0, reinterpret_cast<LPARAM>(&nmlv));
-				ListView_SetItemState(hlv, 7, LVIS_FOCUSED, LVIS_FOCUSED);
+				::SendMessage(lv.second, OCM_NOTIFY, 0, reinterpret_cast<LPARAM>(&nmlv));
+				ListView_SetItemState(lv.second, 7, LVIS_FOCUSED, LVIS_FOCUSED);
 
 				// ASSERT
 				assert_equal(4u, m->tracking_requested.size());
@@ -1270,27 +1213,26 @@ namespace wpl
 			test( NotEnteringToFocusedDoesNotLeadToTracking )
 			{
 				// INIT
-				HWND hlv = create_listview();
-				shared_ptr<listview> lv(wrap_listview(hlv));
+				auto lv = create_listview();
 				mocks::model_ptr m(new mocks::listview_model(100, 1));
 				NMLISTVIEW nmlv = {
 					{	0, 0, LVN_ITEMCHANGED	},
 					/* iItem = */ 0, /* iSubItem = */ 0,
 				};
 
-				lv->set_model(m);
-				lv->set_columns_model(mocks::columns_model::create(L"iiii"));
-				lv->adjust_column_widths();
+				lv.first->set_model(m);
+				lv.first->set_columns_model(mocks::columns_model::create(L"iiii"));
+				lv.first->adjust_column_widths();
 
 				// ACT
 				nmlv.iItem = 2, nmlv.uOldState = LVIS_FOCUSED, nmlv.uNewState = LVIS_FOCUSED;
-				::SendMessage(hlv, OCM_NOTIFY, 0, reinterpret_cast<LPARAM>(&nmlv));
+				::SendMessage(lv.second, OCM_NOTIFY, 0, reinterpret_cast<LPARAM>(&nmlv));
 				nmlv.iItem = 3, nmlv.uOldState = LVIS_FOCUSED, nmlv.uNewState = 0;
-				::SendMessage(hlv, OCM_NOTIFY, 0, reinterpret_cast<LPARAM>(&nmlv));
+				::SendMessage(lv.second, OCM_NOTIFY, 0, reinterpret_cast<LPARAM>(&nmlv));
 				nmlv.iItem = 2, nmlv.uOldState = LVIS_SELECTED | LVIS_FOCUSED, nmlv.uNewState = LVIS_SELECTED | LVIS_FOCUSED;
-				::SendMessage(hlv, OCM_NOTIFY, 0, reinterpret_cast<LPARAM>(&nmlv));
+				::SendMessage(lv.second, OCM_NOTIFY, 0, reinterpret_cast<LPARAM>(&nmlv));
 				nmlv.iItem = 3, nmlv.uOldState = LVIS_ACTIVATING | LVIS_FOCUSED, nmlv.uNewState = LVIS_FOCUSED;
-				::SendMessage(hlv, OCM_NOTIFY, 0, reinterpret_cast<LPARAM>(&nmlv));
+				::SendMessage(lv.second, OCM_NOTIFY, 0, reinterpret_cast<LPARAM>(&nmlv));
 
 				// ASSERT
 				assert_is_empty(m->tracking_requested);
@@ -1300,18 +1242,17 @@ namespace wpl
 			test( TakeOwnershipOverTrackable )
 			{
 				// INIT
-				HWND hlv = create_listview();
-				shared_ptr<listview> lv(wrap_listview(hlv));
+				auto lv = create_listview();
 				mocks::model_ptr m(new mocks::listview_model(100));
 				shared_ptr<const trackable> t(new mocks::listview_trackable());
 				weak_ptr<const trackable> wt(t);
 				vector<int> matched;
 
-				lv->set_model(m);
+				lv.first->set_model(m);
 				swap(m->trackables[5], t);
 
 				// ACT
-				ListView_SetItemState(hlv, 5, LVIS_FOCUSED, LVIS_FOCUSED);
+				ListView_SetItemState(lv.second, 5, LVIS_FOCUSED, LVIS_FOCUSED);
 				m->trackables.clear();
 				t = mocks::trackable_ptr();
 
@@ -1323,18 +1264,17 @@ namespace wpl
 			test( ReleaseTrackableOnRemoveFocus )
 			{
 				// INIT
-				HWND hlv = create_listview();
-				shared_ptr<listview> lv(wrap_listview(hlv));
+				auto lv = create_listview();
 				mocks::model_ptr m(new mocks::listview_model(100));
 				weak_ptr<const trackable> wt(mocks::listview_trackable::add(m->trackables, 5));
 				vector<int> matched;
 
-				lv->set_model(m);
-				ListView_SetItemState(hlv, 5, LVIS_FOCUSED, LVIS_FOCUSED);
+				lv.first->set_model(m);
+				ListView_SetItemState(lv.second, 5, LVIS_FOCUSED, LVIS_FOCUSED);
 				m->trackables.clear();
 
 				// ACT
-				ListView_SetItemState(hlv, 5, 0, LVIS_FOCUSED);
+				ListView_SetItemState(lv.second, 5, 0, LVIS_FOCUSED);
 
 				// ASSERT
 				assert_is_true(wt.expired());
@@ -1344,18 +1284,17 @@ namespace wpl
 			test( ReleaseTrackableOnNewFocus )
 			{
 				// INIT
-				HWND hlv = create_listview();
-				shared_ptr<listview> lv(wrap_listview(hlv));
+				auto lv = create_listview();
 				mocks::model_ptr m(new mocks::listview_model(100));
 				weak_ptr<const trackable> wt(mocks::listview_trackable::add(m->trackables, 5));
 				vector<int> matched;
 
-				lv->set_model(m);
-				ListView_SetItemState(hlv, 5, LVIS_FOCUSED, LVIS_FOCUSED);
+				lv.first->set_model(m);
+				ListView_SetItemState(lv.second, 5, LVIS_FOCUSED, LVIS_FOCUSED);
 				m->trackables.clear();
 
 				// ACT
-				ListView_SetItemState(hlv, 7, LVIS_FOCUSED, LVIS_FOCUSED);
+				ListView_SetItemState(lv.second, 7, LVIS_FOCUSED, LVIS_FOCUSED);
 
 				// ASSERT
 				assert_is_true(wt.expired());
@@ -1365,15 +1304,14 @@ namespace wpl
 			test( ResetFocusOnInvalidation )
 			{
 				// INIT
-				HWND hlv = create_listview();
-				shared_ptr<listview> lv(wrap_listview(hlv));
+				auto lv = create_listview();
 				mocks::model_ptr m(new mocks::listview_model(100));
 				mocks::trackable_ptr t(mocks::listview_trackable::add(m->trackables, 5));
 				vector<size_t> matched;
 
-				lv->set_model(m);
+				lv.first->set_model(m);
 
-				ListView_SetItemState(hlv, 5, LVIS_FOCUSED, LVIS_FOCUSED);
+				ListView_SetItemState(lv.second, 5, LVIS_FOCUSED, LVIS_FOCUSED);
 				m->tracking_requested.clear();
 
 				// ACT
@@ -1381,7 +1319,7 @@ namespace wpl
 				m->invalidated(100);
 
 				// ASSERT
-				matched = get_matching_indices(hlv, LVNI_FOCUSED);
+				matched = get_matching_indices(lv.second, LVNI_FOCUSED);
 				assert_equal(1u, matched.size());
 				assert_equal(7u, matched[0]);
 				assert_is_empty(m->tracking_requested);
@@ -1391,7 +1329,7 @@ namespace wpl
 				m->invalidated(100);
 
 				// ASSERT
-				matched = get_matching_indices(hlv, LVNI_FOCUSED);
+				matched = get_matching_indices(lv.second, LVNI_FOCUSED);
 				assert_equal(1u, matched.size());
 				assert_equal(13u, matched[0]);
 				assert_is_empty(m->tracking_requested);
@@ -1400,16 +1338,15 @@ namespace wpl
 
 			test( ReleaseTrackableOnBecameInvalid )
 			{
-				HWND hlv = create_listview();
-				shared_ptr<listview> lv(wrap_listview(hlv));
+				auto lv = create_listview();
 				mocks::model_ptr m(new mocks::listview_model(100));
 				mocks::trackable_ptr t(mocks::listview_trackable::add(m->trackables, 5));
 				weak_ptr<const trackable> wt(t);
 				vector<int> matched;
 
-				lv->set_model(m);
+				lv.first->set_model(m);
 
-				ListView_SetItemState(hlv, 5, LVIS_FOCUSED, LVIS_FOCUSED);
+				ListView_SetItemState(lv.second, 5, LVIS_FOCUSED, LVIS_FOCUSED);
 				m->trackables.clear();
 
 				// ACT
@@ -1419,15 +1356,14 @@ namespace wpl
 
 				// ASSERT
 				assert_is_true(wt.expired());
-				assert_is_empty(get_matching_indices(hlv, LVNI_FOCUSED));
+				assert_is_empty(get_matching_indices(lv.second, LVNI_FOCUSED));
 			}
 
 
 			test( ResetSelectionOnInvalidation1 )
 			{
 				// INIT
-				HWND hlv = create_listview();
-				shared_ptr<listview> lv(wrap_listview(hlv));
+				auto lv = create_listview();
 				mocks::model_ptr m(new mocks::listview_model(100));
 				mocks::trackable_ptr t[] = {
 					mocks::listview_trackable::add(m->trackables, 5),
@@ -1436,11 +1372,11 @@ namespace wpl
 				};
 				vector<int> matched;
 
-				lv->set_model(m);
+				lv.first->set_model(m);
 
-				ListView_SetItemState(hlv, 7, LVIS_SELECTED, LVIS_SELECTED);
-				ListView_SetItemState(hlv, 5, LVIS_SELECTED, LVIS_SELECTED);	// order is disturbed intentionally!
-				ListView_SetItemState(hlv, 17, LVIS_SELECTED, LVIS_SELECTED);
+				ListView_SetItemState(lv.second, 7, LVIS_SELECTED, LVIS_SELECTED);
+				ListView_SetItemState(lv.second, 5, LVIS_SELECTED, LVIS_SELECTED);	// order is disturbed intentionally!
+				ListView_SetItemState(lv.second, 17, LVIS_SELECTED, LVIS_SELECTED);
 				m->tracking_requested.clear();
 
 				// ACT
@@ -1450,7 +1386,7 @@ namespace wpl
 				// ASSERT
 				table_model::index_type expected1[] = {	5, 7, 21,	};
 
-				assert_equivalent(expected1, get_matching_indices(hlv, LVNI_SELECTED));
+				assert_equivalent(expected1, get_matching_indices(lv.second, LVNI_SELECTED));
 
 				// ACT
 				t[0]->track_result = 13;
@@ -1459,7 +1395,7 @@ namespace wpl
 				// ASSERT
 				table_model::index_type expected2[] = {	13, 7, 21,	};
 
-				assert_equivalent(expected2, get_matching_indices(hlv, LVNI_SELECTED));
+				assert_equivalent(expected2, get_matching_indices(lv.second, LVNI_SELECTED));
 
 				// ACT
 				t[1]->track_result = table_model::npos();
@@ -1468,7 +1404,7 @@ namespace wpl
 				// ASSERT
 				table_model::index_type expected3[] = {	13, 21,	};
 
-				assert_equivalent(expected3, get_matching_indices(hlv, LVNI_SELECTED));
+				assert_equivalent(expected3, get_matching_indices(lv.second, LVNI_SELECTED));
 				assert_is_empty(m->tracking_requested);
 			}
 
@@ -1476,8 +1412,7 @@ namespace wpl
 			test( ResetSelectionOnInvalidation2 )
 			{
 				// INIT
-				HWND hlv = create_listview();
-				shared_ptr<listview> lv(wrap_listview(hlv));
+				auto lv = create_listview();
 				mocks::model_ptr m(new mocks::listview_model(100));
 				mocks::trackable_ptr t[] = {
 					mocks::listview_trackable::add(m->trackables, 5),
@@ -1488,13 +1423,13 @@ namespace wpl
 				};
 				vector<int> matched;
 
-				lv->set_model(m);
+				lv.first->set_model(m);
 
-				ListView_SetItemState(hlv, 19, LVIS_SELECTED, LVIS_SELECTED);
-				ListView_SetItemState(hlv, 5, LVIS_SELECTED, LVIS_SELECTED);	// order is disturbed intentionally!
-				ListView_SetItemState(hlv, 17, LVIS_SELECTED, LVIS_SELECTED);
-				ListView_SetItemState(hlv, 7, LVIS_SELECTED, LVIS_SELECTED);
-				ListView_SetItemState(hlv, 23, LVIS_SELECTED, LVIS_SELECTED);
+				ListView_SetItemState(lv.second, 19, LVIS_SELECTED, LVIS_SELECTED);
+				ListView_SetItemState(lv.second, 5, LVIS_SELECTED, LVIS_SELECTED);	// order is disturbed intentionally!
+				ListView_SetItemState(lv.second, 17, LVIS_SELECTED, LVIS_SELECTED);
+				ListView_SetItemState(lv.second, 7, LVIS_SELECTED, LVIS_SELECTED);
+				ListView_SetItemState(lv.second, 23, LVIS_SELECTED, LVIS_SELECTED);
 				m->tracking_requested.clear();
 
 				// ACT
@@ -1505,7 +1440,7 @@ namespace wpl
 				// ASSERT
 				table_model::index_type expected1[] = {	5, 7, 3, 19, 47,	};
 
-				assert_equivalent(expected1, get_matching_indices(hlv, LVNI_SELECTED));
+				assert_equivalent(expected1, get_matching_indices(lv.second, LVNI_SELECTED));
 
 				// ACT
 				t[3]->track_result = 1;
@@ -1514,7 +1449,7 @@ namespace wpl
 				// ASSERT
 				table_model::index_type expected2[] = {	5, 7, 3, 1, 47,	};
 
-				assert_equivalent(expected2, get_matching_indices(hlv, LVNI_SELECTED));
+				assert_equivalent(expected2, get_matching_indices(lv.second, LVNI_SELECTED));
 				assert_is_empty(m->tracking_requested);
 			}
 
@@ -1522,8 +1457,7 @@ namespace wpl
 			test( ReleaseLostTrackables )
 			{
 				// INIT
-				HWND hlv = create_listview();
-				shared_ptr<listview> lv(wrap_listview(hlv));
+				auto lv = create_listview();
 				mocks::model_ptr m(new mocks::listview_model(100));
 				mocks::trackable_ptr t(mocks::listview_trackable::add(m->trackables, 4));
 				weak_ptr<const trackable> wt[] = {
@@ -1532,10 +1466,10 @@ namespace wpl
 					mocks::listview_trackable::add(m->trackables, 16),
 				};
 
-				lv->set_model(m);
-				ListView_SetItemState(hlv, 4, LVIS_SELECTED, LVIS_SELECTED);
-				ListView_SetItemState(hlv, 8, LVIS_SELECTED, LVIS_SELECTED);
-				ListView_SetItemState(hlv, 16, LVIS_SELECTED, LVIS_SELECTED);
+				lv.first->set_model(m);
+				ListView_SetItemState(lv.second, 4, LVIS_SELECTED, LVIS_SELECTED);
+				ListView_SetItemState(lv.second, 8, LVIS_SELECTED, LVIS_SELECTED);
+				ListView_SetItemState(lv.second, 16, LVIS_SELECTED, LVIS_SELECTED);
 				m->trackables.clear();
 
 				// ACT
@@ -1553,8 +1487,7 @@ namespace wpl
 			test( ReleaseTrackablesForDeselectedItems )
 			{
 				// INIT
-				HWND hlv = create_listview();
-				shared_ptr<listview> lv(wrap_listview(hlv));
+				auto lv = create_listview();
 				mocks::model_ptr m(new mocks::listview_model(100));
 				weak_ptr<const trackable> wt[] = {
 					mocks::listview_trackable::add(m->trackables, 4),
@@ -1562,15 +1495,15 @@ namespace wpl
 					mocks::listview_trackable::add(m->trackables, 16),
 				};
 
-				lv->set_model(m);
-				ListView_SetItemState(hlv, 4, LVIS_SELECTED, LVIS_SELECTED);
-				ListView_SetItemState(hlv, 8, LVIS_SELECTED, LVIS_SELECTED);
-				ListView_SetItemState(hlv, 16, LVIS_SELECTED, LVIS_SELECTED);
+				lv.first->set_model(m);
+				ListView_SetItemState(lv.second, 4, LVIS_SELECTED, LVIS_SELECTED);
+				ListView_SetItemState(lv.second, 8, LVIS_SELECTED, LVIS_SELECTED);
+				ListView_SetItemState(lv.second, 16, LVIS_SELECTED, LVIS_SELECTED);
 				m->trackables.clear();
 
 				// ACT
-				ListView_SetItemState(hlv, 4, 0, LVIS_SELECTED);
-				ListView_SetItemState(hlv, 16, 0, LVIS_SELECTED);
+				ListView_SetItemState(lv.second, 4, 0, LVIS_SELECTED);
+				ListView_SetItemState(lv.second, 16, 0, LVIS_SELECTED);
 
 				// ASSERT
 				assert_is_true(wt[0].expired());
@@ -1582,8 +1515,7 @@ namespace wpl
 			test( AbandonDeselectedItemTracking )
 			{
 				// INIT
-				HWND hlv = create_listview();
-				shared_ptr<listview> lv(wrap_listview(hlv));
+				auto lv = create_listview();
 				mocks::model_ptr m(new mocks::listview_model(100));
 				mocks::trackable_ptr t[] = {
 					mocks::listview_trackable::add(m->trackables, 5),
@@ -1591,14 +1523,14 @@ namespace wpl
 					mocks::listview_trackable::add(m->trackables, 17),
 				};
 
-				lv->set_model(m);
+				lv.first->set_model(m);
 
-				ListView_SetItemState(hlv, 7, LVIS_SELECTED, LVIS_SELECTED);
-				ListView_SetItemState(hlv, 5, LVIS_SELECTED, LVIS_SELECTED);
-				ListView_SetItemState(hlv, 17, LVIS_SELECTED, LVIS_SELECTED);
+				ListView_SetItemState(lv.second, 7, LVIS_SELECTED, LVIS_SELECTED);
+				ListView_SetItemState(lv.second, 5, LVIS_SELECTED, LVIS_SELECTED);
+				ListView_SetItemState(lv.second, 17, LVIS_SELECTED, LVIS_SELECTED);
 
 				// ACT
-				ListView_SetItemState(hlv, 17, 0, LVIS_SELECTED);
+				ListView_SetItemState(lv.second, 17, 0, LVIS_SELECTED);
 				t[0]->track_result = 3;
 				t[2]->track_result = 21;
 				m->set_count(100);
@@ -1606,25 +1538,24 @@ namespace wpl
 				// ASSERT
 				table_model::index_type expected1[] = {	3, 7,	};
 
-				assert_equivalent(expected1, get_matching_indices(hlv, LVNI_SELECTED));
+				assert_equivalent(expected1, get_matching_indices(lv.second, LVNI_SELECTED));
 
 				// ACT
-				ListView_SetItemState(hlv, 3, 0, LVIS_SELECTED);
+				ListView_SetItemState(lv.second, 3, 0, LVIS_SELECTED);
 				t[0]->track_result = 13;
 				m->set_count(100);
 
 				// ASSERT
 				table_model::index_type expected2[] = {	7,	};
 
-				assert_equivalent(expected2, get_matching_indices(hlv, LVNI_SELECTED));
+				assert_equivalent(expected2, get_matching_indices(lv.second, LVNI_SELECTED));
 			}
 
 
 			test( AbandonTrackingOnDeselectAllItems )
 			{
 				// INIT
-				HWND hlv = create_listview();
-				shared_ptr<listview> lv(wrap_listview(hlv));
+				auto lv = create_listview();
 				mocks::model_ptr m(new mocks::listview_model(100));
 				mocks::trackable_ptr t[] = {
 					mocks::listview_trackable::add(m->trackables, 5),
@@ -1632,22 +1563,22 @@ namespace wpl
 					mocks::listview_trackable::add(m->trackables, 17),
 				};
 
-				lv->set_model(m);
+				lv.first->set_model(m);
 
-				ListView_SetItemState(hlv, 7, LVIS_SELECTED, LVIS_SELECTED);
-				ListView_SetItemState(hlv, 5, LVIS_SELECTED, LVIS_SELECTED);
-				ListView_SetItemState(hlv, 17, LVIS_SELECTED, LVIS_SELECTED);
+				ListView_SetItemState(lv.second, 7, LVIS_SELECTED, LVIS_SELECTED);
+				ListView_SetItemState(lv.second, 5, LVIS_SELECTED, LVIS_SELECTED);
+				ListView_SetItemState(lv.second, 17, LVIS_SELECTED, LVIS_SELECTED);
 				m->tracking_requested.clear();
 
 				// ACT
-				ListView_SetItemState(hlv, -1, 0, LVIS_SELECTED);
+				ListView_SetItemState(lv.second, -1, 0, LVIS_SELECTED);
 				t[0]->track_result = 3;
 				t[0]->track_result = 4;
 				t[2]->track_result = 21;
 				m->set_count(100);
 
 				// ASSERT
-				assert_is_empty(get_matching_indices(hlv, LVNI_SELECTED));
+				assert_is_empty(get_matching_indices(lv.second, LVNI_SELECTED));
 				assert_is_empty(m->tracking_requested);
 			}
 
@@ -1655,16 +1586,15 @@ namespace wpl
 			test( FocusAndSelectionRequestTrackablesTwice )
 			{
 				// INIT
-				HWND hlv = create_listview();
-				shared_ptr<listview> lv(wrap_listview(hlv));
+				auto lv = create_listview();
 				mocks::model_ptr m(new mocks::listview_model(100));
 				mocks::trackable_ptr t(mocks::listview_trackable::add(m->trackables, 7));
 					
-				lv->set_model(m);
+				lv.first->set_model(m);
 				m->tracking_requested.clear();
 
 				// ACT
-				ListView_SetItemState(hlv, 7, LVIS_SELECTED | LVIS_FOCUSED, LVIS_SELECTED | LVIS_FOCUSED);
+				ListView_SetItemState(lv.second, 7, LVIS_SELECTED | LVIS_FOCUSED, LVIS_SELECTED | LVIS_FOCUSED);
 
 				// ASSERT
 				assert_equal(2u, m->tracking_requested.size());
@@ -1676,13 +1606,12 @@ namespace wpl
 			test( IgnoreNullTrackableForSelected )
 			{
 				// INIT
-				HWND hlv = create_listview();
-				shared_ptr<listview> lv(wrap_listview(hlv));
+				auto lv = create_listview();
 				mocks::model_ptr m(new mocks::listview_model(100));
 					
-				lv->set_model(m);
-				ListView_SetItemState(hlv, 7, LVIS_SELECTED, LVIS_SELECTED);
-				ListView_SetItemState(hlv, 8, LVIS_SELECTED, LVIS_SELECTED);
+				lv.first->set_model(m);
+				ListView_SetItemState(lv.second, 7, LVIS_SELECTED, LVIS_SELECTED);
+				ListView_SetItemState(lv.second, 8, LVIS_SELECTED, LVIS_SELECTED);
 
 				// ACT / ASSERT (must not throw)
 				m->set_count(100);
@@ -1690,15 +1619,14 @@ namespace wpl
 				// ASSERT
 				table_model::index_type expected[] = {	7, 8,	};
 
-				assert_equivalent(expected, get_matching_indices(hlv, LVNI_SELECTED));
+				assert_equivalent(expected, get_matching_indices(lv.second, LVNI_SELECTED));
 			}
 
 
 			test( ReleaseTrackablesOnModelChange )
 			{
 				// INIT
-				HWND hlv = create_listview();
-				shared_ptr<listview> lv(wrap_listview(hlv));
+				auto lv = create_listview();
 				mocks::model_ptr m(new mocks::listview_model(100));
 				weak_ptr<const trackable> wt[] = {
 					mocks::listview_trackable::add(m->trackables, 4),
@@ -1706,14 +1634,14 @@ namespace wpl
 					mocks::listview_trackable::add(m->trackables, 16),
 				};
 
-				lv->set_model(m);
-				ListView_SetItemState(hlv, 4, LVIS_SELECTED, LVIS_SELECTED);
-				ListView_SetItemState(hlv, 8, LVIS_SELECTED, LVIS_SELECTED);
-				ListView_SetItemState(hlv, 16, LVIS_FOCUSED, LVIS_FOCUSED);
+				lv.first->set_model(m);
+				ListView_SetItemState(lv.second, 4, LVIS_SELECTED, LVIS_SELECTED);
+				ListView_SetItemState(lv.second, 8, LVIS_SELECTED, LVIS_SELECTED);
+				ListView_SetItemState(lv.second, 16, LVIS_FOCUSED, LVIS_FOCUSED);
 				m->trackables.clear();
 
 				// ACT
-				lv->set_model(mocks::model_ptr(new mocks::listview_model(130)));
+				lv.first->set_model(mocks::model_ptr(new mocks::listview_model(130)));
 
 				// ASSERT
 				assert_is_true(wt[0].expired());
@@ -1725,94 +1653,91 @@ namespace wpl
 			test( FocusingItemChangesListViewItemState )
 			{
 				// INIT
-				HWND hlv = create_listview();
-				shared_ptr<listview> lv(wrap_listview(hlv));
+				auto lv = create_listview();
 
-				lv->set_model(mocks::autotrackable_table_model_ptr(new mocks::autotrackable_table_model(100, 1)));
-				lv->set_columns_model(mocks::columns_model::create(L"iiii"));
-				lv->adjust_column_widths();
+				lv.first->set_model(mocks::autotrackable_table_model_ptr(new mocks::autotrackable_table_model(100, 1)));
+				lv.first->set_columns_model(mocks::columns_model::create(L"iiii"));
+				lv.first->adjust_column_widths();
 
 				// ACT
-				lv->focus(99);
+				lv.first->focus(99);
 
 				// ASSERT
 				table_model::index_type reference1[] = { 99u, };
 
-				assert_equal(reference1, get_matching_indices(hlv, LVNI_FOCUSED));
+				assert_equal(reference1, get_matching_indices(lv.second, LVNI_FOCUSED));
 
 				// ACT
-				lv->focus(49);
+				lv.first->focus(49);
 
 				// ASSERT
 				table_model::index_type reference2[] = { 49u, };
 
-				assert_equal(reference2, get_matching_indices(hlv, LVNI_FOCUSED));
+				assert_equal(reference2, get_matching_indices(lv.second, LVNI_FOCUSED));
 
 				// ACT
-				lv->focus(table_model::npos());
+				lv.first->focus(table_model::npos());
 
 				// ASSERT
-				assert_is_empty(get_matching_indices(hlv, LVNI_FOCUSED));
+				assert_is_empty(get_matching_indices(lv.second, LVNI_FOCUSED));
 			}
 
 
 			test( FocusingItemMakesItVisisble )
 			{
 				// INIT
-				HWND hlv = create_listview();
-				shared_ptr<listview> lv(wrap_listview(hlv));
+				auto lv = create_listview();
 
-				lv->set_model(mocks::model_ptr(new mocks::listview_model(100, 1)));
-				lv->set_columns_model(mocks::columns_model::create(L"iiii"));
-				lv->adjust_column_widths();
-
-				// ACT
-				lv->focus(99);
-
-				// ASSERT
-				assert_is_true(is_item_visible(hlv, 99));
-				assert_is_false(is_item_visible(hlv, 49));
-				assert_is_false(is_item_visible(hlv, 0));
+				lv.first->set_model(mocks::model_ptr(new mocks::listview_model(100, 1)));
+				lv.first->set_columns_model(mocks::columns_model::create(L"iiii"));
+				lv.first->adjust_column_widths();
 
 				// ACT
-				lv->focus(49);
+				lv.first->focus(99);
 
 				// ASSERT
-				assert_is_false(is_item_visible(hlv, 99));
-				assert_is_true(is_item_visible(hlv, 49));
-				assert_is_false(is_item_visible(hlv, 0));
+				assert_is_true(is_item_visible(lv.second, 99));
+				assert_is_false(is_item_visible(lv.second, 49));
+				assert_is_false(is_item_visible(lv.second, 0));
 
 				// ACT
-				lv->focus(0);
+				lv.first->focus(49);
 
 				// ASSERT
-				assert_is_false(is_item_visible(hlv, 99));
-				assert_is_false(is_item_visible(hlv, 49));
-				assert_is_true(is_item_visible(hlv, 0));
+				assert_is_false(is_item_visible(lv.second, 99));
+				assert_is_true(is_item_visible(lv.second, 49));
+				assert_is_false(is_item_visible(lv.second, 0));
+
+				// ACT
+				lv.first->focus(0);
+
+				// ASSERT
+				assert_is_false(is_item_visible(lv.second, 99));
+				assert_is_false(is_item_visible(lv.second, 49));
+				assert_is_true(is_item_visible(lv.second, 0));
 			}
 
 
 			test( CaptureTrackableOnFocusingItem )
 			{
 				// INIT
-				HWND hlv = create_listview();
-				shared_ptr<listview> lv(wrap_listview(hlv));
+				auto lv = create_listview();
 				mocks::autotrackable_table_model_ptr m(new mocks::autotrackable_table_model(100, 1));
 
-				lv->set_columns_model(mocks::columns_model::create(L"iiii"));
-				lv->adjust_column_widths();
-				lv->set_model(m);
+				lv.first->set_columns_model(mocks::columns_model::create(L"iiii"));
+				lv.first->adjust_column_widths();
+				lv.first->set_model(m);
 
 				// ACT
-				lv->focus(0);
+				lv.first->focus(0);
 
 				// ASSERT
 				assert_equal(1u, m->auto_trackables->size());
 				assert_equal(1u, m->auto_trackables->count(0));
 
 				// ACT
-				lv->focus(1);
-				lv->focus(7);
+				lv.first->focus(1);
+				lv.first->focus(7);
 
 				// ASSERT
 				assert_equal(1u, m->auto_trackables->size());
@@ -1823,21 +1748,20 @@ namespace wpl
 			test( ReleaseTrackableOnChangingFocus )
 			{
 				// INIT
-				HWND hlv = create_listview();
-				shared_ptr<listview> lv(wrap_listview(hlv));
+				auto lv = create_listview();
 				mocks::model_ptr m(new mocks::listview_model(100, 1));
 				weak_ptr<const trackable> wt[] = {
 					mocks::listview_trackable::add(m->trackables, 4),
 					mocks::listview_trackable::add(m->trackables, 7),
 				};
 
-				lv->set_columns_model(mocks::columns_model::create(L"iiii"));
-				lv->adjust_column_widths();
-				lv->set_model(m);
+				lv.first->set_columns_model(mocks::columns_model::create(L"iiii"));
+				lv.first->adjust_column_widths();
+				lv.first->set_model(m);
 
 				// ACT
-				lv->focus(4);
-				lv->focus(7);
+				lv.first->focus(4);
+				lv.first->focus(7);
 				m->trackables.clear();
 
 				// ASSERT
@@ -1849,19 +1773,18 @@ namespace wpl
 			test( ReleaseFocusTrackableOnChangingModel )
 			{
 				// INIT
-				HWND hlv = create_listview();
-				shared_ptr<listview> lv(wrap_listview(hlv));
+				auto lv = create_listview();
 				mocks::model_ptr m1(new mocks::listview_model(100, 1)), m2(new mocks::listview_model(100, 1));
 				weak_ptr<const trackable> wt = mocks::listview_trackable::add(m1->trackables, 5);
 
-				lv->set_columns_model(mocks::columns_model::create(L"iiii"));
-				lv->adjust_column_widths();
-				lv->set_model(m1);
-				lv->focus(5);
+				lv.first->set_columns_model(mocks::columns_model::create(L"iiii"));
+				lv.first->adjust_column_widths();
+				lv.first->set_model(m1);
+				lv.first->focus(5);
 				m1->trackables.clear();
 
 				// ACT
-				lv->set_model(m2);
+				lv.first->set_model(m2);
 
 				// ASSERT
 				assert_is_true(wt.expired());
@@ -1871,158 +1794,153 @@ namespace wpl
 			test( EnsureItemVisibilityInDynamics )
 			{
 				// INIT
-				HWND hlv = create_listview();
-				shared_ptr<listview> lv(wrap_listview(hlv));
+				auto lv = create_listview();
 				mocks::model_ptr m(new mocks::listview_model(100, 1));
 				mocks::trackable_ptr t(mocks::listview_trackable::add(m->trackables, 0));
 
-				lv->set_model(m);
-				lv->set_columns_model(mocks::columns_model::create(L"iiii"));
-				lv->adjust_column_widths();
-				lv->focus(0);
+				lv.first->set_model(m);
+				lv.first->set_columns_model(mocks::columns_model::create(L"iiii"));
+				lv.first->adjust_column_widths();
+				lv.first->focus(0);
 
 				// ACT
 				t->track_result = 99;
 				m->set_count(100);
 
 				// ASSERT
-				assert_is_true(is_item_visible(hlv, 99));
-				assert_is_false(is_item_visible(hlv, 49));
-				assert_is_false(is_item_visible(hlv, 0));
+				assert_is_true(is_item_visible(lv.second, 99));
+				assert_is_false(is_item_visible(lv.second, 49));
+				assert_is_false(is_item_visible(lv.second, 0));
 
 				table_model::index_type reference1[] = { 99, };
 
-				assert_equal(reference1, get_matching_indices(hlv, LVNI_FOCUSED));
+				assert_equal(reference1, get_matching_indices(lv.second, LVNI_FOCUSED));
 
 				// ACT
 				t->track_result = 49;
 				m->set_count(100);
 
 				// ASSERT
-				assert_is_false(is_item_visible(hlv, 99));
-				assert_is_true(is_item_visible(hlv, 49));
-				assert_is_false(is_item_visible(hlv, 0));
+				assert_is_false(is_item_visible(lv.second, 99));
+				assert_is_true(is_item_visible(lv.second, 49));
+				assert_is_false(is_item_visible(lv.second, 0));
 
 				table_model::index_type reference2[] = { 49, };
 
-				assert_equal(reference2, get_matching_indices(hlv, LVNI_FOCUSED));
+				assert_equal(reference2, get_matching_indices(lv.second, LVNI_FOCUSED));
 
 				// ACT
 				t->track_result = 0;
 				m->set_count(100);
 
 				// ASSERT
-				assert_is_false(is_item_visible(hlv, 99));
-				assert_is_false(is_item_visible(hlv, 49));
-				assert_is_true(is_item_visible(hlv, 0));
+				assert_is_false(is_item_visible(lv.second, 99));
+				assert_is_false(is_item_visible(lv.second, 49));
+				assert_is_true(is_item_visible(lv.second, 0));
 
 				table_model::index_type reference3[] = { 0, };
 
-				assert_equal(reference3, get_matching_indices(hlv, LVNI_FOCUSED));
+				assert_equal(reference3, get_matching_indices(lv.second, LVNI_FOCUSED));
 			}
 
 
 			test( VisibilityTrackingBreaksWhenItemIsScrolledOut1 )
 			{
 				// INIT
-				HWND hlv = create_listview();
-				shared_ptr<listview> lv(wrap_listview(hlv));
+				auto lv = create_listview();
 				mocks::model_ptr m(new mocks::listview_model(100, 1));
 				mocks::trackable_ptr t(mocks::listview_trackable::add(m->trackables, 0));
 
-				lv->set_model(m);
-				lv->set_columns_model(mocks::columns_model::create(L"iiii"));
-				lv->adjust_column_widths();
-				lv->focus(0);
+				lv.first->set_model(m);
+				lv.first->set_columns_model(mocks::columns_model::create(L"iiii"));
+				lv.first->adjust_column_widths();
+				lv.first->focus(0);
 
 				// ACT
-				ListView_EnsureVisible(hlv, 49, FALSE);
+				ListView_EnsureVisible(lv.second, 49, FALSE);
 				t->track_result = 99;
 				m->set_count(100);
 
 				// ASSERT
-				assert_is_false(is_item_visible(hlv, 0));
-				assert_is_true(is_item_visible(hlv, 49));
-				assert_is_false(is_item_visible(hlv, 99));
+				assert_is_false(is_item_visible(lv.second, 0));
+				assert_is_true(is_item_visible(lv.second, 49));
+				assert_is_false(is_item_visible(lv.second, 99));
 
 				table_model::index_type reference1[] = { 99, };
 
-				assert_equal(reference1, get_matching_indices(hlv, LVNI_FOCUSED));
+				assert_equal(reference1, get_matching_indices(lv.second, LVNI_FOCUSED));
 
 				// ACT
-				ListView_EnsureVisible(hlv, 0, FALSE);
+				ListView_EnsureVisible(lv.second, 0, FALSE);
 				t->track_result = 49;
 				m->set_count(100);
 
 				// ASSERT
-				assert_is_true(is_item_visible(hlv, 0));
-				assert_is_false(is_item_visible(hlv, 49));
-				assert_is_false(is_item_visible(hlv, 99));
+				assert_is_true(is_item_visible(lv.second, 0));
+				assert_is_false(is_item_visible(lv.second, 49));
+				assert_is_false(is_item_visible(lv.second, 99));
 
 				table_model::index_type reference2[] = { 49, };
 
-				assert_equal(reference2, get_matching_indices(hlv, LVNI_FOCUSED));
+				assert_equal(reference2, get_matching_indices(lv.second, LVNI_FOCUSED));
 			}
 
 
 			test( VisibilityTrackingBreaksWhenItemIsScrolledOut2 )
 			{
 				// INIT
-				HWND hlv = create_listview();
-				shared_ptr<listview> lv(wrap_listview(hlv));
+				auto lv = create_listview();
 				mocks::model_ptr m(new mocks::listview_model(100, 1));
 				mocks::trackable_ptr t(mocks::listview_trackable::add(m->trackables, 49));
 
-				lv->set_model(m);
-				lv->set_columns_model(mocks::columns_model::create(L"iiii"));
-				lv->adjust_column_widths();
-				lv->focus(49);
+				lv.first->set_model(m);
+				lv.first->set_columns_model(mocks::columns_model::create(L"iiii"));
+				lv.first->adjust_column_widths();
+				lv.first->focus(49);
 
 				// ACT
-				ListView_EnsureVisible(hlv, 0, FALSE);
+				ListView_EnsureVisible(lv.second, 0, FALSE);
 				t->track_result = 99;
 				m->set_count(100);
 
 				// ASSERT
-				assert_is_true(is_item_visible(hlv, 0));
-				assert_is_false(is_item_visible(hlv, 49));
-				assert_is_false(is_item_visible(hlv, 99));
+				assert_is_true(is_item_visible(lv.second, 0));
+				assert_is_false(is_item_visible(lv.second, 49));
+				assert_is_false(is_item_visible(lv.second, 99));
 			}
 
 
 			test( VisibilityTrackingIsRestoredWhenFocusBecomesVisisble )
 			{
 				// INIT
-				HWND hlv = create_listview();
-				shared_ptr<listview> lv(wrap_listview(hlv));
+				auto lv = create_listview();
 				mocks::model_ptr m(new mocks::listview_model(100, 1));
 				mocks::trackable_ptr t(mocks::listview_trackable::add(m->trackables, 49));
 
-				lv->set_model(m);
-				lv->set_columns_model(mocks::columns_model::create(L"iiii"));
-				lv->adjust_column_widths();
-				lv->focus(49);
-				ListView_EnsureVisible(hlv, 0, FALSE);
+				lv.first->set_model(m);
+				lv.first->set_columns_model(mocks::columns_model::create(L"iiii"));
+				lv.first->adjust_column_widths();
+				lv.first->focus(49);
+				ListView_EnsureVisible(lv.second, 0, FALSE);
 				t->track_result = 99;
 				m->set_count(100);
 
 				// ACT
-				ListView_EnsureVisible(hlv, 99, FALSE);
+				ListView_EnsureVisible(lv.second, 99, FALSE);
 				t->track_result = 49;
 				m->set_count(100);
 
 				// ASSERT
-				assert_is_false(is_item_visible(hlv, 0));
-				assert_is_true(is_item_visible(hlv, 49));
-				assert_is_false(is_item_visible(hlv, 99));
+				assert_is_false(is_item_visible(lv.second, 0));
+				assert_is_true(is_item_visible(lv.second, 49));
+				assert_is_false(is_item_visible(lv.second, 99));
 			}
 
 
 			test( FirstVisibleItemIsNotObscuredByHeader )
 			{
 				// INIT
-				HWND hlv = create_listview();
-				shared_ptr<listview> lv(wrap_listview(hlv));
+				auto lv = create_listview();
 				mocks::model_ptr m(new mocks::listview_model(10, 2));
 				mocks::trackable_ptr t(mocks::listview_trackable::add(m->trackables, 9));
 				column_def columns[] = {
@@ -2030,20 +1948,20 @@ namespace wpl
 					column_def(L"wwwwwwwwwwwww"),
 				};
 
-				lv->set_columns_model(mocks::columns_model::create(columns, columns_model::npos(), false));
-				lv->adjust_column_widths();
-				lv->set_model(m);
+				lv.first->set_columns_model(mocks::columns_model::create(columns, columns_model::npos(), false));
+				lv.first->adjust_column_widths();
+				lv.first->set_model(m);
 
-				::SetWindowLong(hlv, GWL_STYLE, ::GetWindowLong(hlv, GWL_STYLE) | LVS_NOCOLUMNHEADER);
-				DWORD dwsize = ListView_ApproximateViewRect(hlv, -1, -1, -1);
-				::SetWindowLong(hlv, GWL_STYLE, ::GetWindowLong(hlv, GWL_STYLE) & ~LVS_NOCOLUMNHEADER);
+				::SetWindowLong(lv.second, GWL_STYLE, ::GetWindowLong(lv.second, GWL_STYLE) | LVS_NOCOLUMNHEADER);
+				DWORD dwsize = ListView_ApproximateViewRect(lv.second, -1, -1, -1);
+				::SetWindowLong(lv.second, GWL_STYLE, ::GetWindowLong(lv.second, GWL_STYLE) & ~LVS_NOCOLUMNHEADER);
 
-				::MoveWindow(::GetParent(hlv), 0, 0, LOWORD(dwsize), HIWORD(dwsize), TRUE);
-				::MoveWindow(hlv, 0, 0, LOWORD(dwsize), HIWORD(dwsize), TRUE);
+				::MoveWindow(::GetParent(lv.second), 0, 0, LOWORD(dwsize), HIWORD(dwsize), TRUE);
+				::MoveWindow(lv.second, 0, 0, LOWORD(dwsize), HIWORD(dwsize), TRUE);
 
 				// ACT
-				lv->focus(9);
-				int first_visible = ListView_GetTopIndex(hlv);
+				lv.first->focus(9);
+				int first_visible = ListView_GetTopIndex(lv.second);
 
 				// ASSERT
 				assert_not_equal(0, first_visible);
@@ -2051,17 +1969,17 @@ namespace wpl
 				// ACT
 				t->track_result = 0;
 				m->set_count(10);
-				first_visible = ListView_GetTopIndex(hlv);
+				first_visible = ListView_GetTopIndex(lv.second);
 
 				// ASSERT
 				assert_equal(0, first_visible);
 
 				// INIT (check that header location mapping is working)
-				::MoveWindow(::GetParent(hlv), 37, 71, LOWORD(dwsize), HIWORD(dwsize), TRUE);
+				::MoveWindow(::GetParent(lv.second), 37, 71, LOWORD(dwsize), HIWORD(dwsize), TRUE);
 
 				// ACT
-				lv->focus(9);
-				first_visible = ListView_GetTopIndex(hlv);
+				lv.first->focus(9);
+				first_visible = ListView_GetTopIndex(lv.second);
 
 				// ASSERT
 				assert_not_equal(0, first_visible);
@@ -2069,7 +1987,7 @@ namespace wpl
 				// ACT
 				t->track_result = 0;
 				m->set_count(10);
-				first_visible = ListView_GetTopIndex(hlv);
+				first_visible = ListView_GetTopIndex(lv.second);
 
 				// ASSERT
 				assert_equal(0, first_visible);
@@ -2079,24 +1997,23 @@ namespace wpl
 			test( ListViewIsNotScrolledIfNoHeaderAndViewRectMatchesNumberOfItems )
 			{
 				// INIT
-				HWND hlv = create_listview();
-				shared_ptr<listview> lv(wrap_listview(hlv));
+				auto lv = create_listview();
 				mocks::model_ptr m(new mocks::listview_model(10, 1));
 				mocks::trackable_ptr t(mocks::listview_trackable::add(m->trackables, 9));
 
-				lv->set_columns_model(mocks::columns_model::create(L"iiii"));
-				lv->adjust_column_widths();
-				lv->set_model(m);
+				lv.first->set_columns_model(mocks::columns_model::create(L"iiii"));
+				lv.first->adjust_column_widths();
+				lv.first->set_model(m);
 
-				::SetWindowLong(hlv, GWL_STYLE, ::GetWindowLong(hlv, GWL_STYLE) | LVS_NOCOLUMNHEADER);
-				DWORD dwsize = ListView_ApproximateViewRect(hlv, -1, -1, -1);
+				::SetWindowLong(lv.second, GWL_STYLE, ::GetWindowLong(lv.second, GWL_STYLE) | LVS_NOCOLUMNHEADER);
+				DWORD dwsize = ListView_ApproximateViewRect(lv.second, -1, -1, -1);
 
-				::MoveWindow(::GetParent(hlv), 0, 0, LOWORD(dwsize), HIWORD(dwsize), TRUE);
-				::MoveWindow(hlv, 0, 0, LOWORD(dwsize), HIWORD(dwsize), TRUE);
+				::MoveWindow(::GetParent(lv.second), 0, 0, LOWORD(dwsize), HIWORD(dwsize), TRUE);
+				::MoveWindow(lv.second, 0, 0, LOWORD(dwsize), HIWORD(dwsize), TRUE);
 
 				// ACT
-				lv->focus(9);
-				int first_visible = ListView_GetTopIndex(hlv);
+				lv.first->focus(9);
+				int first_visible = ListView_GetTopIndex(lv.second);
 
 				// ASSERT
 				assert_equal(0, first_visible);
@@ -2104,7 +2021,7 @@ namespace wpl
 				// ACT
 				t->track_result = 0;
 				m->set_count(10);
-				first_visible = ListView_GetTopIndex(hlv);
+				first_visible = ListView_GetTopIndex(lv.second);
 
 				// ASSERT
 				assert_equal(0, first_visible);
@@ -2114,24 +2031,23 @@ namespace wpl
 			test( ListViewProvidesNativeViewOnResize )
 			{
 				// INIT
-				HWND hlv = create_listview();
-				shared_ptr<listview> lv(wrap_listview(hlv));
+				auto lv = create_listview();
 				visual::positioned_native_views nviews;
 
 				// ACT
-				lv->get_view()->resize(10, 11, nviews);
+				lv.first->get_view()->resize(10, 11, nviews);
 
 				// ASSERT
 				assert_equal(1u, nviews.size());
-				assert_equal(hlv, nviews[0].get_view().get_window(hparent));
+				assert_equal(lv.second, nviews[0].get_view().get_window(hparent));
 				assert_equal(make_position(0, 0, 10, 11), nviews[0].location);
 
 				// ACT
-				lv->get_view()->resize(107, 1100, nviews);
+				lv.first->get_view()->resize(107, 1100, nviews);
 
 				// ASSERT
 				assert_equal(2u, nviews.size());
-				assert_equal(hlv, nviews[1].get_view().get_window(hparent));
+				assert_equal(lv.second, nviews[1].get_view().get_window(hparent));
 				assert_equal(make_position(0, 0, 107, 1100), nviews[1].location);
 			}
 
@@ -2144,7 +2060,7 @@ namespace wpl
 				wt.checkpoint();
 
 				// INIT / ACT
-				shared_ptr<listview> lv = wpl::create_listview();
+				shared_ptr<listview> lv(new win32::listview);
 
 				// ASSERT
 				assert_not_null(lv);
@@ -2158,7 +2074,7 @@ namespace wpl
 			{
 				// INIT
 				window_tracker wt;
-				shared_ptr<listview> lv = wpl::create_listview();
+				shared_ptr<listview> lv(new win32::listview);
 				visual::positioned_native_views pnv;
 
 				// ACT
@@ -2181,7 +2097,7 @@ namespace wpl
 			test( ListViewWindowReceivesExpectedStyles )
 			{
 				// INIT
-				shared_ptr<listview> lv = wpl::create_listview();
+				shared_ptr<listview> lv(new win32::listview);
 
 				// ACT
 				HWND hwnd = get_listview_window(*lv, hparent);
@@ -2200,7 +2116,7 @@ namespace wpl
 			test( ColumnsAreSetupAccordinglyToTheModelOnWindowCreation )
 			{
 				// INIT
-				shared_ptr<listview> lv = wpl::create_listview();
+				shared_ptr<listview> lv(new win32::listview);
 				HWND hparent2 = create_parent_window();
 				column_def columns1[] = {
 					column_def(L"iiii", 23),
@@ -2246,7 +2162,7 @@ namespace wpl
 			test( ItemCountIsSetupAccordinglyToTheModelOnWindowCreation )
 			{
 				// INIT
-				shared_ptr<listview> lv = wpl::create_listview();
+				shared_ptr<listview> lv(new win32::listview);
 				HWND hparent2 = create_parent_window();
 				shared_ptr<table_model> model1(new mocks::listview_model(5, 1));
 				shared_ptr<table_model> model2(new mocks::listview_model(1311, 1));
@@ -2274,7 +2190,7 @@ namespace wpl
 			test( SelectionIsPreservedOnWindowRecreation )
 			{
 				// INIT
-				shared_ptr<listview> lv = wpl::create_listview();
+				shared_ptr<listview> lv(new win32::listview);
 				HWND hparent2 = create_parent_window();
 				shared_ptr<table_model> model(new mocks::listview_model(5, 1));
 
@@ -2314,7 +2230,7 @@ namespace wpl
 			test( SelectingNPosAcquiresNoTrackable )
 			{
 				// INIT
-				shared_ptr<listview> lv = wpl::create_listview();
+				shared_ptr<listview> lv(new win32::listview);
 				shared_ptr<mocks::listview_model> model(new mocks::listview_model(5, 1));
 				vector<table_model::index_type> selections;
 
@@ -2348,7 +2264,7 @@ namespace wpl
 			{
 				// INIT
 				window_tracker wt;
-				shared_ptr<listview> lv = wpl::create_listview();
+				shared_ptr<listview> lv(new win32::listview);
 				HWND hlv = get_listview_window(*lv, hparent);
 				vector<table_model::index_type> selections;
 				slot_connection c =

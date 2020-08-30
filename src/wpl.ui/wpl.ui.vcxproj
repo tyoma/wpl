@@ -48,10 +48,14 @@
     <ClCompile Include="controls\header.cpp" />
     <ClCompile Include="controls\listview_core.cpp" />
     <ClCompile Include="controls\scroller.cpp" />
+    <ClCompile Include="factory.cpp" />
     <ClCompile Include="win32\comboxbox.cpp">
       <DisableLanguageExtensions>false</DisableLanguageExtensions>
     </ClCompile>
     <ClCompile Include="win32\controls.cpp">
+      <DisableLanguageExtensions>false</DisableLanguageExtensions>
+    </ClCompile>
+    <ClCompile Include="win32\factory_win32.cpp">
       <DisableLanguageExtensions>false</DisableLanguageExtensions>
     </ClCompile>
     <ClCompile Include="win32\form.cpp">
@@ -73,7 +77,6 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\wpl\combobox.h" />
     <ClInclude Include="..\..\wpl\concepts.h" />
     <ClInclude Include="..\..\wpl\container.h" />
     <ClInclude Include="..\..\wpl\control.h" />
@@ -82,12 +85,13 @@
     <ClInclude Include="..\..\wpl\controls\listview.h" />
     <ClInclude Include="..\..\wpl\controls\listview_core.h" />
     <ClInclude Include="..\..\wpl\controls\scroller.h" />
+    <ClInclude Include="..\..\wpl\factory.h" />
     <ClInclude Include="..\..\wpl\form.h" />
     <ClInclude Include="..\..\wpl\input.h" />
     <ClInclude Include="..\..\wpl\layout.h" />
-    <ClInclude Include="..\..\wpl\listview.h" />
     <ClInclude Include="..\..\wpl\models.h" />
     <ClInclude Include="..\..\wpl\signals.h" />
+    <ClInclude Include="..\..\wpl\stylesheet.h" />
     <ClInclude Include="..\..\wpl\types.h" />
     <ClInclude Include="..\..\wpl\view.h" />
     <ClInclude Include="..\..\wpl\view_host.h" />
@@ -95,7 +99,6 @@
     <ClInclude Include="..\..\wpl\win32\controls.h" />
     <ClInclude Include="..\..\wpl\win32\form.h" />
     <ClInclude Include="..\..\wpl\win32\native_view.h" />
-    <ClInclude Include="..\..\wpl\win32\types.h" />
     <ClInclude Include="..\..\wpl\win32\window.h" />
     <ClInclude Include="..\..\wpl\win32\combobox.h" />
     <ClInclude Include="..\..\wpl\win32\listview.h" />

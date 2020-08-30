@@ -1,7 +1,6 @@
 #include <wpl/controls.h>
 
 #include <wpl/win32/controls.h>
-#include <wpl/win32/native_view.h>
 
 #include "helpers-win32.h"
 
@@ -55,7 +54,7 @@ namespace wpl
 			test( ButtonControlIsANativeView )
 			{
 				// INIT
-				shared_ptr<button> b = create_button();
+				shared_ptr<button> b(new win32::button);
 				window_tracker wt;
 
 				// ACT
@@ -81,7 +80,7 @@ namespace wpl
 			{
 				// INIT
 				int clicks = 0;
-				shared_ptr<button> b = create_button();
+				shared_ptr<button> b(new win32::button);
 				HWND hbutton = get_window_and_resize(parent, *b, 100, 100);
 				slot_connection c = b->clicked += bind(&increment, &clicks);
 										
@@ -102,7 +101,7 @@ namespace wpl
 			test( SettingTextChangesButtonText )
 			{
 				// INIT
-				shared_ptr<button> b = create_button();
+				shared_ptr<button> b(new win32::button);
 				HWND hbutton = get_window_and_resize(parent, *b, 100, 20);
 
 				// ACT
@@ -122,7 +121,7 @@ namespace wpl
 			test( TextSetIsPreservedBeforeTheMaterialization )
 			{
 				// INIT
-				shared_ptr<button> b[] = { create_button(), create_button(), };
+				shared_ptr<button> b[] = { shared_ptr<button>(new win32::button), shared_ptr<button>(new win32::button), };
 
 				// ACT
 				b[0]->set_text(L"Launch!");
@@ -139,7 +138,7 @@ namespace wpl
 			test( SelfDestructIsOK )
 			{
 				// INIT
-				shared_ptr<button> b = create_button();
+				shared_ptr<button> b(new win32::button);
 				HWND hbutton = get_window_and_resize(parent, *b, 100, 20);
 				slot_connection c = b->clicked += bind(&reset<button>, ref(b));
 
@@ -166,7 +165,7 @@ namespace wpl
 			test( LinkControlIsANativeView )
 			{
 				// INIT
-				shared_ptr<link> b = create_link();
+				shared_ptr<link> b(new win32::link);
 				window_tracker wt;
 
 				// ACT
@@ -191,7 +190,7 @@ namespace wpl
 			test( LinkControlAlignmentCanBeChangedBeforeTheWindowIsCreated )
 			{
 				// INIT
-				shared_ptr<link> b = create_link();
+				shared_ptr<link> b(new win32::link);
 
 				// ACT
 				b->set_align(text_container::left);
@@ -201,7 +200,7 @@ namespace wpl
 				assert_equal(0, LWS_RIGHT & ::GetWindowLong(hlink, GWL_STYLE));
 
 				// ACT
-				b = create_link();
+				b.reset(new win32::link);
 				b->set_align(text_container::right);
 				hlink = get_window_and_resize(parent, *b, 100, 20);
 
@@ -213,7 +212,7 @@ namespace wpl
 			test( LinkControlAlignmentCanBeChanged )
 			{
 				// INIT
-				shared_ptr<link> b = create_link();
+				shared_ptr<link> b(new win32::link);
 				window_tracker wt;
 
 				// ACT
@@ -253,7 +252,7 @@ namespace wpl
 				// INIT
 				vector<size_t> log_ids;
 				vector<wstring> log_links;
-				shared_ptr<link> l = create_link();
+				shared_ptr<link> l(new win32::link);
 				HWND hlink = get_window_and_resize(parent, *l, 100, 20);
 				slot_connection c1 = l->clicked += std::bind(&push_back<size_t>, ref(log_ids), _1);
 				slot_connection c2 = l->clicked += std::bind(&push_back<wstring>, ref(log_links), _2);
@@ -292,7 +291,7 @@ namespace wpl
 			test( SettingTextChangesButtonText )
 			{
 				// INIT
-				shared_ptr<link> l = create_link();
+				shared_ptr<link> l(new win32::link);
 				HWND hlink = get_window_and_resize(parent, *l, 100, 20);
 
 				// ACT
@@ -312,7 +311,7 @@ namespace wpl
 			test( TextSetIsPreservedBeforeTheMaterialization )
 			{
 				// INIT
-				shared_ptr<link> l[] = { create_link(), create_link(), };
+				shared_ptr<link> l[] = { shared_ptr<link>(new win32::link), shared_ptr<link>(new win32::link), };
 
 				// ACT
 				l[0]->set_text(L"Launch <a>the rocket</a>!");
@@ -329,7 +328,7 @@ namespace wpl
 			test( SelfDestructIsOK )
 			{
 				// INIT
-				shared_ptr<link> l = create_link();
+				shared_ptr<link> l(new win32::link);
 				HWND hlink = get_window_and_resize(parent, *l, 100, 20);
 				slot_connection c = l->clicked += bind(&reset<link>, ref(l));
 				NMLINK nmlink = {};

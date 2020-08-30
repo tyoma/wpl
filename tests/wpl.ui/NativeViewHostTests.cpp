@@ -1,5 +1,4 @@
-#include <wpl/view_host.h>
-#include <wpl/win32/controls.h>
+#include <wpl/win32/view_host.h>
 
 #include "helpers-visual.h"
 #include "helpers-win32.h"
@@ -25,7 +24,7 @@ namespace wpl
 			public:
 				hosting_window()
 					: hwnd(::CreateWindow(_T("static"), NULL, WS_POPUP | WS_VISIBLE, 0, 0, 100, 70, NULL, NULL, NULL,
-						NULL)), host(wrap_view_host(hwnd))
+						NULL)), host(new win32::view_host(hwnd))
 				{	}
 
 				~hosting_window()

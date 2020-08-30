@@ -43,7 +43,8 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="ComboboxTests.cpp" />
+    <ClCompile Include="FactoryTests.cpp" />
+    <ClCompile Include="NativeComboboxTests.cpp" />
     <ClCompile Include="ContainerTests.cpp" />
     <ClCompile Include="FormTests.cpp" />
     <ClCompile Include="HeaderTests.cpp" />
