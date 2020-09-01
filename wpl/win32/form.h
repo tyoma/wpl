@@ -32,7 +32,8 @@ namespace wpl
 		class form : public wpl::form
 		{
 		public:
-			form(HWND howner = NULL);
+			form(const std::shared_ptr<gcontext::surface_type> &surface,
+				const std::shared_ptr<gcontext::renderer_type> &renderer, HWND howner = NULL);
 			~form();
 
 		private:

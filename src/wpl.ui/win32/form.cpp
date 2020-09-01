@@ -53,10 +53,11 @@ namespace wpl
 
 
 
-		form::form(HWND howner)
+		form::form(const shared_ptr<gcontext::surface_type> &surface, const shared_ptr<gcontext::renderer_type> &renderer,
+				HWND howner)
 			: _hwnd(::CreateWindow(_T("#32770"), 0, c_form_style, 0, 0, 100, 20, howner, 0, 0, 0))
 		{
-			_host.reset(new win32::view_host(_hwnd, bind(&form::wndproc, this, _1, _2, _3, _4)));
+			_host.reset(new win32::view_host(_hwnd, surface, renderer, bind(&form::wndproc, this, _1, _2, _3, _4)));
 
 			set_background_color(get_system_color(COLOR_BTNFACE));
 		}
@@ -104,7 +105,7 @@ namespace wpl
 		{	set_icon(_hwnd, icon, ICON_BIG);	}
 
 		shared_ptr<wpl::form> form::create_child()
-		{	return shared_ptr<form>(new form(_hwnd));	}
+		{	return shared_ptr<form>(new form(_host->surface, _host->renderer, _hwnd));	}
 
 		void form::set_style(unsigned /*styles*/ new_style)
 		{
@@ -122,7 +123,7 @@ namespace wpl
 			const int height = -::MulDiv(fd.height, ::GetDeviceCaps(static_cast<HDC>(hdc.get()), LOGPIXELSY), 72);
 
 			_font.reset(::CreateFontW(height, 0, 0, 0, FW_NORMAL, 0, 0, 0, DEFAULT_CHARSET, OUT_DEFAULT_PRECIS,
-				CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, FF_DONTCARE, fd.typeface.c_str()), &::DeleteObject);				
+				CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, FF_DONTCARE, fd.typeface.c_str()), &::DeleteObject);
 		}
 
 		LRESULT form::wndproc(UINT message, WPARAM wparam, LPARAM lparam, const window::original_handler_t &previous)

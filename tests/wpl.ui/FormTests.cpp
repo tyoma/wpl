@@ -45,7 +45,10 @@ namespace wpl
 			form_and_handle create_form_with_handle(HWND howner = 0)
 			{
 				window_tracker wt(L"#32770");
-				shared_ptr<form> f(new win32::form(howner));
+				shared_ptr<gcontext::surface_type> surface(new gcontext::surface_type(1, 1, 16));
+				shared_ptr<gcontext::renderer_type> renderer(new gcontext::renderer_type(1));
+
+				shared_ptr<form> f(new win32::form(surface, renderer, howner));
 
 				wt.checkpoint();
 
@@ -106,10 +109,15 @@ namespace wpl
 		}
 
 		begin_test_suite( FormTests )
+
+			shared_ptr<gcontext::surface_type> surface;
+			shared_ptr<gcontext::renderer_type> renderer;
 			WindowManager windowManager;
 
 			init( Init )
 			{
+				surface.reset(new gcontext::surface_type(1, 1, 16));
+				renderer.reset(new gcontext::renderer_type(1));
 				windowManager.create_window();
 			}
 
@@ -125,7 +133,7 @@ namespace wpl
 				window_tracker wt(L"#32770");
 
 				// ACT
-				shared_ptr<form> f1(new win32::form);
+				shared_ptr<form> f1(new win32::form(surface, renderer));
 
 				// ASSERT
 				wt.checkpoint();
@@ -134,8 +142,8 @@ namespace wpl
 				assert_is_empty(wt.destroyed);
 
 				// ACT
-				shared_ptr<form> f2(new win32::form);
-				shared_ptr<form> f3(new win32::form);
+				shared_ptr<form> f2(new win32::form(surface, renderer));
+				shared_ptr<form> f3(new win32::form(surface, renderer));
 
 				// ASSERT
 				wt.checkpoint();
@@ -148,8 +156,8 @@ namespace wpl
 			test( FormDestructionDestroysItsWindow )
 			{
 				// INIT
-				shared_ptr<form> f1(new win32::form);
-				shared_ptr<form> f2(new win32::form);
+				shared_ptr<form> f1(new win32::form(surface, renderer));
+				shared_ptr<form> f2(new win32::form(surface, renderer));
 				window_tracker wt(L"#32770");
 
 				// ACT
@@ -356,6 +364,33 @@ namespace wpl
 			}
 
 
+			test( ChildFormInheritsParentSurface )
+			{
+				// INIT
+				window_tracker wt(L"#32770");
+				shared_ptr<form> f(new win32::form(surface, renderer));
+				shared_ptr< mocks::logging_visual<view> > v(new mocks::logging_visual<view>);
+				view_location l = { 10, 11, 200, 91 };
+
+				f->set_visible(true);
+				wt.checkpoint();
+				wt.created.clear();
+
+				// ACT
+				auto fc = f->create_child(); 
+				fc->set_view(v);
+				fc->set_location(l);
+				fc->set_visible(true);
+				wt.checkpoint();
+				::RedrawWindow(wt.created[0], NULL, NULL, RDW_UPDATENOW);
+
+				// ASSERT
+				assert_equal(1u, v->surface_size_log.size());
+				assert_equal(v->surface_size_log.back().first, static_cast<int>(surface->width()));
+				assert_equal(v->surface_size_log.back().second, static_cast<int>(surface->height()));
+			}
+
+
 			test( SettingLocationMovesWindow )
 			{
 				// INIT
@@ -478,6 +513,41 @@ namespace wpl
 				::GetObject(hfont, sizeof(lf), &lf);
 				assert_equal(_T("Times New Roman"), tstring(lf.lfFaceName));
 				assert_equal(convert_font_height(20), lf.lfHeight);
+			}
+
+
+			test( UnderlyingSurfaceIsResizedToClientArea )
+			{
+				// INIT
+				window_tracker wt(L"#32770");
+				shared_ptr<form> f(new win32::form(surface, renderer));
+				shared_ptr< mocks::logging_visual<view> > v(new mocks::logging_visual<view>);
+				view_location l = { 10, 11, 200, 91 };
+
+				// ACT
+				f->set_view(v);
+				f->set_location(l);
+				f->set_visible(true);
+				wt.checkpoint();
+				::RedrawWindow(wt.created[0], NULL, NULL, RDW_UPDATENOW);
+
+				// ASSERT
+				assert_equal(1u, v->surface_size_log.size());
+				assert_equal(v->surface_size_log.back().first, static_cast<int>(surface->width()));
+				assert_equal(v->surface_size_log.back().second, static_cast<int>(surface->height()));
+
+				// INIT
+				size_t n_previous = v->surface_size_log.size();
+				view_location l2 = { 10, 11, 230, 97 };
+
+				// ACT
+				f->set_location(l2);
+				::RedrawWindow(wt.created[0], NULL, NULL, RDW_UPDATENOW);
+
+				// ASSERT
+				assert_equal(n_previous + 1u, v->surface_size_log.size());
+				assert_equal(v->surface_size_log.back().first, static_cast<int>(surface->width()));
+				assert_equal(v->surface_size_log.back().second, static_cast<int>(surface->height()));
 			}
 
 

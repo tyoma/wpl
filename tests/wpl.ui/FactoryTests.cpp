@@ -53,27 +53,37 @@ namespace wpl
 
 		begin_test_suite( FactoryTests )
 
+			shared_ptr<gcontext::surface_type> backbuffer;
+			shared_ptr<gcontext::renderer_type> renderer;
+			shared_ptr<stylesheet> ss;
 			vector<form_init> flog;
 
 			factory::form_constructor create_fctor()
 			{
-				return [this] (shared_ptr<gcontext::renderer_type> renderer,
-					shared_ptr<gcontext::surface_type> backbuffer, shared_ptr<stylesheet> stylesheet_) -> shared_ptr<form> {
+				return [this] (shared_ptr<gcontext::surface_type> backbuffer, shared_ptr<gcontext::renderer_type> renderer,
+					shared_ptr<stylesheet> stylesheet_) -> shared_ptr<form> {
 
-						assert_not_null(renderer);
-						assert_not_null(backbuffer);
+					assert_not_null(renderer);
+					assert_not_null(backbuffer);
 
-						flog.push_back(make_pair(make_pair(renderer, backbuffer), stylesheet_));
-						return shared_ptr<form>(new mocks::form);
+					flog.push_back(make_pair(make_pair(renderer, backbuffer), stylesheet_));
+					return shared_ptr<form>(new mocks::form);
 				};
+			}
+
+
+			init( Init )
+			{
+				backbuffer.reset(new gcontext::surface_type(1, 1, 16));
+				renderer.reset(new gcontext::renderer_type(1));
+				ss.reset(new mocks::stylesheet);
 			}
 
 
 			test( AttemptToCreateNotRegisteredFormFails )
 			{
 				// INIT
-				shared_ptr<stylesheet> ss(new mocks::stylesheet);
-				factory f(ss);
+				factory f(backbuffer, renderer, ss);
 
 				// INIT / ACT / ASSERT
 				assert_throws(f.create_form(), invalid_argument);
@@ -83,8 +93,7 @@ namespace wpl
 			test( AttemptToCreateNotRegisteredControlFails )
 			{
 				// INIT
-				shared_ptr<stylesheet> ss(new mocks::stylesheet);
-				factory f(ss);
+				factory f(backbuffer, renderer, ss);
 
 				// INIT / ACT / ASSERT
 				assert_throws(f.create_control("button"), invalid_argument);
@@ -95,61 +104,41 @@ namespace wpl
 			test( FormIsCreatedWithThePredicatesSpecified )
 			{
 				// INIT
-				shared_ptr<stylesheet> ss1(new mocks::stylesheet);
-				factory f1(ss1);
+				factory f1(backbuffer, renderer, ss);
+				shared_ptr<gcontext::surface_type> b2(new gcontext::surface_type(1, 1, 16));
+				shared_ptr<gcontext::renderer_type> r2(new gcontext::renderer_type(1));
 				shared_ptr<stylesheet> ss2(new mocks::stylesheet);
-				factory f2(ss2);
+				factory f2(b2, r2, ss2);
+				auto calls_1 = 0;
+				auto calls_2 = 0;
 
-				f1.register_form(create_fctor());
-				f2.register_form(create_fctor());
+				// ACT / ASSERT
+				f1.register_form([&] (shared_ptr<gcontext::surface_type> backbuffer, shared_ptr<gcontext::renderer_type> renderer,
+					shared_ptr<stylesheet> stylesheet_) -> shared_ptr<form> {
+
+					assert_equal(this->backbuffer, backbuffer);
+					assert_equal(this->renderer, renderer);
+					assert_equal(this->ss, stylesheet_);
+					calls_1++;
+					return shared_ptr<form>(new mocks::form);
+				});
+				f2.register_form([&] (shared_ptr<gcontext::surface_type> backbuffer, shared_ptr<gcontext::renderer_type> renderer,
+					shared_ptr<stylesheet> stylesheet_) -> shared_ptr<form> {
+
+					assert_equal(b2, backbuffer);
+					assert_equal(r2, renderer);
+					assert_equal(ss2, stylesheet_);
+					calls_2++;
+					return shared_ptr<form>(new mocks::form);
+				});
 
 				// ACT
 				f1.create_form();
 				f2.create_form();
 
 				// ASSERT
-				assert_equal(2u, flog.size());
-				assert_equal(ss1, flog[0].second);
-				assert_equal(ss2, flog[1].second);
-
-				// ACT
-				f1.create_form();
-
-				// ASSERT
-				assert_equal(3u, flog.size());
-				assert_equal(ss1, flog[0].second);
-				assert_equal(ss2, flog[1].second);
-			}
-
-
-			test( SameRendererAndBackbufferAreSuppliedToFormConstructor )
-			{
-				// INIT
-				shared_ptr<stylesheet> ss1(new mocks::stylesheet);
-				factory f1(ss1);
-				shared_ptr<stylesheet> ss2(new mocks::stylesheet);
-				factory f2(ss2);
-
-				f1.register_form(create_fctor());
-				f2.register_form(create_fctor());
-
-				// ACT
-				f1.create_form();
-				f1.create_form();
-				f2.create_form();
-				f2.create_form();
-
-				// ASSERT
-				assert_equal(4u, flog.size());
-
-				assert_equal(flog[0].first.first, flog[1].first.first);
-				assert_equal(flog[0].first.second, flog[1].first.second);
-
-				assert_not_equal(flog[0].first.first, flog[2].first.first);
-				assert_not_equal(flog[0].first.second, flog[2].first.second);
-
-				assert_equal(flog[2].first.first, flog[3].first.first);
-				assert_equal(flog[2].first.second, flog[3].first.second);
+				assert_equal(1, calls_1);
+				assert_equal(1, calls_2);
 			}
 
 
@@ -157,8 +146,7 @@ namespace wpl
 			{
 				// INIT
 				vector< pair<string, pair<const factory *, shared_ptr<stylesheet> > > > log;
-				shared_ptr<stylesheet> ss(new mocks::stylesheet);
-				factory f(ss);
+				factory f(backbuffer, renderer, ss);
 
 				f.register_control("button", [&] (const factory &ff, shared_ptr<stylesheet> ss) {
 					return log.push_back(make_pair("button", make_pair(&ff, ss))), shared_ptr<control>();
@@ -188,10 +176,9 @@ namespace wpl
 				const shared_ptr<mocks::form> frm1(new mocks::form);
 				const shared_ptr<mocks::form> frm2(new mocks::form);
 				shared_ptr<mocks::form> frm = frm1;
-				shared_ptr<stylesheet> ss(new mocks::stylesheet);
-				factory f(ss);
+				factory f(backbuffer, renderer, ss);
 
-				f.register_form([&] (shared_ptr<gcontext::renderer_type>, shared_ptr<gcontext::surface_type>,
+				f.register_form([&] (shared_ptr<gcontext::surface_type>, shared_ptr<gcontext::renderer_type>,
 					shared_ptr<stylesheet>) {
 					return frm;
 				});
@@ -212,8 +199,7 @@ namespace wpl
 				const shared_ptr<control> c1(new mocks::control);
 				const shared_ptr<control> c2(new mocks::control);
 				shared_ptr<control> c = c1;
-				shared_ptr<stylesheet> ss(new mocks::stylesheet);
-				factory f(ss);
+				factory f(backbuffer, renderer, ss);
 
 				f.register_control("button", [&] (const factory &/*ff*/, shared_ptr<stylesheet> /*ss*/) { return c; });
 

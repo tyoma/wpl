@@ -72,9 +72,10 @@ namespace wpl
 
 
 
-		view_host::view_host(HWND hwnd, const window::user_handler_t &user_handler)
-			: _user_handler(user_handler), _surface(1, 1, 0), _rasterizer(new gcontext::rasterizer_type), _renderer(1),
-				_mouse_in(false), _input_modifiers(0)
+		view_host::view_host(HWND hwnd, const shared_ptr<gcontext::surface_type> &surface_,
+				const shared_ptr<gcontext::renderer_type> &renderer_, const window::user_handler_t &user_handler)
+			: surface(surface_), renderer(renderer_), _user_handler(user_handler),
+				_rasterizer(new gcontext::rasterizer_type), _mouse_in(false), _input_modifiers(0)
 		{
 			_window = window::attach(hwnd, bind(&view_host::wndproc, this, _1, _2, _3, _4));
 			::SetClassLongPtr(_window->hwnd(), GCL_STYLE, CS_DBLCLKS | ::GetClassLongPtr(_window->hwnd(), GCL_STYLE));
@@ -184,15 +185,15 @@ namespace wpl
 					rect_i update_area = { ps.rcPaint.left, ps.rcPaint.top, ps.rcPaint.right, ps.rcPaint.bottom };
 					rect_i update_size = { 0, 0, update_area.x2 - update_area.x1, update_area.y2 - update_area.y1 };
 
-					_surface.resize(ps.width(), ps.height());
-					fill(_surface, update_size,
+					surface->resize(ps.width(), ps.height());
+					fill(*surface, update_size,
 						blender_solid_color<simd::blender_solid_color, order_bgra>(_background_color));
 
-					gcontext ctx(_surface, _renderer, offset, &update_area);
+					gcontext ctx(*surface, *renderer, offset, &update_area);
 
 					_rasterizer->reset();
 					_view->draw(ctx, _rasterizer);
-					_surface.blit(ps.hdc, update_area.x1, update_area.y1, ps.width(), ps.height());
+					surface->blit(ps.hdc, update_area.x1, update_area.y1, ps.width(), ps.height());
 					return 0;
 				}
 			}
@@ -327,7 +328,7 @@ namespace wpl
 			_focus = focus;
 		}
 
-		view_host::tabbed_controls_iterator view_host::find(const std::shared_ptr<keyboard_input> &v) const
+		view_host::tabbed_controls_iterator view_host::find(const shared_ptr<keyboard_input> &v) const
 		{
 			return find_if(_tabbed_controls.begin(), _tabbed_controls.end(),
 				[&v] (const keyboard_input::tabbed_control &ctl) {	return ctl.second == v;	});

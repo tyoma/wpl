@@ -23,8 +23,9 @@ namespace wpl
 			{
 			public:
 				hosting_window()
-					: hwnd(::CreateWindow(_T("static"), NULL, WS_POPUP | WS_VISIBLE, 0, 0, 100, 70, NULL, NULL, NULL,
-						NULL)), host(new win32::view_host(hwnd))
+					: hwnd(::CreateWindow(_T("static"), NULL, WS_POPUP | WS_VISIBLE, 0, 0, 100, 70, NULL, NULL, NULL, NULL)),
+						surface(new gcontext::surface_type(1, 1, 16)), renderer(new gcontext::renderer_type(1)),
+						host(new win32::view_host(hwnd, surface, renderer))
 				{	}
 
 				~hosting_window()
@@ -35,6 +36,8 @@ namespace wpl
 
 			public:
 				const HWND hwnd;
+				shared_ptr<gcontext::surface_type> surface;
+				shared_ptr<gcontext::renderer_type> renderer;
 				shared_ptr<wpl::view_host> host;
 			};
 		}
@@ -129,6 +132,9 @@ namespace wpl
 				assert_is_true(135 > v->surface_size_log[1].first);
 				assert_is_true(71 <= v->surface_size_log[1].second);
 				assert_is_true(76 > v->surface_size_log[1].second);
+
+				assert_equal(v->surface_size_log[1].first, static_cast<int>(f.surface->width()));
+				assert_equal(v->surface_size_log[1].second, static_cast<int>(f.surface->height()));
 			}
 
 

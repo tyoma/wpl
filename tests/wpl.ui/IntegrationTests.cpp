@@ -23,7 +23,7 @@ namespace wpl
 			form_and_handle create_form_with_handle()
 			{
 				window_tracker wt(L"#32770");
-				shared_ptr<form> f(new win32::form());
+				shared_ptr<form> f(new win32::form(nullptr, nullptr));
 
 				wt.checkpoint();
 

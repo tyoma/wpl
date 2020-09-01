@@ -22,6 +22,7 @@
 
 #include "window.h"
 
+#include "../concepts.h"
 #include "../view.h"
 #include "../view_host.h"
 
@@ -29,10 +30,12 @@ namespace wpl
 {
 	namespace win32
 	{
-		class view_host : public wpl::view_host
+		class view_host : public wpl::view_host, noncopyable
 		{
 		public:
-			view_host(HWND hwnd, const window::user_handler_t &user_handler = &view_host::passthrough);
+			view_host(HWND hwnd, const std::shared_ptr<gcontext::surface_type> &surface_,
+				const std::shared_ptr<gcontext::renderer_type> &renderer_,
+				const window::user_handler_t &user_handler = &view_host::passthrough);
 			~view_host();
 
 			virtual void set_view(const std::shared_ptr<view> &v);
@@ -40,6 +43,10 @@ namespace wpl
 
 			static LRESULT passthrough(UINT message, WPARAM wparam, LPARAM lparam,
 				const window::original_handler_t &previous);
+
+		public:
+			const std::shared_ptr<gcontext::surface_type> surface;
+			const std::shared_ptr<gcontext::renderer_type> renderer;
 
 		private:
 			typedef std::vector<keyboard_input::tabbed_control> tabbed_controls;
@@ -67,9 +74,7 @@ namespace wpl
 			std::shared_ptr<view> _view;
 			tabbed_controls _tabbed_controls;
 			tabbed_controls_iterator _focus;
-			gcontext::surface_type _surface;
 			gcontext::rasterizer_ptr _rasterizer;
-			gcontext::renderer_type _renderer;
 			std::vector<slot_connection> _connections;
 			std::vector<visual::positioned_native_view> _positioned_views;
 			agge::color _background_color;

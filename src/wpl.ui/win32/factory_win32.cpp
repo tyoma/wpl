@@ -30,33 +30,31 @@ using namespace std;
 
 namespace wpl
 {
-	shared_ptr<factory> factory::create_default(const shared_ptr<stylesheet> &stylesheet_)
+	void factory::setup_default(factory &factory_)
 	{
-		shared_ptr<factory> f(new factory(stylesheet_));
+		factory_.register_form([] (shared_ptr<gcontext::surface_type> backbuffer,
+			shared_ptr<gcontext::renderer_type> renderer, shared_ptr<stylesheet>) {
 
-		f->register_form([] (shared_ptr<gcontext::renderer_type>, shared_ptr<gcontext::surface_type>, shared_ptr<stylesheet>){
-			return shared_ptr<form>(new win32::form);
-		});
-
-		f->register_control("button", [] (const factory &, shared_ptr<stylesheet>) {
-			return shared_ptr<button>(new win32::button);
-		});
-		f->register_control("link", [] (const factory &, shared_ptr<stylesheet>) {
-			return shared_ptr<link>(new win32::link);
-		});
-		f->register_control("combobox", [] (const factory &, shared_ptr<stylesheet>) {
-			return shared_ptr<combobox>(new win32::combobox);
-		});
-		f->register_control("listview", [] (const factory &, shared_ptr<stylesheet>) {
-			return shared_ptr<listview>(new win32::listview);
-		});
-		f->register_control("hscroller", [] (const factory &, shared_ptr<stylesheet>) {
-			return shared_ptr<scroller>(new controls::scroller(controls::scroller::horizontal));
-		});
-		f->register_control("vscroller", [] (const factory &, shared_ptr<stylesheet>) {
-			return shared_ptr<scroller>(new controls::scroller(controls::scroller::vertical));
+			return shared_ptr<form>(new win32::form(backbuffer, renderer));
 		});
 
-		return f;
+		factory_.register_control("button", [] (const factory &, shared_ptr<stylesheet>) {
+			return shared_ptr<control>(new win32::button);
+		});
+		factory_.register_control("link", [] (const factory &, shared_ptr<stylesheet>) {
+			return shared_ptr<control>(new win32::link);
+		});
+		factory_.register_control("combobox", [] (const factory &, shared_ptr<stylesheet>) {
+			return shared_ptr<control>(new win32::combobox);
+		});
+		factory_.register_control("listview", [] (const factory &, shared_ptr<stylesheet>) {
+			return shared_ptr<control>(new win32::listview);
+		});
+		factory_.register_control("hscroller", [] (const factory &, shared_ptr<stylesheet>) {
+			return shared_ptr<control>(new controls::scroller(controls::scroller::horizontal));
+		});
+		factory_.register_control("vscroller", [] (const factory &, shared_ptr<stylesheet>) {
+			return shared_ptr<control>(new controls::scroller(controls::scroller::vertical));
+		});
 	}
 }
