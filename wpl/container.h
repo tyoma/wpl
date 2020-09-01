@@ -33,9 +33,9 @@ namespace wpl
 
 		virtual void mouse_leave();
 		virtual void mouse_move(int depressed, int x, int y);
-		virtual void mouse_down(mouse_buttons button, int depressed, int x, int y);
-		virtual void mouse_up(mouse_buttons button, int depressed, int x, int y);
-		virtual void mouse_double_click(mouse_buttons button, int depressed, int x, int y);
+		virtual void mouse_down(mouse_buttons button_, int depressed, int x, int y);
+		virtual void mouse_up(mouse_buttons button_, int depressed, int x, int y);
+		virtual void mouse_double_click(mouse_buttons button_, int depressed, int x, int y);
 
 	private:
 		typedef std::vector<positioned_view> views_t;

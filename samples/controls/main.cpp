@@ -93,7 +93,7 @@ namespace
 int main()
 {
 	auto fct = factory::create_default(nullptr);
-	font fnt = { L"", 8 };
+	wpl::font fnt = { L"", 8 };
 	view_location l = { 100, 100, 300, 200 };
 	shared_ptr<form> f = fct->create_form();
 	slot_connection c = f->close += &exit_message_loop;
@@ -102,8 +102,8 @@ int main()
 	shared_ptr<container> fill(new container);
 	shared_ptr<stack> fill_layout(new stack(5, true));
 	shared_ptr<combobox> cb = static_pointer_cast<combobox>(fct->create_control("combobox"));
-	shared_ptr<scroller> scrl(new scroller(scroller::horizontal));
-	shared_ptr<scroller> scrl2(new scroller(scroller::vertical));
+	shared_ptr<scroller> scrl = static_pointer_cast<scroller>(fct->create_control("hscroller"));
+	shared_ptr<scroller> scrl2 = static_pointer_cast<scroller>(fct->create_control("vscroller"));
 
 	root->set_layout(root_layout);
 	fill->set_layout(fill_layout);
@@ -112,12 +112,12 @@ int main()
 	root->add_view(cb->get_view());
 
 	root_layout->add(20);
-	root->add_view(scrl);
+	root->add_view(scrl->get_view());
 
 	root_layout->add(-100);
 	root->add_view(fill);
 		fill_layout->add(8);
-		fill->add_view(scrl2);
+		fill->add_view(scrl2->get_view());
 
 	cb->set_model(shared_ptr<my_model>(new my_model));
 

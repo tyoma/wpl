@@ -21,6 +21,7 @@
 #pragma once
 
 #include "../concepts.h"
+#include "../controls.h"
 #include "../models.h"
 #include "../view.h"
 
@@ -28,46 +29,51 @@
 
 namespace wpl
 {
-	class scroller : public view, noncopyable
+	namespace controls
 	{
-	public:
-		enum orientation { vertical, horizontal };
-
-		struct thumb
+		class scroller : public wpl::scroller, public view, public std::enable_shared_from_this<view>
 		{
-			bool active;
-			agge::real_t width, lbound, ubound;
+		public:
+			enum orientation { vertical, horizontal };
+
+			struct thumb
+			{
+				bool active;
+				agge::real_t width, lbound, ubound;
+			};
+
+		public:
+			explicit scroller(orientation orientation_);
+
+			virtual std::shared_ptr<view> get_view();
+
+			virtual void set_model(std::shared_ptr<scroll_model> model);
+
+			thumb get_thumb() const;
+
+			virtual void mouse_down(mouse_buttons button_, int depressed, int x, int y);
+			virtual void mouse_move(int depressed, int x, int y);
+			virtual void mouse_up(mouse_buttons button_, int depressed, int x, int y);
+
+			virtual void draw(gcontext &ctx, gcontext::rasterizer_ptr &rasterizer) const;
+			virtual void resize(unsigned cx, unsigned cy, positioned_native_views &native_views);
+
+		private:
+			void page_less();
+			void page_more();
+			agge::real_t to_screen(const std::pair<double, double> &range, double c) const;
+
+		private:
+			const orientation _orientation;
+			std::shared_ptr<scroll_model> _model;
+			double _rextent;
+			agge::real_t _width, _extent;
+			mutable agge::stroke _thumb_style;
+			slot_connection _underlying_invalidate;
+
+			std::shared_ptr<void> _capture;
+			int _captured_point;
+			std::pair<double, double> _captured_window;
 		};
-
-	public:
-		explicit scroller(orientation orientation_);
-
-		void set_model(std::shared_ptr<scroll_model> model);
-
-		thumb get_thumb() const;
-
-		virtual void mouse_down(mouse_buttons button_, int depressed, int x, int y);
-		virtual void mouse_move(int depressed, int x, int y);
-		virtual void mouse_up(mouse_buttons button_, int depressed, int x, int y);
-
-		virtual void draw(gcontext &ctx, gcontext::rasterizer_ptr &rasterizer) const;
-		virtual void resize(unsigned cx, unsigned cy, positioned_native_views &native_views);
-
-	private:
-		void page_less();
-		void page_more();
-		agge::real_t to_screen(const std::pair<double, double> &range, double c) const;
-
-	private:
-		const orientation _orientation;
-		std::shared_ptr<scroll_model> _model;
-		double _rextent;
-		agge::real_t _width, _extent;
-		mutable agge::stroke _thumb_style;
-		slot_connection _underlying_invalidate;
-
-		std::shared_ptr<void> _capture;
-		int _captured_point;
-		std::pair<double, double> _captured_window;
-	};
+	}
 }

@@ -70,4 +70,9 @@ namespace wpl
 		signal<void (table_model::index_type /*item*/)> item_activate;
 		signal<void (table_model::index_type /*item*/, bool /*became selected*/)> selection_changed;
 	};
+
+	struct scroller : control
+	{
+		virtual void set_model(std::shared_ptr<scroll_model> model) = 0;
+	};
 }

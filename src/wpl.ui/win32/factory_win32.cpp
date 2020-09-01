@@ -20,6 +20,7 @@
 
 #include <wpl/factory.h>
 
+#include <wpl/controls/scroller.h>
 #include <wpl/win32/combobox.h>
 #include <wpl/win32/controls.h>
 #include <wpl/win32/form.h>
@@ -45,9 +46,15 @@ namespace wpl
 		});
 		f->register_control("combobox", [] (const factory &, shared_ptr<stylesheet>) {
 			return shared_ptr<combobox>(new win32::combobox);
-			});
+		});
 		f->register_control("listview", [] (const factory &, shared_ptr<stylesheet>) {
 			return shared_ptr<listview>(new win32::listview);
+		});
+		f->register_control("hscroller", [] (const factory &, shared_ptr<stylesheet>) {
+			return shared_ptr<scroller>(new controls::scroller(controls::scroller::horizontal));
+		});
+		f->register_control("vscroller", [] (const factory &, shared_ptr<stylesheet>) {
+			return shared_ptr<scroller>(new controls::scroller(controls::scroller::vertical));
 		});
 
 		return f;

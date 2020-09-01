@@ -21,6 +21,11 @@ namespace wpl
 
 		namespace mocks
 		{
+			struct control : wpl::control
+			{
+				virtual std::shared_ptr<view> get_view() {	return std::shared_ptr<view>();	}
+			};
+
 			class form : public wpl::form
 			{
 			private:
@@ -53,12 +58,12 @@ namespace wpl
 			factory::form_constructor create_fctor()
 			{
 				return [this] (shared_ptr<gcontext::renderer_type> renderer,
-					shared_ptr<gcontext::surface_type> backbuffer, shared_ptr<stylesheet> stylesheet_) {
+					shared_ptr<gcontext::surface_type> backbuffer, shared_ptr<stylesheet> stylesheet_) -> shared_ptr<form> {
 
 						assert_not_null(renderer);
 						assert_not_null(backbuffer);
 
-						flog.emplace_back(make_pair(renderer, backbuffer), stylesheet_);
+						flog.push_back(make_pair(make_pair(renderer, backbuffer), stylesheet_));
 						return shared_ptr<form>(new mocks::form);
 				};
 			}
@@ -156,10 +161,10 @@ namespace wpl
 				factory f(ss);
 
 				f.register_control("button", [&] (const factory &ff, shared_ptr<stylesheet> ss) {
-					return log.emplace_back("button", make_pair(&ff, ss)), shared_ptr<control>();
+					return log.push_back(make_pair("button", make_pair(&ff, ss))), shared_ptr<control>();
 				});
 				f.register_control("listview", [&] (const factory &ff, shared_ptr<stylesheet> ss) {
-					return log.emplace_back("listview", make_pair(&ff, ss)), shared_ptr<control>();
+					return log.push_back(make_pair("listview", make_pair(&ff, ss))), shared_ptr<control>();
 				});
 
 				// ACT
@@ -204,13 +209,8 @@ namespace wpl
 
 			test( ExpectedObjectsAreReturnedFromCreateControl )
 			{
-				struct control : wpl::control
-				{
-					virtual std::shared_ptr<view> get_view() {	return nullptr;	}
-				};
-
-				const shared_ptr<control> c1(new control);
-				const shared_ptr<control> c2(new control);
+				const shared_ptr<control> c1(new mocks::control);
+				const shared_ptr<control> c2(new mocks::control);
 				shared_ptr<control> c = c1;
 				shared_ptr<stylesheet> ss(new mocks::stylesheet);
 				factory f(ss);

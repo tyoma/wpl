@@ -20,9 +20,9 @@ namespace wpl
 	{
 		namespace
 		{
-			scroller::thumb make_thumb(double width, double lbound, double ubound)
+			controls::scroller::thumb make_thumb(double width, double lbound, double ubound)
 			{
-				scroller::thumb t = {
+				controls::scroller::thumb t = {
 					true,
 					static_cast<real_t>(width),
 					static_cast<real_t>(lbound),
@@ -40,7 +40,7 @@ namespace wpl
 
 				using eq::operator();
 
-				bool operator ()(scroller::thumb lhs, scroller::thumb rhs) const
+				bool operator ()(controls::scroller::thumb lhs, controls::scroller::thumb rhs) const
 				{
 					return lhs.active == rhs.active && (*this)(lhs.width, rhs.width) && (*this)(lhs.lbound, rhs.lbound)
 						&& (*this)(lhs.ubound, rhs.ubound);
@@ -60,10 +60,20 @@ namespace wpl
 			{	return bind(&invalidate_cb, &log, _1);	}
 
 
+			test( ScrollerIsAControl )
+			{
+				// INIT / ACT
+				shared_ptr<controls::scroller> sc(new controls::scroller(controls::scroller::horizontal));
+				shared_ptr<scroller> s = sc;
+
+				// ACT / ASSERT
+				assert_equal(static_pointer_cast<view>(sc), static_pointer_cast<control>(s)->get_view());
+			}
+
 			test( ModellessScrollerDoesNothingOnVisualEvents )
 			{
 				// INIT / ACT
-				scroller s(scroller::horizontal);
+				controls::scroller s(controls::scroller::horizontal);
 				slot_connection iconn = s.invalidate += [] (const agge::rect_i *) { assert_is_true(false); };
 				gcontext::surface_type surface(1000, 1000, 0);
 				gcontext::renderer_type ren(1);
@@ -86,7 +96,7 @@ namespace wpl
 			test( ModellessScrollerDoesNothingOnMouseEvents )
 			{
 				// INIT / ACT
-				scroller s(scroller::horizontal);
+				controls::scroller s(controls::scroller::horizontal);
 				slot_connection c = s.capture += [] (shared_ptr<void> &) { assert_is_true(false); };
 
 				s.resize(100, 10, dummy_nviews);
@@ -105,7 +115,7 @@ namespace wpl
 			{
 				// INIT
 				shared_ptr<mocks::scroll_model> m(new mocks::scroll_model);
-				scroller sh(scroller::horizontal), sv(scroller::vertical);
+				controls::scroller sh(controls::scroller::horizontal), sv(controls::scroller::vertical);
 				gcontext::surface_type surface(1000, 1000, 0);
 				gcontext::renderer_type ren(1);
 				gcontext::rasterizer_ptr ras(new gcontext::rasterizer_type);
@@ -144,7 +154,7 @@ namespace wpl
 			test( NothingIsDrawnIfNoModelSetIfModelIsEmptyOrIfWindowIsNotSmallerThanTheRange )
 			{
 				// INIT / ACT
-				scroller s(scroller::horizontal);
+				controls::scroller s(controls::scroller::horizontal);
 				gcontext::surface_type surface(1000, 1000, 0);
 				gcontext::renderer_type ren(1);
 				gcontext::rasterizer_ptr ras(new gcontext::rasterizer_type);
@@ -178,7 +188,7 @@ namespace wpl
 			{
 				// INIT
 				invalidations_log ilogh, ilogv;
-				scroller sh(scroller::horizontal), sv(scroller::vertical);
+				controls::scroller sh(controls::scroller::horizontal), sv(controls::scroller::vertical);
 				slot_connection c1 = sh.invalidate += log_invalidates(ilogh);
 				slot_connection c2 = sv.invalidate += log_invalidates(ilogv);
 
@@ -199,7 +209,7 @@ namespace wpl
 				// INIT
 				invalidations_log ilogh, ilogv;
 				shared_ptr<mocks::scroll_model> m(new mocks::scroll_model);
-				scroller sh(scroller::horizontal), sv(scroller::vertical);
+				controls::scroller sh(controls::scroller::horizontal), sv(controls::scroller::vertical);
 				slot_connection c1 = sh.invalidate += log_invalidates(ilogh);
 				slot_connection c2 = sv.invalidate += log_invalidates(ilogv);
 
@@ -222,7 +232,7 @@ namespace wpl
 			test( ThumbIsInactiveIfNoModelIsNotSet )
 			{
 				// INIT
-				scroller sh(scroller::horizontal), sv(scroller::vertical);
+				controls::scroller sh(controls::scroller::horizontal), sv(controls::scroller::vertical);
 
 				// ACT / ASSERT
 				assert_is_false(sh.get_thumb().active);
@@ -234,7 +244,7 @@ namespace wpl
 			{
 				// INIT
 				shared_ptr<mocks::scroll_model> m(new mocks::scroll_model);
-				scroller s(scroller::horizontal);
+				controls::scroller s(controls::scroller::horizontal);
 
 				s.set_model(m);
 				m->range = make_pair(10.1, 100.7);
@@ -268,7 +278,7 @@ namespace wpl
 			{
 				// INIT
 				shared_ptr<mocks::scroll_model> m(new mocks::scroll_model);
-				scroller sh(scroller::horizontal), sv(scroller::vertical);
+				controls::scroller sh(controls::scroller::horizontal), sv(controls::scroller::vertical);
 
 				m->range = make_pair(10.1, 100.7);
 				m->window = make_pair(50.3, 14.5);
@@ -304,7 +314,7 @@ namespace wpl
 				invalidations_log ilog;
 				vector< pair<double, double> > log;
 				shared_ptr<mocks::scroll_model> m(new mocks::scroll_model);
-				scroller sh(scroller::horizontal), sv(scroller::vertical);
+				controls::scroller sh(controls::scroller::horizontal), sv(controls::scroller::vertical);
 
 				m->range = make_pair(0, 500);
 				m->window = make_pair(50, 27);
@@ -430,7 +440,7 @@ namespace wpl
 				// INIT
 				vector< pair<double, double> > log;
 				shared_ptr<mocks::scroll_model> m(new mocks::scroll_model);
-				scroller s(scroller::horizontal);
+				controls::scroller s(controls::scroller::horizontal);
 
 				m->range = make_pair(110.7, 150.1);
 				m->window = make_pair(125, 20);
@@ -466,7 +476,7 @@ namespace wpl
 			test( ModelInvalidationLeadsToControlInvalidation )
 			{
 				shared_ptr<mocks::scroll_model> m(new mocks::scroll_model);
-				scroller s(scroller::horizontal);
+				controls::scroller s(controls::scroller::horizontal);
 				invalidations_log ilog;
 
 				s.resize(100, 10, dummy_nviews);
@@ -501,7 +511,7 @@ namespace wpl
 				mocks::capture_provider cp;
 				invalidations_log ilog;
 				shared_ptr<mocks::scroll_model> m(new mocks::scroll_model);
-				scroller s(scroller::vertical);
+				controls::scroller s(controls::scroller::vertical);
 
 				m->range = make_pair(0, 56);
 				m->window = make_pair(0, 57);
@@ -539,7 +549,7 @@ namespace wpl
 				mocks::capture_provider cp;
 				invalidations_log ilog;
 				shared_ptr<mocks::scroll_model> m(new mocks::scroll_model);
-				scroller sh(scroller::horizontal), sv(scroller::vertical);
+				controls::scroller sh(controls::scroller::horizontal), sv(controls::scroller::vertical);
 				bool scrolling = false;
 
 				m->range = make_pair(0, 500);
@@ -620,7 +630,7 @@ namespace wpl
 				// INIT
 				vector< pair<double, double> > log;
 				shared_ptr<mocks::scroll_model> m(new mocks::scroll_model);
-				scroller s(scroller::horizontal);
+				controls::scroller s(controls::scroller::horizontal);
 
 				m->range = make_pair(10, 101);
 				m->window = make_pair(50, 20);
@@ -641,7 +651,7 @@ namespace wpl
 				mocks::capture_provider cp;
 				vector< pair<double, double> > log;
 				shared_ptr<mocks::scroll_model> m(new mocks::scroll_model);
-				scroller sh(scroller::horizontal), sv(scroller::vertical);
+				controls::scroller sh(controls::scroller::horizontal), sv(controls::scroller::vertical);
 
 				m->range = make_pair(10, 101);
 				m->window = make_pair(50, 20);

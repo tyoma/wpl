@@ -21,6 +21,7 @@
 #pragma once
 
 #include "concepts.h"
+#include "stylesheet.h"
 #include "visual.h"
 
 #include <functional>
