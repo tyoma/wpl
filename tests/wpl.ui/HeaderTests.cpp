@@ -2,6 +2,7 @@
 
 #include "helpers.h"
 #include "helpers-visual.h"
+#include "Mockups.h"
 #include "MockupsListView.h"
 #include "predicates.h"
 
@@ -96,8 +97,10 @@ namespace wpl
 		}
 
 		begin_test_suite( HeaderTests )
+			mocks::font_loader fake_loader;
 			shared_ptr<gcontext::surface_type> surface;
 			shared_ptr<gcontext::renderer_type> ren;
+			shared_ptr<gcontext::text_engine_type> text_engine;
 			shared_ptr<gcontext> ctx;
 			gcontext::rasterizer_ptr ras;
 			view::positioned_native_views nviews;
@@ -106,7 +109,8 @@ namespace wpl
 			{
 				surface.reset(new gcontext::surface_type(1000, 1000, 0));
 				ren.reset(new gcontext::renderer_type(1));
-				ctx.reset(new gcontext(*surface, *ren, agge::zero()));
+				text_engine.reset(new gcontext::text_engine_type(fake_loader, 0));
+				ctx.reset(new gcontext(*surface, *ren, *text_engine, agge::zero()));
 				ras.reset(new gcontext::rasterizer_type);
 			}
 

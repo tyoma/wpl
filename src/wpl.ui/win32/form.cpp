@@ -54,10 +54,11 @@ namespace wpl
 
 
 		form::form(const shared_ptr<gcontext::surface_type> &surface, const shared_ptr<gcontext::renderer_type> &renderer,
-				HWND howner)
+				const shared_ptr<gcontext::text_engine_type> &text_engine, HWND howner)
 			: _hwnd(::CreateWindow(_T("#32770"), 0, c_form_style, 0, 0, 100, 20, howner, 0, 0, 0))
 		{
-			_host.reset(new win32::view_host(_hwnd, surface, renderer, bind(&form::wndproc, this, _1, _2, _3, _4)));
+			_host.reset(new win32::view_host(_hwnd, surface, renderer, text_engine, bind(&form::wndproc, this, _1, _2, _3,
+				_4)));
 
 			set_background_color(get_system_color(COLOR_BTNFACE));
 		}
@@ -105,7 +106,7 @@ namespace wpl
 		{	set_icon(_hwnd, icon, ICON_BIG);	}
 
 		shared_ptr<wpl::form> form::create_child()
-		{	return shared_ptr<form>(new form(_host->surface, _host->renderer, _hwnd));	}
+		{	return shared_ptr<form>(new form(_host->surface, _host->renderer, _host->text_engine, _hwnd));	}
 
 		void form::set_style(unsigned /*styles*/ new_style)
 		{

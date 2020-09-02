@@ -69,7 +69,7 @@ namespace
 		{
 			const color text_color = state & selected ? color::make(0, 0, 0) : color::make(255, 255, 255);
 
-			_text_engine->render_string(*ras, *_font, text.c_str(), layout::near, b.x1, b.y1 + _baseline_offset, b.x2 - b.x1);
+			ctx.text_engine.render_string(*ras, *_font, text.c_str(), layout::near, b.x1, b.y1 + _baseline_offset, b.x2 - b.x1);
 //			ras->sort(true);
 			ctx(ras, blender_t(text_color), winding<>());
 		}
@@ -96,7 +96,7 @@ namespace
 			index_type /*item*/, unsigned /*item_state_flags*/ /*state*/, const wstring &text) const
 		{
 			auto m = _font->get_metrics();
-			_text_engine->render_string(*ras, *_font, text.c_str(), layout::near, b.x1, b.y2 - m.descent, b.x2 - b.x1);
+			ctx.text_engine.render_string(*ras, *_font, text.c_str(), layout::near, b.x1, b.y2 - m.descent, b.x2 - b.x1);
 			ctx(ras, blender_t(color::make(255, 255, 255)), winding<>());
 		}
 

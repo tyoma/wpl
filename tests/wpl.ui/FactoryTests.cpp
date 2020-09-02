@@ -1,6 +1,7 @@
 #include <wpl/factory.h>
 
-#include <agge.text/text_engine.h>
+#include "Mockups.h"
+
 #include <wpl/control.h>
 #include <wpl/form.h>
 #include <wpl/stylesheet.h>
@@ -43,12 +44,6 @@ namespace wpl
 				virtual agge::color get_color(const char * /*id*/) const { throw 0; }
 				virtual shared_ptr<agge::font> get_font(const char * /*id*/) const { throw 0; }
 				virtual agge::real_t get_value(const char * /*id*/) const { throw 0; }
-			};
-
-			struct font_loader : gcontext::text_engine_type::loader
-			{
-				virtual agge::font::accessor_ptr load(const wchar_t *, int, bool, bool, agge::font::key::grid_fit)
-				{	return nullptr;	}
 			};
 		}
 

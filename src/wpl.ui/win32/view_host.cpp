@@ -73,8 +73,9 @@ namespace wpl
 
 
 		view_host::view_host(HWND hwnd, const shared_ptr<gcontext::surface_type> &surface_,
-				const shared_ptr<gcontext::renderer_type> &renderer_, const window::user_handler_t &user_handler)
-			: surface(surface_), renderer(renderer_), _user_handler(user_handler),
+				const shared_ptr<gcontext::renderer_type> &renderer_,
+				const std::shared_ptr<gcontext::text_engine_type> &text_engine_, const window::user_handler_t &user_handler)
+			: surface(surface_), renderer(renderer_), text_engine(text_engine_), _user_handler(user_handler),
 				_rasterizer(new gcontext::rasterizer_type), _mouse_in(false), _input_modifiers(0)
 		{
 			_window = window::attach(hwnd, bind(&view_host::wndproc, this, _1, _2, _3, _4));
@@ -189,7 +190,7 @@ namespace wpl
 					fill(*surface, update_size,
 						blender_solid_color<simd::blender_solid_color, order_bgra>(_background_color));
 
-					gcontext ctx(*surface, *renderer, offset, &update_area);
+					gcontext ctx(*surface, *renderer, *text_engine, offset, &update_area);
 
 					_rasterizer->reset();
 					_view->draw(ctx, _rasterizer);

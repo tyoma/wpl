@@ -33,7 +33,8 @@ namespace wpl
 		{
 		public:
 			form(const std::shared_ptr<gcontext::surface_type> &surface,
-				const std::shared_ptr<gcontext::renderer_type> &renderer, HWND howner = NULL);
+				const std::shared_ptr<gcontext::renderer_type> &renderer,
+				const std::shared_ptr<gcontext::text_engine_type> &text_engine, HWND howner = NULL);
 			~form();
 
 		private:

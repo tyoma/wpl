@@ -25,7 +25,8 @@ namespace wpl
 				hosting_window()
 					: hwnd(::CreateWindow(_T("static"), NULL, WS_POPUP | WS_VISIBLE, 0, 0, 100, 70, NULL, NULL, NULL, NULL)),
 						surface(new gcontext::surface_type(1, 1, 16)), renderer(new gcontext::renderer_type(1)),
-						host(new win32::view_host(hwnd, surface, renderer))
+						text_engine(new gcontext::text_engine_type(fake_loader, 0)),
+						host(new win32::view_host(hwnd, surface, renderer, text_engine))
 				{	}
 
 				~hosting_window()
@@ -36,8 +37,10 @@ namespace wpl
 
 			public:
 				const HWND hwnd;
+				mocks::font_loader fake_loader;
 				shared_ptr<gcontext::surface_type> surface;
 				shared_ptr<gcontext::renderer_type> renderer;
+				shared_ptr<gcontext::text_engine_type> text_engine;
 				shared_ptr<wpl::view_host> host;
 			};
 		}
@@ -46,7 +49,7 @@ namespace wpl
 			test( ResizingHostWindowLeadsToContentResize )
 			{
 				// INIT
-				shared_ptr<mocks::logging_visual<view>> v(new mocks::logging_visual<view>());
+				shared_ptr< mocks::logging_visual<view> > v(new mocks::logging_visual<view>());
 				hosting_window f;
 				RECT rc;
 
@@ -76,7 +79,7 @@ namespace wpl
 			test( MovingHostWindowDoesNotRaiseResizeSignal )
 			{
 				// INIT
-				shared_ptr<mocks::logging_visual<view>> v(new mocks::logging_visual<view>());
+				shared_ptr< mocks::logging_visual<view> > v(new mocks::logging_visual<view>());
 				hosting_window f;
 
 				f.host->set_view(v);
@@ -127,6 +130,10 @@ namespace wpl
 				::RedrawWindow(f.hwnd, &rc, NULL, RDW_INVALIDATE | RDW_UPDATENOW);
 
 				// ASSERT
+				assert_equal(2u, v->text_engines_log.size());
+				assert_equal(f.text_engine.get(), v->text_engines_log[0]);
+				assert_equal(f.text_engine.get(), v->text_engines_log[1]);
+
 				assert_equal(2u, v->surface_size_log.size());
 				assert_is_true(115 <= v->surface_size_log[1].first);
 				assert_is_true(135 > v->surface_size_log[1].first);

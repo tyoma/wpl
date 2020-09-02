@@ -12,6 +12,16 @@
 #include <wpl/layout.h>
 #include <ut/assert.h>
 
+#ifdef far
+	#undef far
+#endif
+
+#ifdef near
+	#undef near
+#endif
+
+#include <agge.text/text_engine.h>
+
 namespace wpl
 {
 	namespace tests
@@ -89,6 +99,13 @@ namespace wpl
 			};
 
 
+			struct font_loader : gcontext::text_engine_type::loader
+			{
+				virtual agge::font::accessor_ptr load(const wchar_t *, int, bool, bool, agge::font::key::grid_fit)
+				{	return agge::font::accessor_ptr();	}
+			};
+
+
 			template <typename BaseT>
 			class logging_visual : public BaseT
 			{
@@ -96,6 +113,7 @@ namespace wpl
 				std::vector< std::pair<int /*cx*/, int /*cy*/> > resize_log;
 				mutable std::vector< std::pair<int /*cx*/, int /*cy*/> > surface_size_log;
 				mutable std::vector<agge::rect_i> update_area_log;
+				mutable std::vector<gcontext::text_engine_type *> text_engines_log;
 				mutable std::vector<gcontext::rasterizer_type *> rasterizers_log;
 				mutable std::vector< std::pair<gcontext::pixel_type, bool> > background_color;
 
@@ -198,6 +216,7 @@ namespace wpl
 				ctx(rasterizer, b, agge::winding<>());
 				surface_size_log.push_back(std::make_pair(b.max_x - b.min_x, b.max_y - b.min_y + 1));
 				update_area_log.push_back(ctx.update_area());
+				text_engines_log.push_back(&ctx.text_engine);
 				rasterizers_log.push_back(rasterizer.get());
 				background_color.push_back(std::make_pair(b.uniform_color, b.has_uniform_color));
 			}

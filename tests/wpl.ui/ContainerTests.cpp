@@ -21,6 +21,7 @@ namespace wpl
 	{
 		begin_test_suite( ContainerTests )
 			vector<visual::positioned_native_view> nviews;
+			mocks::font_loader fake_loader;
 
 			test( ContainersAreTranscendingViews )
 			{
@@ -202,9 +203,10 @@ namespace wpl
 				shared_ptr< mocks::logging_visual<view> > v2(new mocks::logging_visual<view>());
 				gcontext::surface_type surface(150, 100, 0);
 				gcontext::renderer_type ren(1);
+				gcontext::text_engine_type text_engine(fake_loader, 0);
 				gcontext::rasterizer_ptr ras(new gcontext::rasterizer_type);
 
-				gcontext ctx(surface, ren, make_vector(103, 71));
+				gcontext ctx(surface, ren, text_engine, make_vector(103, 71));
 
 				lm1->positions.push_back(make_position(13, 17, 1000, 1000));
 				lm2->positions.push_back(make_position(90, 40, 1000, 1000));
@@ -246,9 +248,10 @@ namespace wpl
 				shared_ptr< mocks::logging_visual<view> > v2(new mocks::logging_visual<view>());
 				gcontext::surface_type surface(200, 150, 0);
 				gcontext::renderer_type ren(1);
+				gcontext::text_engine_type text_engine(fake_loader, 0);
 				gcontext::rasterizer_ptr ras(new gcontext::rasterizer_type);
 
-				gcontext ctx(surface, ren, make_vector(13, 17));
+				gcontext ctx(surface, ren, text_engine, make_vector(13, 17));
 
 				lm->positions.push_back(make_position(13, 17, 1000, 1000));
 				lm->positions.push_back(make_position(91, 45, 1000, 1000));
@@ -283,9 +286,10 @@ namespace wpl
 				shared_ptr< mocks::logging_visual<view> > v3(new mocks::logging_visual<view>());
 				gcontext::surface_type surface(1000, 1000, 0);
 				gcontext::renderer_type ren(1);
+				gcontext::text_engine_type text_engine(fake_loader, 0);
 				gcontext::rasterizer_ptr ras(new gcontext::rasterizer_type);
 
-				gcontext ctx(surface, ren, agge::zero());
+				gcontext ctx(surface, ren, text_engine, agge::zero());
 
 				lm->positions.push_back(make_position(13, 17, 10, 11));
 				lm->positions.push_back(make_position(91, 45, 90, 20));
@@ -348,8 +352,9 @@ namespace wpl
 				shared_ptr< mocks::filling_visual<view> > v3(new mocks::filling_visual<view>(color_c));
 				gcontext::surface_type surface(10, 7, 0);
 				gcontext::renderer_type ren(1);
+				gcontext::text_engine_type text_engine(fake_loader, 0);
 				gcontext::rasterizer_ptr ras(new gcontext::rasterizer_type);
-				gcontext ctx(surface, ren, agge::zero());
+				gcontext ctx(surface, ren, text_engine, agge::zero());
 
 				lm->positions.push_back(make_position(3, 1, 6, 5));
 				lm->positions.push_back(make_position(1, 2, 3, 3));

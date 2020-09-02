@@ -57,9 +57,10 @@ namespace wpl
 	void factory::setup_default(factory &factory_)
 	{
 		factory_.register_form([] (shared_ptr<gcontext::surface_type> backbuffer,
-			shared_ptr<gcontext::renderer_type> renderer, shared_ptr<void>, shared_ptr<stylesheet>) {
+			shared_ptr<gcontext::renderer_type> renderer, shared_ptr<gcontext::text_engine_type> text_engine,
+			shared_ptr<stylesheet>) {
 
-			return shared_ptr<form>(new win32::form(backbuffer, renderer));
+			return shared_ptr<form>(new win32::form(backbuffer, renderer, text_engine));
 		});
 
 		factory_.register_control("button", [] (const factory &, shared_ptr<stylesheet>) {

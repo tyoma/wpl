@@ -42,21 +42,6 @@ namespace wpl
 		{
 			typedef pair<shared_ptr<form>, HWND> form_and_handle;
 
-			form_and_handle create_form_with_handle(HWND howner = 0)
-			{
-				window_tracker wt(L"#32770");
-				shared_ptr<gcontext::surface_type> surface(new gcontext::surface_type(1, 1, 16));
-				shared_ptr<gcontext::renderer_type> renderer(new gcontext::renderer_type(1));
-
-				shared_ptr<form> f(new win32::form(surface, renderer, howner));
-
-				wt.checkpoint();
-
-				if (wt.created.size() != 1)
-					throw runtime_error("Unexpected amount of windows created!");
-				return make_pair(f, wt.created[0]);
-			}
-
 			shared_ptr<void> create_window(HWND hparent)
 			{
 				return shared_ptr<void>(::CreateWindow(_T("static"), NULL, WS_CHILD | WS_VISIBLE, 0, 0, 0, 0, hparent,
@@ -109,15 +94,30 @@ namespace wpl
 		}
 
 		begin_test_suite( FormTests )
-
+			mocks::font_loader fake_loader;
 			shared_ptr<gcontext::surface_type> surface;
 			shared_ptr<gcontext::renderer_type> renderer;
+			shared_ptr<gcontext::text_engine_type> text_engine;
 			WindowManager windowManager;
+
+			form_and_handle create_form_with_handle(HWND howner = 0)
+			{
+				window_tracker wt(L"#32770");
+
+				shared_ptr<form> f(new win32::form(surface, renderer, text_engine, howner));
+
+				wt.checkpoint();
+
+				if (wt.created.size() != 1)
+					throw runtime_error("Unexpected amount of windows created!");
+				return make_pair(f, wt.created[0]);
+			}
 
 			init( Init )
 			{
 				surface.reset(new gcontext::surface_type(1, 1, 16));
 				renderer.reset(new gcontext::renderer_type(1));
+				text_engine.reset(new gcontext::text_engine_type(fake_loader, 0));
 				windowManager.create_window();
 			}
 
@@ -133,7 +133,7 @@ namespace wpl
 				window_tracker wt(L"#32770");
 
 				// ACT
-				shared_ptr<form> f1(new win32::form(surface, renderer));
+				shared_ptr<form> f1(new win32::form(surface, renderer, shared_ptr<gcontext::text_engine_type>()));
 
 				// ASSERT
 				wt.checkpoint();
@@ -142,8 +142,8 @@ namespace wpl
 				assert_is_empty(wt.destroyed);
 
 				// ACT
-				shared_ptr<form> f2(new win32::form(surface, renderer));
-				shared_ptr<form> f3(new win32::form(surface, renderer));
+				shared_ptr<form> f2(new win32::form(surface, renderer, shared_ptr<gcontext::text_engine_type>()));
+				shared_ptr<form> f3(new win32::form(surface, renderer, shared_ptr<gcontext::text_engine_type>()));
 
 				// ASSERT
 				wt.checkpoint();
@@ -156,8 +156,8 @@ namespace wpl
 			test( FormDestructionDestroysItsWindow )
 			{
 				// INIT
-				shared_ptr<form> f1(new win32::form(surface, renderer));
-				shared_ptr<form> f2(new win32::form(surface, renderer));
+				shared_ptr<form> f1(new win32::form(surface, renderer, shared_ptr<gcontext::text_engine_type>()));
+				shared_ptr<form> f2(new win32::form(surface, renderer, shared_ptr<gcontext::text_engine_type>()));
 				window_tracker wt(L"#32770");
 
 				// ACT
@@ -368,7 +368,7 @@ namespace wpl
 			{
 				// INIT
 				window_tracker wt(L"#32770");
-				shared_ptr<form> f(new win32::form(surface, renderer));
+				shared_ptr<form> f(new win32::form(surface, renderer, text_engine));
 				shared_ptr< mocks::logging_visual<view> > v(new mocks::logging_visual<view>);
 				view_location l = { 10, 11, 200, 91 };
 
@@ -385,6 +385,9 @@ namespace wpl
 				::RedrawWindow(wt.created[0], NULL, NULL, RDW_UPDATENOW);
 
 				// ASSERT
+				assert_equal(1u, v->text_engines_log.size());
+				assert_equal(text_engine.get(), v->text_engines_log[0]);
+
 				assert_equal(1u, v->surface_size_log.size());
 				assert_equal(v->surface_size_log.back().first, static_cast<int>(surface->width()));
 				assert_equal(v->surface_size_log.back().second, static_cast<int>(surface->height()));
@@ -520,7 +523,7 @@ namespace wpl
 			{
 				// INIT
 				window_tracker wt(L"#32770");
-				shared_ptr<form> f(new win32::form(surface, renderer));
+				shared_ptr<form> f(new win32::form(surface, renderer, text_engine));
 				shared_ptr< mocks::logging_visual<view> > v(new mocks::logging_visual<view>);
 				view_location l = { 10, 11, 200, 91 };
 
@@ -532,6 +535,9 @@ namespace wpl
 				::RedrawWindow(wt.created[0], NULL, NULL, RDW_UPDATENOW);
 
 				// ASSERT
+				assert_equal(1u, v->text_engines_log.size());
+				assert_equal(text_engine.get(), v->text_engines_log[0]);
+
 				assert_equal(1u, v->surface_size_log.size());
 				assert_equal(v->surface_size_log.back().first, static_cast<int>(surface->width()));
 				assert_equal(v->surface_size_log.back().second, static_cast<int>(surface->height()));

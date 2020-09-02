@@ -31,8 +31,8 @@ namespace wpl
 		typedef agge::text_engine<rasterizer_type> text_engine_type;
 
 	public:
-		gcontext(surface_type &surface, renderer_type &renderer, const agge::vector_i &offset,
-			const agge::rect_i *window_ = 0) throw();
+		gcontext(surface_type &surface, renderer_type &renderer, text_engine_type &text_engine_,
+			const agge::vector_i &offset, const agge::rect_i *window_ = 0) throw();
 
 		gcontext translate(int offset_x, int offset_y) const throw();
 		gcontext window(int x1, int y1, int x2, int y2) const throw();
@@ -41,6 +41,9 @@ namespace wpl
 
 		template <typename BlenderT, typename AlphaFn>
 		void operator ()(rasterizer_ptr &rasterizer, const BlenderT &blender, const AlphaFn &alpha);
+
+	public:
+		text_engine_type &text_engine;
 
 	private:
 		const gcontext &operator =(const gcontext &rhs);

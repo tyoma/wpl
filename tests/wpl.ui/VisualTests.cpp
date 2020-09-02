@@ -1,5 +1,6 @@
 #include <wpl/visual.h>
 
+#include "Mockups.h"
 #include "helpers-visual.h"
 
 #include <agge/blenders_generic.h>
@@ -17,13 +18,16 @@ namespace wpl
 		begin_test_suite( VisualTests )
 			typedef context::blender_t blender_t;
 
-			std::shared_ptr<gcontext::renderer_type> renderer;
+			mocks::font_loader fake_loader;
+			shared_ptr<gcontext::renderer_type> renderer;
+			shared_ptr<gcontext::text_engine_type> text_engine;
 			color color_x, color_o;
 			gcontext::pixel_type x, o;
 
 			init( Init )
 			{
 				renderer.reset(new gcontext::renderer_type(1));
+				text_engine.reset(new gcontext::text_engine_type(fake_loader, 0));
 				x = make_pixel_real(color_x = color::make(255, 255, 255));
 				o = make_pixel_real(color_o = color::make(0, 0, 0));
 			}
@@ -42,7 +46,7 @@ namespace wpl
 			{
 				// INIT
 				gcontext::surface_type s(8, 8, 0);
-				gcontext ctx(s, *renderer, agge::zero());
+				gcontext ctx(s, *renderer, *text_engine, agge::zero());
 
 				// ACT
 				rectangle(ctx, color_x, 0, 0, 3, 3);
@@ -88,7 +92,7 @@ namespace wpl
 			{
 				// INIT
 				gcontext::surface_type s(5, 5, 0);
-				gcontext ctx(s, *renderer, agge::zero());
+				gcontext ctx(s, *renderer, *text_engine, agge::zero());
 
 				// ACT
 				gcontext ctx2 = ctx.translate(2, 1);
@@ -133,13 +137,13 @@ namespace wpl
 				gcontext::surface_type s1(15, 153, 0);
 
 				// ACT / ASSERT
-				assert_equal(make_rect(0, 0, 15, 153), gcontext(s1, *renderer, agge::zero()).update_area());
+				assert_equal(make_rect(0, 0, 15, 153), gcontext(s1, *renderer, *text_engine, agge::zero()).update_area());
 
 				// INIT
 				gcontext::surface_type s2(191, 321, 0);
 
 				// ACT / ASSERT
-				assert_equal(make_rect(0, 0, 191, 321), gcontext(s2, *renderer, agge::zero()).update_area());
+				assert_equal(make_rect(0, 0, 191, 321), gcontext(s2, *renderer, *text_engine, agge::zero()).update_area());
 			}
 
 
@@ -149,8 +153,8 @@ namespace wpl
 				gcontext::surface_type s(200, 150, 0);
 
 				// ACT / ASSERT
-				assert_equal(make_rect(12, -31, 212, 119), gcontext(s, *renderer, make_vector(-12, 31)).update_area());
-				assert_equal(make_rect(-5, 10, 195, 160), gcontext(s, *renderer, make_vector(5, -10)).update_area());
+				assert_equal(make_rect(12, -31, 212, 119), gcontext(s, *renderer, *text_engine, make_vector(-12, 31)).update_area());
+				assert_equal(make_rect(-5, 10, 195, 160), gcontext(s, *renderer, *text_engine, make_vector(5, -10)).update_area());
 			}
 
 
@@ -161,13 +165,13 @@ namespace wpl
 
 				// ACT / ASSERT
 				rect_i w1 = { 10, 13, 50, 40 };
-				assert_equal(w1, gcontext(s, *renderer, agge::zero(), &w1).update_area());
+				assert_equal(w1, gcontext(s, *renderer, *text_engine, agge::zero(), &w1).update_area());
 				rect_i w2 = { 100, 3, 150, 50 };
-				assert_equal(w2, gcontext(s, *renderer, agge::zero(), &w2).update_area());
+				assert_equal(w2, gcontext(s, *renderer, *text_engine, agge::zero(), &w2).update_area());
 				rect_i w3 = { 10, 13, 50, 40 };
-				assert_equal(w1, gcontext(s, *renderer, make_vector(10, 13), &w3).update_area());
+				assert_equal(w1, gcontext(s, *renderer, *text_engine, make_vector(10, 13), &w3).update_area());
 				rect_i w4 = { 100, 3, 150, 50 };
-				assert_equal(w2, gcontext(s, *renderer, make_vector(-1, -2), &w4).update_area());
+				assert_equal(w2, gcontext(s, *renderer, *text_engine, make_vector(-1, -2), &w4).update_area());
 			}
 
 
@@ -180,9 +184,9 @@ namespace wpl
 
 				// ACT / ASSERT
 				assert_equal(make_rect(9, 10, 49, 37),
-					gcontext(s, *renderer, agge::zero(), &w1).translate(1, 3).update_area());
+					gcontext(s, *renderer, *text_engine, agge::zero(), &w1).translate(1, 3).update_area());
 				assert_equal(make_rect(30, 30, 61, 48),
-					gcontext(s, *renderer, agge::zero(), &w2).translate(-10, -7).update_area());
+					gcontext(s, *renderer, *text_engine, agge::zero(), &w2).translate(-10, -7).update_area());
 			}
 
 
@@ -195,9 +199,9 @@ namespace wpl
 
 				// ACT / ASSERT
 				assert_equal(make_rect(11, 17, 40, 37),
-					gcontext(s, *renderer, agge::zero(), &w1).window(11, 17, 40, 37).update_area());
+					gcontext(s, *renderer, *text_engine, agge::zero(), &w1).window(11, 17, 40, 37).update_area());
 				assert_equal(make_rect(23, 27, 50, 40),
-					gcontext(s, *renderer, agge::zero(), &w2).window(23, 27, 50, 40).update_area());
+					gcontext(s, *renderer, *text_engine, agge::zero(), &w2).window(23, 27, 50, 40).update_area());
 			}
 
 
@@ -205,7 +209,7 @@ namespace wpl
 			{
 				// INIT
 				gcontext::surface_type s(8, 8, 0);
-				gcontext ctx(s, *renderer, agge::zero());
+				gcontext ctx(s, *renderer, *text_engine, agge::zero());
 
 				// ACT
 				gcontext ctx2 = ctx.window(1, 2, 7, 8);

@@ -51,7 +51,8 @@ namespace wpl
 		begin_test_suite( ScrollerTests )
 			typedef vector< pair<bool, agge::rect_i> > invalidations_log;
 
-			view::positioned_native_views dummy_nviews;
+			view::positioned_native_views nviews;
+			mocks::font_loader fake_loader;
 
 			static void invalidate_cb(invalidations_log *log, const agge::rect_i *w)
 			{	log->push_back(w ? make_pair(true, *w) : make_pair(false, agge::rect_i()));	}
@@ -77,8 +78,9 @@ namespace wpl
 				slot_connection iconn = s.invalidate += [] (const agge::rect_i *) { assert_is_true(false); };
 				gcontext::surface_type surface(1000, 1000, 0);
 				gcontext::renderer_type ren(1);
+				gcontext::text_engine_type text_engine(fake_loader, 0);
 				gcontext::rasterizer_ptr ras(new gcontext::rasterizer_type);
-				gcontext ctx(surface, ren, make_vector(103, 71));
+				gcontext ctx(surface, ren, text_engine, make_vector(103, 71));
 
 				// ACT / ASSERT
 				s.draw(ctx, ras);
@@ -87,9 +89,9 @@ namespace wpl
 				assert_equal(0, ras->height()); // a way to check emptiness
 
 				// ACT / ASSERT (ok to call with zero dimensions)
-				s.resize(100, 0, dummy_nviews);
-				s.resize(0, 100, dummy_nviews);
-				s.resize(0, 0, dummy_nviews);
+				s.resize(100, 0, nviews);
+				s.resize(0, 100, nviews);
+				s.resize(0, 0, nviews);
 			}
 
 
@@ -99,7 +101,7 @@ namespace wpl
 				controls::scroller s(controls::scroller::horizontal);
 				slot_connection c = s.capture += [] (shared_ptr<void> &) { assert_is_true(false); };
 
-				s.resize(100, 10, dummy_nviews);
+				s.resize(100, 10, nviews);
 
 				// ACT / ASSERT (no crashes)
 				s.mouse_down(mouse_input::left, 0, 0, 5);
@@ -118,22 +120,23 @@ namespace wpl
 				controls::scroller sh(controls::scroller::horizontal), sv(controls::scroller::vertical);
 				gcontext::surface_type surface(1000, 1000, 0);
 				gcontext::renderer_type ren(1);
+				gcontext::text_engine_type text_engine(fake_loader, 0);
 				gcontext::rasterizer_ptr ras(new gcontext::rasterizer_type);
-				gcontext ctx(surface, ren, make_vector(103, 71));
+				gcontext ctx(surface, ren, text_engine, make_vector(103, 71));
 
 				m->range = make_pair(0, 100);
 
-				sh.resize(100, 20, dummy_nviews);
+				sh.resize(100, 20, nviews);
 				sh.set_model(m);
-				sv.resize(20, 100, dummy_nviews);
+				sv.resize(20, 100, nviews);
 				sv.set_model(m);
 
 				slot_connection iconnh = sh.invalidate += [] (const agge::rect_i *) { assert_is_true(false); };
 				slot_connection iconnv = sv.invalidate += [] (const agge::rect_i *) { assert_is_true(false); };
 
 				// ACT / ASSERT
-				sh.resize(0, 10, dummy_nviews);
-				sv.resize(10, 0, dummy_nviews);
+				sh.resize(0, 10, nviews);
+				sv.resize(10, 0, nviews);
 				sh.draw(ctx, ras);
 				sv.draw(ctx, ras);
 
@@ -141,8 +144,8 @@ namespace wpl
 				assert_equal(0, ras->height());
 
 				// ACT / ASSERT
-				sh.resize(100, 0, dummy_nviews);
-				sv.resize(0, 100, dummy_nviews);
+				sh.resize(100, 0, nviews);
+				sv.resize(0, 100, nviews);
 				sh.draw(ctx, ras);
 				sv.draw(ctx, ras);
 
@@ -157,11 +160,12 @@ namespace wpl
 				controls::scroller s(controls::scroller::horizontal);
 				gcontext::surface_type surface(1000, 1000, 0);
 				gcontext::renderer_type ren(1);
+				gcontext::text_engine_type text_engine(fake_loader, 0);
 				gcontext::rasterizer_ptr ras(new gcontext::rasterizer_type);
-				gcontext ctx(surface, ren, agge::zero());
+				gcontext ctx(surface, ren, text_engine, agge::zero());
 
 				memset(surface.row_ptr(0), 0, sizeof(gcontext::surface_type::pixel) * 1000 * 1000);
-				s.resize(100, 10, dummy_nviews);
+				s.resize(100, 10, nviews);
 
 				shared_ptr<mocks::scroll_model> m(new mocks::scroll_model);
 				m->range = make_pair(0, 0);
@@ -193,8 +197,8 @@ namespace wpl
 				slot_connection c2 = sv.invalidate += log_invalidates(ilogv);
 
 				// ACT
-				sh.resize(100, 20, dummy_nviews);
-				sv.resize(20, 100, dummy_nviews);
+				sh.resize(100, 20, nviews);
+				sv.resize(20, 100, nviews);
 
 				// ASSERT
 				assert_equal(1u, ilogh.size());
@@ -282,8 +286,8 @@ namespace wpl
 
 				m->range = make_pair(10.1, 100.7);
 				m->window = make_pair(50.3, 14.5);
-				sh.resize(94, 10, dummy_nviews);
-				sv.resize(13, 194, dummy_nviews);
+				sh.resize(94, 10, nviews);
+				sv.resize(13, 194, nviews);
 
 				sh.set_model(m);
 				sv.set_model(m);
@@ -321,9 +325,9 @@ namespace wpl
 				m->on_scrolling = [] (bool) { assert_is_true(false); };
 				m->on_scroll = [&] (double m, double w) { log.push_back(make_pair(m, w)); };
 
-				sh.resize(110, 10, dummy_nviews);
+				sh.resize(110, 10, nviews);
 				sh.set_model(m);
-				sv.resize(1, 251, dummy_nviews);
+				sv.resize(1, 251, nviews);
 				sv.set_model(m);
 
 				slot_connection connections[] = {
@@ -446,7 +450,7 @@ namespace wpl
 				m->window = make_pair(125, 20);
 				m->on_scroll = [&] (double m, double w) { log.push_back(make_pair(m, w)); };
 
-				s.resize(100, 10, dummy_nviews);
+				s.resize(100, 10, nviews);
 				s.set_model(m);
 
 				slot_connection c = s.capture += [] (shared_ptr<void> &/*handle*/) { assert_is_true(false); };
@@ -479,7 +483,7 @@ namespace wpl
 				controls::scroller s(controls::scroller::horizontal);
 				invalidations_log ilog;
 
-				s.resize(100, 10, dummy_nviews);
+				s.resize(100, 10, nviews);
 				s.set_model(m);
 
 				slot_connection c = s.invalidate += log_invalidates(ilog);
@@ -515,7 +519,7 @@ namespace wpl
 
 				m->range = make_pair(0, 56);
 				m->window = make_pair(0, 57);
-				s.resize(30, 280, dummy_nviews);
+				s.resize(30, 280, nviews);
 				s.set_model(m);
 
 				// ASSERT
@@ -560,9 +564,9 @@ namespace wpl
 				};
 				m->on_scroll = [&] (double, double) { assert_is_true(false); };
 
-				sh.resize(110, 10, dummy_nviews);
+				sh.resize(110, 10, nviews);
 				sh.set_model(m);
-				sv.resize(30, 280, dummy_nviews);
+				sv.resize(30, 280, nviews);
 				sv.set_model(m);
 
 				cp.add_view(sh);
@@ -636,7 +640,7 @@ namespace wpl
 				m->window = make_pair(50, 20);
 				m->on_scroll = [&] (double, double) { assert_is_true(false); };
 
-				s.resize(100, 10, dummy_nviews);
+				s.resize(100, 10, nviews);
 				s.set_model(m);
 
 				// ACT / ASSERT
@@ -657,10 +661,10 @@ namespace wpl
 				m->window = make_pair(50, 20);
 				m->on_scroll = [&] (double m, double w) { log.push_back(make_pair(m, w)); };
 
-				sh.resize(110, 10, dummy_nviews);
+				sh.resize(110, 10, nviews);
 				cp.add_view(sh);
 				sh.set_model(m);
-				sv.resize(10, 310, dummy_nviews);
+				sv.resize(10, 310, nviews);
 				cp.add_view(sv);
 				sv.set_model(m);
 

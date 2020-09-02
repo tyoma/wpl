@@ -35,6 +35,7 @@ namespace wpl
 		public:
 			view_host(HWND hwnd, const std::shared_ptr<gcontext::surface_type> &surface_,
 				const std::shared_ptr<gcontext::renderer_type> &renderer_,
+				const std::shared_ptr<gcontext::text_engine_type> &text_engine_,
 				const window::user_handler_t &user_handler = &view_host::passthrough);
 			~view_host();
 
@@ -47,6 +48,7 @@ namespace wpl
 		public:
 			const std::shared_ptr<gcontext::surface_type> surface;
 			const std::shared_ptr<gcontext::renderer_type> renderer;
+			const std::shared_ptr<gcontext::text_engine_type> text_engine;
 
 		private:
 			typedef std::vector<keyboard_input::tabbed_control> tabbed_controls;

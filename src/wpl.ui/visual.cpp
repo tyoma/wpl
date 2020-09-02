@@ -25,9 +25,9 @@ namespace wpl
 		}
 	}
 
-	gcontext::gcontext(surface_type &surface, renderer_type &renderer_, const vector_i &offset,
-			const rect_i *window_) throw()
-		: _surface(surface), _renderer(renderer_), _offset(offset),
+	gcontext::gcontext(surface_type &surface, renderer_type &renderer_, text_engine_type &text_engine_,
+			const vector_i &offset, const rect_i *window_) throw()
+		: text_engine(text_engine_), _surface(surface), _renderer(renderer_), _offset(offset),
 			_window(window_ ? *window_ : make_rect(0, 0, surface.width(), surface.height()) - offset)
 	{	}
 
@@ -36,14 +36,14 @@ namespace wpl
 		const vector_i offset = { offset_x, offset_y };
 		const rect_i w = _window - offset;
 
-		return gcontext(_surface, _renderer, _offset - offset, &w);
+		return gcontext(_surface, _renderer, text_engine, _offset - offset, &w);
 	}
 
 	gcontext gcontext::window(int x1, int y1, int x2, int y2) const throw()
 	{
 		rect_i w = { x1, y1, x2, y2 };
 
-		return gcontext(_surface, _renderer, _offset, &w);
+		return gcontext(_surface, _renderer, text_engine, _offset, &w);
 	}
 
 	rect_i gcontext::update_area() const throw()
