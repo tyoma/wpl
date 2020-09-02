@@ -64,6 +64,9 @@
     <ClCompile Include="win32\factory_win32.cpp">
       <Filter>src\win32</Filter>
     </ClCompile>
+    <ClCompile Include="win32\font_loader_win32.cpp">
+      <Filter>src\win32</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\wpl\controls\listview.h">
@@ -114,5 +117,8 @@
     </ClInclude>
     <ClInclude Include="..\..\wpl\factory.h" />
     <ClInclude Include="..\..\wpl\stylesheet.h" />
+    <ClInclude Include="win32\font_loader.h">
+      <Filter>src\win32</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

@@ -20,6 +20,8 @@
 
 #include <wpl/factory.h>
 
+#include "font_loader.h"
+
 #include <wpl/controls/scroller.h>
 #include <wpl/win32/combobox.h>
 #include <wpl/win32/controls.h>
@@ -30,10 +32,32 @@ using namespace std;
 
 namespace wpl
 {
+	namespace
+	{
+		struct text_engine_composite : noncopyable
+		{
+			text_engine_composite()
+				: text_engine(loader, 4)
+			{	}
+
+			win32::font_loader loader;
+			gcontext::text_engine_type text_engine;
+		};
+	}
+
+	shared_ptr<factory> factory::create_default(const shared_ptr<stylesheet> &stylesheet_)
+	{
+		shared_ptr<text_engine_composite> tec(new text_engine_composite);
+
+		return create_default(shared_ptr<gcontext::surface_type>(new gcontext::surface_type(1, 1, 16)),
+			shared_ptr<gcontext::renderer_type>(new gcontext::renderer_type(2)),
+			shared_ptr<gcontext::text_engine_type>(tec, &tec->text_engine), stylesheet_);
+	}
+
 	void factory::setup_default(factory &factory_)
 	{
 		factory_.register_form([] (shared_ptr<gcontext::surface_type> backbuffer,
-			shared_ptr<gcontext::renderer_type> renderer, shared_ptr<stylesheet>) {
+			shared_ptr<gcontext::renderer_type> renderer, shared_ptr<void>, shared_ptr<stylesheet>) {
 
 			return shared_ptr<form>(new win32::form(backbuffer, renderer));
 		});

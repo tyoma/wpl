@@ -58,6 +58,9 @@
     <ClCompile Include="win32\factory_win32.cpp">
       <DisableLanguageExtensions>false</DisableLanguageExtensions>
     </ClCompile>
+    <ClCompile Include="win32\font_loader_win32.cpp">
+      <DisableLanguageExtensions>false</DisableLanguageExtensions>
+    </ClCompile>
     <ClCompile Include="win32\form.cpp">
       <DisableLanguageExtensions>false</DisableLanguageExtensions>
     </ClCompile>
@@ -103,6 +106,7 @@
     <ClInclude Include="..\..\wpl\win32\combobox.h" />
     <ClInclude Include="..\..\wpl\win32\listview.h" />
     <ClInclude Include="..\..\wpl\win32\view_host.h" />
+    <ClInclude Include="win32\font_loader.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
 </Project>

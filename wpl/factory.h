@@ -39,13 +39,15 @@ namespace wpl
 	public:
 		typedef std::function<std::shared_ptr<form> (const std::shared_ptr<gcontext::surface_type> &backbuffer,
 			const std::shared_ptr<gcontext::renderer_type> &renderer,
+			const std::shared_ptr<gcontext::text_engine_type> &text_engine,
 			const std::shared_ptr<stylesheet> &stylesheet_)> form_constructor;
 		typedef std::function<std::shared_ptr<control> (const factory &factory_,
 			const std::shared_ptr<stylesheet> &stylesheet_)> control_constructor;
 
 	public:
 		factory(const std::shared_ptr<gcontext::surface_type> &backbuffer,
-			const std::shared_ptr<gcontext::renderer_type> &renderer, const std::shared_ptr<stylesheet> &stylesheet_);
+			const std::shared_ptr<gcontext::renderer_type> &renderer,
+			const std::shared_ptr<gcontext::text_engine_type> &text_engine, const std::shared_ptr<stylesheet> &stylesheet_);
 
 		void register_form(const form_constructor &constructor);
 		void register_control(const char *type, const control_constructor &constructor);
@@ -55,12 +57,15 @@ namespace wpl
 
 		static std::shared_ptr<factory> create_default(const std::shared_ptr<stylesheet> &stylesheet_);
 		static std::shared_ptr<factory> create_default(const std::shared_ptr<gcontext::surface_type> &backbuffer,
-			const std::shared_ptr<gcontext::renderer_type> &renderer, const std::shared_ptr<stylesheet> &stylesheet_);
+			const std::shared_ptr<gcontext::renderer_type> &renderer,
+			const std::shared_ptr<gcontext::text_engine_type> &text_engine,
+			const std::shared_ptr<stylesheet> &stylesheet_);
 		static void setup_default(factory &factory_);
 
 	private:
 		const std::shared_ptr<gcontext::surface_type> _backbuffer;
 		const std::shared_ptr<gcontext::renderer_type> _renderer;
+		const std::shared_ptr<gcontext::text_engine_type> _text_engine;
 		const std::shared_ptr<stylesheet> _stylesheet;
 		form_constructor _default_form_constructor;
 		std::unordered_map<std::string, control_constructor> _control_constructors;
