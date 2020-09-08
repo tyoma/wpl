@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 2.8)
 
-set(WPL_UI_SOURCES
+set(WPL_SOURCES
 	container.cpp
 	factory.cpp
 	layout.cpp
@@ -13,7 +13,7 @@ set(WPL_UI_SOURCES
 )
 
 if(WIN32)
-	set(WPL_UI_SOURCES ${WPL_UI_SOURCES}
+	set(WPL_SOURCES ${WPL_SOURCES}
 		win32/comboxbox.cpp
 		win32/controls.cpp
 		win32/factory_win32.cpp
@@ -26,6 +26,6 @@ if(WIN32)
 	)
 endif()
 
-add_library(wpl.ui STATIC ${WPL_UI_SOURCES})
+add_library(wpl STATIC ${WPL_SOURCES})
 
-target_link_libraries(wpl.ui agge)
+target_link_libraries(wpl agge)

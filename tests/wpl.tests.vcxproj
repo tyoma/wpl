@@ -34,7 +34,7 @@
   </ImportGroup>
   <ItemDefinitionGroup>
     <ClCompile>
-      <AdditionalIncludeDirectories>$(MSBuildThisFileDirectory)..\..;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(MSBuildThisFileDirectory)..;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <DisableLanguageExtensions>false</DisableLanguageExtensions>
     </ClCompile>
     <Link>
@@ -60,6 +60,7 @@
     <ClCompile Include="NativeViewHostTests.cpp" />
     <ClCompile Include="NativeViewTests.cpp" />
     <ClCompile Include="ScrollerTests.cpp" />
+    <ClCompile Include="SignalTests.cpp" />
     <ClCompile Include="helpers.cpp" />
     <ClCompile Include="Mockups.cpp" />
     <ClCompile Include="StylesheetTests.cpp" />
@@ -77,7 +78,7 @@
     <ClInclude Include="predicates.h" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\src\wpl.ui\wpl.ui.vcxproj">
+    <ProjectReference Include="..\src\wpl.vcxproj">
       <Project>{2423f23a-b689-f3f7-a864-a1729ec337c9}</Project>
     </ProjectReference>
   </ItemGroup>

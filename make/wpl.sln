@@ -1,11 +1,9 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 11.00
 # Visual Studio 2010
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "wpl.ui", "..\src\wpl.ui\wpl.ui.vcxproj", "{2423F23A-B689-F3F7-A864-A1729EC337C9}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "wpl", "..\src\wpl.vcxproj", "{2423F23A-B689-F3F7-A864-A1729EC337C9}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "wpl.ui.tests", "..\tests\wpl.ui\wpl.ui.tests.vcxproj", "{685F6A5E-B74A-4ACF-873F-A5A6FB6AC8C9}"
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "wpl.base.tests", "..\tests\wpl.base\wpl.base.tests.vcxproj", "{D5D8229B-9269-4165-BD5E-0DC5504E120B}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "wpl.tests", "..\tests\wpl.tests.vcxproj", "{685F6A5E-B74A-4ACF-873F-A5A6FB6AC8C9}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "piechart", "..\samples\piechart\piechart.vcxproj", "{28031D00-3D0B-EC08-E699-80B31EE58488}"
 EndProject

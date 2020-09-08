@@ -44,8 +44,8 @@ namespace wpl
 
 			// mouse_input methods
 			virtual void mouse_move(int depressed, int x, int y);
-			virtual void mouse_down(mouse_buttons button, int buttons, int x, int y);
-			virtual void mouse_up(mouse_buttons button, int buttons, int x, int y);
+			virtual void mouse_down(mouse_buttons button_, int buttons, int x, int y);
+			virtual void mouse_up(mouse_buttons button_, int buttons, int x, int y);
 
 			// visual methods
 			virtual void draw(gcontext &ctx, gcontext::rasterizer_ptr &rasterizer) const;
