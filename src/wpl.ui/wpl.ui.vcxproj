@@ -49,6 +49,7 @@
     <ClCompile Include="controls\listview_core.cpp" />
     <ClCompile Include="controls\scroller.cpp" />
     <ClCompile Include="factory.cpp" />
+    <ClCompile Include="stylesheet_db.cpp" />
     <ClCompile Include="win32\comboxbox.cpp">
       <DisableLanguageExtensions>false</DisableLanguageExtensions>
     </ClCompile>

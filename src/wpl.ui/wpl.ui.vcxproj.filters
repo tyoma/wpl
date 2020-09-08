@@ -67,6 +67,9 @@
     <ClCompile Include="win32\font_loader_win32.cpp">
       <Filter>src\win32</Filter>
     </ClCompile>
+    <ClCompile Include="stylesheet_db.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\wpl\controls\listview.h">

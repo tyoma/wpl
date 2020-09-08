@@ -60,6 +60,8 @@ namespace agge
 {
 	bool operator ==(const wpl::gcontext::pixel_type &lhs, const wpl::gcontext::pixel_type &rhs);
 
+	bool operator ==(const color &lhs, const color &rhs);
+
 	template <typename T>
 	inline bool operator ==(const rect<T> &lhs, const rect<T> &rhs)
 	{	return lhs.x1 == rhs.x1 && lhs.y1 == rhs.y1 && lhs.x2 == rhs.x2 && lhs.y2 == rhs.y2;	}

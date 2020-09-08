@@ -2,7 +2,9 @@ cmake_minimum_required(VERSION 2.8)
 
 set(WPL_UI_SOURCES
 	container.cpp
+	factory.cpp
 	layout.cpp
+	stylesheet_db.cpp
 	visual.cpp
 
 	controls/header.cpp
@@ -15,6 +17,7 @@ if(WIN32)
 		win32/comboxbox.cpp
 		win32/controls.cpp
 		win32/factory_win32.cpp
+		win32/font_loader_win32.cpp
 		win32/form.cpp
 		win32/listview_win32.cpp
 		win32/native_view.cpp

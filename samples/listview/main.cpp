@@ -78,7 +78,7 @@ namespace
 		agge::real_t _item_height, _baseline_offset, _border_width;
 		shared_ptr<text_engine_base::loader> _font_loader;
 		shared_ptr<text_engine_t> _text_engine;
-		shared_ptr<agge::font> _font;
+		agge::font::ptr _font;
 		mutable agge::stroke _stroke;
 		mutable agge::dash _dash;
 	};
@@ -103,7 +103,7 @@ namespace
 	private:
 		shared_ptr<text_engine_base::loader> _font_loader;
 		shared_ptr<text_engine_t> _text_engine;
-		shared_ptr<agge::font> _font;
+		agge::font::ptr _font;
 		mutable agge::stroke _stroke;
 	};
 

@@ -13,6 +13,7 @@ set(WPL_UI_TEST_SOURCES
 	Mockups.cpp
 	MockupsListView.cpp
 	ScrollerTests.cpp
+	StylesheetTests.cpp
 	VisualTests.cpp
 )
 
@@ -37,4 +38,4 @@ endif()
 
 add_library(wpl.ui.tests SHARED ${WPL_UI_TEST_SOURCES})
 
-target_link_libraries(wpl.ui.tests wpl.ui agge)
+target_link_libraries(wpl.ui.tests wpl.ui agge.text agge)

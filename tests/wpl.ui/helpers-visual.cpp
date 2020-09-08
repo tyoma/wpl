@@ -86,4 +86,7 @@ namespace agge
 {
 	bool operator ==(const wpl::gcontext::pixel_type &lhs, const wpl::gcontext::pixel_type &rhs)
 	{	return !memcmp(&lhs, &rhs, sizeof(wpl::gcontext::pixel_type));	}
+
+	bool operator ==(const color &lhs, const color &rhs)
+	{	return lhs.r == rhs.r && lhs.g == rhs.g && lhs.b == rhs.b && lhs.a == rhs.a;	}
 }

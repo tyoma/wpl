@@ -42,7 +42,7 @@ namespace wpl
 			class stylesheet : public wpl::stylesheet
 			{
 				virtual agge::color get_color(const char * /*id*/) const { throw 0; }
-				virtual shared_ptr<agge::font> get_font(const char * /*id*/) const { throw 0; }
+				virtual agge::font::ptr get_font(const char * /*id*/) const { throw 0; }
 				virtual agge::real_t get_value(const char * /*id*/) const { throw 0; }
 			};
 		}
