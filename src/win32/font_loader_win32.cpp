@@ -18,7 +18,7 @@
 //	OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //	THE SOFTWARE.
 
-#include "font_loader.h"
+#include <wpl/win32/font_loader.h>
 
 #include <functional>
 #include <windows.h>

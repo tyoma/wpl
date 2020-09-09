@@ -179,11 +179,16 @@ int main()
 	_CrtSetDbgFlag(_CrtSetDbgFlag(_CRTDBG_REPORT_FLAG) | _CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
 
 	auto fct = factory::create_default(nullptr);
+
+	fct->register_control("listview-header", [] (const factory &, const shared_ptr<stylesheet> &) {
+		return shared_ptr<controls::header>(new my_header);
+	});
+
 	wpl::font fnt = { L"", 8 };
 	view_location l = { 100, 100, 300, 200 };
 	shared_ptr<form> f = fct->create_form();
 	slot_connection c = f->close += &exit_message_loop;
-	shared_ptr<listview> lv = controls::create_listview<my_listview, my_header>();
+	shared_ptr<listview> lv = controls::create_listview<my_listview>(*fct);
 //	shared_ptr<listview> lv = static_pointer_cast<listview>(fct->create_control("listview"));
 	shared_ptr<my_columns> cm(new my_columns);
 	shared_ptr<my_model> m(new my_model);

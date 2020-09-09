@@ -32,7 +32,7 @@ namespace wpl
 		{
 		public:
 			virtual std::shared_ptr<view> get_view();
-			virtual void set_model(const std::shared_ptr<model_t> &model);
+			virtual void set_model(std::shared_ptr<model_t> model);
 			virtual void select(model_t::index_type index);
 
 		private:

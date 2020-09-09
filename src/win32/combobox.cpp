@@ -35,7 +35,7 @@ namespace wpl
 		shared_ptr<view> combobox::get_view()
 		{	return shared_from_this();	}
 
-		void combobox::set_model(const shared_ptr<model_t> &model)
+		void combobox::set_model(shared_ptr<model_t> model)
 		{
 			_model = model;
 			_selected_item.reset();

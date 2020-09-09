@@ -115,6 +115,17 @@ namespace wpl
 			}
 
 
+			test( HeaderIsAControl )
+			{
+				// INIT / ACT
+				shared_ptr<tracking_header> th(new tracking_header);
+				shared_ptr<header> h = th;
+
+				// ACT / ASSERT
+				assert_equal(static_pointer_cast<view>(th), static_pointer_cast<control>(h)->get_view());
+			}
+
+
 			test( ConstructionOfListViewDoesNotDrawAnything )
 			{
 				// INIT / ACT

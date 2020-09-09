@@ -71,6 +71,7 @@ namespace wpl
 				assert_equal(static_pointer_cast<view>(sc), static_pointer_cast<control>(s)->get_view());
 			}
 
+
 			test( ModellessScrollerDoesNothingOnVisualEvents )
 			{
 				// INIT / ACT

@@ -20,14 +20,15 @@
 
 #pragma once
 
-#include "../models.h"
+#include "../controls.h"
 #include "../view.h"
 
 namespace wpl
 {
 	namespace controls
 	{
-		class header : public view, public index_traits_t<short int>
+		class header : public wpl::header, public view, public std::enable_shared_from_this<view>,
+			public index_traits_t<short int>, noncopyable
 		{
 		public:
 			enum item_state_flags {
@@ -38,9 +39,13 @@ namespace wpl
 		public:
 			header();
 
-			void set_model(const std::shared_ptr<columns_model> &model);
-
 			void set_offset(double offset);
+
+			// control methods
+			virtual std::shared_ptr<view> get_view();
+
+			// header methods
+			void set_model(std::shared_ptr<columns_model> model);
 
 			// mouse_input methods
 			virtual void mouse_move(int depressed, int x, int y);

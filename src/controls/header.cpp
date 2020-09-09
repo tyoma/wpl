@@ -31,7 +31,16 @@ namespace wpl
 			: _offset(0.0f), _resizing_colum(make_pair(npos(), 0))
 		{	}
 
-		void header::set_model(const shared_ptr<columns_model> &model)
+		void header::set_offset(double offset)
+		{
+			_offset = static_cast<agge::real_t>(offset);
+			invalidate(nullptr);
+		}
+
+		shared_ptr<view> header::get_view()
+		{	return shared_from_this();	}
+
+		void header::set_model(shared_ptr<columns_model> model)
 		{
 			_model = model;
 			if (model)
@@ -47,12 +56,6 @@ namespace wpl
 			{
 				_model_invalidation = nullptr;
 			}
-		}
-
-		void header::set_offset(double offset)
-		{
-			_offset = static_cast<agge::real_t>(offset);
-			invalidate(nullptr);
 		}
 
 		void header::mouse_move(int /*depressed*/, int x, int /*y*/)

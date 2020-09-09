@@ -20,10 +20,12 @@
 
 #pragma once
 
+#include "header.h"
 #include "listview_core.h"
-#include "scroller.h"
 
 #include "../container.h"
+#include "../controls.h"
+#include "../factory.h"
 #include "../layout.h"
 
 namespace wpl
@@ -56,11 +58,11 @@ namespace wpl
 			}
 		};
 
-		template <typename BaseControlT, typename HeaderT>
+		template <typename BaseControlT>
 		class external_view_contol : public BaseControlT
 		{
 		public:
-			external_view_contol(const std::shared_ptr<HeaderT> &header_)
+			external_view_contol(const std::shared_ptr<header> &header_)
 				: _header(header_)
 			{
 				_scroll_connection = this->get_hscroll_model()->invalidated += [this] {
@@ -83,7 +85,7 @@ namespace wpl
 			}
 
 		private:
-			std::shared_ptr<HeaderT> _header;
+			std::shared_ptr<header> _header;
 			wpl::slot_connection _scroll_connection;
 		};
 
@@ -108,17 +110,17 @@ namespace wpl
 		};
 
 
-		template <typename ControlT, typename HeaderT>
-		std::shared_ptr<ControlT> create_listview()
+		template <typename ControlT>
+		std::shared_ptr<ControlT> create_listview(const factory &factory_)
 		{
 			using namespace std;
 
 			shared_ptr<listview_complex_layout> layout(new listview_complex_layout);
 			shared_ptr<composite_container> composite(new composite_container);
-			shared_ptr<HeaderT> header(new HeaderT);
-			shared_ptr< external_view_contol<ControlT, HeaderT> > lv(new external_view_contol<ControlT, HeaderT>(header));
-			shared_ptr<scroller> hscroller(new scroller(scroller::horizontal));
-			shared_ptr<scroller> vscroller(new scroller(scroller::vertical));
+			shared_ptr<header> header_(static_pointer_cast<header>(factory_.create_control("listview-header")));
+			shared_ptr< external_view_contol<ControlT> > lv(new external_view_contol<ControlT>(header_));
+			shared_ptr<wpl::scroller> hscroller(static_pointer_cast<wpl::scroller>(factory_.create_control("hscroller")));
+			shared_ptr<wpl::scroller> vscroller(static_pointer_cast<wpl::scroller>(factory_.create_control("vscroller")));
 
 			lv->external_view = composite;
 
@@ -127,12 +129,12 @@ namespace wpl
 			composite->add_view(lv);
 
 			hscroller->set_model(lv->get_hscroll_model());
-			composite->add_view(hscroller);
+			composite->add_view(hscroller->get_view());
 
 			vscroller->set_model(lv->get_vscroll_model());
-			composite->add_view(vscroller);
+			composite->add_view(vscroller->get_view());
 
-			composite->add_view(header);
+			composite->add_view(header_->get_view());
 
 			return shared_ptr<ControlT>(composite, lv.get());
 		}

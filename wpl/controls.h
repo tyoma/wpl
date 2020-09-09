@@ -51,10 +51,15 @@ namespace wpl
 	{
 		typedef list_model<std::wstring> model_t;
 
-		virtual void set_model(const std::shared_ptr<model_t> &model) = 0;
+		virtual void set_model(std::shared_ptr<model_t> model) = 0;
 		virtual void select(model_t::index_type item) = 0;
 
 		signal<void (model_t::index_type item)> selection_changed;
+	};
+
+	struct header : control
+	{
+		virtual void set_model(std::shared_ptr<columns_model> model) = 0;
 	};
 
 	struct listview : control

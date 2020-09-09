@@ -50,7 +50,7 @@
     <ClCompile Include="controls\scroller.cpp" />
     <ClCompile Include="factory.cpp" />
     <ClCompile Include="stylesheet_db.cpp" />
-    <ClCompile Include="win32\comboxbox.cpp">
+    <ClCompile Include="win32\combobox.cpp">
       <DisableLanguageExtensions>false</DisableLanguageExtensions>
     </ClCompile>
     <ClCompile Include="win32\controls.cpp">

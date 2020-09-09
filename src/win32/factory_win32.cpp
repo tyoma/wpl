@@ -20,7 +20,7 @@
 
 #include <wpl/factory.h>
 
-#include "font_loader.h"
+#include <wpl/win32/font_loader.h>
 
 #include <wpl/controls/scroller.h>
 #include <wpl/win32/combobox.h>
