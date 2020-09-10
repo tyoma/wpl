@@ -34,7 +34,7 @@
   </ImportGroup>
   <ItemDefinitionGroup>
     <ClCompile>
-      <AdditionalIncludeDirectories>$(MSBuildThisFileDirectory)..\..;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Lib>
       <AdditionalDependencies>user32.lib;comctl32.lib</AdditionalDependencies>
@@ -107,7 +107,6 @@
     <ClInclude Include="..\wpl\win32\combobox.h" />
     <ClInclude Include="..\wpl\win32\listview.h" />
     <ClInclude Include="..\wpl\win32\view_host.h" />
-    <ClInclude Include="win32\font_loader.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
 </Project>

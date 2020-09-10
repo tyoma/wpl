@@ -40,9 +40,6 @@
     <ClCompile Include="win32\controls.cpp">
       <Filter>src\win32</Filter>
     </ClCompile>
-    <ClCompile Include="win32\comboxbox.cpp">
-      <Filter>src\win32</Filter>
-    </ClCompile>
     <ClCompile Include="win32\listview_win32.cpp">
       <Filter>src\win32</Filter>
     </ClCompile>
@@ -68,6 +65,9 @@
       <Filter>src\win32</Filter>
     </ClCompile>
     <ClCompile Include="stylesheet_db.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="win32\combobox.cpp">
       <Filter>src</Filter>
     </ClCompile>
   </ItemGroup>
@@ -120,8 +120,5 @@
     </ClInclude>
     <ClInclude Include="..\wpl\factory.h" />
     <ClInclude Include="..\wpl\stylesheet.h" />
-    <ClInclude Include="win32\font_loader.h">
-      <Filter>src\win32</Filter>
-    </ClInclude>
   </ItemGroup>
 </Project>
