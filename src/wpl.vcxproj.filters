@@ -120,5 +120,8 @@
     </ClInclude>
     <ClInclude Include="..\wpl\factory.h" />
     <ClInclude Include="..\wpl\stylesheet.h" />
+    <ClInclude Include="..\wpl\win32\font_loader.h">
+      <Filter>win32</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

@@ -12,7 +12,7 @@
 #include <agge/filling_rules.h>
 #include <agge/stroke.h>
 #include <agge/stroke_features.h>
-#include <samples/common/font_loader.h>
+#include <agge.text/text_engine.h>
 #include <samples/common/platform.h>
 #include <samples/common/timer.h>
 #include <string>
@@ -29,10 +29,8 @@ namespace
 	class my_listview : public controls::listview_core
 	{
 	public:
-		my_listview()
-			: _font_loader(new native_font_loader), _text_engine(new text_engine_t(*_font_loader, 4)),
-				_font(_text_engine->create_font(L"segoe ui", 14, false, false, agge::font::key::gf_vertical)),
-				_border_width(1.0f)
+		my_listview(const shared_ptr<stylesheet> &ss)
+			: _font(ss->get_font("text")), _border_width(ss->get_value("border"))
 		{
 			agge::font::metrics m = _font->get_metrics();
 
@@ -70,14 +68,11 @@ namespace
 			const color text_color = state & selected ? color::make(0, 0, 0) : color::make(255, 255, 255);
 
 			ctx.text_engine.render_string(*ras, *_font, text.c_str(), layout::near, b.x1, b.y1 + _baseline_offset, b.x2 - b.x1);
-//			ras->sort(true);
 			ctx(ras, blender_t(text_color), winding<>());
 		}
 
 	private:
 		agge::real_t _item_height, _baseline_offset, _border_width;
-		shared_ptr<text_engine_base::loader> _font_loader;
-		shared_ptr<text_engine_t> _text_engine;
 		agge::font::ptr _font;
 		mutable agge::stroke _stroke;
 		mutable agge::dash _dash;
@@ -87,9 +82,8 @@ namespace
 	class my_header : public controls::header
 	{
 	public:
-		my_header()
-			: _font_loader(new native_font_loader), _text_engine(new text_engine_t(*_font_loader, 4)),
-				_font(_text_engine->create_font(L"segoe ui", 14, false, false, agge::font::key::gf_vertical))
+		my_header(const shared_ptr<stylesheet> &ss)
+			: _font(ss->get_font("text"))
 		{	}
 
 		virtual void draw_item(gcontext &ctx, gcontext::rasterizer_ptr &ras, const agge::rect_r &b,
@@ -178,17 +172,25 @@ int main()
 {
 	_CrtSetDbgFlag(_CrtSetDbgFlag(_CRTDBG_REPORT_FLAG) | _CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
 
-	auto fct = factory::create_default(nullptr);
+	auto te = create_text_engine();
+	auto ss = make_shared<stylesheet_db>();
+	auto fct = factory::create_default(ss);
 
-	fct->register_control("listview-header", [] (const factory &, const shared_ptr<stylesheet> &) {
-		return shared_ptr<controls::header>(new my_header);
+	ss->set_font("text", te->create_font(L"Segoe UI", 20, false, false, agge::font::key::gf_vertical));
+	ss->set_color("background", agge::color::make(16, 16, 16));
+	ss->set_color("text", agge::color::make(192, 192, 192));
+	ss->set_value("padding", 3);
+	ss->set_value("border", 1);
+
+	fct->register_control("listview-header", [] (const factory &, shared_ptr<stylesheet> ss) {
+		return shared_ptr<controls::header>(new my_header(ss));
 	});
 
 	wpl::font fnt = { L"", 8 };
 	view_location l = { 100, 100, 300, 200 };
 	shared_ptr<form> f = fct->create_form();
 	slot_connection c = f->close += &exit_message_loop;
-	shared_ptr<listview> lv = controls::create_listview<my_listview>(*fct);
+	shared_ptr<listview> lv = controls::create_listview<my_listview>(*fct, ss);
 //	shared_ptr<listview> lv = static_pointer_cast<listview>(fct->create_control("listview"));
 	shared_ptr<my_columns> cm(new my_columns);
 	shared_ptr<my_model> m(new my_model);

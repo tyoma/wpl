@@ -27,6 +27,7 @@
 #include "../controls.h"
 #include "../factory.h"
 #include "../layout.h"
+#include "../stylesheet.h"
 
 namespace wpl
 {
@@ -34,15 +35,20 @@ namespace wpl
 	{
 		class listview_complex_layout : public layout_manager
 		{
+		public:
+			listview_complex_layout(agge::real_t header_height)
+				: _header_height(static_cast<int>(0.5f + header_height))
+			{	}
+
+		private:
 			virtual void layout(unsigned width, unsigned height, container::positioned_view *views, size_t count) const
 			{
 				const int scroller_width = 10;
-				const int header_height = 20;
-				const int height2 = height - header_height;
+				const int height2 = height - _header_height;
 
 				// listview core
 				if (count >= 1)
-					views[0].location.left = 0, views[0].location.top = header_height, views[0].location.width = width, views[0].location.height = height2;
+					views[0].location.left = 0, views[0].location.top = _header_height, views[0].location.width = width, views[0].location.height = height2;
 
 				// horizontal scroller
 				if (count >= 3)
@@ -50,20 +56,23 @@ namespace wpl
 
 				// vertical scroller
 				if (count >= 2)
-					views[2].location.left = width - scroller_width, views[2].location.top = header_height, views[2].location.width = scroller_width, views[2].location.height = height2;
+					views[2].location.left = width - scroller_width, views[2].location.top = _header_height, views[2].location.width = scroller_width, views[2].location.height = height2;
 
 				// header
 				if (count >= 4)
-					views[3].location.left = 0, views[3].location.top = 0, views[3].location.width = width, views[3].location.height = header_height;
+					views[3].location.left = 0, views[3].location.top = 0, views[3].location.width = width, views[3].location.height = _header_height;
 			}
+
+		private:
+			int _header_height;
 		};
 
 		template <typename BaseControlT>
 		class external_view_contol : public BaseControlT
 		{
 		public:
-			external_view_contol(const std::shared_ptr<header> &header_)
-				: _header(header_)
+			external_view_contol(const std::shared_ptr<stylesheet> &stylesheet_, const std::shared_ptr<header> &header_)
+				: BaseControlT(stylesheet_), _header(header_)
 			{
 				_scroll_connection = this->get_hscroll_model()->invalidated += [this] {
 					_header->set_offset(this->get_hscroll_model()->get_window().first);
@@ -111,14 +120,18 @@ namespace wpl
 
 
 		template <typename ControlT>
-		std::shared_ptr<ControlT> create_listview(const factory &factory_)
+		std::shared_ptr<ControlT> create_listview(const factory &factory_, const std::shared_ptr<stylesheet> &stylesheet_)
 		{
 			using namespace std;
 
-			shared_ptr<listview_complex_layout> layout(new listview_complex_layout);
+			const auto header_font_metrics = stylesheet_->get_font("text.header")->get_metrics();
+			const auto header_height = 2.0f * stylesheet_->get_value("padding.header")
+				+ header_font_metrics.ascent + header_font_metrics.descent;
+
+			shared_ptr<listview_complex_layout> layout(new listview_complex_layout(header_height));
 			shared_ptr<composite_container> composite(new composite_container);
 			shared_ptr<header> header_(static_pointer_cast<header>(factory_.create_control("listview-header")));
-			shared_ptr< external_view_contol<ControlT> > lv(new external_view_contol<ControlT>(header_));
+			shared_ptr< external_view_contol<ControlT> > lv(new external_view_contol<ControlT>(stylesheet_, header_));
 			shared_ptr<wpl::scroller> hscroller(static_pointer_cast<wpl::scroller>(factory_.create_control("hscroller")));
 			shared_ptr<wpl::scroller> vscroller(static_pointer_cast<wpl::scroller>(factory_.create_control("vscroller")));
 

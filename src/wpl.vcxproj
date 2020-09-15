@@ -101,6 +101,7 @@
     <ClInclude Include="..\wpl\view_host.h" />
     <ClInclude Include="..\wpl\visual.h" />
     <ClInclude Include="..\wpl\win32\controls.h" />
+    <ClInclude Include="..\wpl\win32\font_loader.h" />
     <ClInclude Include="..\wpl\win32\form.h" />
     <ClInclude Include="..\wpl\win32\native_view.h" />
     <ClInclude Include="..\wpl\win32\window.h" />
