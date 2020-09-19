@@ -72,9 +72,6 @@ namespace wpl
 			: _orientation(orientation_)
 		{	_thumb_style.set_join(joins::bevel());	}
 
-		shared_ptr<view> scroller::get_view()
-		{	return shared_from_this();	}
-
 		void scroller::set_model(shared_ptr<scroll_model> model)
 		{
 			_underlying_invalidate = model ? model->invalidated += [this] { invalidate(0); } : slot_connection();

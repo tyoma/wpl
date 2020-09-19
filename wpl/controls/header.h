@@ -21,14 +21,13 @@
 #pragma once
 
 #include "../controls.h"
-#include "../view.h"
+#include "integrated.h"
 
 namespace wpl
 {
 	namespace controls
 	{
-		class header : public wpl::header, public view, public std::enable_shared_from_this<view>,
-			public index_traits_t<short int>, noncopyable
+		class header : public integrated_control<wpl::header>, public index_traits_t<short int>
 		{
 		public:
 			enum item_state_flags {
@@ -40,9 +39,6 @@ namespace wpl
 			header();
 
 			void set_offset(double offset);
-
-			// control methods
-			virtual std::shared_ptr<view> get_view();
 
 			// header methods
 			void set_model(std::shared_ptr<columns_model> model);

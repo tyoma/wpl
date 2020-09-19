@@ -37,9 +37,6 @@ namespace wpl
 			invalidate(nullptr);
 		}
 
-		shared_ptr<view> header::get_view()
-		{	return shared_from_this();	}
-
 		void header::set_model(shared_ptr<columns_model> model)
 		{
 			_model = model;

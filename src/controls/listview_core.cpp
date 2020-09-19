@@ -300,9 +300,6 @@ namespace wpl
 			_hsmodel->invalidated();
 		}
 
-		shared_ptr<view> listview_core::get_view()
-		{	return shared_from_this();	}
-
 		void listview_core::set_columns_model(shared_ptr<columns_model> cmodel)
 		{
 			_cmodel_invalidation = cmodel ? cmodel->invalidated += [this] {

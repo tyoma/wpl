@@ -123,5 +123,8 @@
     <ClInclude Include="..\wpl\win32\font_loader.h">
       <Filter>win32</Filter>
     </ClInclude>
+    <ClInclude Include="..\wpl\controls\integrated.h">
+      <Filter>controls</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

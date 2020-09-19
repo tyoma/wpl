@@ -23,7 +23,7 @@
 #include "../concepts.h"
 #include "../controls.h"
 #include "../models.h"
-#include "../view.h"
+#include "integrated.h"
 
 #include <agge/stroke.h>
 
@@ -31,7 +31,7 @@ namespace wpl
 {
 	namespace controls
 	{
-		class scroller : public wpl::scroller, public view, public std::enable_shared_from_this<view>
+		class scroller : public integrated_control<wpl::scroller>
 		{
 		public:
 			enum orientation { vertical, horizontal };
@@ -44,8 +44,6 @@ namespace wpl
 
 		public:
 			explicit scroller(orientation orientation_);
-
-			virtual std::shared_ptr<view> get_view();
 
 			virtual void set_model(std::shared_ptr<scroll_model> model);
 

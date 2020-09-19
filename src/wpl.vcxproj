@@ -86,6 +86,7 @@
     <ClInclude Include="..\wpl\control.h" />
     <ClInclude Include="..\wpl\controls.h" />
     <ClInclude Include="..\wpl\controls\header.h" />
+    <ClInclude Include="..\wpl\controls\integrated.h" />
     <ClInclude Include="..\wpl\controls\listview.h" />
     <ClInclude Include="..\wpl\controls\listview_core.h" />
     <ClInclude Include="..\wpl\controls\scroller.h" />
