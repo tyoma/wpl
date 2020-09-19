@@ -131,6 +131,10 @@ namespace wpl
 		{
 			switch (message)
 			{
+			case WM_SETFOCUS:
+				// just do nothing, as the default procedure will pass it to the first tabstop
+				return 0;
+
 			case WM_CLOSE:
 				close();
 				return 0;

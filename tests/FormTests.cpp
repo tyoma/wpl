@@ -11,6 +11,7 @@
 #include <ut/assert.h>
 #include <ut/test.h>
 #include <windows.h>
+#include <wpl/win32/controls.h>
 
 using namespace std;
 using namespace std::placeholders;
@@ -626,6 +627,34 @@ namespace wpl
 				};
 
 				assert_equal(reference2, v->background_color);
+			}
+
+
+
+			test( TopLevelGainsFocusEvenWhenWindowedViewsPresent )
+			{
+				// INIT
+				form_and_handle f1(create_form_with_handle());
+				form_and_handle f2(create_form_with_handle());
+				shared_ptr<button> btn(new win32::button);
+
+				btn->set_text(L"a");
+				f1.first->set_view(btn->get_view());
+				btn.reset(new win32::button);
+				btn->set_text(L"b");
+				f2.first->set_view(btn->get_view());
+
+				// ACT
+				::SetFocus(f1.second);
+
+				// ASSERT
+				assert_equal(f1.second, ::GetFocus());
+
+				// ACT
+				::SetFocus(f2.second);
+
+				// ASSERT
+				assert_equal(f2.second, ::GetFocus());
 			}
 
 		end_test_suite

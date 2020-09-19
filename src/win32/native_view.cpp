@@ -53,6 +53,9 @@ namespace wpl
 		native_views.push_back(visual::positioned_native_view(*this, l));
 	}
 
+	void native_view::got_focus()
+	{	::SetFocus(get_window());	}
+
 	HWND native_view::get_window(HWND hparent_for)
 	{
 		using namespace std::placeholders;

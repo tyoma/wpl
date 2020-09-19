@@ -17,6 +17,9 @@ namespace wpl
 			class windowed_view : public native_view
 			{
 			public:
+				using native_view::got_focus;
+
+			public:
 				vector< pair<HWND /*parent*/, HWND /*created*/> > log;
 
 			private:
@@ -163,6 +166,26 @@ namespace wpl
 				// ASSERT
 				assert_equal(f[0].get(), (void *)SendMessage(wv[0]->get_window(), WM_GETFONT, 0, 0));
 				assert_equal(f[1].get(), (void *)SendMessage(wv[1]->get_window(), WM_GETFONT, 0, 0));
+			}
+
+
+			test( NotifyingOfAFocusSetsItToAViewWindow )
+			{
+				// INIT
+				mocks::windowed_view wv[2];
+				HWND hwnd[] = { wv[0].get_window(parent), wv[1].get_window(parent), };
+
+				// ACT
+				wv[0].got_focus();
+
+				// ASSERT
+				assert_equal(hwnd[0], ::GetFocus());
+
+				// ACT
+				wv[1].got_focus();
+
+				// ASSERT
+				assert_equal(hwnd[1], ::GetFocus());
 			}
 
 

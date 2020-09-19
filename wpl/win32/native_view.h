@@ -40,6 +40,9 @@ namespace wpl
 		// visual methods
 		virtual void resize(unsigned cx, unsigned cy, visual::positioned_native_views &native_views);
 
+		// keyboard_input methods
+		virtual void got_focus();
+
 	private:
 		virtual HWND materialize(HWND hparent) = 0;
 		virtual LRESULT on_message(UINT message, WPARAM wparam, LPARAM lparam,
