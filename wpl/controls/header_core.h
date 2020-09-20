@@ -27,7 +27,7 @@ namespace wpl
 {
 	namespace controls
 	{
-		class header : public integrated_control<wpl::header>, public index_traits_t<short int>
+		class header_core : public integrated_control<wpl::header>, public index_traits_t<short int>
 		{
 		public:
 			enum item_state_flags {
@@ -36,7 +36,7 @@ namespace wpl
 			};
 
 		public:
-			header();
+			header_core();
 
 			void set_offset(double offset);
 

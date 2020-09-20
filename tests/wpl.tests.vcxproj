@@ -47,7 +47,7 @@
     <ClCompile Include="NativeComboboxTests.cpp" />
     <ClCompile Include="ContainerTests.cpp" />
     <ClCompile Include="FormTests.cpp" />
-    <ClCompile Include="HeaderTests.cpp" />
+    <ClCompile Include="HeaderCoreTests.cpp" />
     <ClCompile Include="helpers-visual.cpp" />
     <ClCompile Include="helpers-win32.cpp" />
     <ClCompile Include="IntegrationTests.cpp" />

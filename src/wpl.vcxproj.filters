@@ -46,9 +46,6 @@
     <ClCompile Include="controls\listview_core.cpp">
       <Filter>src\controls</Filter>
     </ClCompile>
-    <ClCompile Include="controls\header.cpp">
-      <Filter>src\controls</Filter>
-    </ClCompile>
     <ClCompile Include="controls\scroller.cpp">
       <Filter>src\controls</Filter>
     </ClCompile>
@@ -70,11 +67,17 @@
     <ClCompile Include="win32\combobox.cpp">
       <Filter>src</Filter>
     </ClCompile>
+    <ClCompile Include="controls\listview_basic.cpp">
+      <Filter>src\controls</Filter>
+    </ClCompile>
+    <ClCompile Include="header_basic.cpp">
+      <Filter>src\controls</Filter>
+    </ClCompile>
+    <ClCompile Include="controls\header_core.cpp">
+      <Filter>src\controls</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\wpl\controls\listview.h">
-      <Filter>controls</Filter>
-    </ClInclude>
     <ClInclude Include="..\wpl\controls\listview_core.h">
       <Filter>controls</Filter>
     </ClInclude>
@@ -115,15 +118,24 @@
     <ClInclude Include="..\wpl\win32\view_host.h">
       <Filter>win32</Filter>
     </ClInclude>
-    <ClInclude Include="..\wpl\controls\header.h">
-      <Filter>controls</Filter>
-    </ClInclude>
     <ClInclude Include="..\wpl\factory.h" />
     <ClInclude Include="..\wpl\stylesheet.h" />
     <ClInclude Include="..\wpl\win32\font_loader.h">
       <Filter>win32</Filter>
     </ClInclude>
     <ClInclude Include="..\wpl\controls\integrated.h">
+      <Filter>controls</Filter>
+    </ClInclude>
+    <ClInclude Include="..\wpl\controls\listview_composite.h">
+      <Filter>controls</Filter>
+    </ClInclude>
+    <ClInclude Include="..\wpl\controls\listview_basic.h">
+      <Filter>controls</Filter>
+    </ClInclude>
+    <ClInclude Include="..\wpl\controls\header_core.h">
+      <Filter>controls</Filter>
+    </ClInclude>
+    <ClInclude Include="..\wpl\controls\header_basic.h">
       <Filter>controls</Filter>
     </ClInclude>
   </ItemGroup>

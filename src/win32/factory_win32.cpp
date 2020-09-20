@@ -20,9 +20,11 @@
 
 #include <wpl/factory.h>
 
-#include <wpl/win32/font_loader.h>
-
+#include <wpl/controls/header_basic.h>
+#include <wpl/controls/listview_composite.h>
+#include <wpl/controls/listview_basic.h>
 #include <wpl/controls/scroller.h>
+#include <wpl/win32/font_loader.h>
 #include <wpl/win32/combobox.h>
 #include <wpl/win32/controls.h>
 #include <wpl/win32/form.h>
@@ -72,7 +74,13 @@ namespace wpl
 		factory_.register_control("combobox", [] (const factory &, shared_ptr<stylesheet>) {
 			return shared_ptr<control>(new win32::combobox);
 		});
-		factory_.register_control("listview", [] (const factory &, shared_ptr<stylesheet>) {
+		factory_.register_control("header", [] (const factory &, shared_ptr<stylesheet> ss) {
+			return shared_ptr<control>(new controls::header_basic(ss));
+		});
+		factory_.register_control("listview", [] (const factory &f, shared_ptr<stylesheet> ss) {
+			return controls::create_listview<controls::listview_basic>(f, ss);
+		});
+		factory_.register_control("listview.native", [] (const factory &, shared_ptr<stylesheet>) {
 			return shared_ptr<control>(new win32::listview);
 		});
 		factory_.register_control("hscroller", [] (const factory &, shared_ptr<stylesheet>) {

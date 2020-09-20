@@ -18,7 +18,7 @@
 //	OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //	THE SOFTWARE.
 
-#include <wpl/controls/header.h>
+#include <wpl/controls/header_core.h>
 
 using namespace agge;
 using namespace std;
@@ -27,17 +27,17 @@ namespace wpl
 {
 	namespace controls
 	{
-		header::header()
+		header_core::header_core()
 			: _offset(0.0f), _resizing_colum(make_pair(npos(), 0))
 		{	}
 
-		void header::set_offset(double offset)
+		void header_core::set_offset(double offset)
 		{
 			_offset = static_cast<agge::real_t>(offset);
 			invalidate(nullptr);
 		}
 
-		void header::set_model(shared_ptr<columns_model> model)
+		void header_core::set_model(shared_ptr<columns_model> model)
 		{
 			_model = model;
 			if (model)
@@ -55,13 +55,13 @@ namespace wpl
 			}
 		}
 
-		void header::mouse_move(int /*depressed*/, int x, int /*y*/)
+		void header_core::mouse_move(int /*depressed*/, int x, int /*y*/)
 		{
 			if (_resizing_colum.first != npos())
 				_model->update_column(_resizing_colum.first, static_cast<short>(_resizing_colum.second + x));
 		}
 
-		void header::mouse_down(mouse_buttons /*button*/, int /*buttons*/, int x, int /*y*/)
+		void header_core::mouse_down(mouse_buttons /*button*/, int /*buttons*/, int x, int /*y*/)
 		{
 			pair<index_type, handle_type> h = handle_from_point(x);
 
@@ -75,7 +75,7 @@ namespace wpl
 			}
 		}
 
-		void header::mouse_up(mouse_buttons /*button*/, int /*buttons*/, int x, int /*y*/)
+		void header_core::mouse_up(mouse_buttons /*button*/, int /*buttons*/, int x, int /*y*/)
 		{
 			if (_resizing_colum.first != npos())
 			{
@@ -91,7 +91,7 @@ namespace wpl
 			}
 		}
 
-		void header::draw(gcontext &ctx, gcontext::rasterizer_ptr &rasterizer_) const
+		void header_core::draw(gcontext &ctx, gcontext::rasterizer_ptr &rasterizer_) const
 		{
 			if (_model)
 			{
@@ -112,14 +112,14 @@ namespace wpl
 			}
 		}
 
-		void header::resize(unsigned /*cx*/, unsigned cy, positioned_native_views &/*native_views*/)
+		void header_core::resize(unsigned /*cx*/, unsigned cy, positioned_native_views &/*native_views*/)
 		{	_size.h = static_cast<real_t>(cy);	}
 
-		void header::draw_item_background(gcontext &/*ctx*/, gcontext::rasterizer_ptr &/*rasterizer*/,
+		void header_core::draw_item_background(gcontext &/*ctx*/, gcontext::rasterizer_ptr &/*rasterizer*/,
 			const rect_r &/*box*/, index_type /*item*/, unsigned /*item_state_flags*/ /*state*/) const
 		{	}
 
-		pair<header::index_type, header::handle_type> header::handle_from_point(int x) const
+		pair<header_core::index_type, header_core::handle_type> header_core::handle_from_point(int x) const
 		{
 			x += static_cast<int>(_offset);
 			for (index_type i = 0, n = _model ? _model->get_count() : 0; i != n; ++i)

@@ -20,8 +20,7 @@
 
 #pragma once
 
-#include "header.h"
-#include "listview_core.h"
+#include "header_basic.h"
 
 #include "../container.h"
 #include "../controls.h"
@@ -71,7 +70,7 @@ namespace wpl
 		class external_view_contol : public BaseControlT
 		{
 		public:
-			external_view_contol(const std::shared_ptr<stylesheet> &stylesheet_, const std::shared_ptr<header> &header_)
+			external_view_contol(const std::shared_ptr<stylesheet> &stylesheet_, const std::shared_ptr<header_basic> &header_)
 				: BaseControlT(stylesheet_), _header(header_)
 			{
 				_scroll_connection = this->get_hscroll_model()->invalidated += [this] {
@@ -94,7 +93,7 @@ namespace wpl
 			}
 
 		private:
-			std::shared_ptr<header> _header;
+			std::shared_ptr<header_basic> _header;
 			wpl::slot_connection _scroll_connection;
 		};
 
@@ -130,7 +129,7 @@ namespace wpl
 
 			shared_ptr<listview_complex_layout> layout(new listview_complex_layout(header_height));
 			shared_ptr<composite_container> composite(new composite_container);
-			shared_ptr<header> header_(static_pointer_cast<header>(factory_.create_control("listview-header")));
+			shared_ptr<header_basic> header_(static_pointer_cast<header_basic>(factory_.create_control("header")));
 			shared_ptr< external_view_contol<ControlT> > lv(new external_view_contol<ControlT>(stylesheet_, header_));
 			shared_ptr<wpl::scroller> hscroller(static_pointer_cast<wpl::scroller>(factory_.create_control("hscroller")));
 			shared_ptr<wpl::scroller> vscroller(static_pointer_cast<wpl::scroller>(factory_.create_control("vscroller")));

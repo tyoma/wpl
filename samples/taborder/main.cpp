@@ -24,7 +24,6 @@ using namespace wpl;
 
 namespace
 {
-	typedef agge::text_engine<gcontext::rasterizer_type> text_engine_t;
 	typedef blender_solid_color<simd::blender_solid_color, order_bgra> blender_t;
 
 	class my_listview : public controls::listview_core

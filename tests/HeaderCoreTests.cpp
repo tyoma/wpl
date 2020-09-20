@@ -1,4 +1,4 @@
-#include <wpl/controls/header.h>
+#include <wpl/controls/header_core.h>
 
 #include "helpers.h"
 #include "helpers-visual.h"
@@ -20,7 +20,7 @@ namespace wpl
 			typedef columns_model::column column_t;
 			enum drawing_event_type { item_background = 1, item_self = 4, };
 
-			class tracking_header : public controls::header
+			class tracking_header : public controls::header_core
 			{
 			public:
 				struct drawing_event
@@ -42,7 +42,7 @@ namespace wpl
 					wstring text;
 				};
 
-				using controls::header::item_state_flags;
+				using controls::header_core::item_state_flags;
 
 			public:
 				tracking_header()
@@ -477,9 +477,9 @@ namespace wpl
 					tracking_header::drawing_event(item_background, *ctx, ras, make_rect(10, 0, 23, 33), 1, 0),
 					tracking_header::drawing_event(item_self, *ctx, ras, make_rect(10, 0, 23, 33), 1, 0, L"b"),
 					tracking_header::drawing_event(item_background, *ctx, ras, make_rect(23, 0, 40, 33), 2,
-						controls::header::ascending | controls::header::sorted),
+						controls::header_core::ascending | controls::header_core::sorted),
 					tracking_header::drawing_event(item_self, *ctx, ras, make_rect(23, 0, 40, 33), 2,
-						controls::header::ascending | controls::header::sorted, L"Z A"),
+						controls::header_core::ascending | controls::header_core::sorted, L"Z A"),
 				};
 
 				assert_equal_pred(reference1, hdr.events, rect_eq());
@@ -493,8 +493,8 @@ namespace wpl
 
 				// ASSERT
 				tracking_header::drawing_event reference2[] = {
-					tracking_header::drawing_event(item_background, *ctx, ras, make_rect(0, 0, 10, 33), 0, controls::header::sorted),
-					tracking_header::drawing_event(item_self, *ctx, ras, make_rect(0, 0, 10, 33), 0, controls::header::sorted, L"a"),
+					tracking_header::drawing_event(item_background, *ctx, ras, make_rect(0, 0, 10, 33), 0, controls::header_core::sorted),
+					tracking_header::drawing_event(item_self, *ctx, ras, make_rect(0, 0, 10, 33), 0, controls::header_core::sorted, L"a"),
 					tracking_header::drawing_event(item_background, *ctx, ras, make_rect(10, 0, 23, 33), 1, 0),
 					tracking_header::drawing_event(item_self, *ctx, ras, make_rect(10, 0, 23, 33), 1, 0, L"b"),
 					tracking_header::drawing_event(item_background, *ctx, ras, make_rect(23, 0, 40, 33), 2, 0),
@@ -553,9 +553,9 @@ namespace wpl
 					tracking_header::drawing_event(item_background, *ctx, ras, make_rect(-3.7, 0.0, 9.3, 33.0), 1, 0),
 					tracking_header::drawing_event(item_self, *ctx, ras, make_rect(-3.7, 0.0, 9.3, 33.0), 1, 0, L"b"),
 					tracking_header::drawing_event(item_background, *ctx, ras, make_rect(9.3, 0.0, 26.3, 33.0), 2,
-						controls::header::ascending | controls::header::sorted),
+						controls::header_core::ascending | controls::header_core::sorted),
 					tracking_header::drawing_event(item_self, *ctx, ras, make_rect(9.3, 0.0, 26.3, 33.0), 2,
-						controls::header::ascending | controls::header::sorted, L"Z A"),
+						controls::header_core::ascending | controls::header_core::sorted, L"Z A"),
 				};
 
 				assert_equal_pred(reference1, hdr.events, rect_eq());
@@ -574,9 +574,9 @@ namespace wpl
 					tracking_header::drawing_event(item_background, *ctx, ras, make_rect(11, 0, 24, 33), 1, 0),
 					tracking_header::drawing_event(item_self, *ctx, ras, make_rect(11, 0, 24, 33), 1, 0, L"b"),
 					tracking_header::drawing_event(item_background, *ctx, ras, make_rect(24, 0, 41, 33), 2,
-						controls::header::ascending | controls::header::sorted),
+						controls::header_core::ascending | controls::header_core::sorted),
 					tracking_header::drawing_event(item_self, *ctx, ras, make_rect(24, 0, 41, 33), 2,
-						controls::header::ascending | controls::header::sorted, L"Z A"),
+						controls::header_core::ascending | controls::header_core::sorted, L"Z A"),
 				};
 
 				assert_equal_pred(reference2, hdr.events, rect_eq());

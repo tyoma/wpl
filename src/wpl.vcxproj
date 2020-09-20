@@ -45,7 +45,9 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="container.cpp" />
-    <ClCompile Include="controls\header.cpp" />
+    <ClCompile Include="controls\header_basic.cpp" />
+    <ClCompile Include="controls\header_core.cpp" />
+    <ClCompile Include="controls\listview_basic.cpp" />
     <ClCompile Include="controls\listview_core.cpp" />
     <ClCompile Include="controls\scroller.cpp" />
     <ClCompile Include="factory.cpp" />
@@ -85,9 +87,11 @@
     <ClInclude Include="..\wpl\container.h" />
     <ClInclude Include="..\wpl\control.h" />
     <ClInclude Include="..\wpl\controls.h" />
-    <ClInclude Include="..\wpl\controls\header.h" />
+    <ClInclude Include="..\wpl\controls\header_basic.h" />
+    <ClInclude Include="..\wpl\controls\header_core.h" />
     <ClInclude Include="..\wpl\controls\integrated.h" />
-    <ClInclude Include="..\wpl\controls\listview.h" />
+    <ClInclude Include="..\wpl\controls\listview_basic.h" />
+    <ClInclude Include="..\wpl\controls\listview_composite.h" />
     <ClInclude Include="..\wpl\controls\listview_core.h" />
     <ClInclude Include="..\wpl\controls\scroller.h" />
     <ClInclude Include="..\wpl\factory.h" />

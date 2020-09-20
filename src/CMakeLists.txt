@@ -7,7 +7,9 @@ set(WPL_SOURCES
 	stylesheet_db.cpp
 	visual.cpp
 
-	controls/header.cpp
+	controls/header_basic.cpp
+	controls/header_core.cpp
+	controls/listview_basic.cpp
 	controls/listview_core.cpp
 	controls/scroller.cpp
 )
