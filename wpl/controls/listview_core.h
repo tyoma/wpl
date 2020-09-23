@@ -76,7 +76,7 @@ namespace wpl
 			struct horizontal_scroll_model;
 
 		private:
-			virtual agge::real_t get_item_height() const = 0;
+			virtual agge::real_t get_minimal_item_height() const = 0;
 			virtual void draw_item_background(gcontext &ctx, gcontext::rasterizer_ptr &rasterizer,
 				const agge::rect_r &box, index_type item, unsigned /*item_state_flags*/ state) const = 0;
 			virtual void draw_subitem_background(gcontext &ctx, gcontext::rasterizer_ptr &rasterizer,

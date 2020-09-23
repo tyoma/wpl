@@ -80,8 +80,8 @@ namespace wpl
 		{
 			virtual range get_window() const
 			{
-				return owner && owner->get_item_height()
-					? range(owner->_offset.dy, owner->_size.h / owner->get_item_height()) : range(0, 0);
+				return owner && owner->get_minimal_item_height()
+					? range(owner->_offset.dy, owner->_size.h / owner->get_minimal_item_height()) : range(0, 0);
 			}
 
 			virtual void scrolling(bool begins)
@@ -152,7 +152,7 @@ namespace wpl
 		{
 			if (is_visible(item) | _state_vscrolling | (npos() == item))
 				return;
-			_offset.dy = static_cast<double>(item < _offset.dy ? item : item - _size.h / get_item_height() + 1);
+			_offset.dy = static_cast<double>(item < _offset.dy ? item : item - _size.h / get_minimal_item_height() + 1);
 			_vsmodel->invalidated();
 			invalidate_();
 		}
@@ -162,7 +162,7 @@ namespace wpl
 			if (const index_type item_count = _model ? _model->get_count() : index_type())
 			{
 				index_type focused = _focused ? _focused->index() : npos();
-				const index_type scroll_size = agge::iround(_size.h / get_item_height());
+				const index_type scroll_size = agge::iround(_size.h / get_minimal_item_height());
 				const index_type last = item_count - 1;
 				const index_type first_visible = first_partially_visible();
 				const index_type last_visible = last_partially_visible();
@@ -251,7 +251,7 @@ namespace wpl
 
 			const index_type item_count = _model->get_count();
 			const columns_model::index_type columns = _cmodel->get_count();
-			const real_t item_height = get_item_height();
+			const real_t item_height = get_minimal_item_height();
 			const index_type focused_item = _focused ? _focused->index() : npos();
 			real_t total_width = 0.0f;
 			index_type r = (max)(0, static_cast<int>(_offset.dy));
@@ -390,7 +390,7 @@ namespace wpl
 
 		listview_core::index_type listview_core::get_item(int y) const
 		{
-			const auto item_height = get_item_height();
+			const auto item_height = get_minimal_item_height();
 			const auto item = (y + _offset.dy * item_height + 0.5) / item_height;
 
 			return _model && 0 <= item && item < _model->get_count() ? static_cast<index_type>(item) : table_model::npos();
@@ -401,7 +401,7 @@ namespace wpl
 
 		bool listview_core::is_visible(index_type item) const
 		{
-			const real_t item_height = get_item_height();
+			const real_t item_height = get_minimal_item_height();
 			const real_t lower = item_height * static_cast<real_t>(item - _offset.dy), upper = lower + item_height;
 
 			return (-c_tolerance < lower) & (upper < _size.h + c_tolerance);

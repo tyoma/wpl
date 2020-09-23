@@ -39,9 +39,6 @@
     <ProjectReference Include="..\..\libraries\agge\src\agge.text\agge.text.vcxproj">
       <Project>{4b446510-fa62-ad02-51ba-9bde9564ff26}</Project>
     </ProjectReference>
-    <ProjectReference Include="..\..\libraries\agge\samples\common\src\samples-common.vcxproj">
-      <Project>{D89A569E-5C54-22B2-A9D4-52E907C821AD}</Project>
-    </ProjectReference>
     <ProjectReference Include="..\..\src\wpl.vcxproj">
       <Project>{2423f23a-b689-f3f7-a864-a1729ec337c9}</Project>
     </ProjectReference>

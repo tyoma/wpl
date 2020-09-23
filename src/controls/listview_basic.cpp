@@ -48,7 +48,7 @@ namespace wpl
 			: _border_width(1.0f)
 		{	update_styles(*stylesheet_);	}
 
-		real_t listview_basic::get_item_height() const
+		real_t listview_basic::get_minimal_item_height() const
 		{	return _item_height;	}
 
 		void listview_basic::draw_item_background(gcontext &ctx, gcontext::rasterizer_ptr &ras, const rect_r &b,

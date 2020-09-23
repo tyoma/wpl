@@ -60,7 +60,7 @@ namespace wpl
 				unsigned reported_events;
 
 			private:
-				virtual agge::real_t get_item_height() const
+				virtual agge::real_t get_minimal_item_height() const
 				{	return (agge::real_t)item_height;	}
 
 				virtual void draw_item_background(gcontext &ctx, gcontext::rasterizer_ptr &rasterizer,
