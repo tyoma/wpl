@@ -37,6 +37,8 @@ namespace wpl
 		public:
 			header_basic(const std::shared_ptr<stylesheet> &stylesheet_);
 
+			virtual void draw(gcontext &ctx, gcontext::rasterizer_ptr &rasterizer) const;
+
 			virtual void draw_item_background(gcontext &ctx, gcontext::rasterizer_ptr &rasterizer,
 				const agge::rect_r &box, index_type item, unsigned /*item_state_flags*/ state) const;
 			virtual void draw_item(gcontext &ctx, gcontext::rasterizer_ptr &ras, const agge::rect_r &b,
@@ -48,7 +50,7 @@ namespace wpl
 		private:
 			agge::real_t _padding, _baseline_offset, _separator_width;
 			agge::font::ptr _font;
-			agge::color _bg_normal, _bg_sorted, _fg_normal, _fg_sorted, _fg_separator;
+			agge::color _bg, _bg_sorted, _fg_normal, _fg_sorted, _fg_separator;
 		};
 	}
 }

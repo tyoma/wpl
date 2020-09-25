@@ -70,10 +70,10 @@
     <ClCompile Include="controls\listview_basic.cpp">
       <Filter>src\controls</Filter>
     </ClCompile>
-    <ClCompile Include="header_basic.cpp">
+    <ClCompile Include="controls\header_core.cpp">
       <Filter>src\controls</Filter>
     </ClCompile>
-    <ClCompile Include="controls\header_core.cpp">
+    <ClCompile Include="controls\header_basic.cpp">
       <Filter>src\controls</Filter>
     </ClCompile>
   </ItemGroup>

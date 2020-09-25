@@ -45,7 +45,6 @@ namespace wpl
 
 
 		listview_basic::listview_basic(const shared_ptr<stylesheet> &stylesheet_)
-			: _border_width(1.0f)
 		{	update_styles(*stylesheet_);	}
 
 		real_t listview_basic::get_minimal_item_height() const
@@ -54,17 +53,11 @@ namespace wpl
 		void listview_basic::draw_item_background(gcontext &ctx, gcontext::rasterizer_ptr &ras, const rect_r &b,
 			index_type item, unsigned state) const
 		{
-			if (item && _fg_borders.a)
-			{
-				add_path(*ras, rectangle(b.x1, b.y1, b.x2, b.y1 + _border_width));
-				ctx(ras, blender(_fg_borders), winding<>());
-			}
-
 			const color bg = state & selected ? _bg_selected : (item & 1) ? _bg_odd : _bg_even;
 
 			if (bg.a)
 			{
-				add_path(*ras, rectangle(b.x1, b.y1 + _border_width, b.x2, b.y2));
+				add_path(*ras, rectangle(b.x1, b.y1, b.x2, b.y2));
 				ctx(ras, blender(bg), winding<>());
 			}
 		}
@@ -77,7 +70,6 @@ namespace wpl
 				rect_r b(b_);
 				const real_t d = -0.5f * _padding;
 
-				b.y1 += _border_width;
 				inflate(b, d, d);
 				add_path(*ras, assist(assist(rectangle(b.x1, b.y1, b.x2, b.y2), _dash), _stroke));
 				ctx(ras, blender(state & selected ? _fg_focus_selected : _fg_focus), winding<>());
@@ -105,18 +97,16 @@ namespace wpl
 			_fg_focus = ss.get_color("text.listview");
 			_fg_selected = ss.get_color("text.selected.listview");
 			_fg_focus_selected = ss.get_color("text.selected.listview");
-			_fg_borders = ss.get_color("border.listview.item");
 
 			agge::font::metrics m = _font->get_metrics();
 
-			_border_width = ss.get_value("border");
 			_padding = ss.get_value("padding");
-			_baseline_offset = _border_width + _padding + m.ascent;
+			_baseline_offset = _padding + m.ascent;
 			_item_height = _baseline_offset + m.descent + _padding;
 
 			_stroke.set_cap(agge::caps::butt());
 			_stroke.set_join(agge::joins::bevel());
-			_stroke.width(_border_width);
+			_stroke.width(1.0f);
 			_dash.add_dash(2.0f, 2.0f);
 		}
 	}

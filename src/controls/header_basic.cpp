@@ -42,15 +42,25 @@ namespace wpl
 		header_basic::header_basic(const shared_ptr<stylesheet> &stylesheet_)
 		{	update_styles(*stylesheet_);	}
 
+		void header_basic::draw(gcontext &ctx, gcontext::rasterizer_ptr &ras) const
+		{
+			if (_bg.a)
+			{
+				const auto ua = ctx.update_area();
+				add_path(*ras, rectangle(static_cast<real_t>(ua.x1), static_cast<real_t>(ua.y1),
+					static_cast<real_t>(ua.x2), static_cast<real_t>(ua.y2)));
+				ctx(ras, blender(_bg), winding<>());
+			}
+			header_core::draw(ctx, ras);
+		}
+
 		void header_basic::draw_item_background(gcontext &ctx, gcontext::rasterizer_ptr &ras, const agge::rect_r &b,
 			index_type /*item*/, unsigned /*item_state_flags*/ state) const
 		{
-			const auto c = state & sorted ? _bg_sorted : _bg_normal;
-
-			if (c.a)
+			if ((state & sorted) && _bg_sorted.a)
 			{
 				add_path(*ras, rectangle(b.x1, b.y1, b.x2, b.y2));
-				ctx(ras, blender(state & sorted ? _bg_sorted : _bg_normal), winding<>());
+				ctx(ras, blender(_bg_sorted), winding<>());
 			}
 		}
 
@@ -62,7 +72,9 @@ namespace wpl
 			ctx.text_engine.render_string(*ras, *_font, text.c_str(), layout::near, b.x1 + _padding, b.y1 + _baseline_offset, w);
 			ctx(ras, blender(state & sorted ? _fg_sorted : _fg_normal), winding<>());
 
-			add_path(*ras, rectangle(b.x2 - 1, b.y1, b.x2, b.y2));
+			add_path(*ras, rectangle(b.x2 - _separator_width, b.y1, b.x2, b.y2));
+			ctx(ras, blender(_fg_separator), winding<>());
+			add_path(*ras, rectangle(b.x1, b.y2 - _separator_width, b.x2, b.y2));
 			ctx(ras, blender(_fg_separator), winding<>());
 
 			if (header_basic::sorted & state)
@@ -77,11 +89,11 @@ namespace wpl
 		{
 			_font = ss.get_font("text.header");
 
-			_bg_normal = ss.get_color("background.header");
+			_bg = ss.get_color("background.header");
 			_bg_sorted = ss.get_color("background.header.sorted");
 			_fg_normal = ss.get_color("text.header");
 			_fg_sorted = ss.get_color("text.header.sorted");
-			_fg_separator = ss.get_color("text.header_basic.separator");
+			_fg_separator = ss.get_color("border.header.separator");
 
 			agge::font::metrics m = _font->get_metrics();
 

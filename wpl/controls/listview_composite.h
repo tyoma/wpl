@@ -125,7 +125,7 @@ namespace wpl
 
 			const auto header_font_metrics = stylesheet_->get_font("text.header")->get_metrics();
 			const auto header_height = 2.0f * stylesheet_->get_value("padding.header")
-				+ header_font_metrics.ascent + header_font_metrics.descent;
+				+ header_font_metrics.ascent + header_font_metrics.descent + stylesheet_->get_value("border.header");
 
 			shared_ptr<listview_complex_layout> layout(new listview_complex_layout(header_height));
 			shared_ptr<composite_container> composite(new composite_container);

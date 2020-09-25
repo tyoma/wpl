@@ -53,10 +53,9 @@ namespace wpl
 			void update_styles(const wpl::stylesheet &ss);
 
 		private:
-			agge::real_t _item_height, _padding, _baseline_offset, _border_width;
+			agge::real_t _item_height, _padding, _baseline_offset;
 			agge::font::ptr _font;
-			agge::color _bg_even, _bg_odd, _bg_selected, _fg_normal, _fg_selected, _fg_focus, _fg_focus_selected,
-				_fg_borders;
+			agge::color _bg_even, _bg_odd, _bg_selected, _fg_normal, _fg_selected, _fg_focus, _fg_focus_selected;
 			mutable agge::stroke _stroke;
 			mutable agge::dash _dash;
 		};
