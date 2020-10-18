@@ -3,6 +3,7 @@ cmake_minimum_required(VERSION 2.8)
 set(WPL_SOURCES
 	container.cpp
 	factory.cpp
+	input_stubs.cpp
 	layout.cpp
 	stylesheet_db.cpp
 	visual.cpp

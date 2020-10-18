@@ -195,6 +195,10 @@ namespace wpl
 			}
 			return result;
 		}
+
+
+		unsigned int pack_wheel(int delta, int modifiers)
+		{	return (unsigned short)modifiers | ((unsigned int )(unsigned short)(delta * WHEEL_DELTA) << 16);	}
 	}
 }
 

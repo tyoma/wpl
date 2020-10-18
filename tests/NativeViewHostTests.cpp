@@ -276,6 +276,8 @@ namespace wpl
 				::SendMessage(f.hwnd, WM_LBUTTONDOWN, 0, pack_coordinates(10, 10));
 				::SendMessage(f.hwnd, WM_LBUTTONDBLCLK, 0, pack_coordinates(12, 11));
 				::SendMessage(f.hwnd, WM_LBUTTONDBLCLK, 0, pack_coordinates(10, 13));
+				::SendMessage(f.hwnd, WM_MOUSEWHEEL, pack_wheel(23), pack_coordinates(122, 1111));
+				::SendMessage(f.hwnd, WM_MOUSEWHEEL, pack_wheel(-3), pack_coordinates(1010, 1311));
 
 				// ASSERT
 				mocks::mouse_event events1[] = {
@@ -284,6 +286,8 @@ namespace wpl
 					mocks::me_down(mouse_input::left, 0, 10, 10),
 					mocks::me_double_click(mouse_input::left, 0, 12, 11),
 					mocks::me_double_click(mouse_input::left, 0, 10, 13),
+					mocks::me_scroll(0, 122, 1111, 0, 23),
+					mocks::me_scroll(0, 1010, 1311, 0, -3),
 				};
 
 				assert_equal(events1, v->events_log);
@@ -298,6 +302,9 @@ namespace wpl
 				::SendMessage(f.hwnd, WM_RBUTTONDBLCLK, 0, pack_coordinates(12, 11));
 				::SendMessage(f.hwnd, WM_RBUTTONDBLCLK, 0, pack_coordinates(10, 13));
 				::SendMessage(f.hwnd, WM_RBUTTONUP, 0, pack_coordinates(-3, -7));
+				::SendMessage(f.hwnd, WM_MOUSEHWHEEL, pack_wheel(7), pack_coordinates(1, 2));
+				::SendMessage(f.hwnd, WM_MOUSEHWHEEL, pack_wheel(-11), pack_coordinates(717, 171));
+				::SendMessage(f.hwnd, WM_MOUSEWHEEL, pack_wheel(1), pack_coordinates(5, 9));
 
 				// ASSERT
 				mocks::mouse_event events2[] = {
@@ -307,6 +314,9 @@ namespace wpl
 					mocks::me_double_click(mouse_input::right, 0, 12, 11),
 					mocks::me_double_click(mouse_input::right, 0, 10, 13),
 					mocks::me_up(mouse_input::right, 0, -3, -7),
+					mocks::me_scroll(0, 1, 2, 7, 0),
+					mocks::me_scroll(0, 717, 171, -11, 0),
+					mocks::me_scroll(0, 5, 9, 0, 1),
 				};
 
 				assert_equal(events2, v->events_log);

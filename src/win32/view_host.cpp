@@ -177,6 +177,8 @@ namespace wpl
 				case WM_RBUTTONDBLCLK:
 				case WM_MOUSEMOVE:
 				case WM_MOUSELEAVE:
+				case WM_MOUSEHWHEEL:
+				case WM_MOUSEWHEEL:
 					dispatch_mouse(message, wparam, lparam);
 					break;
 
@@ -252,9 +254,10 @@ namespace wpl
 				set_focus(find_next(_focus));
 		}
 
-		void view_host::dispatch_mouse(UINT message, WPARAM /*wparam*/, LPARAM lparam)
+		void view_host::dispatch_mouse(UINT message, WPARAM wparam, LPARAM lparam)
 		{
 			const int x = GET_X_LPARAM(lparam), y = GET_Y_LPARAM(lparam);
+			const int wheel_delta = GET_WHEEL_DELTA_WPARAM(wparam) / WHEEL_DELTA;
 
 			switch (message)
 			{
@@ -288,6 +291,14 @@ namespace wpl
 			case WM_LBUTTONDBLCLK:
 			case WM_RBUTTONDBLCLK:
 				_view->mouse_double_click(get_button(message), _input_modifiers, x, y);
+				break;
+
+			case WM_MOUSEHWHEEL:
+				_view->mouse_scroll(0, x, y, wheel_delta, 0);
+				break;
+
+			case WM_MOUSEWHEEL:
+				_view->mouse_scroll(0, x, y, 0, wheel_delta);
 				break;
 			}
 		}

@@ -30,12 +30,13 @@ namespace wpl
 		{
 			struct mouse_event
 			{
-				enum event_type { enter, leave, down, up, move, double_click };
+				enum event_type { enter, leave, down, up, move, double_click, scroll };
 
 				event_type type;
 				mouse_input::mouse_buttons button;
 				int already_depressed;
 				int x, y;
+				int delta_x, delta_y;
 			};
 
 
@@ -163,6 +164,7 @@ namespace wpl
 				virtual void mouse_down(mouse_input::mouse_buttons button, int depressed, int x, int y);
 				virtual void mouse_up(mouse_input::mouse_buttons button, int depressed, int x, int y);
 				virtual void mouse_double_click(mouse_input::mouse_buttons button, int depressed, int x, int y);
+				virtual void mouse_scroll(int depressed, int x, int y, int delta_x, int delta_y);
 				virtual void lost_capture();
 			};
 
@@ -254,7 +256,13 @@ namespace wpl
 
 			inline mouse_event me_double_click(mouse_input::mouse_buttons button, int already_depressed, int x, int y)
 			{
-				mouse_event e = { mouse_event::up, button, already_depressed, x, y };
+				mouse_event e = { mouse_event::double_click, button, already_depressed, x, y };
+				return e;
+			}
+
+			inline mouse_event me_scroll(int already_depressed, int x, int y, int delta_x, int delta_y)
+			{
+				mouse_event e = { mouse_event::scroll, mouse_input::left, already_depressed, x, y, delta_x, delta_y };
 				return e;
 			}
 
@@ -279,7 +287,8 @@ namespace wpl
 			inline bool operator ==(const mouse_event &lhs, const mouse_event &rhs)
 			{
 				return lhs.type == rhs.type && lhs.button == rhs.button && lhs.already_depressed == rhs.already_depressed
-					&& lhs.x == rhs.x && lhs.y == rhs.y;
+					&& lhs.x == rhs.x && lhs.y == rhs.y
+					&& (lhs.type != mouse_event::scroll || lhs.delta_x == rhs.delta_x && lhs.delta_y == rhs.delta_y);
 			}
 
 			inline bool operator ==(const keyboard_event &lhs, const keyboard_event &rhs)
@@ -313,7 +322,11 @@ namespace wpl
 
 			template <typename BaseT>
 			inline void logging_mouse_input<BaseT>::mouse_double_click(mouse_input::mouse_buttons button, int depressed, int x, int y)
-			{	events_log.push_back(me_up(button, depressed, x, y));	}
+			{	events_log.push_back(me_double_click(button, depressed, x, y));	}
+
+			template <typename BaseT>
+			inline void logging_mouse_input<BaseT>::mouse_scroll(int depressed, int x, int y, int delta_x, int delta_y)
+			{	events_log.push_back(me_scroll(depressed, x, y, delta_x, delta_y));	}
 
 			template <typename BaseT>
 			inline void logging_mouse_input<BaseT>::lost_capture()

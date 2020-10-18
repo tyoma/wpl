@@ -64,9 +64,6 @@
     <ClCompile Include="stylesheet_db.cpp">
       <Filter>src</Filter>
     </ClCompile>
-    <ClCompile Include="win32\combobox.cpp">
-      <Filter>src</Filter>
-    </ClCompile>
     <ClCompile Include="controls\listview_basic.cpp">
       <Filter>src\controls</Filter>
     </ClCompile>
@@ -75,6 +72,12 @@
     </ClCompile>
     <ClCompile Include="controls\header_basic.cpp">
       <Filter>src\controls</Filter>
+    </ClCompile>
+    <ClCompile Include="input_stubs.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="win32\combobox.cpp">
+      <Filter>src\win32</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

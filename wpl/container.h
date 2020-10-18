@@ -36,6 +36,7 @@ namespace wpl
 		virtual void mouse_down(mouse_buttons button_, int depressed, int x, int y);
 		virtual void mouse_up(mouse_buttons button_, int depressed, int x, int y);
 		virtual void mouse_double_click(mouse_buttons button_, int depressed, int x, int y);
+		virtual void mouse_scroll(int depressed, int x, int y, int delta_x, int delta_y);
 
 	private:
 		typedef std::vector<positioned_view> views_t;

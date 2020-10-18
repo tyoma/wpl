@@ -118,6 +118,12 @@ namespace wpl
 			v->mouse_double_click(button, depressed, x, y);
 	}
 
+	void container::mouse_scroll(int depressed, int x, int y, int delta_x, int delta_y)
+	{
+		if (shared_ptr<view> v = switch_mouse_over(x, y))
+			v->mouse_scroll(depressed, x, y, delta_x, delta_y);
+	}
+
 	void container::on_invalidate(unsigned index, const agge::rect_i *area)
 	{
 		const positioned_view &v = _children[index];

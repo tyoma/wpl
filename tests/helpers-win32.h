@@ -73,6 +73,8 @@ namespace wpl
 
 		inline unsigned int pack_coordinates(int x, int y)
 		{	return (unsigned short)x | ((unsigned int )(unsigned short)y << 16);	}
+
+		unsigned int pack_wheel(int delta, int modifiers = 0);
 	}
 }
 

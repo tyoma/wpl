@@ -583,6 +583,33 @@ namespace wpl
 
 				assert_equal(reference7, v1->events_log);
 				assert_equal(reference8, v2->events_log);
+
+				// INIT
+				v1->events_log.clear();
+				v2->events_log.clear();
+
+				// ACT
+				c.mouse_scroll(mouse_input::middle | mouse_input::right, 14, 19, 1, 2);
+				c.mouse_scroll(mouse_input::middle, 17, 20, 0, 4);
+				c.mouse_scroll(mouse_input::middle | mouse_input::right, 101, 51, 7, 0);
+				c.mouse_scroll(keyboard_input::control, 110, 53, 0, 9);
+
+				// ASSERT
+				mocks::mouse_event reference9[] = {
+					mocks::me_enter(),
+					mocks::me_scroll(mouse_input::middle | mouse_input::right, 1, 2, 1, 2),
+					mocks::me_scroll(mouse_input::middle, 4, 3, 0, 4),
+					mocks::me_leave(),
+				};
+				mocks::mouse_event reference10[] = {
+					mocks::me_leave(),
+					mocks::me_enter(),
+					mocks::me_scroll(mouse_input::middle | mouse_input::right, 10, 6, 7, 0),
+					mocks::me_scroll(keyboard_input::control, 19, 8, 0, 9),
+				};
+
+				assert_equal(reference9, v1->events_log);
+				assert_equal(reference10, v2->events_log);
 			}
 
 

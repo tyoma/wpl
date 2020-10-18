@@ -51,6 +51,7 @@
     <ClCompile Include="controls\listview_core.cpp" />
     <ClCompile Include="controls\scroller.cpp" />
     <ClCompile Include="factory.cpp" />
+    <ClCompile Include="input_stubs.cpp" />
     <ClCompile Include="stylesheet_db.cpp" />
     <ClCompile Include="win32\combobox.cpp">
       <DisableLanguageExtensions>false</DisableLanguageExtensions>
