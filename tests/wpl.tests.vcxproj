@@ -44,6 +44,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="FactoryTests.cpp" />
+    <ClCompile Include="ListViewCoreSelectionTests.cpp" />
     <ClCompile Include="NativeComboboxTests.cpp" />
     <ClCompile Include="ContainerTests.cpp" />
     <ClCompile Include="FormTests.cpp" />
@@ -70,6 +71,7 @@
   <ItemGroup>
     <ClInclude Include="helpers-visual.h" />
     <ClInclude Include="helpers-win32.h" />
+    <ClInclude Include="helpers-listview.h" />
     <ClInclude Include="MockupsListView.h" />
     <ClInclude Include="MockupsNative.h" />
     <ClInclude Include="MockupsScroller.h" />

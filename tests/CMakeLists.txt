@@ -9,6 +9,7 @@ set(WPL_TEST_SOURCES
 	helpers.cpp
 	helpers-visual.cpp
 	LayoutTests.cpp
+	ListViewCoreSelectionTests.cpp
 	ListViewCoreTests.cpp
 	Mockups.cpp
 	MockupsListView.cpp
