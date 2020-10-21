@@ -256,8 +256,16 @@ namespace wpl
 
 		void view_host::dispatch_mouse(UINT message, WPARAM wparam, LPARAM lparam)
 		{
-			const int x = GET_X_LPARAM(lparam), y = GET_Y_LPARAM(lparam);
+			POINT pt = { GET_X_LPARAM(lparam), GET_Y_LPARAM(lparam) };
 			const int wheel_delta = GET_WHEEL_DELTA_WPARAM(wparam) / WHEEL_DELTA;
+
+			switch (message)
+			{
+			case WM_MOUSEHWHEEL:
+			case WM_MOUSEWHEEL:
+				::ScreenToClient(_window->hwnd(), &pt);
+				break;
+			}
 
 			switch (message)
 			{
@@ -270,7 +278,7 @@ namespace wpl
 					TrackMouseEvent(&tme);
 					_view->mouse_enter();
 				}
-				_view->mouse_move(0, x, y);
+				_view->mouse_move(0, pt.x, pt.y);
 				break;
 
 			case WM_MOUSELEAVE:
@@ -280,25 +288,25 @@ namespace wpl
 
 			case WM_LBUTTONDOWN:
 			case WM_RBUTTONDOWN:
-				_view->mouse_down(get_button(message), _input_modifiers, x, y);
+				_view->mouse_down(get_button(message), _input_modifiers, pt.x, pt.y);
 				break;
 
 			case WM_LBUTTONUP:
 			case WM_RBUTTONUP:
-				_view->mouse_up(get_button(message), _input_modifiers, x, y);
+				_view->mouse_up(get_button(message), _input_modifiers, pt.x, pt.y);
 				break;
 
 			case WM_LBUTTONDBLCLK:
 			case WM_RBUTTONDBLCLK:
-				_view->mouse_double_click(get_button(message), _input_modifiers, x, y);
+				_view->mouse_double_click(get_button(message), _input_modifiers, pt.x, pt.y);
 				break;
 
 			case WM_MOUSEHWHEEL:
-				_view->mouse_scroll(0, x, y, wheel_delta, 0);
+				_view->mouse_scroll(0, pt.x, pt.y, wheel_delta, 0);
 				break;
 
 			case WM_MOUSEWHEEL:
-				_view->mouse_scroll(0, x, y, 0, wheel_delta);
+				_view->mouse_scroll(0, pt.x, pt.y, 0, wheel_delta);
 				break;
 			}
 		}

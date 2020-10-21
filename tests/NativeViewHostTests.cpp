@@ -339,6 +339,46 @@ namespace wpl
 			}
 
 
+			test( ScrollEventsAreTranslatedToWindowClient )
+			{
+				// INIT
+				shared_ptr< mocks::logging_mouse_input<view> > v(new mocks::logging_mouse_input<view>());
+				hosting_window f;
+
+				f.host->set_view(v);
+
+				::MoveWindow(f.hwnd, 17, 151, 100, 50, TRUE);
+
+				// ACT
+				::SendMessage(f.hwnd, WM_MOUSEWHEEL, pack_wheel(1), pack_coordinates(122, 1111));
+				::SendMessage(f.hwnd, WM_MOUSEHWHEEL, pack_wheel(-2), pack_coordinates(1010, 1311));
+
+				// ASSERT
+				mocks::mouse_event events1[] = {
+					mocks::me_scroll(0, 105, 960, 0, 1),
+					mocks::me_scroll(0, 993, 1160, -2, 0),
+				};
+
+				assert_equal(events1, v->events_log);
+
+				// ACT
+				::MoveWindow(f.hwnd, 10, 20, 100, 50, TRUE);
+				v->events_log.clear();
+
+				// ACT
+				::SendMessage(f.hwnd, WM_MOUSEHWHEEL, pack_wheel(1), pack_coordinates(122, 1111));
+				::SendMessage(f.hwnd, WM_MOUSEWHEEL, pack_wheel(-2), pack_coordinates(1010, 1311));
+
+				// ASSERT
+				mocks::mouse_event events2[] = {
+					mocks::me_scroll(0, 112, 1091, 1, 0),
+					mocks::me_scroll(0, 1000, 1291, 0, -2),
+				};
+
+				assert_equal(events2, v->events_log);
+			}
+
+
 			test( MouseEventsAreDispatchedCorrespondinglyWithModifiers )
 			{
 				// INIT
