@@ -52,6 +52,7 @@ namespace wpl
 			virtual void mouse_down(mouse_buttons button_, int buttons, int x, int y);
 			virtual void mouse_up(mouse_buttons button_, int buttons, int x, int y);
 			virtual void mouse_double_click(mouse_buttons button_, int depressed, int x, int y);
+			virtual void mouse_scroll(int depressed, int x, int y, int delta_x, int delta_y);
 
 			// visual methods
 			virtual void draw(gcontext &ctx, gcontext::rasterizer_ptr &rasterizer) const;

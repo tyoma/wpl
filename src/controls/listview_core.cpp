@@ -244,6 +244,14 @@ namespace wpl
 				item_activate(item);
 		}
 
+		void listview_core::mouse_scroll(int /*depressed*/, int /*x*/, int /*y*/, int /*delta_x*/, int delta_y)
+		{
+			_offset.dy -= delta_y;
+			_state_keep_focus_visible = false;
+			_vsmodel->invalidated();
+			invalidate_();
+		}
+
 		void listview_core::draw(gcontext &ctx, gcontext::rasterizer_ptr &ras) const
 		{
 			if (!_model | !_cmodel)

@@ -1263,6 +1263,70 @@ namespace wpl
 				assert_is_empty(m->tracking_requested);
 			}
 
+
+			test( VerticalMouseScrollUpdatesTheVerticalScrollModel )
+			{
+				// INIT
+				tracking_listview lv;
+				auto invalidates = 0;
+				auto sm_invalidates = 0;
+				const auto cm = mocks::columns_model::create(L"", 50);
+				const auto sm = lv.get_vscroll_model();
+				const auto conn = lv.invalidate += [&] (const void *) { invalidates++; };
+				const auto conn_sm = sm->invalidated += [&] { sm_invalidates++; };
+
+				lv.set_columns_model(cm);
+				lv.set_model(create_model(100, 1));
+				lv.item_height = 5;
+				invalidates = 0;
+
+				// ACT
+				lv.mouse_scroll(0, 0, 0, 0, -10);
+
+				// ASSERT
+				assert_equal_pred(10, sm->get_window().first, eq());
+				assert_equal(1, invalidates);
+				assert_equal(1, sm_invalidates);
+
+				// ACT
+				lv.mouse_scroll(0, 0, 0, 0, 3);
+				lv.mouse_scroll(0, 0, 0, 0, -14);
+
+				// ASSERT
+				assert_equal_pred(21, sm->get_window().first, eq());
+				assert_equal(3, invalidates);
+				assert_equal(3, sm_invalidates);
+			}
+
+
+			test( VerticalMouseScrollDisablesFocusTracking )
+			{
+				// INIT
+				tracking_listview lv;
+				auto invalidates = 0;
+				auto sm_invalidates = 0;
+				const auto m = create_model(100, 1);
+				const auto cm = mocks::columns_model::create(L"", 50);
+				const auto sm = lv.get_vscroll_model();
+				const auto conn = lv.invalidate += [&] (const void *) { invalidates++; };
+				const auto conn_sm = sm->invalidated += [&] { sm_invalidates++; };
+
+				lv.resize(100, 100, nviews);
+				lv.set_columns_model(cm);
+				lv.set_model(m);
+				lv.item_height = 5;
+				lv.focus(3);
+
+				invalidates = 0;
+
+				// ACT
+				lv.mouse_scroll(0, 0, 0, 0, -11);
+				m->move_tracking(3, 50);
+				m->invalidated(100);
+
+				// ASSERT
+				assert_equal_pred(11, sm->get_window().first, eq());
+			}
 		end_test_suite
 	}
 }
