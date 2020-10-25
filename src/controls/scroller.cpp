@@ -150,6 +150,20 @@ namespace wpl
 			}
 		}
 
+		void scroller::mouse_scroll(int /*depressed*/, int /*x*/, int /*y*/, int delta_x, int delta_y)
+		{
+			if (const int delta = _orientation == horizontal ? delta_x : delta_y)
+			{
+				pair<double, double> w(_model->get_window());
+				const double increment = _model->get_increment();
+
+				w.first -= increment * delta;
+				_model->scrolling(true);
+				_model->scroll_window(w.first, w.second);
+				_model->scrolling(false);
+			}
+		}
+
 		void scroller::draw(gcontext &ctx, gcontext::rasterizer_ptr &rasterizer_) const
 		{
 			const thumb t = get_thumb();

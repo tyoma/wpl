@@ -114,7 +114,14 @@ namespace wpl
 			virtual void lost_focus()
 			{	input->lost_focus();	}
 
+			virtual void mouse_scroll(int depressed, int x, int y, int delta_x, int delta_y)
+			{
+				scrollers[0]->mouse_scroll(depressed, x, y, delta_x, delta_y);
+				scrollers[1]->mouse_scroll(depressed, x, y, delta_x, delta_y);
+			}
+
 			std::shared_ptr<keyboard_input> input;
+			std::shared_ptr<mouse_input> scrollers[2];
 		};
 
 
@@ -136,7 +143,9 @@ namespace wpl
 
 			lv->external_view = composite;
 
-			composite->input = lv;
+			composite->input = lv->ControlT::get_view();
+			composite->scrollers[0] = hscroller->get_view();
+			composite->scrollers[1] = vscroller->get_view();
 			composite->set_layout(layout);
 			composite->add_view(lv);
 

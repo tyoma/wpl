@@ -721,6 +721,155 @@ namespace wpl
 				assert_equal_pred(reference4, log, eq2());
 			}
 
+
+			test( AlienMouseScrollsDoNotUpdateTheModel )
+			{
+				// INIT
+				shared_ptr<mocks::scroll_model> mh(new mocks::scroll_model), mv(new mocks::scroll_model);
+				controls::scroller sh(controls::scroller::horizontal), sv(controls::scroller::vertical);
+
+				mh->range = make_pair(10, 101);
+				mh->window = make_pair(50, 10);
+				mh->on_scroll = [&] (double, double) {	assert_is_true(false);	};
+				sh.resize(100, 10, nviews);
+				sh.set_model(mh);
+
+				mv->range = make_pair(0, 10);
+				mv->window = make_pair(5, 2);
+				mv->on_scroll = [&] (double, double) {	assert_is_true(false);	};
+				sv.resize(10, 100, nviews);
+				sv.set_model(mv);
+
+				// ACT / ASSERT
+				sh.mouse_scroll(0, 0, 0, 0, -10);
+				sh.mouse_scroll(0, 0, 0, 0, 9);
+				sv.mouse_scroll(0, 0, 0, -10, 0);
+				sv.mouse_scroll(0, 0, 0, 9, 0);
+			}
+
+
+			test( MouseScrollsUpdatesTheModel )
+			{
+				// INIT
+				vector< pair<double, double> > logh, logv;
+				shared_ptr<mocks::scroll_model> mh(new mocks::scroll_model), mv(new mocks::scroll_model);
+				controls::scroller sh(controls::scroller::horizontal), sv(controls::scroller::vertical);
+
+				mh->range = make_pair(10, 101);
+				mh->window = make_pair(50, 10);
+				mh->on_scroll = [&] (double m, double w) {
+					logh.push_back(make_pair(m, w));
+					mh->window = make_pair(m, w);
+				};
+				sh.resize(100, 10, nviews);
+				sh.set_model(mh);
+
+				mv->range = make_pair(0, 10);
+				mv->window = make_pair(5, 2);
+				mv->on_scroll = [&] (double m, double w) {
+					logv.push_back(make_pair(m, w));
+					mv->window = make_pair(m, w);
+				};
+				sv.resize(10, 100, nviews);
+				sv.set_model(mv);
+
+				// ACT
+				sh.mouse_scroll(0, 0, 0, -31, 0);
+				sv.mouse_scroll(0, 0, 0, 0, -3);
+
+				// ASSERT
+				pair<double, double> reference1[] = { make_pair(81, 10), };
+				pair<double, double> reference2[] = { make_pair(8, 2), };
+
+				assert_equal_pred(reference1, logh, eq());
+				assert_equal_pred(reference2, logv, eq());
+
+				// ACT
+				sh.mouse_scroll(0, 0, 0, 20, 0);
+				sv.mouse_scroll(0, 0, 0, 0, 1);
+
+				// ASSERT
+				pair<double, double> reference3[] = { make_pair(81, 10), make_pair(61, 10), };
+				pair<double, double> reference4[] = { make_pair(8, 2), make_pair(7, 2), };
+
+				assert_equal_pred(reference3, logh, eq());
+				assert_equal_pred(reference4, logv, eq());
+			}
+
+
+			test( MouseScrollsGeneratesScrollBeginScrollEndEvents )
+			{
+				// INIT
+				vector<int> events;
+				shared_ptr<mocks::scroll_model> m(new mocks::scroll_model);
+				controls::scroller s(controls::scroller::horizontal);
+
+				m->range = make_pair(10, 101);
+				m->window = make_pair(50, 10);
+				m->on_scrolling = [&] (bool start) {	events.push_back(start ? 1 : 3);	};
+				m->on_scroll = [&] (double, double) {	events.push_back(2);	};
+				s.resize(100, 10, nviews);
+				s.set_model(m);
+
+				// ACT
+				s.mouse_scroll(0, 0, 0, -31, 0);
+
+				// ASSERT
+				int reference1[] = { 1, 2, 3, };
+
+				assert_equal(reference1, events);
+
+				// INIT
+				events.clear();
+
+				// ACT
+				s.mouse_scroll(0, 0, 0, 2, 0);
+				s.mouse_scroll(0, 0, 0, 3, 0);
+				s.mouse_scroll(0, 0, 0, 0, 1);
+
+				// ASSERT
+				int reference2[] = { 1, 2, 3, 1, 2, 3, };
+
+				assert_equal(reference2, events);
+			}
+
+
+			test( MouseScrollIsDoneInModelProvidedIncrements )
+			{
+				// INIT
+				vector< pair<double, double> > log;
+				shared_ptr<mocks::scroll_model> m(new mocks::scroll_model);
+				controls::scroller s(controls::scroller::vertical);
+
+				m->range = make_pair(10, 101);
+				m->window = make_pair(50, 10);
+				m->on_scroll = [&] (double m, double w) {	log.push_back(make_pair(m, w));	};
+				s.resize(100, 10, nviews);
+				s.set_model(m);
+
+				m->increment = 3;
+
+				// ACT
+				s.mouse_scroll(0, 0, 0, 0, -10);
+
+				// ASSERT
+				pair<double, double> reference1[] = { make_pair(80, 10), };
+
+				assert_equal_pred(reference1, log, eq());
+
+				// INIT
+				m->increment = 5;
+				log.clear();
+
+				// ACT
+				s.mouse_scroll(0, 0, 0, 0, 3);
+
+				// ASSERT
+				pair<double, double> reference2[] = { make_pair(35, 10), };
+
+				assert_equal_pred(reference2, log, eq());
+			}
+
 		end_test_suite
 	}
 }

@@ -84,6 +84,9 @@ namespace wpl
 					? range(owner->_offset.dy, owner->_size.h / owner->get_minimal_item_height()) : range(0, 0);
 			}
 
+			virtual double get_increment() const
+			{	return 1;	}
+
 			virtual void scrolling(bool begins)
 			{
 				if (owner)
@@ -101,6 +104,9 @@ namespace wpl
 		{
 			virtual range get_window() const
 			{	return owner ? range(owner->_offset.dx, owner->_size.w) : range(0, 0);	}
+
+			virtual double get_increment() const
+			{	return 5;	}
 
 			virtual void scrolling(bool /*begins*/)
 			{	}
@@ -242,14 +248,6 @@ namespace wpl
 
 			if (item != npos())
 				item_activate(item);
-		}
-
-		void listview_core::mouse_scroll(int /*depressed*/, int /*x*/, int /*y*/, int /*delta_x*/, int delta_y)
-		{
-			_offset.dy -= delta_y;
-			_state_keep_focus_visible = false;
-			_vsmodel->invalidated();
-			invalidate_();
 		}
 
 		void listview_core::draw(gcontext &ctx, gcontext::rasterizer_ptr &ras) const
