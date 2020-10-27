@@ -23,6 +23,7 @@
 #include <algorithm>
 #include <agge/blenders.h>
 #include <agge/blenders_simd.h>
+#include <agge/figures.h>
 #include <agge/filling_rules.h>
 #include <agge/path.h>
 #include <agge/stroke_features.h>
@@ -35,39 +36,6 @@ namespace wpl
 {
 	namespace controls
 	{
-		namespace
-		{
-			typedef blender_solid_color<simd::blender_solid_color, order_bgra> blender_t;
-
-			class line
-			{
-			public:
-				line(real_t x1, real_t y1, real_t x2, real_t y2)
-					: m_index(0)
-				{
-					m_points[0] = create_point(x1, y1);
-					m_points[1] = create_point(x2, y2);
-				}
-
-				void rewind(unsigned)
-				{	m_index = 0;	}
-
-				unsigned vertex(real_t* x, real_t* y)
-				{
-					switch (m_index)
-					{
-					case 0:	return *x = m_points[m_index].x, *y = m_points[m_index++].y, path_command_move_to;
-					case 1:	return *x = m_points[m_index].x, *y = m_points[m_index++].y, path_command_line_to;
-					default:	return path_command_stop;
-					}
-				}
-
-			private:
-				point_r m_points[2];
-				int m_index;
-			};
-		}
-
 		scroller::scroller(orientation orientation_)
 			: _orientation(orientation_)
 		{	_thumb_style.set_join(joins::bevel());	}
@@ -166,6 +134,8 @@ namespace wpl
 
 		void scroller::draw(gcontext &ctx, gcontext::rasterizer_ptr &rasterizer_) const
 		{
+			typedef blender_solid_color<simd::blender_solid_color, order_bgra> blender_t;
+
 			const thumb t = get_thumb();
 
 			if (t.active)
