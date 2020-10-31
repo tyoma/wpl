@@ -107,7 +107,8 @@ namespace wpl
 			_stroke.set_cap(agge::caps::butt());
 			_stroke.set_join(agge::joins::bevel());
 			_stroke.width(1.0f);
-			_dash.add_dash(2.0f, 2.0f);
+			_dash.add_dash(1.0f, 1.0f);
+			_dash.dash_start(0.5f);
 		}
 	}
 }
