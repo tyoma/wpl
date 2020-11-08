@@ -30,6 +30,7 @@
   <ImportGroup Label="PropertySheets">
     <Import Project="$(SolutionDir)build.props\config.props" Condition="exists('$(SolutionDir)build.props\config.props')" />
     <Import Project="$(SolutionDir)build.props\agge.include.props" Condition="exists('$(SolutionDir)build.props\agge.include.props')" />
+    <Import Project="$(SolutionDir)build.props\tq.include.props" Condition="exists('$(SolutionDir)build.props\tq.include.props')" />
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <ItemDefinitionGroup>
@@ -44,6 +45,7 @@
     </ProjectReference>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="animated_models.cpp" />
     <ClCompile Include="container.cpp" />
     <ClCompile Include="controls\header_basic.cpp" />
     <ClCompile Include="controls\header_core.cpp" />
@@ -84,6 +86,7 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\wpl\animated_models.h" />
     <ClInclude Include="..\wpl\concepts.h" />
     <ClInclude Include="..\wpl\container.h" />
     <ClInclude Include="..\wpl\control.h" />

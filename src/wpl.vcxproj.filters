@@ -79,6 +79,9 @@
     <ClCompile Include="win32\combobox.cpp">
       <Filter>src\win32</Filter>
     </ClCompile>
+    <ClCompile Include="animated_models.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\wpl\controls\listview_core.h">
@@ -141,5 +144,6 @@
     <ClInclude Include="..\wpl\controls\header_basic.h">
       <Filter>controls</Filter>
     </ClInclude>
+    <ClInclude Include="..\wpl\animated_models.h" />
   </ItemGroup>
 </Project>

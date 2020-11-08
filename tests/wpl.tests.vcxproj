@@ -30,6 +30,7 @@
   <ImportGroup Label="PropertySheets">
     <Import Project="$(SolutionDir)build.props\config.tests.props" Condition="exists('$(SolutionDir)build.props\config.tests.props')" />
     <Import Project="$(SolutionDir)build.props\agge.include.props" Condition="exists('$(SolutionDir)build.props\agge.include.props')" />
+    <Import Project="$(SolutionDir)build.props\tq.include.props" Condition="exists('$(SolutionDir)build.props\tq.include.props')" />
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <ItemDefinitionGroup>
@@ -43,6 +44,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="AnimatedModelsTests.cpp" />
     <ClCompile Include="FactoryTests.cpp" />
     <ClCompile Include="ListViewCoreSelectionTests.cpp" />
     <ClCompile Include="NativeComboboxTests.cpp" />

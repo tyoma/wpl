@@ -22,6 +22,7 @@
 
 #include "header_basic.h"
 
+#include "../animated_models.h"
 #include "../container.h"
 #include "../controls.h"
 #include "../factory.h"
@@ -42,7 +43,7 @@ namespace wpl
 		private:
 			virtual void layout(unsigned width, unsigned height, container::positioned_view *views, size_t count) const
 			{
-				const int scroller_width = 10;
+				const int scroller_width = 15;
 				const int height2 = height - _header_height;
 
 				// listview core
@@ -149,10 +150,10 @@ namespace wpl
 			composite->set_layout(layout);
 			composite->add_view(lv);
 
-			hscroller->set_model(lv->get_hscroll_model());
+			hscroller->set_model(make_shared<animated_scroll_model>(lv->get_hscroll_model(), nullptr));
 			composite->add_view(hscroller->get_view());
 
-			vscroller->set_model(lv->get_vscroll_model());
+			vscroller->set_model(make_shared<animated_scroll_model>(lv->get_vscroll_model(), nullptr));
 			composite->add_view(vscroller->get_view());
 
 			composite->add_view(header_->get_view());
