@@ -76,6 +76,9 @@ namespace
 		virtual pair<double /*window_min*/, double /*window_width*/> get_window() const
 		{	return _window;	}
 
+		virtual double get_increment() const
+		{	return 1.0;	}
+
 		virtual void scrolling(bool /*begins*/)
 		{	}
 

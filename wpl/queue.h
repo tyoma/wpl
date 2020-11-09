@@ -20,43 +20,13 @@
 
 #pragma once
 
-#include "concepts.h"
-#include "factory_context.h"
-#include "stylesheet.h"
-#include "visual.h"
-
 #include <functional>
-#include <memory>
-#include <unordered_map>
 
 namespace wpl
 {
-	struct control;
-	struct form;
-	struct stylesheet;
-
-	class factory : noncopyable
-	{
-	public:
-		typedef std::function<std::shared_ptr<form> (const form_context &context)> form_constructor;
-		typedef std::function<std::shared_ptr<control> (const factory &factory_, const control_context &context)> control_constructor;
-
-	public:
-		factory(const factory_context &context);
-
-		void register_form(const form_constructor &constructor);
-		void register_control(const char *type, const control_constructor &constructor);
-
-		std::shared_ptr<form> create_form() const;
-		std::shared_ptr<control> create_control(const char *type) const;
-
-		static std::shared_ptr<factory> create_default(const std::shared_ptr<stylesheet> &stylesheet_);
-		static std::shared_ptr<factory> create_default(const form_context &context);
-		static void setup_default(factory &factory_);
-
-	private:
-		const factory_context _context;
-		form_constructor _default_form_constructor;
-		std::unordered_map<std::string, control_constructor> _control_constructors;
-	};
+	typedef long long timespan;
+	typedef long long timestamp;
+	typedef std::function<timestamp ()> clock;
+	typedef std::function<void ()> queue_task;
+	typedef std::function<bool (const queue_task &task, timespan defer_by)> queue;
 }

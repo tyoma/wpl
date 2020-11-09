@@ -6,10 +6,8 @@ using namespace std;
 
 namespace wpl
 {
-	factory::factory(const shared_ptr<gcontext::surface_type> &backbuffer,
-			const shared_ptr<gcontext::renderer_type> &renderer,
-			const std::shared_ptr<gcontext::text_engine_type> &text_engine, const shared_ptr<stylesheet> &stylesheet_)
-		: _backbuffer(backbuffer), _renderer(renderer), _text_engine(text_engine), _stylesheet(stylesheet_)
+	factory::factory(const form_context &context)
+		: _context(context)
 	{	}
 
 	void factory::register_form(const form_constructor &constructor)
@@ -21,24 +19,23 @@ namespace wpl
 	shared_ptr<form> factory::create_form() const
 	{
 		if (_default_form_constructor)
-			return _default_form_constructor(_backbuffer, _renderer, _text_engine, _stylesheet);
+			return _default_form_constructor(_context);
 		throw invalid_argument("");
 	}
 
 	shared_ptr<control> factory::create_control(const char *type) const
 	{
 		auto i = _control_constructors.find(type);
+		control_context context = {	_context.stylesheet_,	};
 
 		if (i != _control_constructors.end())
-			return i->second(*this, _stylesheet);
+			return i->second(*this, context);
 		throw invalid_argument("");
 	}
 
-	shared_ptr<factory> factory::create_default(const shared_ptr<gcontext::surface_type> &backbuffer,
-		const shared_ptr<gcontext::renderer_type> &renderer,
-		const std::shared_ptr<gcontext::text_engine_type> &text_engine, const shared_ptr<stylesheet> &stylesheet_)
+	shared_ptr<factory> factory::create_default(const form_context &context)
 	{
-		shared_ptr<factory> f(new factory(backbuffer, renderer, text_engine, stylesheet_));
+		shared_ptr<factory> f(new factory(context));
 
 		setup_default(*f);
 		return f;

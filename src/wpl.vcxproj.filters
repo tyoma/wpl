@@ -145,5 +145,7 @@
       <Filter>controls</Filter>
     </ClInclude>
     <ClInclude Include="..\wpl\animated_models.h" />
+    <ClInclude Include="..\wpl\factory_context.h" />
+    <ClInclude Include="..\wpl\queue.h" />
   </ItemGroup>
 </Project>

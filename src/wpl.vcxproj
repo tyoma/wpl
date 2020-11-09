@@ -99,10 +99,12 @@
     <ClInclude Include="..\wpl\controls\listview_core.h" />
     <ClInclude Include="..\wpl\controls\scroller.h" />
     <ClInclude Include="..\wpl\factory.h" />
+    <ClInclude Include="..\wpl\factory_context.h" />
     <ClInclude Include="..\wpl\form.h" />
     <ClInclude Include="..\wpl\input.h" />
     <ClInclude Include="..\wpl\layout.h" />
     <ClInclude Include="..\wpl\models.h" />
+    <ClInclude Include="..\wpl\queue.h" />
     <ClInclude Include="..\wpl\signals.h" />
     <ClInclude Include="..\wpl\stylesheet.h" />
     <ClInclude Include="..\wpl\types.h" />

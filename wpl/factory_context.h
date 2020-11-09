@@ -20,43 +20,29 @@
 
 #pragma once
 
-#include "concepts.h"
-#include "factory_context.h"
-#include "stylesheet.h"
+#include "queue.h"
 #include "visual.h"
-
-#include <functional>
-#include <memory>
-#include <unordered_map>
 
 namespace wpl
 {
-	struct control;
-	struct form;
 	struct stylesheet;
 
-	class factory : noncopyable
+	struct factory_context
 	{
-	public:
-		typedef std::function<std::shared_ptr<form> (const form_context &context)> form_constructor;
-		typedef std::function<std::shared_ptr<control> (const factory &factory_, const control_context &context)> control_constructor;
+		std::shared_ptr<gcontext::surface_type> backbuffer;
+		std::shared_ptr<gcontext::renderer_type> renderer;
+		std::shared_ptr<gcontext::text_engine_type> text_engine;
+		std::shared_ptr<stylesheet> stylesheet_;
+		clock clock_;
+		queue queue_;
+	};
 
-	public:
-		factory(const factory_context &context);
+	typedef factory_context form_context;
 
-		void register_form(const form_constructor &constructor);
-		void register_control(const char *type, const control_constructor &constructor);
-
-		std::shared_ptr<form> create_form() const;
-		std::shared_ptr<control> create_control(const char *type) const;
-
-		static std::shared_ptr<factory> create_default(const std::shared_ptr<stylesheet> &stylesheet_);
-		static std::shared_ptr<factory> create_default(const form_context &context);
-		static void setup_default(factory &factory_);
-
-	private:
-		const factory_context _context;
-		form_constructor _default_form_constructor;
-		std::unordered_map<std::string, control_constructor> _control_constructors;
+	struct control_context
+	{
+		std::shared_ptr<stylesheet> stylesheet_;
+		clock clock_;
+		queue queue_;
 	};
 }
