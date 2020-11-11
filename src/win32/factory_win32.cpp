@@ -29,6 +29,7 @@
 #include <wpl/win32/controls.h>
 #include <wpl/win32/form.h>
 #include <wpl/win32/listview.h>
+#include <wpl/win32/queue.h>
 
 using namespace std;
 
@@ -55,6 +56,8 @@ namespace wpl
 			shared_ptr<gcontext::renderer_type>(new gcontext::renderer_type(2)),
 			shared_ptr<gcontext::text_engine_type>(tec, &tec->text_engine),
 			stylesheet_,
+			win32::clock,
+			win32::queue(),
 		};
 
 		return create_default(context);
@@ -80,7 +83,7 @@ namespace wpl
 			return shared_ptr<control>(new controls::header_basic(context.stylesheet_));
 		});
 		factory_.register_control("listview", [] (const factory &f, const control_context &context) {
-			return controls::create_listview<controls::listview_basic>(f, context.stylesheet_);
+			return controls::create_listview<controls::listview_basic>(f, context);
 		});
 		factory_.register_control("listview.native", [] (const factory &, const control_context &) {
 			return shared_ptr<control>(new win32::listview);

@@ -128,14 +128,14 @@ namespace wpl
 			test( ControlsAreCreatedAccordinglyToMapping )
 			{
 				// INIT
-				vector< pair<string, pair<const factory *, shared_ptr<stylesheet> > > > log;
+				vector<string> log;
 				factory f(context);
 
-				f.register_control("button", [&] (const factory &ff, const control_context &cc) {
-					return log.push_back(make_pair("button", make_pair(&ff, cc.stylesheet_))), shared_ptr<control>();
+				f.register_control("button", [&] (const factory &, const control_context &) {
+					return log.push_back("button"), shared_ptr<control>();
 				});
-				f.register_control("listview", [&] (const factory &ff, const control_context &cc) {
-					return log.push_back(make_pair("listview", make_pair(&ff, cc.stylesheet_))), shared_ptr<control>();
+				f.register_control("listview", [&] (const factory &, const control_context &) {
+					return log.push_back("listview"), shared_ptr<control>();
 				});
 
 				// ACT
@@ -144,12 +144,53 @@ namespace wpl
 
 				// ASSERT
 				assert_equal(2u, log.size());
-				assert_equal("button", log[0].first);
-				assert_equal(&f, log[0].second.first);
-				assert_equal(context.stylesheet_, log[0].second.second);
-				assert_equal("listview", log[1].first);
-				assert_equal(&f, log[1].second.first);
-				assert_equal(context.stylesheet_, log[1].second.second);
+				assert_equal("button", log[0]);
+				assert_equal("listview", log[1]);
+			}
+
+
+			test( ControlContextIsFormedFromFactoryContextOnCreation )
+			{
+				// INIT
+				pair<const factory *, control_context> passed_context;
+				timestamp ts;
+				vector< pair<queue_task, timespan> > log;
+				bool schedule_result = false;
+
+				context.clock_ = [&] {	return ts;	};
+				context.queue_ = [&] (const queue_task &t, timespan d) -> bool {
+					log.push_back(make_pair(t, d));
+					return schedule_result;
+				};
+
+				factory f(context);
+
+				f.register_control("button", [&] (const factory &ff, const control_context &cc) {
+					return passed_context = make_pair(&ff, cc), shared_ptr<control>();
+				});
+
+				// ACT
+				f.create_control("button");
+
+				// ASSERT
+				int callid = 0;
+
+				assert_equal(&f, passed_context.first);
+				assert_equal(context.stylesheet_, passed_context.second.stylesheet_);
+				ts = 12345678;
+				assert_equal(ts, passed_context.second.clock_());
+				ts = 912345678;
+				assert_equal(ts, passed_context.second.clock_());
+				assert_is_false(passed_context.second.queue_([&] { callid = 17; }, 10));
+				schedule_result = true;
+				assert_is_true(passed_context.second.queue_([&] { callid = 179; }, 0));
+				assert_equal(2u, log.size());
+				log[0].first();
+				assert_equal(17, callid);
+				assert_equal(10, log[0].second);
+				log[1].first();
+				assert_equal(179, callid);
+				assert_equal(0, log[1].second);
 			}
 
 

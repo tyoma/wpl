@@ -26,7 +26,7 @@ namespace wpl
 	shared_ptr<control> factory::create_control(const char *type) const
 	{
 		auto i = _control_constructors.find(type);
-		control_context context = {	_context.stylesheet_,	};
+		control_context context = {	_context.stylesheet_, _context.clock_, _context.queue_,	};
 
 		if (i != _control_constructors.end())
 			return i->second(*this, context);

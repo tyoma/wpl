@@ -6,7 +6,3 @@
 	path = libraries/agge
 	url = ../agge.git
 	branch = master
-[submodule "libraries/tq"]
-	path = libraries/tq
-	url = ../tq
-	branch = master

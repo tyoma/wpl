@@ -82,6 +82,9 @@
     <ClCompile Include="animated_models.cpp">
       <Filter>src</Filter>
     </ClCompile>
+    <ClCompile Include="win32\queue.cpp">
+      <Filter>src\win32</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\wpl\controls\listview_core.h">
@@ -147,5 +150,8 @@
     <ClInclude Include="..\wpl\animated_models.h" />
     <ClInclude Include="..\wpl\factory_context.h" />
     <ClInclude Include="..\wpl\queue.h" />
+    <ClInclude Include="..\wpl\win32\queue.h">
+      <Filter>win32</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

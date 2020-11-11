@@ -3,9 +3,10 @@ cmake_minimum_required(VERSION 2.8)
 include(test)
 
 set(WPL_TEST_SOURCES
+	AnimatedModelsTests.cpp
 	ContainerTests.cpp
 	FactoryTests.cpp
-	HeaderTests.cpp
+	HeaderCoreTests.cpp
 	helpers.cpp
 	helpers-visual.cpp
 	LayoutTests.cpp

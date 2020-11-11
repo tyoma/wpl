@@ -3,7 +3,6 @@
 #include "MockupsScroller.h"
 #include "predicates.h"
 
-#include <tq/mocks/queue.h>
 #include <ut/assert.h>
 #include <ut/test.h>
 
@@ -14,12 +13,8 @@ namespace wpl
 	namespace tests
 	{
 		begin_test_suite( AnimatedScrollModelTests )
-			shared_ptr<tq::mocks::queue> queue;
-
-			init( Init )
-			{
-				queue.reset(new tq::mocks::queue);
-			}
+			clock clock_;
+			queue queue_;
 
 			test( ModelPassesThroughUnderlyingValues )
 			{
@@ -31,7 +26,7 @@ namespace wpl
 				u->increment = 3.0;
 
 				// INIT / ACT
-				animated_scroll_model m(u, queue);
+				animated_scroll_model m(u, clock_, queue_);
 
 				// ACT / ASSERT
 				assert_equal(make_pair(17.1, 101.5), m.get_range());
@@ -60,7 +55,7 @@ namespace wpl
 			{
 				// INIT 
 				shared_ptr<mocks::scroll_model> u(new mocks::scroll_model);
-				animated_scroll_model m(u, queue);
+				animated_scroll_model m(u, clock_, queue_);
 				vector< pair<double, double> > log;
 
 				u->range = make_pair(10.1, 101.5);
@@ -95,15 +90,14 @@ namespace wpl
 				};
 
 				assert_equal(reference2, log);
-				assert_equal(0u, queue->get_task_count());
 			}
 
 
-			test( RangeSqueezesWhenUnderlyingProvidesOutOfRangeValuesLower )
+			test( WindowSqueezesWhenUnderlyingProvidesOutOfRangeValuesLower )
 			{
 				// INIT 
 				shared_ptr<mocks::scroll_model> u(new mocks::scroll_model);
-				animated_scroll_model m(u, queue);
+				animated_scroll_model m(u, clock_, queue_);
 				vector< pair<double, double> > log;
 
 				u->range = make_pair(0, 100);
@@ -139,11 +133,11 @@ namespace wpl
 			}
 
 
-			test( RangeSqueezesWhenUnderlyingProvidesOutOfRangeValuesUpper )
+			test( WindowSqueezesWhenUnderlyingProvidesOutOfRangeValuesUpper )
 			{
 				// INIT 
 				shared_ptr<mocks::scroll_model> u(new mocks::scroll_model);
-				animated_scroll_model m(u, queue);
+				animated_scroll_model m(u, clock_, queue_);
 				vector< pair<double, double> > log;
 
 				u->range = make_pair(0, 100);
@@ -189,7 +183,7 @@ namespace wpl
 			{
 				// INIT 
 				shared_ptr<mocks::scroll_model> u(new mocks::scroll_model);
-				animated_scroll_model m(u, queue);
+				animated_scroll_model m(u, clock_, queue_);
 				vector< pair<double, double> > log;
 
 				u->range = make_pair(0, 100);
@@ -242,7 +236,7 @@ namespace wpl
 			{
 				// INIT 
 				shared_ptr<mocks::scroll_model> u(new mocks::scroll_model);
-				animated_scroll_model m(u, queue);
+				animated_scroll_model m(u, clock_, queue_);
 				vector< pair<double, double> > log;
 
 				u->range = make_pair(0, 100);

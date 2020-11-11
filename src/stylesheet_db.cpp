@@ -34,7 +34,7 @@ namespace wpl
 
 		do
 		{
-			ContainerT::const_iterator i = container_.find(id);
+			typename ContainerT::const_iterator i = container_.find(id);
 
 			if (i != container_.end())
 				return i->second;

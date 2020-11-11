@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 2.8)
 
 set(WPL_SOURCES
+	animated_models.cpp
 	container.cpp
 	factory.cpp
 	input_stubs.cpp
@@ -25,6 +26,7 @@ if(WIN32)
 		win32/listview_win32.cpp
 		win32/native_view.cpp
 		win32/view_host.cpp
+		win32/queue.cpp
 		win32/window.cpp
 	)
 endif()

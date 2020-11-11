@@ -127,18 +127,20 @@ namespace wpl
 
 
 		template <typename ControlT>
-		std::shared_ptr<ControlT> create_listview(const factory &factory_, const std::shared_ptr<stylesheet> &stylesheet_)
+		std::shared_ptr<ControlT> create_listview(const factory &factory_, const control_context &context)
 		{
 			using namespace std;
 
-			const auto header_font_metrics = stylesheet_->get_font("text.header")->get_metrics();
-			const auto header_height = 2.0f * stylesheet_->get_value("padding.header")
-				+ header_font_metrics.ascent + header_font_metrics.descent + stylesheet_->get_value("border.header");
+			const auto header_font_metrics = context.stylesheet_->get_font("text.header")->get_metrics();
+			const auto header_height = 2.0f * context.stylesheet_->get_value("padding.header")
+				+ header_font_metrics.ascent + header_font_metrics.descent
+				+ context.stylesheet_->get_value("border.header");
 
 			shared_ptr<listview_complex_layout> layout(new listview_complex_layout(header_height));
 			shared_ptr<composite_container> composite(new composite_container);
 			shared_ptr<header_basic> header_(static_pointer_cast<header_basic>(factory_.create_control("header")));
-			shared_ptr< external_view_contol<ControlT> > lv(new external_view_contol<ControlT>(stylesheet_, header_));
+			shared_ptr< external_view_contol<ControlT> > lv(new external_view_contol<ControlT>(context.stylesheet_,
+				header_));
 			shared_ptr<wpl::scroller> hscroller(static_pointer_cast<wpl::scroller>(factory_.create_control("hscroller")));
 			shared_ptr<wpl::scroller> vscroller(static_pointer_cast<wpl::scroller>(factory_.create_control("vscroller")));
 
@@ -150,10 +152,12 @@ namespace wpl
 			composite->set_layout(layout);
 			composite->add_view(lv);
 
-			hscroller->set_model(make_shared<animated_scroll_model>(lv->get_hscroll_model(), nullptr));
+			hscroller->set_model(shared_ptr<animated_scroll_model>(new animated_scroll_model(lv->get_hscroll_model(),
+				context.clock_, context.queue_)));
 			composite->add_view(hscroller->get_view());
 
-			vscroller->set_model(make_shared<animated_scroll_model>(lv->get_vscroll_model(), nullptr));
+			vscroller->set_model(shared_ptr<animated_scroll_model>(new animated_scroll_model(lv->get_vscroll_model(),
+				context.clock_, context.queue_)));
 			composite->add_view(vscroller->get_view());
 
 			composite->add_view(header_->get_view());

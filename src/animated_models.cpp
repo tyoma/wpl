@@ -9,8 +9,8 @@ namespace wpl
 		const double c_max_squeeze = 0.01;
 	}
 
-	animated_scroll_model::animated_scroll_model(shared_ptr<scroll_model> underlying, tq::queue::ptr queue)
-		: _underlying(underlying), _queue(queue)
+	animated_scroll_model::animated_scroll_model(shared_ptr<scroll_model> underlying, const clock &/*clock_*/, const queue &/*queue_*/)
+		: _underlying(underlying)
 	{
 		//_invalidate_connection = _underlying->invalidated += [this] {
 		//	this->invalidated();
