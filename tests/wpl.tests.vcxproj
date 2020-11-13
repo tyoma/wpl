@@ -78,6 +78,7 @@
     <ClInclude Include="MockupsScroller.h" />
     <ClInclude Include="helpers.h" />
     <ClInclude Include="Mockups.h" />
+    <ClInclude Include="mock_queue.h" />
     <ClInclude Include="predicates.h" />
   </ItemGroup>
   <ItemGroup>

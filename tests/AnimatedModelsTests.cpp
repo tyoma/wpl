@@ -1,5 +1,6 @@
 #include <wpl/animated_models.h>
 
+#include "mock_queue.h"
 #include "MockupsScroller.h"
 #include "predicates.h"
 
@@ -16,17 +17,27 @@ namespace wpl
 			clock clock_;
 			queue queue_;
 
+			timestamp time;
+			mocks::queue_container queued;
+
+			init( Init )
+			{
+				clock_ = [this] { return this->time; };
+				queue_ = mocks::create_queue(queued);
+			}
+
+
 			test( ModelPassesThroughUnderlyingValues )
 			{
-				// INIT 
+				// INIT
 				shared_ptr<mocks::scroll_model> u(new mocks::scroll_model);
 
 				u->range = make_pair(17.1, 101.5);
 				u->window = make_pair(20.2, 10.7);
 				u->increment = 3.0;
 
-				// INIT / ACT
-				animated_scroll_model m(u, clock_, queue_);
+				// INIT/ ACT
+				animated_scroll_model m(u, clock_, queue_, &no_animation);
 
 				// ACT / ASSERT
 				assert_equal(make_pair(17.1, 101.5), m.get_range());
@@ -51,11 +62,34 @@ namespace wpl
 			}
 
 
+			test( InvalidationsArePassedOnDownstream )
+			{
+				// INIT
+				auto invalidated = 0;
+				shared_ptr<mocks::scroll_model> u(new mocks::scroll_model);
+				animated_scroll_model m(u, clock_, queue_, &no_animation);
+				auto conn = m.invalidated += [&] {	invalidated++;	};
+
+				// ACT
+				u->invalidated();
+
+				// ASSERT
+				assert_equal(1, invalidated);
+
+				// ACT
+				u->invalidated();
+				u->invalidated();
+
+				// ASSERT
+				assert_equal(3, invalidated);
+			}
+
+
 			test( ScrollingInsideRangeIsPassedAsIsToUnderlying )
 			{
-				// INIT 
+				// INIT
 				shared_ptr<mocks::scroll_model> u(new mocks::scroll_model);
-				animated_scroll_model m(u, clock_, queue_);
+				animated_scroll_model m(u, clock_, queue_, &no_animation);
 				vector< pair<double, double> > log;
 
 				u->range = make_pair(10.1, 101.5);
@@ -95,9 +129,9 @@ namespace wpl
 
 			test( WindowSqueezesWhenUnderlyingProvidesOutOfRangeValuesLower )
 			{
-				// INIT 
+				// INIT
 				shared_ptr<mocks::scroll_model> u(new mocks::scroll_model);
-				animated_scroll_model m(u, clock_, queue_);
+				animated_scroll_model m(u, clock_, queue_, &no_animation);
 				vector< pair<double, double> > log;
 
 				u->range = make_pair(0, 100);
@@ -135,9 +169,9 @@ namespace wpl
 
 			test( WindowSqueezesWhenUnderlyingProvidesOutOfRangeValuesUpper )
 			{
-				// INIT 
+				// INIT
 				shared_ptr<mocks::scroll_model> u(new mocks::scroll_model);
-				animated_scroll_model m(u, clock_, queue_);
+				animated_scroll_model m(u, clock_, queue_, &no_animation);
 				vector< pair<double, double> > log;
 
 				u->range = make_pair(0, 100);
@@ -181,9 +215,9 @@ namespace wpl
 
 			test( ScrollingOutsideTheRangeIsSlowingDownLower )
 			{
-				// INIT 
+				// INIT
 				shared_ptr<mocks::scroll_model> u(new mocks::scroll_model);
-				animated_scroll_model m(u, clock_, queue_);
+				animated_scroll_model m(u, clock_, queue_, &no_animation);
 				vector< pair<double, double> > log;
 
 				u->range = make_pair(0, 100);
@@ -234,9 +268,9 @@ namespace wpl
 
 			test( ScrollingOutsideTheRangeIsSlowingDownUpper )
 			{
-				// INIT 
+				// INIT
 				shared_ptr<mocks::scroll_model> u(new mocks::scroll_model);
-				animated_scroll_model m(u, clock_, queue_);
+				animated_scroll_model m(u, clock_, queue_, &no_animation);
 				vector< pair<double, double> > log;
 
 				u->range = make_pair(0, 100);
@@ -282,6 +316,165 @@ namespace wpl
 				};
 
 				assert_equal_pred(reference3, log, eq());
+			}
+
+
+			test( NoAnimationTaskIsScheduledOnScrollEndsWithinTheRange )
+			{
+				// INIT
+				shared_ptr<mocks::scroll_model> u(new mocks::scroll_model);
+				animated_scroll_model m(u, clock_, queue_, &no_animation);
+				vector<int> events;
+
+				u->range = make_pair(0, 100);
+				u->window = make_pair(10, 11);
+				u->on_scrolling = [&] (bool begins) { events.push_back(begins ? 1 : 3); };
+				u->on_scroll = [&] (...) { events.push_back(2); };
+
+				// ACT
+				m.scrolling(true);
+				m.scroll_window(0, 11);
+				m.scroll_window(89, 11);
+				m.scroll_window(50, 11);
+				m.scrolling(false);
+
+				// ASSERT
+				int reference[] = { 1, 2, 2, 2, 3, };
+
+				assert_equal(reference, events);
+				assert_is_empty(queued);
+
+				// INIT
+				u->range = make_pair(1000, 50);
+				u->window = make_pair(1040, 5);
+				events.clear();
+
+				// ACT
+				m.scrolling(true);
+				m.scroll_window(1000, 5);
+				m.scroll_window(1045, 5);
+				m.scroll_window(1010, 5);
+				m.scrolling(false);
+
+				// ASSERT
+				assert_equal(reference, events);
+				assert_is_empty(queued);
+			}
+
+
+			test( AnimationTaskIsScheduledIfScrollEndsOutsideTheRange )
+			{
+				// INIT
+				shared_ptr<mocks::scroll_model> u(new mocks::scroll_model);
+				animated_scroll_model m1(u, clock_, queue_, &no_animation);
+				animated_scroll_model m2(u, clock_, queue_, &no_animation);
+				vector<int> events;
+
+				u->range = make_pair(0, 100);
+				u->window = make_pair(10, 10);
+				u->on_scrolling = [&] (bool begins) { events.push_back(begins ? 1 : 3); };
+				u->on_scroll = [&] (...) { events.push_back(2); };
+
+				// ACT
+				m1.scrolling(true);
+				m1.scroll_window(-10, 10);
+				m1.scrolling(false);
+
+				// ASSERT
+				int reference[] = { 1, 2, };
+
+				assert_equal(reference, events);
+				assert_equal(1u, queued.size());
+				assert_equal(10, queued.front().defer_by);
+
+				// INIT
+				events.clear();
+				queued.pop();
+
+				// ACT
+				m2.scrolling(true);
+				m2.scroll_window(-10, 10);
+				m2.scrolling(false);
+
+				// ASSERT
+				assert_equal(reference, events);
+				assert_equal(1u, queued.size());
+				assert_equal(10, queued.front().defer_by);
+			}
+
+
+			test( AnimationTaskScrollsRangeAccordinglyToAnimationFunctionLower )
+			{
+				// INIT
+				shared_ptr<mocks::scroll_model> u(new mocks::scroll_model);
+				double progress;
+				auto result = true;
+				auto invalidated = 0;
+				animated_scroll_model m(u, clock_, queue_, [&] (double &p, double) -> bool {
+					p = progress;
+					return result;
+				});
+				auto conn = m.invalidated += [&] {	invalidated++;	};
+				vector< pair<double, double> > log;
+				vector<int> events;
+
+				u->range = make_pair(10, 104);
+				u->window = make_pair(10, 7);
+				u->on_scrolling = [&] (bool begins) { events.push_back(begins ? 1 : 3); };
+				u->on_scroll = [&] (double m, double w) {
+					events.push_back(2);
+					log.push_back(make_pair(m, w));
+				};
+
+				m.scrolling(true);
+				m.scroll_window(150, 7);
+				m.scrolling(false);
+
+				// ACT
+				progress = 0.1;
+				queued.front().task();
+				queued.pop();
+
+				// ASSERT
+				int reference1_events[] = { 1, 2, 2, };
+
+				assert_equal(reference1_events, events);
+				assert_equal_pred(make_pair(log[0].first * 0.9 + 107 * 0.1, 7), log[1], eq());
+				assert_equal(1u, queued.size());
+				assert_equal(10, queued.front().defer_by);
+				assert_equal(1, invalidated);
+
+				// ACT
+				time = 122991;
+				progress = 0.81;
+				queued.front().task();
+				queued.pop();
+
+				// ASSERT
+				int reference2_events[] = { 1, 2, 2, 2, };
+
+				assert_equal(reference2_events, events);
+				assert_equal_pred(make_pair(log[0].first * 0.19 + 107 * 0.81, 7), log[2], eq());
+				assert_equal(1u, queued.size());
+				assert_equal(10, queued.front().defer_by);
+				assert_equal(2, invalidated);
+
+				// INIT
+				u->range = make_pair(3, 100);
+
+				// ACT
+				result = false;
+				time = 123123;
+				progress = 1.0;
+				queued.front().task();
+				queued.pop();
+
+				// ASSERT
+				int reference3_events[] = { 1, 2, 2, 2, 2, 3, };
+
+				assert_equal(reference3_events, events);
+				assert_equal_pred(make_pair(96, 7), log[3], eq());
+				assert_is_empty(queued);
 			}
 		end_test_suite
 	}

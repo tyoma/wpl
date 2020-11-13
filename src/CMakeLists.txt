@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 2.8)
 
 set(WPL_SOURCES
 	animated_models.cpp
+	animation.cpp
 	container.cpp
 	factory.cpp
 	input_stubs.cpp

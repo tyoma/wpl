@@ -18,38 +18,26 @@
 //	OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //	THE SOFTWARE.
 
-#pragma once
+#include <wpl/animation.h>
 
-#include "animation.h"
-#include "concepts.h"
-#include "models.h"
-#include "queue.h"
+#include <math.h>
 
 namespace wpl
 {
-	class animated_scroll_model : public scroll_model, noncopyable
+	bool no_animation(double &progress, double /*elapsed*/) throw()
+	{	return progress = 1, false;	}
+
+
+	smooth_animation::smooth_animation(double duration)
+		: _rduration(1.0 / duration)
+	{	}
+
+	bool smooth_animation::operator ()(double &progress, double elapsed) const throw()
 	{
-	public:
-		animated_scroll_model(std::shared_ptr<scroll_model> underlying, const clock &clock_, const queue &queue_,
-			const animation_function &release_animation);
+		auto t = elapsed * _rduration;
+		const auto proceed = t < 1 ? true : (t = 1, false);
 
-		virtual std::pair<double, double> get_range() const;
-		virtual std::pair<double, double> get_window() const;
-		virtual double get_increment() const;
-		virtual void scrolling(bool begins);
-		virtual void scroll_window(double window_min, double window_width);
-
-	private:
-		void animate();
-
-	private:
-		timestamp _animation_start;
-		double _excess;
-
-		const clock _clock;
-		const queue _queue;
-		const animation_function _release_animation;
-		const std::shared_ptr<scroll_model> _underlying;
-		const slot_connection _invalidate_connection;
-	};
+		progress = sin(0.5 * 3.1415926 * t);
+		return proceed;
+	}
 }

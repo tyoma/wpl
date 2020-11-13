@@ -45,6 +45,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="animated_models.cpp" />
+    <ClCompile Include="animation.cpp" />
     <ClCompile Include="container.cpp" />
     <ClCompile Include="controls\header_basic.cpp" />
     <ClCompile Include="controls\header_core.cpp" />
@@ -92,6 +93,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\wpl\animated_models.h" />
+    <ClInclude Include="..\wpl\animation.h" />
     <ClInclude Include="..\wpl\concepts.h" />
     <ClInclude Include="..\wpl\container.h" />
     <ClInclude Include="..\wpl\control.h" />

@@ -1,5 +1,7 @@
 #include <wpl/animated_models.h>
 
+#pragma warning(disable: 4355)
+
 using namespace std;
 
 namespace wpl
@@ -9,13 +11,11 @@ namespace wpl
 		const double c_max_squeeze = 0.01;
 	}
 
-	animated_scroll_model::animated_scroll_model(shared_ptr<scroll_model> underlying, const clock &/*clock_*/, const queue &/*queue_*/)
-		: _underlying(underlying)
-	{
-		//_invalidate_connection = _underlying->invalidated += [this] {
-		//	this->invalidated();
-		//};
-	}
+	animated_scroll_model::animated_scroll_model(shared_ptr<scroll_model> underlying, const clock &clock_,
+			const queue &queue_, const animation_function &release_animation)
+		: _underlying(underlying), _clock(clock_), _queue(queue_), _release_animation(release_animation),
+			_invalidate_connection(underlying->invalidated += [this] {	invalidated();	})
+	{	}
 
 	pair<double, double> animated_scroll_model::get_range() const
 	{	return _underlying->get_range();	}
@@ -43,28 +43,62 @@ namespace wpl
 
 	void animated_scroll_model::scrolling(bool begins)
 	{
-		// UNTESTED
-		_underlying->scrolling(begins);
+		if (begins)
+		{
+			_underlying->scrolling(true);
+		}
+		else if (!_excess)
+		{
+			_underlying->scrolling(false);
+		}
+		else
+		{
+			_animation_start = _clock();
+			_queue([this] {	animate();	}, 10);
+		}
 	}
 
 	void animated_scroll_model::scroll_window(double window_min, double /*window_width*/)
 	{
-		// UNTESTED
+		const auto r = _underlying->get_range();
+		const auto w = _underlying->get_window().second;
+		const auto lbound = r.first;
+		const auto ubound = r.first + r.second - w;
+
+		if (window_min < lbound)
+		{
+			const auto d = 1 + (lbound - window_min) / w;
+
+			_excess = -w + w / d;
+			window_min = lbound + _excess;
+		}
+		else if (window_min > ubound)
+		{
+			const auto d = 1 + (window_min - ubound) / w;
+
+			_excess = -w / d + w;
+			window_min = ubound + _excess;
+		}
+		else
+		{
+			_excess = 0;
+		}
+		_underlying->scroll_window(window_min, w);
+	}
+
+	void animated_scroll_model::animate()
+	{
+		double progress;
 		const auto r = _underlying->get_range();
 		const auto uw = _underlying->get_window();
+		const double target = _excess < 0 ? r.first : r.first + r.second - uw.second;
+		const auto proceed = _release_animation(progress, 0.001 * (_clock() - _animation_start));
 
-		if (window_min < r.first)
-		{
-			double d = (r.first - window_min) / uw.second;
-
-			window_min = r.first - uw.second + uw.second / (1 + d);
-		}
-		else if (window_min + uw.second >= r.first + r.second)
-		{
-			double d = (window_min + uw.second - r.first - r.second) / uw.second;
-
-			window_min = r.first + r.second - uw.second / (1 + d);
-		}
-		_underlying->scroll_window(window_min, uw.second);
+		_underlying->scroll_window(target + (1.0 - progress) * _excess, uw.second);
+		if (proceed)
+			_queue([this] {	animate();	}, 10);
+		else
+			_underlying->scrolling(false);
+		invalidated();
 	}
 }

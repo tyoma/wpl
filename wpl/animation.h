@@ -18,38 +18,22 @@
 //	OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //	THE SOFTWARE.
 
-#pragma once
-
-#include "animation.h"
-#include "concepts.h"
-#include "models.h"
-#include "queue.h"
+#include <functional>
 
 namespace wpl
 {
-	class animated_scroll_model : public scroll_model, noncopyable
+	typedef std::function<bool (double &progress, double elapsed)> animation_function;
+
+	bool no_animation(double &progress, double /*elapsed*/) throw();
+
+	class smooth_animation
 	{
 	public:
-		animated_scroll_model(std::shared_ptr<scroll_model> underlying, const clock &clock_, const queue &queue_,
-			const animation_function &release_animation);
+		smooth_animation(double duration = 0.3);
 
-		virtual std::pair<double, double> get_range() const;
-		virtual std::pair<double, double> get_window() const;
-		virtual double get_increment() const;
-		virtual void scrolling(bool begins);
-		virtual void scroll_window(double window_min, double window_width);
+		bool operator ()(double &progress, double elapsed) const throw();
 
 	private:
-		void animate();
-
-	private:
-		timestamp _animation_start;
-		double _excess;
-
-		const clock _clock;
-		const queue _queue;
-		const animation_function _release_animation;
-		const std::shared_ptr<scroll_model> _underlying;
-		const slot_connection _invalidate_connection;
+		double _rduration;
 	};
 }

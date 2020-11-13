@@ -85,6 +85,9 @@
     <ClCompile Include="win32\queue.cpp">
       <Filter>src\win32</Filter>
     </ClCompile>
+    <ClCompile Include="animation.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\wpl\controls\listview_core.h">
@@ -153,5 +156,6 @@
     <ClInclude Include="..\wpl\win32\queue.h">
       <Filter>win32</Filter>
     </ClInclude>
+    <ClInclude Include="..\wpl\animation.h" />
   </ItemGroup>
 </Project>

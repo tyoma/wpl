@@ -153,11 +153,11 @@ namespace wpl
 			composite->add_view(lv);
 
 			hscroller->set_model(shared_ptr<animated_scroll_model>(new animated_scroll_model(lv->get_hscroll_model(),
-				context.clock_, context.queue_)));
+				context.clock_, context.queue_, smooth_animation())));
 			composite->add_view(hscroller->get_view());
 
 			vscroller->set_model(shared_ptr<animated_scroll_model>(new animated_scroll_model(lv->get_vscroll_model(),
-				context.clock_, context.queue_)));
+				context.clock_, context.queue_, smooth_animation())));
 			composite->add_view(vscroller->get_view());
 
 			composite->add_view(header_->get_view());
