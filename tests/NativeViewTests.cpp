@@ -38,7 +38,7 @@ namespace wpl
 		}
 
 		begin_test_suite( NativeViewHelperTests )
-			WindowManager wmanager;
+			window_manager wmanager;
 			HWND parent;
 			window_tracker tracker;
 

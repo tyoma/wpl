@@ -20,31 +20,41 @@
 
 #pragma once
 
-#include "queue.h"
+#include "concepts.h"
 #include "visual.h"
+
+#include <memory>
 
 namespace wpl
 {
-	struct cursor_manager;
-	struct stylesheet;
-
-	struct factory_context
+	class cursor : gcontext::surface_type, noncopyable
 	{
-		std::shared_ptr<gcontext::surface_type> backbuffer;
-		std::shared_ptr<gcontext::renderer_type> renderer;
-		std::shared_ptr<gcontext::text_engine_type> text_engine;
-		std::shared_ptr<stylesheet> stylesheet_;
-		std::shared_ptr<cursor_manager> cursor_manager_;
-		clock clock_;
-		queue queue_;
+	private:
+		typedef gcontext::surface_type base;
+
+	public:
+		cursor(unsigned int width_, unsigned int height_, unsigned int hot_x_, unsigned int hot_y_);
+
+		using base::width;
+		using base::height;
+		using base::row_ptr;
+		using base::native;
+		const unsigned int hot_x;
+		const unsigned int hot_y;
 	};
 
-	typedef factory_context form_context;
-
-	struct control_context
+	struct cursor_manager
 	{
-		std::shared_ptr<stylesheet> stylesheet_;
-		clock clock_;
-		queue queue_;
+		enum standard_cursor {
+			arrow,
+			i_beam,
+			crosshair,
+			hand,
+			h_resize, l_resize, r_resize,
+			v_resize, u_resize, b_resize,
+		};
+
+		virtual std::shared_ptr<const cursor> get(standard_cursor id) const = 0;
+		virtual void set(std::shared_ptr<const cursor> cursor_) = 0;
 	};
 }

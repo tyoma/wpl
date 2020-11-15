@@ -8,6 +8,7 @@
 #include <agge/figures.h>
 #include <agge/path.h>
 #include <map>
+#include <wpl/cursor.h>
 #include <wpl/view.h>
 #include <wpl/layout.h>
 #include <ut/assert.h>
@@ -107,20 +108,37 @@ namespace wpl
 			};
 
 
+			class cursor_manager : public wpl::cursor_manager
+			{
+			public:
+				virtual std::shared_ptr<const cursor> get(standard_cursor id) const;
+				virtual void set(std::shared_ptr<const cursor> cursor_);
+
+			public:
+				std::map< standard_cursor, std::shared_ptr<const cursor> > cursors;
+				std::shared_ptr<const cursor> recently_set;
+			};
+
+
 			template <typename BaseT>
 			class logging_visual : public BaseT
 			{
 			public:
-				std::vector< std::pair<int /*cx*/, int /*cy*/> > resize_log;
 				mutable std::vector< std::pair<int /*cx*/, int /*cy*/> > surface_size_log;
 				mutable std::vector<agge::rect_i> update_area_log;
 				mutable std::vector<gcontext::text_engine_type *> text_engines_log;
 				mutable std::vector<gcontext::rasterizer_type *> rasterizers_log;
 				mutable std::vector< std::pair<gcontext::pixel_type, bool> > background_color;
 
+				std::vector< std::pair<int /*cx*/, int /*cy*/> > resize_log;
+
+				mutable std::vector< std::pair< const wpl::cursor_manager *, std::pair<int /*x*/, int /*y*/> > >
+					cursor_request_log;
+
 			private:
 				virtual void draw(gcontext &ctx, gcontext::rasterizer_ptr &rasterizer) const;
 				virtual void resize(unsigned cx, unsigned cy, visual::positioned_native_views &nviews);
+				virtual void update_cursor(wpl::cursor_manager &cursor_manager_, int x, int y) const;
 			};
 
 
@@ -226,6 +244,11 @@ namespace wpl
 			template <typename BaseT>
 			inline void logging_visual<BaseT>::resize(unsigned cx, unsigned cy, visual::positioned_native_views &/*nviews*/)
 			{	resize_log.push_back(std::make_pair(cx, cy));	}
+
+			template <typename BaseT>
+			inline void logging_visual<BaseT>::update_cursor(wpl::cursor_manager &cursor_manager_,
+				int x, int y) const
+			{	cursor_request_log.push_back(std::make_pair(&cursor_manager_, std::make_pair(x, y)));	}
 
 
 			template <typename BaseT>

@@ -51,6 +51,17 @@ namespace wpl
 			}
 
 
+			shared_ptr<const cursor> cursor_manager::get(standard_cursor id) const
+			{
+				const auto i = cursors.find(id);
+				return i != cursors.end() ? i->second : shared_ptr<cursor>();
+			}
+
+			void cursor_manager::set(shared_ptr<const cursor> cursor_)
+			{	recently_set = cursor_;	}
+
+
+
 			void visual_with_native_view::resize(unsigned cx, unsigned cy, positioned_native_views &nviews)
 			{	nviews.push_back(positioned_native_view(*g_dummy, make_position(0, 0, cx, cy)));	}
 

@@ -42,7 +42,7 @@ namespace wpl
 
 		begin_test_suite( ButtonTests )
 
-			WindowManager wmanager;
+			window_manager wmanager;
 			HWND parent;
 
 			init( CreateParent )
@@ -153,7 +153,7 @@ namespace wpl
 
 		begin_test_suite( LinkTests )
 
-			WindowManager wmanager;
+			window_manager wmanager;
 			HWND parent;
 
 			init( CreateParent )

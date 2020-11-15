@@ -44,6 +44,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="AnimatedModelsTests.cpp" />
+    <ClCompile Include="NativeCursorManagementTests.cpp" />
     <ClCompile Include="FactoryTests.cpp" />
     <ClCompile Include="ListViewCoreSelectionTests.cpp" />
     <ClCompile Include="NativeComboboxTests.cpp" />

@@ -61,6 +61,7 @@
     <ClCompile Include="win32\controls.cpp">
       <DisableLanguageExtensions>false</DisableLanguageExtensions>
     </ClCompile>
+    <ClCompile Include="win32\cursor_manager.cpp" />
     <ClCompile Include="win32\factory_win32.cpp">
       <DisableLanguageExtensions>false</DisableLanguageExtensions>
     </ClCompile>
@@ -105,6 +106,7 @@
     <ClInclude Include="..\wpl\controls\listview_composite.h" />
     <ClInclude Include="..\wpl\controls\listview_core.h" />
     <ClInclude Include="..\wpl\controls\scroller.h" />
+    <ClInclude Include="..\wpl\cursor.h" />
     <ClInclude Include="..\wpl\factory.h" />
     <ClInclude Include="..\wpl\factory_context.h" />
     <ClInclude Include="..\wpl\form.h" />
@@ -119,6 +121,7 @@
     <ClInclude Include="..\wpl\view_host.h" />
     <ClInclude Include="..\wpl\visual.h" />
     <ClInclude Include="..\wpl\win32\controls.h" />
+    <ClInclude Include="..\wpl\win32\cursor_manager.h" />
     <ClInclude Include="..\wpl\win32\font_loader.h" />
     <ClInclude Include="..\wpl\win32\form.h" />
     <ClInclude Include="..\wpl\win32\native_view.h" />

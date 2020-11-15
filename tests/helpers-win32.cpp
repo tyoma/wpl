@@ -1,5 +1,9 @@
 #include "helpers-win32.h"
 
+#include "Mockups.h"
+
+#include <wpl/win32/font_loader.h>
+#include <wpl/win32/view_host.h>
 #include <wpl/win32/window.h>
 
 #include <algorithm>
@@ -106,22 +110,55 @@ namespace wpl
 				::DispatchMessage(&msg);
 		}
 
+		shared_ptr<gcontext::text_engine_type> create_text_engine()
+		{
+			struct text_engine_composite
+			{
+				text_engine_composite()
+					: text_engine(loader)
+				{	}
 
-		WindowManager::~WindowManager()
+				win32::font_loader loader;
+				gcontext::text_engine_type text_engine;
+			};
+
+			shared_ptr<text_engine_composite> tec(new text_engine_composite);
+
+			return shared_ptr<gcontext::text_engine_type>(tec, &tec->text_engine);
+		}
+
+
+		hosting_window::hosting_window()
+			: hwnd(::CreateWindow(_T("static"), NULL, WS_POPUP | WS_VISIBLE, 0, 0, 100, 70, NULL, NULL, NULL, NULL)),
+				surface(new gcontext::surface_type(1, 1, 16)), renderer(new gcontext::renderer_type(1)),
+				text_engine(create_text_engine()), cursor_manager(new mocks::cursor_manager)
+		{
+			form_context ctx = { surface, renderer, text_engine, shared_ptr<stylesheet>(), cursor_manager, };
+			host.reset(new win32::view_host(hwnd, ctx));
+		}
+
+		hosting_window::~hosting_window()
+		{
+			host.reset();
+			::DestroyWindow(hwnd);
+		}
+
+
+		window_manager::~window_manager()
 		{
 			Cleanup();
 		}
 
-		HWND WindowManager::create_window()
+		HWND window_manager::create_window()
 		{	return create_window(L"static", 0, WS_POPUP, 0);	}
 
-		HWND WindowManager::create_visible_window()
+		HWND window_manager::create_visible_window()
 		{	return create_window(L"static", 0, WS_VISIBLE, 0);	}
 
-		HWND WindowManager::create_window(const wstring &class_name)
+		HWND window_manager::create_window(const wstring &class_name)
 		{	return create_window(class_name, 0, WS_POPUP, 0);	}
 
-		HWND WindowManager::create_window(const wstring &class_name, HWND parent, unsigned int style, unsigned int exstyle)
+		HWND window_manager::create_window(const wstring &class_name, HWND parent, unsigned int style, unsigned int exstyle)
 		{
 			HWND hwnd = ::CreateWindowEx(exstyle, w2t(class_name).c_str(), NULL, style, 0, 0, 200, 150, parent, NULL, NULL, NULL);
 
@@ -129,16 +166,16 @@ namespace wpl
 			return hwnd;
 		}
 
-		void WindowManager::enable_reflection(HWND hwnd)
+		void window_manager::enable_reflection(HWND hwnd)
 		{	_connections.push_back(wpl::win32::window::attach(hwnd, &reflection_wndproc));	}
 
-		void WindowManager::destroy_window(HWND hwnd)
+		void window_manager::destroy_window(HWND hwnd)
 		{
 			_windows.erase(remove(_windows.begin(), _windows.end(), hwnd), _windows.end());
 			::DestroyWindow(hwnd);
 		}
 
-		void WindowManager::Cleanup()
+		void window_manager::Cleanup()
 		{
 			for (vector<HWND>::const_iterator i = _windows.begin(); i != _windows.end(); ++i)
 				if (::IsWindow(*i))

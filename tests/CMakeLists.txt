@@ -29,6 +29,7 @@ if (WIN32)
 		MockupsNative.cpp
 		NativeComboboxTests.cpp
 		NativeControlsTests.cpp
+		NativeCursorManagementTests.cpp
 		NativeListViewTests.cpp
 		NativeViewHostTests.cpp
 		NativeViewTests.cpp

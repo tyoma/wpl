@@ -17,34 +17,6 @@ namespace wpl
 {
 	namespace tests
 	{
-		namespace
-		{
-			class hosting_window : noncopyable
-			{
-			public:
-				hosting_window()
-					: hwnd(::CreateWindow(_T("static"), NULL, WS_POPUP | WS_VISIBLE, 0, 0, 100, 70, NULL, NULL, NULL, NULL)),
-						surface(new gcontext::surface_type(1, 1, 16)), renderer(new gcontext::renderer_type(1)),
-						text_engine(new gcontext::text_engine_type(fake_loader, 0)),
-						host(new win32::view_host(hwnd, surface, renderer, text_engine))
-				{	}
-
-				~hosting_window()
-				{
-					host.reset();
-					::DestroyWindow(hwnd);
-				}
-
-			public:
-				const HWND hwnd;
-				mocks::font_loader fake_loader;
-				shared_ptr<gcontext::surface_type> surface;
-				shared_ptr<gcontext::renderer_type> renderer;
-				shared_ptr<gcontext::text_engine_type> text_engine;
-				shared_ptr<wpl::view_host> host;
-			};
-		}
-
 		begin_test_suite( NativeViewHostTests )
 			test( ResizingHostWindowLeadsToContentResize )
 			{

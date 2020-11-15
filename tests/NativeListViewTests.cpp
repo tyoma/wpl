@@ -113,7 +113,7 @@ namespace wpl
 
 		begin_test_suite( NativeListViewTests )
 
-			WindowManager windowManager;
+			window_manager windowManager;
 			HWND hparent;
 
 			init( Initialize )

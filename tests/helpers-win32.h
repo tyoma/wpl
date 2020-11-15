@@ -3,6 +3,7 @@
 #include <wpl/concepts.h>
 #include <wpl/input.h>
 #include <wpl/types.h>
+#include <wpl/visual.h>
 
 #include <iterator>
 #include <set>
@@ -14,10 +15,16 @@ typedef struct tagRECT RECT;
 namespace wpl
 {
 	class container;
+	struct view_host;
 	struct widget;
 
 	namespace tests
 	{
+		namespace mocks
+		{
+			class cursor_manager;
+		}
+
 #ifdef UNICODE
 		typedef std::basic_string<wchar_t> tstring;
 #else
@@ -33,8 +40,24 @@ namespace wpl
 		unsigned int pack_coordinates(int x, int y);
 		void emulate_click(HWND hwnd, int x, int y, mouse_input::mouse_buttons button,
 			int /*mouse_buttons | modifier_keys*/ depressed);
+		std::shared_ptr<gcontext::text_engine_type> create_text_engine();
 
-		class WindowManager
+		class hosting_window : noncopyable
+		{
+		public:
+			hosting_window();
+			~hosting_window();
+
+		public:
+			const HWND hwnd;
+			std::shared_ptr<gcontext::surface_type> surface;
+			std::shared_ptr<gcontext::renderer_type> renderer;
+			std::shared_ptr<gcontext::text_engine_type> text_engine;
+			std::shared_ptr<mocks::cursor_manager> cursor_manager;
+			std::shared_ptr<wpl::view_host> host;
+		};
+
+		class window_manager
 		{
 			std::vector<HWND> _windows;
 			std::vector< std::shared_ptr<void> > _connections;
@@ -49,7 +72,7 @@ namespace wpl
 			void destroy_window(HWND hwnd);
 
 		public:
-			~WindowManager();
+			~window_manager();
 
 			void Cleanup();
 		};

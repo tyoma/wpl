@@ -72,11 +72,9 @@ namespace wpl
 
 
 
-		view_host::view_host(HWND hwnd, const shared_ptr<gcontext::surface_type> &surface_,
-				const shared_ptr<gcontext::renderer_type> &renderer_,
-				const std::shared_ptr<gcontext::text_engine_type> &text_engine_, const window::user_handler_t &user_handler)
-			: surface(surface_), renderer(renderer_), text_engine(text_engine_), _user_handler(user_handler),
-				_rasterizer(new gcontext::rasterizer_type), _mouse_in(false), _input_modifiers(0)
+		view_host::view_host(HWND hwnd, const form_context &context_, const window::user_handler_t &user_handler)
+			: context(context_), _user_handler(user_handler), _rasterizer(new gcontext::rasterizer_type), _mouse_in(false),
+				_input_modifiers(0)
 		{
 			_window = window::attach(hwnd, bind(&view_host::wndproc, this, _1, _2, _3, _4));
 			::SetClassLongPtr(_window->hwnd(), GCL_STYLE, CS_DBLCLKS | ::GetClassLongPtr(_window->hwnd(), GCL_STYLE));
@@ -140,6 +138,8 @@ namespace wpl
 
 		LRESULT view_host::wndproc(UINT message, WPARAM wparam, LPARAM lparam, const window::original_handler_t &previous)
 		{
+			POINT pt;
+
 			switch (message)
 			{
 			case WM_COMMAND:
@@ -182,21 +182,27 @@ namespace wpl
 					dispatch_mouse(message, wparam, lparam);
 					break;
 
+				case WM_SETCURSOR:
+					::GetCursorPos(&pt);
+					::ScreenToClient(_window->hwnd(), &pt);
+					_view->update_cursor(*context.cursor_manager_, pt.x, pt.y);
+					return TRUE;
+
 				case WM_PAINT:
 					paint_sequence ps(_window->hwnd());
 					vector_i offset = { ps.rcPaint.left, ps.rcPaint.top };
 					rect_i update_area = { ps.rcPaint.left, ps.rcPaint.top, ps.rcPaint.right, ps.rcPaint.bottom };
 					rect_i update_size = { 0, 0, update_area.x2 - update_area.x1, update_area.y2 - update_area.y1 };
 
-					surface->resize(ps.width(), ps.height());
-					fill(*surface, update_size,
+					context.backbuffer->resize(ps.width(), ps.height());
+					fill(*context.backbuffer, update_size,
 						blender_solid_color<simd::blender_solid_color, order_bgra>(_background_color));
 
-					gcontext ctx(*surface, *renderer, *text_engine, offset, &update_area);
+					gcontext ctx(*context.backbuffer, *context.renderer, *context.text_engine, offset, &update_area);
 
 					_rasterizer->reset();
 					_view->draw(ctx, _rasterizer);
-					surface->blit(ps.hdc, update_area.x1, update_area.y1, ps.width(), ps.height());
+					context.backbuffer->blit(ps.hdc, update_area.x1, update_area.y1, ps.width(), ps.height());
 					return 0;
 				}
 			}

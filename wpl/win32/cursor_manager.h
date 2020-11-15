@@ -20,31 +20,11 @@
 
 #pragma once
 
-#include "queue.h"
-#include "visual.h"
+#include "../cursor.h"
 
 namespace wpl
 {
-	struct cursor_manager;
-	struct stylesheet;
-
-	struct factory_context
+	namespace win32
 	{
-		std::shared_ptr<gcontext::surface_type> backbuffer;
-		std::shared_ptr<gcontext::renderer_type> renderer;
-		std::shared_ptr<gcontext::text_engine_type> text_engine;
-		std::shared_ptr<stylesheet> stylesheet_;
-		std::shared_ptr<cursor_manager> cursor_manager_;
-		clock clock_;
-		queue queue_;
-	};
-
-	typedef factory_context form_context;
-
-	struct control_context
-	{
-		std::shared_ptr<stylesheet> stylesheet_;
-		clock clock_;
-		queue queue_;
-	};
+	}
 }

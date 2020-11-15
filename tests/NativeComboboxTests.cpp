@@ -3,7 +3,7 @@
 #include "helpers.h"
 #include "helpers-win32.h"
 
-#include<list>
+#include <list>
 #include <windows.h>
 #include <commctrl.h>
 #include <olectl.h>
@@ -70,7 +70,7 @@ namespace wpl
 		}
 
 		begin_test_suite( ComboboxTests )
-			WindowManager wmanager;
+			window_manager wmanager;
 			HWND parent;
 
 			init( CreateParent )

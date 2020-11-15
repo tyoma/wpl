@@ -56,6 +56,7 @@ namespace wpl
 			shared_ptr<gcontext::renderer_type>(new gcontext::renderer_type(2)),
 			shared_ptr<gcontext::text_engine_type>(tec, &tec->text_engine),
 			stylesheet_,
+			shared_ptr<cursor_manager>(),
 			win32::clock,
 			win32::queue(),
 		};
@@ -66,8 +67,7 @@ namespace wpl
 	void factory::setup_default(factory &factory_)
 	{
 		factory_.register_form([] (const form_context &context) {
-
-			return shared_ptr<form>(new win32::form(context.backbuffer, context.renderer, context.text_engine));
+			return shared_ptr<form>(new win32::form(context));
 		});
 
 		factory_.register_control("button", [] (const factory &, const control_context &) {

@@ -23,6 +23,7 @@
 #include "window.h"
 
 #include "../concepts.h"
+#include "../factory_context.h"
 #include "../view.h"
 #include "../view_host.h"
 
@@ -33,9 +34,7 @@ namespace wpl
 		class view_host : public wpl::view_host, noncopyable
 		{
 		public:
-			view_host(HWND hwnd, const std::shared_ptr<gcontext::surface_type> &surface_,
-				const std::shared_ptr<gcontext::renderer_type> &renderer_,
-				const std::shared_ptr<gcontext::text_engine_type> &text_engine_,
+			view_host(HWND hwnd, const form_context &context_,
 				const window::user_handler_t &user_handler = &view_host::passthrough);
 			~view_host();
 
@@ -46,9 +45,7 @@ namespace wpl
 				const window::original_handler_t &previous);
 
 		public:
-			const std::shared_ptr<gcontext::surface_type> surface;
-			const std::shared_ptr<gcontext::renderer_type> renderer;
-			const std::shared_ptr<gcontext::text_engine_type> text_engine;
+			const form_context context;
 
 		private:
 			typedef std::vector<keyboard_input::tabbed_control> tabbed_controls;

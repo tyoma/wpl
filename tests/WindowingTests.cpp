@@ -60,7 +60,7 @@ namespace wpl
 
 		begin_test_suite( WindowingTests )
 
-			WindowManager windowManager;
+			window_manager windowManager;
 
 			teardown( Cleanup )
 			{
