@@ -63,9 +63,6 @@ namespace wpl
 	void visual::resize(unsigned /*cx*/, unsigned /*cy*/, positioned_native_views &/*native_views*/)
 	{	}
 
-	void visual::update_cursor(cursor_manager &/*cursor_manager_*/, int /*x*/, int /*y*/) const
-	{	}
-
 
 	visual::positioned_native_view::positioned_native_view(native_view &nview_, const view_location &location_) throw()
 		: location(location_), _nview(&nview_)

@@ -22,9 +22,37 @@
 
 #include "../cursor.h"
 
+#include <map>
+#include <unordered_map>
+#include <vector>
+
 namespace wpl
 {
 	namespace win32
 	{
+		class cursor_manager : public wpl::cursor_manager
+		{
+		public:
+			cursor_manager();
+			~cursor_manager();
+
+			virtual std::shared_ptr<const cursor> get(standard_cursor id) const;
+			virtual void set(std::shared_ptr<const cursor> cursor_);
+			virtual void push(std::shared_ptr<const cursor> cursor_);
+			virtual void pop();
+
+		private:
+			typedef std::map<const cursor *, std::shared_ptr<void> /*HCURSOR*/> cached_cursors;
+			typedef std::shared_ptr<cached_cursors> cached_cursors_ptr;
+
+		private:
+			std::shared_ptr<const cursor> associate(std::shared_ptr<void> hcursor) const;
+			static std::shared_ptr<void> get_cursor(cursor_manager::standard_cursor id);
+
+		private:
+			mutable std::unordered_map< standard_cursor, std::shared_ptr<const cursor> > _standard_cursors;
+			cached_cursors_ptr _cursors;
+			std::vector<void *> _cursor_stack;
+		};
 	}
 }

@@ -138,8 +138,6 @@ namespace wpl
 
 		LRESULT view_host::wndproc(UINT message, WPARAM wparam, LPARAM lparam, const window::original_handler_t &previous)
 		{
-			POINT pt;
-
 			switch (message)
 			{
 			case WM_COMMAND:
@@ -181,12 +179,6 @@ namespace wpl
 				case WM_MOUSEWHEEL:
 					dispatch_mouse(message, wparam, lparam);
 					break;
-
-				case WM_SETCURSOR:
-					::GetCursorPos(&pt);
-					::ScreenToClient(_window->hwnd(), &pt);
-					_view->update_cursor(*context.cursor_manager_, pt.x, pt.y);
-					return TRUE;
 
 				case WM_PAINT:
 					paint_sequence ps(_window->hwnd());

@@ -94,7 +94,6 @@ namespace wpl
 
 		virtual void draw(gcontext &ctx, gcontext::rasterizer_ptr &rasterizer) const;
 		virtual void resize(unsigned cx, unsigned cy, positioned_native_views &native_views);
-		virtual void update_cursor(cursor_manager &cursor_manager_, int x, int y) const;
 
 		bool transcending;
 

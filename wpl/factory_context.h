@@ -44,6 +44,7 @@ namespace wpl
 	struct control_context
 	{
 		std::shared_ptr<stylesheet> stylesheet_;
+		std::shared_ptr<cursor_manager> cursor_manager_;
 		clock clock_;
 		queue queue_;
 	};

@@ -60,6 +60,11 @@ namespace wpl
 			void cursor_manager::set(shared_ptr<const cursor> cursor_)
 			{	recently_set = cursor_;	}
 
+			void cursor_manager::push(shared_ptr<const cursor> /*cursor_*/)
+			{	}
+
+			void cursor_manager::pop()
+			{	}
 
 
 			void visual_with_native_view::resize(unsigned cx, unsigned cy, positioned_native_views &nviews)

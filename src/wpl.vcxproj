@@ -61,7 +61,12 @@
     <ClCompile Include="win32\controls.cpp">
       <DisableLanguageExtensions>false</DisableLanguageExtensions>
     </ClCompile>
-    <ClCompile Include="win32\cursor_manager.cpp" />
+    <ClCompile Include="win32\cursor_manager.cpp">
+      <DisableLanguageExtensions Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</DisableLanguageExtensions>
+      <DisableLanguageExtensions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</DisableLanguageExtensions>
+      <DisableLanguageExtensions Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</DisableLanguageExtensions>
+      <DisableLanguageExtensions Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</DisableLanguageExtensions>
+    </ClCompile>
     <ClCompile Include="win32\factory_win32.cpp">
       <DisableLanguageExtensions>false</DisableLanguageExtensions>
     </ClCompile>

@@ -1,6 +1,7 @@
 #include <wpl/win32/cursor_manager.h>
 #include <wpl/win32/view_host.h>
 
+#include "helpers.h"
 #include "helpers-win32.h"
 #include "Mockups.h"
 
@@ -13,66 +14,192 @@ namespace wpl
 {
 	namespace tests
 	{
-		begin_test_suite( NativeCursorManagementTests )
-			unique_ptr<hosting_window> window;
-
-			init( Init )
+		namespace
+		{
+			shared_ptr<void> get_cursor(LPCTSTR id)
 			{
-				window.reset(new hosting_window);
+				return shared_ptr<void>(static_cast<HCURSOR>(::LoadImage(0, id, IMAGE_CURSOR, 0, 0, LR_SHARED)),
+					&::DestroyCursor);
+			}
+		}
+
+		begin_test_suite( NativeCursorManagementTests )
+
+			test( CursorManagerReturnsDistinctPredefinedCursors )
+			{
+				// INIT / ACT
+				win32::cursor_manager cm;
+				shared_ptr<const cursor> cursors[] = {
+					cm.get(cursor_manager::arrow),
+					cm.get(cursor_manager::i_beam),
+					cm.get(cursor_manager::crosshair),
+					cm.get(cursor_manager::hand),
+					cm.get(cursor_manager::h_resize),
+					cm.get(cursor_manager::v_resize),
+				};
+
+				// ASSERT
+				sort(begin(cursors), end(cursors));
+
+				assert_equal(end(cursors), unique(begin(cursors), end(cursors)));
 			}
 
 
-			test( ViewHostPassesMouseCoordinatesWhenAskingForACursor )
+			test( SameCursorObjectsAreReturnedForTheSamePredefinedIDs )
 			{
 				// INIT
-				auto v = make_shared< mocks::logging_visual<view> >();
-
-				window->host->set_view(v);
-				::MoveWindow(window->hwnd, 17, 19, 100, 100, FALSE);
-				::SetCursorPos(103, 191);
+				win32::cursor_manager cm;
 
 				// ACT
-				assert_equal(TRUE, ::SendMessage(window->hwnd, WM_SETCURSOR, 0, 0));
+				shared_ptr<const cursor> cursors1[] = {
+					cm.get(cursor_manager::arrow),
+					cm.get(cursor_manager::arrow),
+				};
+				shared_ptr<const cursor> cursors2[] = {
+					cm.get(cursor_manager::i_beam),
+					cm.get(cursor_manager::i_beam),
+				};
+				shared_ptr<const cursor> cursors3[] = {
+					cm.get(cursor_manager::crosshair),
+					cm.get(cursor_manager::crosshair),
+				};
+				shared_ptr<const cursor> cursors4[] = {
+					cm.get(cursor_manager::hand),
+					cm.get(cursor_manager::hand),
+				};
+				shared_ptr<const cursor> cursors5[] = {
+					cm.get(cursor_manager::h_resize),
+					cm.get(cursor_manager::h_resize),
+				};
+				shared_ptr<const cursor> cursors6[] = {
+					cm.get(cursor_manager::v_resize),
+					cm.get(cursor_manager::v_resize),
+				};
 
 				// ASSERT
-				assert_equal(1u, v->cursor_request_log.size());
-				assert_equal(window->cursor_manager.get(), v->cursor_request_log[0].first);
+				assert_equal(cursors1[0], cursors1[1]);
+				assert_equal(cursors2[0], cursors2[1]);
+				assert_equal(cursors3[0], cursors3[1]);
+				assert_equal(cursors4[0], cursors4[1]);
+				assert_equal(cursors5[0], cursors5[1]);
+				assert_equal(cursors6[0], cursors6[1]);
+			}
 
-				POINT pt1 = { v->cursor_request_log[0].second.first, v->cursor_request_log[0].second.second };
-				::ClientToScreen(window->hwnd, &pt1);
 
-				assert_equal(103, pt1.x);
-				assert_equal(191, pt1.y);
+			test( SettingACursorUpdatesSystemCursor )
+			{
+				// INIT
+				win32::cursor_manager cm;
+
+				// ACT / ASSERT
+				cm.set(cm.get(cursor_manager::arrow));
+				assert_equal(static_cast<HCURSOR>(get_cursor(IDC_ARROW).get()), ::GetCursor());
+
+				cm.set(cm.get(cursor_manager::i_beam));
+				assert_equal(static_cast<HCURSOR>(get_cursor(IDC_IBEAM).get()), ::GetCursor());
+
+				cm.set(cm.get(cursor_manager::hand));
+				assert_equal(static_cast<HCURSOR>(get_cursor(IDC_HAND).get()), ::GetCursor());
+
+				cm.set(cm.get(cursor_manager::crosshair));
+				assert_equal(static_cast<HCURSOR>(get_cursor(IDC_CROSS).get()), ::GetCursor());
+
+				cm.set(cm.get(cursor_manager::h_resize));
+				assert_equal(static_cast<HCURSOR>(get_cursor(IDC_SIZEWE).get()), ::GetCursor());
+
+				cm.set(cm.get(cursor_manager::v_resize));
+				assert_equal(static_cast<HCURSOR>(get_cursor(IDC_SIZENS).get()), ::GetCursor());
+			}
+
+
+			test( PushingACursorSetsUpTheNewCursor )
+			{
+				// INIT
+				win32::cursor_manager cm;
+
+				// ACT / ASSERT
+				cm.push(cm.get(cursor_manager::arrow));
+				assert_equal(static_cast<HCURSOR>(get_cursor(IDC_ARROW).get()), ::GetCursor());
+
+				cm.push(cm.get(cursor_manager::i_beam));
+				assert_equal(static_cast<HCURSOR>(get_cursor(IDC_IBEAM).get()), ::GetCursor());
+
+				cm.push(cm.get(cursor_manager::hand));
+				assert_equal(static_cast<HCURSOR>(get_cursor(IDC_HAND).get()), ::GetCursor());
+
+				cm.push(cm.get(cursor_manager::crosshair));
+				assert_equal(static_cast<HCURSOR>(get_cursor(IDC_CROSS).get()), ::GetCursor());
+
+				cm.push(cm.get(cursor_manager::h_resize));
+				assert_equal(static_cast<HCURSOR>(get_cursor(IDC_SIZEWE).get()), ::GetCursor());
+
+				cm.push(cm.get(cursor_manager::v_resize));
+				assert_equal(static_cast<HCURSOR>(get_cursor(IDC_SIZENS).get()), ::GetCursor());
+			}
+
+
+			test( SinglePoppingACursorSetsItToAPrevious )
+			{
+				// INIT
+				win32::cursor_manager cm;
+
+				::SetCursor(static_cast<HCURSOR>(get_cursor(IDC_IBEAM).get()));
+
+				cm.push(cm.get(cursor_manager::arrow));
+
+				// ACT / ASSERT
+				cm.pop();
+				assert_equal(static_cast<HCURSOR>(get_cursor(IDC_IBEAM).get()), ::GetCursor());
 
 				// INIT
-				::MoveWindow(window->hwnd, 71, 100, 100, 100, FALSE);
+				::SetCursor(static_cast<HCURSOR>(get_cursor(IDC_CROSS).get()));
 
-				// ACT
-				assert_equal(TRUE, ::SendMessage(window->hwnd, WM_SETCURSOR, 0, 0));
+				cm.push(cm.get(cursor_manager::arrow));
 
-				// ASSERT
-				assert_equal(2u, v->cursor_request_log.size());
+				// ACT / ASSERT
+				cm.pop();
+				assert_equal(static_cast<HCURSOR>(get_cursor(IDC_CROSS).get()), ::GetCursor());
+			}
 
-				POINT pt2 = { v->cursor_request_log[1].second.first, v->cursor_request_log[1].second.second };
-				::ClientToScreen(window->hwnd, &pt2);
 
-				assert_equal(103, pt2.x);
-				assert_equal(191, pt2.y);
-
+			test( MultiplePoppingACursorSetsItToAPrevious )
+			{
 				// INIT
-				::SetCursorPos(1, 2);
+				win32::cursor_manager cm;
+
+				::SetCursor(static_cast<HCURSOR>(get_cursor(IDC_IBEAM).get()));
+
+				cm.push(cm.get(cursor_manager::arrow));
+				cm.push(cm.get(cursor_manager::crosshair));
+				cm.push(cm.get(cursor_manager::v_resize));
+
+				// ACT / ASSERT
+				assert_equal(static_cast<HCURSOR>(get_cursor(IDC_SIZENS).get()), ::GetCursor());
+				cm.pop();
+				assert_equal(static_cast<HCURSOR>(get_cursor(IDC_CROSS).get()), ::GetCursor());
+				cm.pop();
+				assert_equal(static_cast<HCURSOR>(get_cursor(IDC_ARROW).get()), ::GetCursor());
+				cm.pop();
+				assert_equal(static_cast<HCURSOR>(get_cursor(IDC_IBEAM).get()), ::GetCursor());
+			}
+
+
+			test( DestructionOfCursorManagerRestoresFirstPushedCursor )
+			{
+				// INIT
+				unique_ptr<win32::cursor_manager> cm(new win32::cursor_manager);
+				const auto initial = get_cursor(IDC_IBEAM);
+
+				::SetCursor(static_cast<HCURSOR>(initial.get()));
+				cm->push(cm->get(cursor_manager::arrow));
+				cm->push(cm->get(cursor_manager::crosshair));
+				cm->push(cm->get(cursor_manager::v_resize));
 
 				// ACT
-				assert_equal(TRUE, ::SendMessage(window->hwnd, WM_SETCURSOR, 0, 0));
+				cm.reset();
 
 				// ASSERT
-				assert_equal(3u, v->cursor_request_log.size());
-
-				POINT pt3 = { v->cursor_request_log[2].second.first, v->cursor_request_log[2].second.second };
-				::ClientToScreen(window->hwnd, &pt3);
-
-				assert_equal(1, pt3.x);
-				assert_equal(2, pt3.y);
+				assert_equal(static_cast<HCURSOR>(initial.get()), ::GetCursor());
 			}
 		end_test_suite
 	}

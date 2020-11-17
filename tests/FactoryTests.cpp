@@ -57,6 +57,7 @@ namespace wpl
 				context.renderer.reset(new gcontext::renderer_type(1));
 				context.text_engine.reset(new gcontext::text_engine_type(fake_loader, 0));
 				context.stylesheet_.reset(new mocks::stylesheet);
+				context.cursor_manager_.reset(new mocks::cursor_manager);
 			}
 
 
@@ -177,6 +178,7 @@ namespace wpl
 
 				assert_equal(&f, passed_context.first);
 				assert_equal(context.stylesheet_, passed_context.second.stylesheet_);
+				assert_equal(context.cursor_manager_, passed_context.second.cursor_manager_);
 				ts = 12345678;
 				assert_equal(ts, passed_context.second.clock_());
 				ts = 912345678;

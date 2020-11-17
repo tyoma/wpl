@@ -113,6 +113,8 @@ namespace wpl
 			public:
 				virtual std::shared_ptr<const cursor> get(standard_cursor id) const;
 				virtual void set(std::shared_ptr<const cursor> cursor_);
+				virtual void push(std::shared_ptr<const cursor> cursor_);
+				virtual void pop();
 
 			public:
 				std::map< standard_cursor, std::shared_ptr<const cursor> > cursors;
@@ -132,13 +134,9 @@ namespace wpl
 
 				std::vector< std::pair<int /*cx*/, int /*cy*/> > resize_log;
 
-				mutable std::vector< std::pair< const wpl::cursor_manager *, std::pair<int /*x*/, int /*y*/> > >
-					cursor_request_log;
-
 			private:
 				virtual void draw(gcontext &ctx, gcontext::rasterizer_ptr &rasterizer) const;
 				virtual void resize(unsigned cx, unsigned cy, visual::positioned_native_views &nviews);
-				virtual void update_cursor(wpl::cursor_manager &cursor_manager_, int x, int y) const;
 			};
 
 
@@ -244,11 +242,6 @@ namespace wpl
 			template <typename BaseT>
 			inline void logging_visual<BaseT>::resize(unsigned cx, unsigned cy, visual::positioned_native_views &/*nviews*/)
 			{	resize_log.push_back(std::make_pair(cx, cy));	}
-
-			template <typename BaseT>
-			inline void logging_visual<BaseT>::update_cursor(wpl::cursor_manager &cursor_manager_,
-				int x, int y) const
-			{	cursor_request_log.push_back(std::make_pair(&cursor_manager_, std::make_pair(x, y)));	}
 
 
 			template <typename BaseT>

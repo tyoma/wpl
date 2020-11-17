@@ -51,10 +51,18 @@ namespace wpl
 			crosshair,
 			hand,
 			h_resize, l_resize, r_resize,
-			v_resize, u_resize, b_resize,
+			v_resize, t_resize, b_resize,
 		};
 
 		virtual std::shared_ptr<const cursor> get(standard_cursor id) const = 0;
 		virtual void set(std::shared_ptr<const cursor> cursor_) = 0;
+		virtual void push(std::shared_ptr<const cursor> cursor_) = 0;
+		virtual void pop() = 0;
 	};
+
+
+
+	inline cursor::cursor(unsigned int width_, unsigned int height_, unsigned int /*hot_x_*/, unsigned int /*hot_y_*/)
+		: gcontext::surface_type(width_, height_, 0), hot_x(0), hot_y(0)
+	{	}
 }
