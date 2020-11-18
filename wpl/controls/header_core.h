@@ -25,6 +25,8 @@
 
 namespace wpl
 {
+	struct cursor_manager;
+
 	namespace controls
 	{
 		class header_core : public integrated_control<wpl::header>, public index_traits_t<short int>
@@ -36,7 +38,7 @@ namespace wpl
 			};
 
 		public:
-			header_core();
+			header_core(std::shared_ptr<cursor_manager> cursor_manager_);
 
 			void set_offset(double offset);
 
@@ -44,6 +46,8 @@ namespace wpl
 			void set_model(std::shared_ptr<columns_model> model);
 
 			// mouse_input methods
+			virtual void mouse_enter();
+			virtual void mouse_leave();
 			virtual void mouse_move(int depressed, int x, int y);
 			virtual void mouse_down(mouse_buttons button_, int buttons, int x, int y);
 			virtual void mouse_up(mouse_buttons button_, int buttons, int x, int y);
@@ -65,6 +69,7 @@ namespace wpl
 			std::pair<index_type, handle_type> handle_from_point(int x) const;
 
 		private:
+			std::shared_ptr<cursor_manager> _cursor_manager;
 			std::shared_ptr<columns_model> _model;
 			agge::box_r _size;
 			agge::real_t _offset;

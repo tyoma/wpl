@@ -35,7 +35,7 @@ namespace wpl
 		class header_basic : public header_core
 		{
 		public:
-			header_basic(const std::shared_ptr<stylesheet> &stylesheet_);
+			header_basic(std::shared_ptr<stylesheet> stylesheet_, std::shared_ptr<cursor_manager> cursor_manager_);
 
 			virtual void draw(gcontext &ctx, gcontext::rasterizer_ptr &rasterizer) const;
 

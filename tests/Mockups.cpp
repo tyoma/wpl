@@ -51,20 +51,29 @@ namespace wpl
 			}
 
 
+			cursor_manager::cursor_manager()
+				: stack_level(0u)
+			{	}
+
 			shared_ptr<const cursor> cursor_manager::get(standard_cursor id) const
 			{
 				const auto i = cursors.find(id);
-				return i != cursors.end() ? i->second : shared_ptr<cursor>();
+
+				assert_not_equal(cursors.end(), i);
+				return i->second;
 			}
 
 			void cursor_manager::set(shared_ptr<const cursor> cursor_)
 			{	recently_set = cursor_;	}
 
-			void cursor_manager::push(shared_ptr<const cursor> /*cursor_*/)
-			{	}
+			void cursor_manager::push(shared_ptr<const cursor> cursor_)
+			{
+				stack_level++;
+				recently_set = cursor_;
+			}
 
 			void cursor_manager::pop()
-			{	}
+			{	stack_level--;	}
 
 
 			void visual_with_native_view::resize(unsigned cx, unsigned cy, positioned_native_views &nviews)

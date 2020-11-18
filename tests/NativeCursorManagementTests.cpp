@@ -201,6 +201,32 @@ namespace wpl
 				// ASSERT
 				assert_equal(static_cast<HCURSOR>(initial.get()), ::GetCursor());
 			}
+
+
+			test( PoppingEmptyStackDoesNothing )
+			{
+				// INIT
+				win32::cursor_manager cm;
+				const auto c1 = get_cursor(IDC_IBEAM);
+				const auto c2 = get_cursor(IDC_IBEAM);
+
+				::SetCursor(static_cast<HCURSOR>(c2.get()));
+
+				// ACT
+				cm.pop();
+
+				// ASSERT
+				assert_equal(static_cast<HCURSOR>(c2.get()), ::GetCursor());
+
+				// INIT
+				::SetCursor(static_cast<HCURSOR>(c1.get()));
+
+				// ACT
+				cm.pop();
+
+				// ASSERT
+				assert_equal(static_cast<HCURSOR>(c1.get()), ::GetCursor());
+			}
 		end_test_suite
 	}
 }

@@ -1318,6 +1318,17 @@ namespace wpl
 				// ASSERT
 				assert_equal(f2.hwnd, GetFocus());
 			}
+
+
+			test( SetCursorMessageIsStopped )
+			{
+				// INIT
+				hosting_window f;
+
+				// ACT / ASSERT
+				assert_equal(TRUE, ::SendMessage(f.hwnd, WM_SETCURSOR, 0, MAKELONG(HTCLIENT, 0)));
+			}
+
 		end_test_suite
 	}
 }

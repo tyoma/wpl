@@ -45,8 +45,8 @@ namespace wpl
 				using controls::header_core::item_state_flags;
 
 			public:
-				tracking_header()
-					: item_height(0), reported_events(item_background | item_self)
+				tracking_header(shared_ptr<cursor_manager> cursor_manager_)
+					: header_core(cursor_manager_), item_height(0), reported_events(item_background | item_self)
 				{	}
 
 			public:
@@ -104,6 +104,7 @@ namespace wpl
 			shared_ptr<gcontext> ctx;
 			gcontext::rasterizer_ptr ras;
 			view::positioned_native_views nviews;
+			shared_ptr<mocks::cursor_manager> cursor_manager_;
 
 			init( Init )
 			{
@@ -112,13 +113,18 @@ namespace wpl
 				text_engine.reset(new gcontext::text_engine_type(fake_loader, 0));
 				ctx.reset(new gcontext(*surface, *ren, *text_engine, agge::zero()));
 				ras.reset(new gcontext::rasterizer_type);
+				cursor_manager_.reset(new mocks::cursor_manager);
+
+				cursor_manager_->cursors[cursor_manager::arrow].reset(new cursor(10, 10, 1, 1));
+				cursor_manager_->cursors[cursor_manager::h_resize].reset(new cursor(10, 10, 1, 1));
+				cursor_manager_->cursors[cursor_manager::hand].reset(new cursor(10, 10, 1, 1));
 			}
 
 
 			test( HeaderIsAControl )
 			{
 				// INIT / ACT
-				shared_ptr<tracking_header> th(new tracking_header);
+				shared_ptr<tracking_header> th(new tracking_header(cursor_manager_));
 				shared_ptr<header> h = th;
 
 				// ACT / ASSERT
@@ -129,7 +135,7 @@ namespace wpl
 			test( ConstructionOfListViewDoesNotDrawAnything )
 			{
 				// INIT / ACT
-				tracking_header hdr;
+				tracking_header hdr(cursor_manager_);
 
 				// ASSERT
 				assert_is_empty(hdr.events);
@@ -139,7 +145,7 @@ namespace wpl
 			test( NothingIsDrawnIfModelsAreMissing )
 			{
 				// INIT
-				tracking_header hdr;
+				tracking_header hdr(cursor_manager_);
 
 				hdr.resize(1000, 30, nviews);
 
@@ -154,7 +160,7 @@ namespace wpl
 			test( MouseEventsDoNothingWhenModelIsNotSet )
 			{
 				// INIT
-				tracking_header hdr;
+				tracking_header hdr(cursor_manager_);
 
 				hdr.resize(1000, 30, nviews);
 
@@ -169,7 +175,7 @@ namespace wpl
 			{
 				// INIT
 				int invalidations = 0;
-				tracking_header hdr;
+				tracking_header hdr(cursor_manager_);
 				shared_ptr<mocks::columns_model> m = mocks::columns_model::create(L"x", 1);
 				slot_connection conn = hdr.invalidate += [&] (const agge::rect_i *r) {
 					++invalidations;
@@ -204,7 +210,7 @@ namespace wpl
 			test( DrawingSequenceIsItemBgThenFg )
 			{
 				// INIT
-				tracking_header hdr;
+				tracking_header hdr(cursor_manager_);
 
 				hdr.resize(400, 50, nviews);
 				hdr.set_model(mocks::columns_model::create(L"abc", 123));
@@ -225,7 +231,7 @@ namespace wpl
 			test( ColumnsAreDrawnInOrder )
 			{
 				// INIT
-				tracking_header hdr;
+				tracking_header hdr(cursor_manager_);
 				column_t c1[] = { column_t(L"abc", 10), column_t(L"abc zyx", 17), column_t(L"AA bbb Z", 25), };
 
 				hdr.resize(1000, 33, nviews);
@@ -271,7 +277,7 @@ namespace wpl
 			test( ClickOnAHeaderActivatesIt )
 			{
 				// INIT
-				tracking_header hdr;
+				tracking_header hdr(cursor_manager_);
 				column_t c[] = { column_t(L"", 17), column_t(L"", 29), column_t(L"", 25), };
 				shared_ptr<mocks::columns_model> m = mocks::columns_model::create(c, columns_model::npos(), true);
 
@@ -337,7 +343,7 @@ namespace wpl
 			test( ClickingIntoColumnGapStartsWidthUpdates )
 			{
 				// INIT
-				tracking_header hdr;
+				tracking_header hdr(cursor_manager_);
 				column_t c[] = { column_t(L"", 17), column_t(L"", 13), column_t(L"", 29), };
 				shared_ptr<mocks::columns_model> m = mocks::columns_model::create(c, columns_model::npos(), true);
 
@@ -377,7 +383,7 @@ namespace wpl
 			test( MouseIsCapturedOnStartingWidthUpdate )
 			{
 				// INIT
-				tracking_header hdr;
+				tracking_header hdr(cursor_manager_);
 				column_t c[] = { column_t(L"", 17), column_t(L"", 13), column_t(L"", 29), };
 				shared_ptr<mocks::columns_model> m = mocks::columns_model::create(c, columns_model::npos(), true);
 				auto capture = 0;
@@ -419,7 +425,7 @@ namespace wpl
 			test( WidthUpdatesAreEndedWithMouseUp )
 			{
 				// INIT
-				tracking_header hdr;
+				tracking_header hdr(cursor_manager_);
 				column_t c[] = { column_t(L"", 17), column_t(L"", 13), column_t(L"", 29), };
 				shared_ptr<mocks::columns_model> m = mocks::columns_model::create(c, columns_model::npos(), true);
 
@@ -441,7 +447,7 @@ namespace wpl
 			test( ColumnActivationDoesNotOccurWhenResizing )
 			{
 				// INIT
-				tracking_header hdr;
+				tracking_header hdr(cursor_manager_);
 				column_t c[] = { column_t(L"", 17), column_t(L"", 13), column_t(L"", 29), };
 				shared_ptr<mocks::columns_model> m = mocks::columns_model::create(c, columns_model::npos(), true);
 
@@ -460,7 +466,7 @@ namespace wpl
 			test( StateIsProvidedToDrawingFunctions )
 			{
 				// INIT
-				tracking_header hdr;
+				tracking_header hdr(cursor_manager_);
 				column_t c[] = { column_t(L"a", 10), column_t(L"b", 13), column_t(L"Z A", 17), };
 				shared_ptr<mocks::columns_model> m = mocks::columns_model::create(c, 2, true);
 
@@ -508,7 +514,7 @@ namespace wpl
 			test( HeaderIsInvalidatedOnSortOrderChange )
 			{
 				// INIT
-				tracking_header hdr;
+				tracking_header hdr(cursor_manager_);
 				auto invalidations = 0;
 				column_t c[] = { column_t(L"a", 10), column_t(L"b", 13), column_t(L"Z A", 17), };
 				shared_ptr<mocks::columns_model> m = mocks::columns_model::create(c, 2, true);
@@ -535,7 +541,7 @@ namespace wpl
 			test( OffsettingViewDrawsColumnsAtOffsetPositions )
 			{
 				// INIT
-				tracking_header hdr;
+				tracking_header hdr(cursor_manager_);
 				column_t c[] = { column_t(L"a", 10), column_t(L"b", 13), column_t(L"Z A", 17), };
 				shared_ptr<mocks::columns_model> m = mocks::columns_model::create(c, 2, true);
 
@@ -586,7 +592,7 @@ namespace wpl
 			test( OffsettingViewProcessesColumnClicksAtNewPositions )
 			{
 				// INIT
-				tracking_header hdr;
+				tracking_header hdr(cursor_manager_);
 				column_t c[] = { column_t(L"a", 10), column_t(L"b", 13), column_t(L"Z A", 17), };
 				shared_ptr<mocks::columns_model> m = mocks::columns_model::create(c, 2, true);
 
@@ -609,7 +615,7 @@ namespace wpl
 			test( OffsettingViewInvalidatesIt )
 			{
 				// INIT
-				tracking_header hdr;
+				tracking_header hdr(cursor_manager_);
 				auto invalidations = 0;
 				column_t columns[] = { column_t(L"a", 10), column_t(L"b", 13), column_t(L"Z A", 17), };
 				shared_ptr<mocks::columns_model> m = mocks::columns_model::create(columns, 2, true);
@@ -631,6 +637,62 @@ namespace wpl
 
 				// ASSERT
 				assert_equal(3, invalidations);
+			}
+
+
+			test( CursorIsSetOnMouseEnterLeave )
+			{
+				// INIT
+				tracking_header hdr(cursor_manager_);
+
+				cursor_manager_->cursors[cursor_manager::arrow].reset(new cursor(10, 10, 1, 1));
+
+				// ACT
+				hdr.mouse_enter();
+
+				// ASSERT
+				assert_equal(1u, cursor_manager_->stack_level);
+				assert_equal(cursor_manager_->cursors[cursor_manager::arrow], cursor_manager_->recently_set);
+
+				// ACT
+				hdr.mouse_leave();
+
+				// ASSERT
+				assert_equal(0u, cursor_manager_->stack_level);
+			}
+
+
+			test( CursorIsSetAccordinglyToPosition )
+			{
+				// INIT
+				tracking_header hdr(cursor_manager_);
+				column_t columns[] = { column_t(L"a", 10), column_t(L"b", 13), column_t(L"Z A", 17), };
+				shared_ptr<mocks::columns_model> m = mocks::columns_model::create(columns, 2, true);
+
+				hdr.resize(1000, 33, nviews);
+				hdr.set_model(mocks::columns_model::create(columns, 2, true));
+				hdr.set_offset(-10);
+
+				// ACT
+				hdr.mouse_move(0, 0, 5);
+
+				// ASSERT
+				assert_equal(cursor_manager_->cursors[cursor_manager::arrow], cursor_manager_->recently_set);
+				assert_equal(0u, cursor_manager_->stack_level);
+
+				// ACT
+				hdr.mouse_move(0, 20, 0);
+
+				// ASSERT
+				assert_equal(cursor_manager_->cursors[cursor_manager::h_resize], cursor_manager_->recently_set);
+				assert_equal(0u, cursor_manager_->stack_level);
+
+				// ACT
+				hdr.mouse_move(0, 27, 0);
+
+				// ASSERT
+				assert_equal(cursor_manager_->cursors[cursor_manager::hand], cursor_manager_->recently_set);
+				assert_equal(0u, cursor_manager_->stack_level);
 			}
 
 		end_test_suite

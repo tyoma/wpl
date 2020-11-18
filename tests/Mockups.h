@@ -111,6 +111,8 @@ namespace wpl
 			class cursor_manager : public wpl::cursor_manager
 			{
 			public:
+				cursor_manager();
+
 				virtual std::shared_ptr<const cursor> get(standard_cursor id) const;
 				virtual void set(std::shared_ptr<const cursor> cursor_);
 				virtual void push(std::shared_ptr<const cursor> cursor_);
@@ -119,6 +121,7 @@ namespace wpl
 			public:
 				std::map< standard_cursor, std::shared_ptr<const cursor> > cursors;
 				std::shared_ptr<const cursor> recently_set;
+				unsigned stack_level;
 			};
 
 

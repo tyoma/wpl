@@ -147,7 +147,13 @@ namespace wpl
 				return SendMessage(reinterpret_cast<const NMHDR*>(lparam)->hwndFrom, OCM_NOTIFY, wparam, lparam);
 
 			case WM_ERASEBKGND:
-				return 1;
+				return TRUE;
+
+			case WM_SETCURSOR:
+				if (HTCLIENT == LOWORD(lparam))
+					return TRUE;
+				else
+					break;
 			}
 
 			if (_view)

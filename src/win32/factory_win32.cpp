@@ -24,6 +24,7 @@
 #include <wpl/controls/listview_composite.h>
 #include <wpl/controls/listview_basic.h>
 #include <wpl/controls/scroller.h>
+#include <wpl/win32/cursor_manager.h>
 #include <wpl/win32/font_loader.h>
 #include <wpl/win32/combobox.h>
 #include <wpl/win32/controls.h>
@@ -56,7 +57,7 @@ namespace wpl
 			shared_ptr<gcontext::renderer_type>(new gcontext::renderer_type(2)),
 			shared_ptr<gcontext::text_engine_type>(tec, &tec->text_engine),
 			stylesheet_,
-			shared_ptr<cursor_manager>(),
+			make_shared<win32::cursor_manager>(),
 			win32::clock,
 			win32::queue(),
 		};
@@ -80,7 +81,7 @@ namespace wpl
 			return shared_ptr<control>(new win32::combobox);
 		});
 		factory_.register_control("header", [] (const factory &, const control_context &context) {
-			return shared_ptr<control>(new controls::header_basic(context.stylesheet_));
+			return shared_ptr<control>(new controls::header_basic(context.stylesheet_, context.cursor_manager_));
 		});
 		factory_.register_control("listview", [] (const factory &f, const control_context &context) {
 			return controls::create_listview<controls::listview_basic>(f, context);

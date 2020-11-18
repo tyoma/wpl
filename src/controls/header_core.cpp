@@ -20,6 +20,8 @@
 
 #include <wpl/controls/header_core.h>
 
+#include <wpl/cursor.h>
+
 using namespace agge;
 using namespace std;
 
@@ -27,8 +29,8 @@ namespace wpl
 {
 	namespace controls
 	{
-		header_core::header_core()
-			: _offset(0.0f), _resizing_colum(make_pair(npos(), 0))
+		header_core::header_core(shared_ptr<cursor_manager> cursor_manager_)
+			: _cursor_manager(cursor_manager_), _offset(0.0f), _resizing_colum(make_pair(npos(), 0))
 		{	}
 
 		void header_core::set_offset(double offset)
@@ -55,8 +57,19 @@ namespace wpl
 			}
 		}
 
+		void header_core::mouse_enter()
+		{	_cursor_manager->push(_cursor_manager->get(cursor_manager::arrow));	}
+
+		void header_core::mouse_leave()
+		{	_cursor_manager->pop();	}
+
 		void header_core::mouse_move(int /*depressed*/, int x, int /*y*/)
 		{
+			const pair<index_type, handle_type> h = handle_from_point(x);
+			const cursor_manager::standard_cursor c = h.second == resize_handle ? cursor_manager::h_resize
+				: h.second == column_handle ? cursor_manager::hand : cursor_manager::arrow;
+
+			_cursor_manager->set(_cursor_manager->get(c));
 			if (_resizing_colum.first != npos())
 				_model->update_column(_resizing_colum.first, static_cast<short>(_resizing_colum.second + x));
 		}
@@ -122,7 +135,7 @@ namespace wpl
 		pair<header_core::index_type, header_core::handle_type> header_core::handle_from_point(int x) const
 		{
 			x += static_cast<int>(_offset);
-			for (index_type i = 0, n = _model ? _model->get_count() : 0; i != n; ++i)
+			for (index_type i = 0, n = _model ? _model->get_count() : 0; x >= 0 && i != n; ++i)
 			{
 				short w;
 

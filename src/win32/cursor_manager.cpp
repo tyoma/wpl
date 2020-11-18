@@ -67,6 +67,8 @@ namespace wpl
 
 		void cursor_manager::pop()
 		{
+			if (_cursor_stack.empty())
+				return;
 			::SetCursor(static_cast<HCURSOR>(_cursor_stack.back()));
 			_cursor_stack.pop_back();
 		}
