@@ -43,12 +43,6 @@ namespace wpl
 
 			void update_flag(long &styles, bool enable, long flag)
 			{	styles = enable ? (styles | flag) : (styles & ~flag);	}
-
-			agge::color get_system_color(int index)
-			{
-				const COLORREF c = ::GetSysColor(index);
-				return agge::color::make(GetRValue(c), GetGValue(c), GetBValue(c));
-			}
 		}
 
 
@@ -57,7 +51,6 @@ namespace wpl
 			: _hwnd(::CreateWindow(_T("#32770"), 0, c_form_style, 0, 0, 100, 20, howner, 0, 0, 0))
 		{
 			_host.reset(new win32::view_host(_hwnd, context, bind(&form::wndproc, this, _1, _2, _3, _4)));
-			set_background_color(get_system_color(COLOR_BTNFACE));
 		}
 
 		form::~form()
@@ -66,11 +59,8 @@ namespace wpl
 				::DestroyWindow(_hwnd);
 		}
 
-		void form::set_view(const shared_ptr<view> &v)
+		void form::set_view(shared_ptr<view> v)
 		{	_host->set_view(v);	}
-
-		void form::set_background_color(agge::color color)
-		{	_host->set_background_color(color);	}
 
 		view_location form::get_location() const
 		{
@@ -105,23 +95,14 @@ namespace wpl
 		shared_ptr<wpl::form> form::create_child()
 		{	return shared_ptr<form>(new form(_host->context, _hwnd));	}
 
-		void form::set_style(unsigned /*styles*/ new_style)
+		void form::set_features(unsigned /*features*/ features_)
 		{
 			long style = ::GetWindowLong(_hwnd, GWL_STYLE);
 
-			update_flag(style, !!(new_style & resizeable), WS_SIZEBOX);
-			update_flag(style, !!(new_style & has_minimize), WS_MINIMIZEBOX);
-			update_flag(style, !!(new_style & has_maximize), WS_MAXIMIZEBOX);
+			update_flag(style, !!(features_ & resizeable), WS_SIZEBOX);
+			update_flag(style, !!(features_ & minimizable), WS_MINIMIZEBOX);
+			update_flag(style, !!(features_ & maximizable), WS_MAXIMIZEBOX);
 			::SetWindowLong(_hwnd, GWL_STYLE, style);
-		}
-
-		void form::set_font(const font &fd)
-		{
-			const shared_ptr<void> hdc(::CreateCompatibleDC(NULL), &::DeleteDC);
-			const int height = -::MulDiv(fd.height, ::GetDeviceCaps(static_cast<HDC>(hdc.get()), LOGPIXELSY), 72);
-
-			_font.reset(::CreateFontW(height, 0, 0, 0, FW_NORMAL, 0, 0, 0, DEFAULT_CHARSET, OUT_DEFAULT_PRECIS,
-				CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, FF_DONTCARE, fd.typeface.c_str()), &::DeleteObject);
 		}
 
 		LRESULT form::wndproc(UINT message, WPARAM wparam, LPARAM lparam, const window::original_handler_t &previous)
@@ -139,9 +120,6 @@ namespace wpl
 			case WM_DESTROY:
 				_hwnd = NULL;
 				break;
-
-			case WM_GETFONT:
-				return reinterpret_cast<LRESULT>(_font.get());
 			}
 			return previous(message, wparam, lparam);
 		}

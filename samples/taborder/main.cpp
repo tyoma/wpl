@@ -1,6 +1,6 @@
 #include <crtdbg.h>
 
-#include <agge.text/text_engine.h>
+#include <samples/common/factory.h>
 #include <samples/common/platform.h>
 #include <samples/common/timer.h>
 #include <wpl/container.h>
@@ -8,6 +8,7 @@
 #include <wpl/factory.h>
 #include <wpl/form.h>
 #include <wpl/layout.h>
+#include <wpl/stylesheet_db.h>
 
 using namespace agge;
 using namespace std;
@@ -85,16 +86,7 @@ int main()
 {
 	_CrtSetDbgFlag(_CrtSetDbgFlag(_CRTDBG_REPORT_FLAG) | _CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
 
-	auto te = create_text_engine();
-	auto ss = make_shared<stylesheet_db>();
-	auto fct = factory::create_default(ss);
-
-	ss->set_font("text", te->create_font(L"Segoe UI", 17, false, false, agge::font::key::gf_none));
-	ss->set_color("background", agge::color::make(16, 16, 16));
-	ss->set_color("text", agge::color::make(192, 192, 192));
-	ss->set_color("border", agge::color::make(96, 96, 96));
-	ss->set_value("padding", 3);
-	ss->set_value("border", 1);
+	auto fct = create_sample_factory();
 
 	view_location l = { 100, 100, 300, 200 };
 	auto f = fct->create_form();
@@ -125,6 +117,5 @@ int main()
 	f->set_view(c);
 	f->set_location(l);
 	f->set_visible(true);
-	f->set_background_color(color::make(8, 32, 64));
 	run_message_loop();
 }

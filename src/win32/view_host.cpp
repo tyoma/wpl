@@ -51,13 +51,13 @@ namespace wpl
 				: _hwnd(hwnd)
 			{	::BeginPaint(_hwnd, this);	}
 
-			~paint_sequence()
+			~paint_sequence() throw()
 			{	::EndPaint(_hwnd, this);	}
 
-			count_t width()
+			count_t width() const throw()
 			{	return rcPaint.right - rcPaint.left;	}
 
-			count_t height()
+			count_t height() const throw()
 			{	return rcPaint.bottom - rcPaint.top;	}
 
 		private:
@@ -83,7 +83,7 @@ namespace wpl
 		view_host::~view_host()
 		{	}
 
-		void view_host::set_view(const shared_ptr<view> &v)
+		void view_host::set_view(shared_ptr<view> v)
 		{
 			_view = v;
 			_connections.clear();
@@ -126,12 +126,6 @@ namespace wpl
 			v->force_layout();
 		}
 
-		void view_host::set_background_color(agge::color color)
-		{
-			_background_color = color;
-			::InvalidateRect(_window->hwnd(), NULL, TRUE);
-		}
-
 		LRESULT view_host::passthrough(UINT message, WPARAM wparam, LPARAM lparam,
 			const window::original_handler_t &previous)
 		{	return previous(message, wparam, lparam);	}
@@ -141,10 +135,17 @@ namespace wpl
 			switch (message)
 			{
 			case WM_COMMAND:
-				return ::SendMessage(reinterpret_cast<HWND>(lparam), OCM_COMMAND, wparam, lparam);
+			case WM_CTLCOLORBTN:
+			case WM_CTLCOLOREDIT:
+			case WM_CTLCOLORDLG:
+			case WM_CTLCOLORLISTBOX:
+			case WM_CTLCOLORMSGBOX:
+			case WM_CTLCOLORSCROLLBAR:
+			case WM_CTLCOLORSTATIC:
+				return ::SendMessage(reinterpret_cast<HWND>(lparam), OCM__BASE + message, wparam, lparam);
 
 			case WM_NOTIFY:
-				return SendMessage(reinterpret_cast<const NMHDR*>(lparam)->hwndFrom, OCM_NOTIFY, wparam, lparam);
+				return ::SendMessage(reinterpret_cast<const NMHDR*>(lparam)->hwndFrom, OCM_NOTIFY, wparam, lparam);
 
 			case WM_ERASEBKGND:
 				return TRUE;
@@ -188,13 +189,10 @@ namespace wpl
 
 				case WM_PAINT:
 					paint_sequence ps(_window->hwnd());
-					vector_i offset = { ps.rcPaint.left, ps.rcPaint.top };
-					rect_i update_area = { ps.rcPaint.left, ps.rcPaint.top, ps.rcPaint.right, ps.rcPaint.bottom };
-					rect_i update_size = { 0, 0, update_area.x2 - update_area.x1, update_area.y2 - update_area.y1 };
+					const vector_i offset = { ps.rcPaint.left, ps.rcPaint.top };
+					const rect_i update_area = { ps.rcPaint.left, ps.rcPaint.top, ps.rcPaint.right, ps.rcPaint.bottom };
 
 					context.backbuffer->resize(ps.width(), ps.height());
-					fill(*context.backbuffer, update_size,
-						blender_solid_color<simd::blender_solid_color, order_bgra>(_background_color));
 
 					gcontext ctx(*context.backbuffer, *context.renderer, *context.text_engine, offset, &update_area);
 

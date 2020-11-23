@@ -62,15 +62,15 @@
       <DisableLanguageExtensions>false</DisableLanguageExtensions>
     </ClCompile>
     <ClCompile Include="win32\cursor_manager.cpp">
-      <DisableLanguageExtensions Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</DisableLanguageExtensions>
-      <DisableLanguageExtensions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</DisableLanguageExtensions>
-      <DisableLanguageExtensions Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</DisableLanguageExtensions>
-      <DisableLanguageExtensions Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</DisableLanguageExtensions>
+      <DisableLanguageExtensions>false</DisableLanguageExtensions>
     </ClCompile>
     <ClCompile Include="win32\factory_win32.cpp">
       <DisableLanguageExtensions>false</DisableLanguageExtensions>
     </ClCompile>
     <ClCompile Include="win32\font_loader_win32.cpp">
+      <DisableLanguageExtensions>false</DisableLanguageExtensions>
+    </ClCompile>
+    <ClCompile Include="win32\font_manager_win32.cpp">
       <DisableLanguageExtensions>false</DisableLanguageExtensions>
     </ClCompile>
     <ClCompile Include="win32\form.cpp">
@@ -84,10 +84,7 @@
       <DisableLanguageExtensions>false</DisableLanguageExtensions>
     </ClCompile>
     <ClCompile Include="win32\queue.cpp">
-      <DisableLanguageExtensions Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</DisableLanguageExtensions>
-      <DisableLanguageExtensions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</DisableLanguageExtensions>
-      <DisableLanguageExtensions Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</DisableLanguageExtensions>
-      <DisableLanguageExtensions Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</DisableLanguageExtensions>
+      <DisableLanguageExtensions>false</DisableLanguageExtensions>
     </ClCompile>
     <ClCompile Include="win32\view_host.cpp">
       <DisableLanguageExtensions>false</DisableLanguageExtensions>
@@ -121,6 +118,7 @@
     <ClInclude Include="..\wpl\queue.h" />
     <ClInclude Include="..\wpl\signals.h" />
     <ClInclude Include="..\wpl\stylesheet.h" />
+    <ClInclude Include="..\wpl\stylesheet_db.h" />
     <ClInclude Include="..\wpl\types.h" />
     <ClInclude Include="..\wpl\view.h" />
     <ClInclude Include="..\wpl\view_host.h" />
@@ -128,9 +126,11 @@
     <ClInclude Include="..\wpl\win32\controls.h" />
     <ClInclude Include="..\wpl\win32\cursor_manager.h" />
     <ClInclude Include="..\wpl\win32\font_loader.h" />
+    <ClInclude Include="..\wpl\win32\font_manager.h" />
     <ClInclude Include="..\wpl\win32\form.h" />
     <ClInclude Include="..\wpl\win32\native_view.h" />
     <ClInclude Include="..\wpl\win32\queue.h" />
+    <ClInclude Include="..\wpl\win32\text_container.h" />
     <ClInclude Include="..\wpl\win32\window.h" />
     <ClInclude Include="..\wpl\win32\combobox.h" />
     <ClInclude Include="..\wpl\win32\listview.h" />

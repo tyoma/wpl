@@ -22,7 +22,6 @@ set(WPL_TEST_SOURCES
 
 if (WIN32)
 	set(WPL_TEST_SOURCES ${WPL_TEST_SOURCES}
-		FormTests.cpp
 		helpers-win32.cpp
 		IntegrationTests.cpp
 		LayoutTests.cpp
@@ -30,6 +29,8 @@ if (WIN32)
 		NativeComboboxTests.cpp
 		NativeControlsTests.cpp
 		NativeCursorManagementTests.cpp
+		NativeFontManagerTests.cpp
+		NativeFormTests.cpp
 		NativeListViewTests.cpp
 		NativeViewHostTests.cpp
 		NativeViewTests.cpp

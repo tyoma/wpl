@@ -26,6 +26,7 @@
 #include <wpl/controls/scroller.h>
 #include <wpl/win32/cursor_manager.h>
 #include <wpl/win32/font_loader.h>
+#include <wpl/win32/font_manager.h>
 #include <wpl/win32/combobox.h>
 #include <wpl/win32/controls.h>
 #include <wpl/win32/form.h>
@@ -47,6 +48,33 @@ namespace wpl
 			win32::font_loader loader;
 			gcontext::text_engine_type text_engine;
 		};
+
+		template <typename T>
+		struct stylesheet_applier
+		{
+			stylesheet_applier(shared_ptr<T> control_, const stylesheet &stylesheet_,
+				shared_ptr<win32::font_manager> font_manager)
+				: control(control_)
+			{
+				const auto apply = [this, &stylesheet_, font_manager] {
+					this->control->apply_styles(stylesheet_, *font_manager);
+				};
+
+				style_changed_conn = stylesheet_.changed += apply;
+				apply();
+			}
+
+			shared_ptr<T> control;
+			slot_connection style_changed_conn;
+		};
+
+		template <typename T>
+		shared_ptr<T> apply_stylesheet(shared_ptr<T> control, const stylesheet &stylesheet_,
+			shared_ptr<win32::font_manager> font_manager)
+		{
+			const auto wrapped = make_shared< stylesheet_applier<T> >(control, stylesheet_, font_manager);
+			return shared_ptr<T>(wrapped, wrapped->control.get());
+		}
 	}
 
 	shared_ptr<factory> factory::create_default(const shared_ptr<stylesheet> &stylesheet_)
@@ -67,18 +95,20 @@ namespace wpl
 
 	void factory::setup_default(factory &factory_)
 	{
+		const auto font_manager = make_shared<win32::font_manager>();
+
 		factory_.register_form([] (const form_context &context) {
 			return shared_ptr<form>(new win32::form(context));
 		});
 
-		factory_.register_control("button", [] (const factory &, const control_context &) {
-			return shared_ptr<control>(new win32::button);
+		factory_.register_control("button", [font_manager] (const factory &, const control_context &context) {
+			return apply_stylesheet(make_shared<win32::button>(), *context.stylesheet_, font_manager);
 		});
-		factory_.register_control("link", [] (const factory &, const control_context &) {
-			return shared_ptr<control>(new win32::link);
+		factory_.register_control("link", [font_manager] (const factory &, const control_context &context) {
+			return apply_stylesheet(make_shared<win32::link>(), *context.stylesheet_, font_manager);
 		});
-		factory_.register_control("combobox", [] (const factory &, const control_context &) {
-			return shared_ptr<control>(new win32::combobox);
+		factory_.register_control("combobox", [font_manager] (const factory &, const control_context &context) {
+			return apply_stylesheet(make_shared<win32::combobox>(), *context.stylesheet_, font_manager);
 		});
 		factory_.register_control("header", [] (const factory &, const control_context &context) {
 			return shared_ptr<control>(new controls::header_basic(context.stylesheet_, context.cursor_manager_));
@@ -86,8 +116,8 @@ namespace wpl
 		factory_.register_control("listview", [] (const factory &f, const control_context &context) {
 			return controls::create_listview<controls::listview_basic>(f, context);
 		});
-		factory_.register_control("listview.native", [] (const factory &, const control_context &) {
-			return shared_ptr<control>(new win32::listview);
+		factory_.register_control("listview.native", [font_manager] (const factory &, const control_context &context) {
+			return apply_stylesheet(make_shared<win32::listview>(), *context.stylesheet_, font_manager);
 		});
 		factory_.register_control("hscroller", [] (const factory &, const control_context &) {
 			return shared_ptr<control>(new controls::scroller(controls::scroller::horizontal));

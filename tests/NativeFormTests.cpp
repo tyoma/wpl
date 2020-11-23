@@ -1,6 +1,7 @@
-#include <wpl/form.h>
-#include <wpl/win32/native_view.h>
 #include <wpl/win32/form.h>
+
+#include <wpl/win32/font_manager.h>
+#include <wpl/win32/native_view.h>
 
 #include "helpers-visual.h"
 #include "helpers-win32.h"
@@ -80,28 +81,12 @@ namespace wpl
 				memcpy(s->row_ptr(0), buffer.get(), b.bmHeight * b.bmWidthBytes);
 				return s;
 			}
-
-			font create_font(const wstring &typeface, int height)
-			{
-				font f = { typeface, height };
-				return f;
-			}
-
-			int convert_font_height(int height)
-			{
-				const shared_ptr<void> hdc(::CreateCompatibleDC(NULL), &::DeleteDC);
-				return -::MulDiv(height, ::GetDeviceCaps(static_cast<HDC>(hdc.get()), LOGPIXELSY), 72);
-			}
 		}
 
-		begin_test_suite( FormTests )
+		begin_test_suite( NativeFormTests )
 			form_context context;
-			//mocks::font_loader fake_loader;
-			//shared_ptr<gcontext::surface_type> surface;
-			//shared_ptr<gcontext::renderer_type> renderer;
-			//shared_ptr<gcontext::text_engine_type> text_engine;
-			//shared_ptr<mocks::cursor_manager> cursor_manager_;
 			window_manager windowManager;
+			shared_ptr<win32::font_manager> font_manager;
 
 			form_and_handle create_form_with_handle(HWND howner = 0)
 			{
@@ -122,6 +107,7 @@ namespace wpl
 				context.renderer.reset(new gcontext::renderer_type(1));
 				context.text_engine = create_text_engine();
 				windowManager.create_window();
+				font_manager = make_shared<win32::font_manager>();
 			}
 
 			teardown( Cleanup )
@@ -456,69 +442,41 @@ namespace wpl
 				form_and_handle f(create_form_with_handle());
 
 				// ACT
-				f.first->set_style(0);
+				f.first->set_features(0);
 
 				// ASSERT
 				assert_equal(0, mask & ::GetWindowLong(f.second, GWL_STYLE));
 
 				// ACT
-				f.first->set_style(form::resizeable);
+				f.first->set_features(form::resizeable);
 
 				// ASSERT
 				assert_equal(WS_SIZEBOX, mask & ::GetWindowLong(f.second, GWL_STYLE));
 
 				// ACT
-				f.first->set_style(form::resizeable | form::has_minimize);
+				f.first->set_features(form::resizeable | form::minimizable);
 
 				// ASSERT
 				assert_equal(WS_SIZEBOX | WS_MINIMIZEBOX, mask & ::GetWindowLong(f.second, GWL_STYLE));
 
 				// ACT
-				f.first->set_style(form::has_minimize);
+				f.first->set_features(form::minimizable);
 
 				// ASSERT
 				assert_equal(WS_MINIMIZEBOX, mask & ::GetWindowLong(f.second, GWL_STYLE));
 
 				// ACT
-				f.first->set_style(form::has_maximize);
+				f.first->set_features(form::maximizable);
 
 				// ASSERT
 				assert_equal(WS_MAXIMIZEBOX, mask & ::GetWindowLong(f.second, GWL_STYLE));
 
 				// ACT
-				f.first->set_style(form::resizeable | form::has_maximize | form::has_minimize);
+				f.first->set_features(form::resizeable | form::maximizable | form::minimizable);
 
 				// ASSERT
 				assert_equal(WS_SIZEBOX | WS_MINIMIZEBOX | WS_MAXIMIZEBOX,
 					mask & ::GetWindowLong(f.second, GWL_STYLE));
-			}
-
-
-			test( RequestedFontIsUnderlyingWindow )
-			{
-				// INIT
-				form_and_handle f(create_form_with_handle());
-
-				// ACT
-				f.first->set_font(create_font(L"Arial", 10));
-
-				// ASSERT
-				HFONT hfont = reinterpret_cast<HFONT>(::SendMessage(f.second, WM_GETFONT, 0, 0));
-				LOGFONT lf = {};
-
-				::GetObject(hfont, sizeof(lf), &lf);
-				assert_equal(_T("Arial"), tstring(lf.lfFaceName));
-				assert_equal(convert_font_height(10), lf.lfHeight);
-
-				// ACT
-				f.first->set_font(create_font(L"Times New Roman", 20));
-
-				// ASSERT
-				hfont = reinterpret_cast<HFONT>(::SendMessage(f.second, WM_GETFONT, 0, 0));
-
-				::GetObject(hfont, sizeof(lf), &lf);
-				assert_equal(_T("Times New Roman"), tstring(lf.lfFaceName));
-				assert_equal(convert_font_height(20), lf.lfHeight);
 			}
 
 
@@ -558,79 +516,6 @@ namespace wpl
 				assert_equal(v->surface_size_log.back().first, static_cast<int>(context.backbuffer->width()));
 				assert_equal(v->surface_size_log.back().second, static_cast<int>(context.backbuffer->height()));
 			}
-
-
-			test( TheWholeWindowIsInvalidatedOnSettingBackgroundColor )
-			{
-				// INIT
-				form_and_handle f(create_form_with_handle());
-				view_location l = { 10, 11, 200, 91 };
-
-				f.first->set_location(l);
-				f.first->set_visible(true);
-				::ValidateRect(f.second, NULL);
-
-				// ACT
-				f.first->set_background_color(agge::color::make(200, 150, 100));
-
-				// ASSERT
-				RECT reference, invalid;
-
-				::GetClientRect(f.second, &reference);
-				assert_is_true(!!::GetUpdateRect(f.second, &invalid, FALSE));
-				assert_equal(reference, invalid);
-
-				// INIT
-				l.width++, l.height = 250;
-				f.first->set_location(l);
-				::ValidateRect(f.second, NULL);
-
-				// ACT
-				f.first->set_background_color(agge::color::make(200, 150, 100));
-
-				// ASSERT
-				::GetClientRect(f.second, &reference);
-				assert_is_true(!!::GetUpdateRect(f.second, &invalid, FALSE));
-				assert_equal(reference, invalid);
-			}
-
-
-			test( BackgroundIsFilledWithPresetColor )
-			{
-				// INIT
-				form_and_handle f(create_form_with_handle());
-				shared_ptr< mocks::logging_visual<view> > v(new mocks::logging_visual<view>);
-				view_location l = { 100, 100, 200, 150 };
-
-				f.first->set_location(l);
-				f.first->set_view(v);
-				f.first->set_visible(true);
-				::ValidateRect(f.second, NULL);
-
-				// ACT
-				f.first->set_background_color(agge::color::make(200, 150, 100));
-				::RedrawWindow(f.second, NULL, NULL, RDW_UPDATENOW);
-
-				// ASSERT
-				pair<gcontext::pixel_type, bool> reference1[] = {
-					make_pair(make_pixel(agge::color::make(200, 150, 100, 255)), true),
-				};
-
-				assert_equal(reference1, v->background_color);
-
-				// ACT
-				f.first->set_background_color(agge::color::make(100, 0, 200));
-				::RedrawWindow(f.second, NULL, NULL, RDW_UPDATENOW);
-
-				// ASSERT
-				pair<gcontext::pixel_type, bool> reference2[] = {
-					make_pair(make_pixel(agge::color::make(200, 150, 100, 255)), true),
-					make_pair(make_pixel(agge::color::make(100, 0, 200, 255)), true),
-				};
-
-				assert_equal(reference2, v->background_color);
-			}
-
 
 
 			test( TopLevelGainsFocusEvenWhenWindowedViewsPresent )

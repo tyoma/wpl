@@ -58,11 +58,7 @@ namespace wpl
 
 
 		listview::listview()
-		{
-			init();
-		}
-
-		void listview::init()
+			: native_view("text.listview")
 		{
 			_avoid_notifications = false,
 			_sort_column = columns_model::npos();

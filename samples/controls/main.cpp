@@ -5,6 +5,7 @@
 #include <wpl/layout.h>
 #include <wpl/controls/scroller.h>
 
+#include <samples/common/factory.h>
 #include <samples/common/platform.h>
 #include <samples/common/timer.h>
 
@@ -95,8 +96,7 @@ namespace
 
 int main()
 {
-	auto fct = factory::create_default(nullptr);
-	wpl::font fnt = { L"", 8 };
+	auto fct = create_sample_factory();
 	view_location l = { 100, 100, 300, 200 };
 	shared_ptr<form> f = fct->create_form();
 	slot_connection c = f->close += &exit_message_loop;
@@ -129,10 +129,8 @@ int main()
 	scrl->set_model(scrl_model);
 	scrl2->set_model(scrl_model);
 
-	f->set_font(fnt);
 	f->set_view(root);
 	f->set_location(l);
 	f->set_visible(true);
-	f->set_background_color(make_color(8, 32, 64));
 	run_message_loop();
 }

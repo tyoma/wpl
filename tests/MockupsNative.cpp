@@ -5,6 +5,8 @@
 #include <wpl/win32/native_view.h>
 #include <ut/assert.h>
 
+using namespace std;
+
 namespace wpl
 {
 	namespace tests
@@ -12,7 +14,7 @@ namespace wpl
 		namespace mocks
 		{
 			native_view_window::native_view_window()
-				: _hparent(0)
+				: native_view(""), _hparent(0)
 			{	}
 
 			native_view_window::~native_view_window()

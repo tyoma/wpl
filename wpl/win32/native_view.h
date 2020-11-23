@@ -26,15 +26,22 @@
 
 namespace wpl
 {
+	struct stylesheet;
+
+	namespace win32
+	{
+		class font_manager;
+	}
+
 	class native_view : public view, public std::enable_shared_from_this<view>
 	{
 	public:
-		native_view();
+		native_view(const std::string &text_style_name);
 		~native_view();
 
-		void attach(HWND hwnd);
 		HWND get_window() const throw();
 		HWND get_window(HWND hparent_for);
+		void apply_styles(const stylesheet &stylesheet_, win32::font_manager &font_manager);
 
 	protected:
 		// visual methods
@@ -49,6 +56,8 @@ namespace wpl
 			const win32::window::original_handler_t &handler) = 0;
 
 	private:
+		std::string _text_style_name;
+		std::shared_ptr<void> _font;
 		std::shared_ptr<win32::window> _window;
 		bool _own;
 	};

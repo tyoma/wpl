@@ -28,7 +28,6 @@
 #include <agge/platform/bitmap.h>
 #include <agge/rasterizer.h>
 #include <agge/renderer_parallel.h>
-#include <string>
 
 namespace agge
 {
@@ -74,13 +73,6 @@ namespace wpl
 		renderer_type &_renderer;
 		const agge::vector_i _offset;
 		const agge::rect_i _window;
-	};
-
-
-	struct font
-	{
-		std::wstring typeface;
-		int height; // em height in points.
 	};
 
 

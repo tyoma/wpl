@@ -38,10 +38,12 @@
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="factory.cpp" />
     <ClCompile Include="platform.cpp" />
     <ClCompile Include="timer.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="factory.h" />
     <ClInclude Include="platform.h" />
     <ClInclude Include="timer.h" />
   </ItemGroup>

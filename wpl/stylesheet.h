@@ -33,33 +33,6 @@ namespace wpl
 		virtual agge::font::ptr get_font(const char *id) const = 0;
 		virtual agge::real_t get_value(const char *id) const = 0;
 
-		signal<void ()> changed;
-	};
-
-
-	class stylesheet_db : public stylesheet
-	{
-	public:
-		void set_color(const char *id, agge::color value);
-		void set_font(const char *id, agge::font::ptr value);
-		void set_value(const char *id, agge::real_t value);
-
-	private:
-		typedef std::unordered_map<std::string, agge::color> colors_t;
-		typedef std::unordered_map<std::string, agge::font::ptr> fonts_t;
-		typedef std::unordered_map<std::string, agge::real_t> values_t;
-
-	private:
-		virtual agge::color get_color(const char *id) const;
-		virtual agge::font::ptr get_font(const char *id) const;
-		virtual agge::real_t get_value(const char *id) const;
-
-		template <typename ContainerT>
-		typename ContainerT::mapped_type get_value(const ContainerT &container_, const char *id) const;
-
-	private:
-		colors_t _colors;
-		fonts_t _fonts;
-		values_t _values;
+		mutable signal<void ()> changed;
 	};
 }

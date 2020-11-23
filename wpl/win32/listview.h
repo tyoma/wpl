@@ -39,8 +39,6 @@ namespace wpl
 			typedef std::vector<tracked_item> selection_trackers;
 
 		private:
-			void init();
-
 			// control methods
 			std::shared_ptr<view> get_view();
 

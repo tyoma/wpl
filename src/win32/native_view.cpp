@@ -22,12 +22,16 @@
 
 #include <wpl/win32/native_view.h>
 
-#include <functional>
+#include <wpl/stylesheet.h>
+#include <wpl/win32/font_manager.h>
+
+using namespace std;
+using namespace placeholders;
 
 namespace wpl
 {
-	native_view::native_view()
-		: _own(false)
+	native_view::native_view(const string &text_style_name)
+		: _text_style_name(text_style_name), _own(false)
 	{	}
 
 	native_view::~native_view()
@@ -36,16 +40,6 @@ namespace wpl
 			if (HWND hwnd = get_window())
 				_window.reset(), ::DestroyWindow(hwnd);
 	}
-
-	void native_view::attach(HWND hwnd)
-	{
-		using namespace std::placeholders;
-		_window = win32::window::attach(hwnd, std::bind(&native_view::on_message, this, _1, _2, _3, _4));
-		_own = false;
-	}
-
-	HWND native_view::get_window() const throw()
-	{	return _window ? _window->hwnd() : 0;	}
 
 	void native_view::resize(unsigned cx, unsigned cy, visual::positioned_native_views &native_views)
 	{
@@ -56,10 +50,11 @@ namespace wpl
 	void native_view::got_focus()
 	{	::SetFocus(get_window());	}
 
+	HWND native_view::get_window() const throw()
+	{	return _window ? _window->hwnd() : 0;	}
+
 	HWND native_view::get_window(HWND hparent_for)
 	{
-		using namespace std::placeholders;
-
 		if (_window && hparent_for == ::GetParent(_window->hwnd()))
 			return _window->hwnd();
 
@@ -67,9 +62,18 @@ namespace wpl
 
 		if (_window)
 			::DestroyWindow(_window->hwnd());
-		::SendMessage(hwnd, WM_SETFONT, ::SendMessage(hparent_for, WM_GETFONT, 0, 0), 0);
-		_window = win32::window::attach(hwnd, std::bind(&native_view::on_message, this, _1, _2, _3, _4));
+		::SendMessage(hwnd, WM_SETFONT, reinterpret_cast<WPARAM>(_font.get()), 0);
+		_window = win32::window::attach(hwnd, bind(&native_view::on_message, this, _1, _2, _3, _4));
 		_own = true;
 		return hwnd;
+	}
+
+	void native_view::apply_styles(const stylesheet &stylesheet_, win32::font_manager &font_manager)
+	{
+		auto new_font = font_manager.get_font(stylesheet_.get_font(_text_style_name.c_str())->get_key());
+
+		if (_window)
+			::SendMessage(_window->hwnd(), WM_SETFONT, reinterpret_cast<WPARAM>(new_font.get()), 0);
+		_font = new_font;
 	}
 }

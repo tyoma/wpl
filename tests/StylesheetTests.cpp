@@ -1,4 +1,4 @@
-#include <wpl/stylesheet.h>
+#include <wpl/stylesheet_db.h>
 
 #include "helpers-visual.h"
 
@@ -28,9 +28,9 @@ namespace wpl
 			init( Init )
 			{
 				dummy_accessor.reset(new dummy_accessor_);
-				font1.reset(new agge::font(dummy_accessor));
-				font2.reset(new agge::font(dummy_accessor));
-				font3.reset(new agge::font(dummy_accessor));
+				font1.reset(new agge::font(agge::font::key(L"", 1), dummy_accessor));
+				font2.reset(new agge::font(agge::font::key(L"", 1), dummy_accessor));
+				font3.reset(new agge::font(agge::font::key(L"", 1), dummy_accessor));
 			}
 
 

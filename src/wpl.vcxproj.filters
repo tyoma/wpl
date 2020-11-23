@@ -91,6 +91,9 @@
     <ClCompile Include="win32\cursor_manager.cpp">
       <Filter>src\win32</Filter>
     </ClCompile>
+    <ClCompile Include="win32\font_manager_win32.cpp">
+      <Filter>src\win32</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\wpl\controls\listview_core.h">
@@ -162,6 +165,13 @@
     <ClInclude Include="..\wpl\animation.h" />
     <ClInclude Include="..\wpl\cursor.h" />
     <ClInclude Include="..\wpl\win32\cursor_manager.h">
+      <Filter>win32</Filter>
+    </ClInclude>
+    <ClInclude Include="..\wpl\win32\font_manager.h">
+      <Filter>win32</Filter>
+    </ClInclude>
+    <ClInclude Include="..\wpl\stylesheet_db.h" />
+    <ClInclude Include="..\wpl\win32\text_container.h">
       <Filter>win32</Filter>
     </ClInclude>
   </ItemGroup>

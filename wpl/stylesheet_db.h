@@ -20,37 +20,33 @@
 
 #pragma once
 
-#include "native_view.h"
-
-#include "../controls.h"
+#include "stylesheet.h"
 
 namespace wpl
 {
-	namespace win32
+	class stylesheet_db : public stylesheet
 	{
-		class combobox : public wpl::combobox, public native_view
-		{
-		public:
-			combobox();
+	public:
+		void set_color(const char *id, agge::color value);
+		void set_font(const char *id, agge::font::ptr value);
+		void set_value(const char *id, agge::real_t value);
 
-			virtual std::shared_ptr<view> get_view();
-			virtual void set_model(std::shared_ptr<model_t> model);
-			virtual void select(model_t::index_type index);
+	private:
+		typedef std::unordered_map<std::string, agge::color> colors_t;
+		typedef std::unordered_map<std::string, agge::font::ptr> fonts_t;
+		typedef std::unordered_map<std::string, agge::real_t> values_t;
 
-		private:
-			virtual HWND materialize(HWND hparent);
-			virtual LRESULT on_message(UINT message, WPARAM wparam, LPARAM lparam,
-				const window::original_handler_t &handler);
+	private:
+		virtual agge::color get_color(const char *id) const;
+		virtual agge::font::ptr get_font(const char *id) const;
+		virtual agge::real_t get_value(const char *id) const;
 
-			void on_invalidated(const model_t *model);
-			void update(HWND hcombobox, const model_t *model) const;
-			static void update_selection(HWND hcombobox, std::shared_ptr<const trackable> &selected_item);
+		template <typename ContainerT>
+		typename ContainerT::mapped_type get_value(const ContainerT &container_, const char *id) const;
 
-		private:
-			mutable std::wstring _text_buffer;
-			std::shared_ptr<model_t> _model;
-			std::shared_ptr<void> _invalidated_connection;
-			std::shared_ptr<const trackable> _selected_item;
-		};
-	}
+	private:
+		colors_t _colors;
+		fonts_t _fonts;
+		values_t _values;
+	};
 }

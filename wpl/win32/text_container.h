@@ -20,37 +20,48 @@
 
 #pragma once
 
+#include "../controls.h"
 #include "native_view.h"
 
-#include "../controls.h"
+#include <memory>
 
 namespace wpl
 {
 	namespace win32
 	{
-		class combobox : public wpl::combobox, public native_view
+		template <typename BaseT>
+		class text_container_impl : public BaseT, public native_view
 		{
-		public:
-			combobox();
+		protected:
+			typedef text_container_impl text_container;
 
-			virtual std::shared_ptr<view> get_view();
-			virtual void set_model(std::shared_ptr<model_t> model);
-			virtual void select(model_t::index_type index);
+		protected:
+			text_container_impl(const std::string &text_style_name);
 
-		private:
-			virtual HWND materialize(HWND hparent);
-			virtual LRESULT on_message(UINT message, WPARAM wparam, LPARAM lparam,
-				const window::original_handler_t &handler);
+			virtual void set_align(wpl::text_container::halign value);
+			virtual void set_text(const std::wstring &text);
 
-			void on_invalidated(const model_t *model);
-			void update(HWND hcombobox, const model_t *model) const;
-			static void update_selection(HWND hcombobox, std::shared_ptr<const trackable> &selected_item);
-
-		private:
-			mutable std::wstring _text_buffer;
-			std::shared_ptr<model_t> _model;
-			std::shared_ptr<void> _invalidated_connection;
-			std::shared_ptr<const trackable> _selected_item;
+		protected:
+			std::wstring _text;
+			wpl::text_container::halign _halign;
 		};
+
+
+
+		template <typename BaseT>
+		inline text_container_impl<BaseT>::text_container_impl(const std::string &text_style_name)
+			: native_view(text_style_name)
+		{	}
+
+		template <typename BaseT>
+		inline void text_container_impl<BaseT>::set_align(wpl::text_container::halign value)
+		{	_halign = value;	}
+
+		template <typename BaseT>
+		inline void text_container_impl<BaseT>::set_text(const std::wstring &text)
+		{
+			_text = text;
+			::SetWindowTextW(get_window(), _text.c_str());
+		}
 	}
 }

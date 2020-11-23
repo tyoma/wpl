@@ -30,10 +30,10 @@ namespace wpl
 {
 	struct form : view_host
 	{
-		enum styles {
+		enum features {
 			resizeable = 1 << 0,
-			has_minimize = 1 << 1,
-			has_maximize = 1 << 2,
+			minimizable = 1 << 1,
+			maximizable = 1 << 2,
 		};
 
 		virtual view_location get_location() const = 0;
@@ -43,8 +43,7 @@ namespace wpl
 		virtual void set_caption_icon(const gcontext::surface_type &icon) = 0;
 		virtual void set_task_icon(const gcontext::surface_type &icon) = 0;
 		virtual std::shared_ptr<form> create_child() = 0;
-		virtual void set_style(unsigned /*styles*/ style) = 0;
-		virtual void set_font(const font &font_)= 0;
+		virtual void set_features(unsigned /*features*/ features_) = 0;
 
 		signal<void()> close;
 	};

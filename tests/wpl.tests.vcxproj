@@ -49,13 +49,14 @@
     <ClCompile Include="ListViewCoreSelectionTests.cpp" />
     <ClCompile Include="NativeComboboxTests.cpp" />
     <ClCompile Include="ContainerTests.cpp" />
-    <ClCompile Include="FormTests.cpp" />
+    <ClCompile Include="NativeFormTests.cpp" />
     <ClCompile Include="HeaderCoreTests.cpp" />
     <ClCompile Include="helpers-visual.cpp" />
     <ClCompile Include="helpers-win32.cpp" />
     <ClCompile Include="IntegrationTests.cpp" />
     <ClCompile Include="LayoutTests.cpp" />
     <ClCompile Include="ListViewCoreTests.cpp" />
+    <ClCompile Include="NativeFontManagerTests.cpp" />
     <ClCompile Include="NativeListViewTests.cpp" />
     <ClCompile Include="MockupsListView.cpp" />
     <ClCompile Include="MockupsNative.cpp" />

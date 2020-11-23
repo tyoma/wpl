@@ -23,6 +23,7 @@ if(WIN32)
 		win32/controls.cpp
 		win32/factory_win32.cpp
 		win32/font_loader_win32.cpp
+		win32/font_manager_win32.cpp
 		win32/form.cpp
 		win32/listview_win32.cpp
 		win32/native_view.cpp

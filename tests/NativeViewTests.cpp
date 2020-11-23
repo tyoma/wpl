@@ -1,3 +1,5 @@
+#include <agge.text/text_engine.h>
+
 #include <wpl/win32/native_view.h>
 
 #include "helpers-win32.h"
@@ -5,6 +7,8 @@
 #include <tchar.h>
 #include <ut/assert.h>
 #include <ut/test.h>
+#include <wpl/stylesheet_db.h>
+#include <wpl/win32/font_manager.h>
 
 using namespace std;
 
@@ -17,6 +21,10 @@ namespace wpl
 			class windowed_view : public native_view
 			{
 			public:
+				windowed_view(const string &font_style = "text")
+					: native_view(font_style)
+				{	}
+
 				using native_view::got_focus;
 
 			public:
@@ -41,12 +49,14 @@ namespace wpl
 			window_manager wmanager;
 			HWND parent;
 			window_tracker tracker;
+			shared_ptr<gcontext::text_engine_type> text_engine;
 
 			init( CreateParent )
 			{
 				parent = wmanager.create_visible_window();
 				tracker.checkpoint();
 				tracker.created.clear();
+				text_engine = create_text_engine();
 			}
 
 
@@ -139,33 +149,64 @@ namespace wpl
 			}
 
 
-			test( ParentFontIsSetOnMaterialize )
+			test( StyleFontIsSetOnMaterialize )
 			{
 				// INIT
-				shared_ptr<void> f[] = {
-					shared_ptr<void>(::CreateFont(0, 0, 0, 0, FW_DONTCARE, FALSE, FALSE, FALSE, ANSI_CHARSET,
-						OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH, _T("Arial")),
-						&::DeleteObject),
-					shared_ptr<void>(::CreateFont(0, 0, 0, 0, FW_DONTCARE, FALSE, FALSE, FALSE, ANSI_CHARSET,
-						OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH, _T("Arial")),
-						&::DeleteObject),
-				};
-				HWND parents[] = { wmanager.create_visible_window(), wmanager.create_visible_window(), };
+				stylesheet_db ss;
+				win32::font_manager fm;
 				shared_ptr<mocks::windowed_view> wv[] = {
-					shared_ptr<mocks::windowed_view>(new mocks::windowed_view),
-					shared_ptr<mocks::windowed_view>(new mocks::windowed_view),
+					shared_ptr<mocks::windowed_view>(new mocks::windowed_view("text.static")),
+					shared_ptr<mocks::windowed_view>(new mocks::windowed_view("text.edit")),
+					shared_ptr<mocks::windowed_view>(new mocks::windowed_view("text")),
 				};
 
-				SendMessage(parents[0], WM_SETFONT, (WPARAM)f[0].get(), TRUE);
-				SendMessage(parents[1], WM_SETFONT, (WPARAM)f[1].get(), TRUE);
+				ss.set_font("text.static", text_engine->create_font(L"Arial", 10, false, false, agge::font::key::gf_none));
+				ss.set_font("text.edit", text_engine->create_font(L"Tahoma", -12, false, false, agge::font::key::gf_none));
+				ss.set_font("text", text_engine->create_font(L"Tahoma", 13, true, false, agge::font::key::gf_none));
 
 				// ACT
-				static_cast<native_view &>(*wv[0]).get_window(parents[0]);
-				static_cast<native_view &>(*wv[1]).get_window(parents[1]);
+				wv[0]->apply_styles(ss, fm);
+				wv[1]->apply_styles(ss, fm);
+				wv[2]->apply_styles(ss, fm);
+
+				static_cast<native_view &>(*wv[0]).get_window(parent);
+				static_cast<native_view &>(*wv[1]).get_window(parent);
+				static_cast<native_view &>(*wv[2]).get_window(parent);
 
 				// ASSERT
-				assert_equal(f[0].get(), (void *)SendMessage(wv[0]->get_window(), WM_GETFONT, 0, 0));
-				assert_equal(f[1].get(), (void *)SendMessage(wv[1]->get_window(), WM_GETFONT, 0, 0));
+				assert_equal(fm.get_font(agge::font::key(L"Arial", 10)).get(),
+					(void *)SendMessage(wv[0]->get_window(), WM_GETFONT, 0, 0));
+				assert_equal(fm.get_font(agge::font::key(L"Tahoma", -12)).get(),
+					(void *)SendMessage(wv[1]->get_window(), WM_GETFONT, 0, 0));
+				assert_equal(fm.get_font(agge::font::key(L"Tahoma", 13, true)).get(),
+					(void *)SendMessage(wv[2]->get_window(), WM_GETFONT, 0, 0));
+			}
+
+
+			test( FontIsUpdatedForAnExistedWindow )
+			{
+				// INIT
+				stylesheet_db ss;
+				win32::font_manager fm;
+				mocks::windowed_view wv("text.static");
+
+				ss.set_font("text.static", text_engine->create_font(L"Arial", 10, false, false, agge::font::key::gf_none));
+				wv.apply_styles(ss, fm);
+				static_cast<native_view &>(wv).get_window(parent);
+
+				// ACT
+				ss.set_font("text.static", text_engine->create_font(L"Tahoma", 18, false, false, agge::font::key::gf_none));
+
+				// ASSERT
+				assert_equal(fm.get_font(agge::font::key(L"Arial", 10)).get(),
+					(void *)SendMessage(wv.get_window(), WM_GETFONT, 0, 0));
+
+				// ACT
+				wv.apply_styles(ss, fm);
+
+				// ASSERT
+				assert_equal(fm.get_font(agge::font::key(L"Tahoma", 18)).get(),
+					(void *)SendMessage(wv.get_window(), WM_GETFONT, 0, 0));
 			}
 
 

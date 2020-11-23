@@ -25,8 +25,7 @@ namespace wpl
 			class form : public wpl::form
 			{
 			private:
-				virtual void set_view(const shared_ptr<view> &/*v*/) { throw 0; }
-				virtual void set_background_color(agge::color /*color_*/) { throw 0; }
+				virtual void set_view(shared_ptr<view> /*v*/) { throw 0; }
 
 				virtual view_location get_location() const { throw 0; }
 				virtual void set_location(const view_location &/*location*/) { throw 0; };
@@ -35,8 +34,7 @@ namespace wpl
 				virtual void set_caption_icon(const gcontext::surface_type &/*icon*/) { throw 0; };
 				virtual void set_task_icon(const gcontext::surface_type &/*icon*/) { throw 0; };
 				virtual shared_ptr<wpl::form> create_child() { throw 0; };
-				virtual void set_style(unsigned /*styles*/ /*style*/) { throw 0; };
-				virtual void set_font(const font &/*font_*/){ throw 0; };
+				virtual void set_features(unsigned /*features*/ /*features_*/) { throw 0; };
 			};
 
 			class stylesheet : public wpl::stylesheet

@@ -33,6 +33,7 @@ namespace wpl
 	namespace win32
 	{
 		button::button()
+			: text_container("text.button")
 		{	}
 
 		shared_ptr<view> button::get_view()
@@ -61,6 +62,7 @@ namespace wpl
 
 
 		link::link()
+			: text_container("text.link")
 		{	_halign = wpl::text_container::left;	}
 
 		shared_ptr<view> link::get_view()

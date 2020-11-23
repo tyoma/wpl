@@ -1,11 +1,13 @@
 #include <crtdbg.h>
 
 #include <agge.text/text_engine.h>
+#include <samples/common/factory.h>
 #include <samples/common/platform.h>
 #include <samples/common/timer.h>
 #include <wpl/controls.h>
 #include <wpl/factory.h>
 #include <wpl/form.h>
+#include <wpl/stylesheet_db.h>
 
 using namespace agge;
 using namespace std;
@@ -83,22 +85,7 @@ int main()
 {
 	_CrtSetDbgFlag(_CrtSetDbgFlag(_CRTDBG_REPORT_FLAG) | _CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
 
-	auto te = create_text_engine();
-	auto ss = make_shared<stylesheet_db>();
-	auto fct = factory::create_default(ss);
-
-	ss->set_font("text", te->create_font(L"Segoe UI", 14, false, false, agge::font::key::gf_vertical));
-	ss->set_color("background", agge::color::make(16, 16, 16));
-	ss->set_color("background.selected", agge::color::make(192, 192, 192));
-	ss->set_color("background.listview.odd", agge::color::make(48, 48, 48));
-	ss->set_color("text", agge::color::make(192, 192, 192));
-	ss->set_color("text.selected", agge::color::make(16, 16, 16));
-	ss->set_color("border", agge::color::make(64, 64, 96));
-
-	ss->set_value("padding", 3);
-	ss->set_value("border", 1);
-
-	wpl::font fnt = { L"", 8 };
+	auto fct = create_sample_factory();
 	view_location l = { 100, 100, 300, 200 };
 	shared_ptr<form> f = fct->create_form();
 	slot_connection c = f->close += &exit_message_loop;
@@ -109,7 +96,6 @@ int main()
 	lv->set_columns_model(cm);
 	lv->set_model(m);
 
-	f->set_font(fnt);
 	f->set_view(lv->get_view());
 	f->set_location(l);
 	f->set_visible(true);

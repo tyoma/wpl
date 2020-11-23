@@ -20,37 +20,33 @@
 
 #pragma once
 
-#include "native_view.h"
+#include "../concepts.h"
 
-#include "../controls.h"
+#include <agge.text/font.h>
+#include <map>
+#include <memory>
 
 namespace wpl
 {
 	namespace win32
 	{
-		class combobox : public wpl::combobox, public native_view
+		class font_manager : noncopyable
 		{
 		public:
-			combobox();
+			font_manager();
 
-			virtual std::shared_ptr<view> get_view();
-			virtual void set_model(std::shared_ptr<model_t> model);
-			virtual void select(model_t::index_type index);
+			std::shared_ptr<void> /*HFONT*/ get_font(const agge::font::key &font_key);
 
 		private:
-			virtual HWND materialize(HWND hparent);
-			virtual LRESULT on_message(UINT message, WPARAM wparam, LPARAM lparam,
-				const window::original_handler_t &handler);
+			struct key_less
+			{
+				bool operator ()(const agge::font::key &lhs, const agge::font::key &rhs) const;
+			};
 
-			void on_invalidated(const model_t *model);
-			void update(HWND hcombobox, const model_t *model) const;
-			static void update_selection(HWND hcombobox, std::shared_ptr<const trackable> &selected_item);
+			typedef std::map<agge::font::key, std::weak_ptr<void> /*HFONT*/, key_less> font_cache;
 
 		private:
-			mutable std::wstring _text_buffer;
-			std::shared_ptr<model_t> _model;
-			std::shared_ptr<void> _invalidated_connection;
-			std::shared_ptr<const trackable> _selected_item;
+			std::shared_ptr<font_cache> _font_cache;
 		};
 	}
 }

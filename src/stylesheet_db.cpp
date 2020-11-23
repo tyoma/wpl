@@ -1,4 +1,4 @@
-#include <wpl/stylesheet.h>
+#include <wpl/stylesheet_db.h>
 
 #include <algorithm>
 #include <stdexcept>

@@ -37,8 +37,7 @@ namespace wpl
 
 		private:
 			// view_host methods
-			virtual void set_view(const std::shared_ptr<view> &v);
-			virtual void set_background_color(agge::color color);
+			virtual void set_view(std::shared_ptr<view> v);
 
 			// form methods
 			virtual view_location get_location() const;
@@ -48,8 +47,7 @@ namespace wpl
 			virtual void set_caption_icon(const gcontext::surface_type &icon);
 			virtual void set_task_icon(const gcontext::surface_type &icon);
 			virtual std::shared_ptr<wpl::form> create_child();
-			virtual void set_style(unsigned /*styles*/ style);
-			virtual void set_font(const font &font_);
+			virtual void set_features(unsigned /*features*/ features_);
 
 			LRESULT wndproc(UINT message, WPARAM wparam, LPARAM lparam, const window::original_handler_t &previous);
 

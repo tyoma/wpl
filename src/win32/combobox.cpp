@@ -32,6 +32,10 @@ namespace wpl
 {
 	namespace win32
 	{
+		combobox::combobox()
+			: native_view("text.combobox")
+		{	}
+
 		shared_ptr<view> combobox::get_view()
 		{	return shared_from_this();	}
 

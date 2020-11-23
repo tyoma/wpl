@@ -20,7 +20,7 @@
 
 #pragma once
 
-#include "native_view.h"
+#include "text_container.h"
 
 #include "../controls.h"
 #include <memory>
@@ -33,28 +33,6 @@ namespace wpl
 
 	namespace win32
 	{
-		template <typename BaseT>
-		class text_container_impl : public BaseT, public native_view
-		{
-			virtual void set_text(const std::wstring &text)
-			{
-				_text = text;
-				::SetWindowTextW(get_window(), _text.c_str());
-			}
-
-		protected:
-			typedef text_container_impl text_container;
-
-		protected:
-			virtual void set_align(wpl::text_container::halign value)
-			{	_halign = value;	}
-
-		protected:
-			std::wstring _text;
-			wpl::text_container::halign _halign;
-		};
-
-
 		class button : public text_container_impl<wpl::button>
 		{
 		public:

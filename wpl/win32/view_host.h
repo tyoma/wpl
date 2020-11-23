@@ -38,8 +38,7 @@ namespace wpl
 				const window::user_handler_t &user_handler = &view_host::passthrough);
 			~view_host();
 
-			virtual void set_view(const std::shared_ptr<view> &v);
-			virtual void set_background_color(agge::color color);
+			virtual void set_view(std::shared_ptr<view> v);
 
 			static LRESULT passthrough(UINT message, WPARAM wparam, LPARAM lparam,
 				const window::original_handler_t &previous);
@@ -76,7 +75,6 @@ namespace wpl
 			gcontext::rasterizer_ptr _rasterizer;
 			std::vector<slot_connection> _connections;
 			std::vector<visual::positioned_native_view> _positioned_views;
-			agge::color _background_color;
 			unsigned _input_modifiers;
 			bool _mouse_in : 1;
 		};
