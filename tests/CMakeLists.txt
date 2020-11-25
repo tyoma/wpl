@@ -34,6 +34,7 @@ if (WIN32)
 		NativeListViewTests.cpp
 		NativeViewHostTests.cpp
 		NativeViewTests.cpp
+		RootContainerTests.cpp 
 		ScrollerTests.cpp
 		WindowingTests.cpp
 	)

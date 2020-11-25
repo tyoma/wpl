@@ -94,6 +94,9 @@
     <ClCompile Include="win32\font_manager_win32.cpp">
       <Filter>src\win32</Filter>
     </ClCompile>
+    <ClCompile Include="root_container.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\wpl\controls\listview_core.h">
@@ -174,5 +177,7 @@
     <ClInclude Include="..\wpl\win32\text_container.h">
       <Filter>win32</Filter>
     </ClInclude>
+    <ClInclude Include="..\wpl\root_container.h" />
+    <ClInclude Include="..\wpl\stylesheet_helpers.h" />
   </ItemGroup>
 </Project>

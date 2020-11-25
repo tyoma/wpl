@@ -1,9 +1,8 @@
-#include "factory.h"
+#include "stylesheet.h"
 
 #include "platform.h"
 
 #include <agge.text/text_engine.h>
-#include <wpl/factory.h>
 #include <wpl/stylesheet_db.h>
 
 using namespace std;
@@ -23,13 +22,12 @@ namespace wpl
 		};
 	}
 
-	std::shared_ptr<factory> create_sample_factory()
+	std::shared_ptr<stylesheet> create_sample_stylesheet()
 	{
 		auto ssc = make_shared<stylesheet_composite>();
 		shared_ptr<stylesheet> ss(ssc, &ssc->ss);
-		auto fct = factory::create_default(ss);
 
-		ssc->ss.set_font("text", ssc->text_engine->create_font(L"Segoe UI", 16, false, false, agge::font::key::gf_vertical));
+		ssc->ss.set_font("text", ssc->text_engine->create_font(L"Segoe UI", 16, true, false, agge::font::key::gf_vertical));
 		ssc->ss.set_color("background", agge::color::make(16, 16, 16));
 		ssc->ss.set_color("background.selected", agge::color::make(192, 192, 192));
 		ssc->ss.set_color("background.listview.odd", agge::color::make(48, 48, 48));
@@ -39,6 +37,6 @@ namespace wpl
 
 		ssc->ss.set_value("padding", 3);
 		ssc->ss.set_value("border", 1);
-		return fct;
+		return ss;
 	}
 }

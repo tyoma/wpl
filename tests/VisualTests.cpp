@@ -16,7 +16,7 @@ namespace wpl
 	namespace tests
 	{
 		begin_test_suite( VisualTests )
-			typedef context::blender_t blender_t;
+			typedef default_blender_t blender_t;
 
 			mocks::font_loader fake_loader;
 			shared_ptr<gcontext::renderer_type> renderer;

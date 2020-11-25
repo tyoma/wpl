@@ -1,8 +1,8 @@
 #include "piechart.h"
 #include "view_fill.h"
 
-#include <samples/common/factory.h>
 #include <samples/common/platform.h>
+#include <samples/common/stylesheet.h>
 #include <wpl/container.h>
 #include <wpl/factory.h>
 #include <wpl/form.h>
@@ -33,7 +33,8 @@ private:
 
 int main()
 {
-	auto fct = create_sample_factory();
+	auto ss = create_sample_stylesheet();
+	auto fct = factory::create_default(ss);
 	shared_ptr<form> f = fct->create_form();
 	shared_ptr<container> cc[] = {
 		shared_ptr<container>(new view_fill<container>),

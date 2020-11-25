@@ -20,45 +20,32 @@
 
 #pragma once
 
-#include "concepts.h"
-#include "factory_context.h"
-#include "stylesheet.h"
-#include "visual.h"
+#include "container.h"
 
-#include <functional>
-#include <memory>
-#include <unordered_map>
+#include <agge/color.h>
+#include <agge/types.h>
 
 namespace wpl
 {
-	struct control;
-	struct form;
+	struct cursor_manager;
 	struct stylesheet;
 
-	class factory : noncopyable
+	class root_container : public container
 	{
 	public:
-		typedef std::function<std::shared_ptr<form> (const form_context &context)> form_constructor;
-		typedef std::function<std::shared_ptr<control> (const factory &factory_, const control_context &context)> control_constructor;
+		root_container(std::shared_ptr<cursor_manager> cursor_manager_);
 
-	public:
-		factory(const factory_context &context_);
+		void apply_styles(const stylesheet &stylesheet_);
 
-		void register_form(const form_constructor &constructor);
-		void register_control(const char *type, const control_constructor &constructor);
+		virtual void draw(gcontext &ctx, gcontext::rasterizer_ptr &rasterizer) const;
+		virtual void resize(unsigned cx, unsigned cy, positioned_native_views &native_views);
 
-		std::shared_ptr<form> create_form() const;
-		std::shared_ptr<control> create_control(const char *type) const;
-
-		static std::shared_ptr<factory> create_default(const std::shared_ptr<stylesheet> &stylesheet_);
-		static std::shared_ptr<factory> create_default(const form_context &context_);
-		static void setup_default(factory &factory_);
-
-	public:
-		const factory_context context;
+		virtual void mouse_enter();
+		virtual void mouse_leave();
 
 	private:
-		form_constructor _default_form_constructor;
-		std::unordered_map<std::string, control_constructor> _control_constructors;
+		agge::color _background;
+		std::shared_ptr<cursor_manager> _cursor_manager;
+		agge::box_r _size;
 	};
 }

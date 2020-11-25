@@ -63,6 +63,7 @@
     <ClCompile Include="NativeControlsTests.cpp" />
     <ClCompile Include="NativeViewHostTests.cpp" />
     <ClCompile Include="NativeViewTests.cpp" />
+    <ClCompile Include="RootContainerTests.cpp" />
     <ClCompile Include="ScrollerTests.cpp" />
     <ClCompile Include="SignalTests.cpp" />
     <ClCompile Include="helpers.cpp" />

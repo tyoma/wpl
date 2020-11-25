@@ -21,44 +21,31 @@
 #pragma once
 
 #include "concepts.h"
-#include "factory_context.h"
 #include "stylesheet.h"
-#include "visual.h"
-
-#include <functional>
-#include <memory>
-#include <unordered_map>
 
 namespace wpl
 {
-	struct control;
-	struct form;
-	struct stylesheet;
-
-	class factory : noncopyable
+	template <typename T>
+	class styled_control : noncopyable
 	{
 	public:
-		typedef std::function<std::shared_ptr<form> (const form_context &context)> form_constructor;
-		typedef std::function<std::shared_ptr<control> (const factory &factory_, const control_context &context)> control_constructor;
+		styled_control(std::shared_ptr<T> control_, const stylesheet &stylesheet_)
+			: control(control_)
+		{
+			_changed_connection = stylesheet_.changed += [this, &stylesheet_] {
+				this->control->apply_styles(stylesheet_);
+			};
+			control->apply_styles(stylesheet_);
+		}
 
 	public:
-		factory(const factory_context &context_);
-
-		void register_form(const form_constructor &constructor);
-		void register_control(const char *type, const control_constructor &constructor);
-
-		std::shared_ptr<form> create_form() const;
-		std::shared_ptr<control> create_control(const char *type) const;
-
-		static std::shared_ptr<factory> create_default(const std::shared_ptr<stylesheet> &stylesheet_);
-		static std::shared_ptr<factory> create_default(const form_context &context_);
-		static void setup_default(factory &factory_);
-
-	public:
-		const factory_context context;
+		const std::shared_ptr<T> control;
 
 	private:
-		form_constructor _default_form_constructor;
-		std::unordered_map<std::string, control_constructor> _control_constructors;
+		slot_connection _changed_connection;
 	};
+
+	template <typename T>
+	inline std::shared_ptr<T> apply_stylesheet(std::shared_ptr<T> control_, const stylesheet &stylesheet_)
+	{	return std::shared_ptr<T>(std::make_shared< styled_control<T> >(control_, stylesheet_), control_.get());	}
 }

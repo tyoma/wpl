@@ -10,23 +10,6 @@ namespace wpl
 {
 	namespace tests
 	{
-		context::context()
-			: surface(200, 150, 0), rasterizer(new gcontext::rasterizer_type), renderer(new gcontext::renderer_type(1))
-		{	}
-
-		context::~context()
-		{	}
-
-		void context::resize(count_t width, count_t height)
-		{	surface.resize(width, height);	}
-
-		void context::reset(color c)
-		{
-			fill(surface, make_rect(0, 0, static_cast<int>(surface.width()), static_cast<int>(surface.height())),
-				blender_t(c));
-		}
-
-
 		view_location make_position(int x, int y, int width, int height)
 		{
 			view_location p = { x, y, width, height };
@@ -37,17 +20,17 @@ namespace wpl
 		{
 			gcontext::pixel_type p;
 
-			p.components[context::pixel_color_model::R] = color_.r;
-			p.components[context::pixel_color_model::G] = color_.g;
-			p.components[context::pixel_color_model::B] = color_.b;
-			p.components[context::pixel_color_model::A] = color_.a;
+			p.components[pixel_color_model::R] = color_.r;
+			p.components[pixel_color_model::G] = color_.g;
+			p.components[pixel_color_model::B] = color_.b;
+			p.components[pixel_color_model::A] = color_.a;
 			return p;
 		}
 
 		gcontext::pixel_type make_pixel_real(const color& color)
 		{
-			context::blender_t::cover_type cover = static_cast<context::blender_t::cover_type>(-1);
-			context::blender_t b(color);
+			default_blender_t::cover_type cover = static_cast<default_blender_t::cover_type>(-1);
+			default_blender_t b(color);
 			gcontext::pixel_type p = {};
 
 			b(&p, 0, 0, 1u, &cover);
@@ -74,7 +57,7 @@ namespace wpl
 			ras->line_to(static_cast<real_t>(x2), static_cast<real_t>(y2));
 			ras->line_to(static_cast<real_t>(x1), static_cast<real_t>(y2));
 			ras->line_to(static_cast<real_t>(x1), static_cast<real_t>(y1));
-			ctx(ras, context::blender_t(c), winding<>());
+			ctx(ras, default_blender_t(c), winding<>());
 		}
 	}
 

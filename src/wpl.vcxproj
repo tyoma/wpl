@@ -54,6 +54,7 @@
     <ClCompile Include="controls\scroller.cpp" />
     <ClCompile Include="factory.cpp" />
     <ClCompile Include="input_stubs.cpp" />
+    <ClCompile Include="root_container.cpp" />
     <ClCompile Include="stylesheet_db.cpp" />
     <ClCompile Include="win32\combobox.cpp">
       <DisableLanguageExtensions>false</DisableLanguageExtensions>
@@ -116,9 +117,11 @@
     <ClInclude Include="..\wpl\layout.h" />
     <ClInclude Include="..\wpl\models.h" />
     <ClInclude Include="..\wpl\queue.h" />
+    <ClInclude Include="..\wpl\root_container.h" />
     <ClInclude Include="..\wpl\signals.h" />
     <ClInclude Include="..\wpl\stylesheet.h" />
     <ClInclude Include="..\wpl\stylesheet_db.h" />
+    <ClInclude Include="..\wpl\stylesheet_helpers.h" />
     <ClInclude Include="..\wpl\types.h" />
     <ClInclude Include="..\wpl\view.h" />
     <ClInclude Include="..\wpl\view_host.h" />

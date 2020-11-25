@@ -11,25 +11,19 @@ namespace wpl
 {
 	namespace tests
 	{
-		class context : noncopyable
+		typedef agge::order_bgra pixel_color_model;
+		typedef agge::blender_solid_color_rgb<gcontext::pixel_type, pixel_color_model> default_blender_t;
+
+
+		struct ref_rectangle
 		{
-		public:
-			typedef agge::order_bgra pixel_color_model;
-			typedef agge::blender_solid_color_rgb<gcontext::pixel_type, pixel_color_model> blender_t;
+			ref_rectangle(agge::rect_i region_, agge::color color_)
+				: region(region_), color(color_)
+			{	}
 
-		public:
-			context();
-			~context();
-
-			void resize(agge::count_t width, agge::count_t height);
-			void reset(agge::color c);
-
-		public:
-			gcontext::surface_type surface;
-			gcontext::rasterizer_ptr rasterizer;
-			std::shared_ptr<gcontext::renderer_type> renderer;
+			agge::rect_i region;
+			agge::color color;
 		};
-
 
 
 		template <typename T>
@@ -80,6 +74,22 @@ namespace ut
 
 			for (agge::count_t x = 0; x < actual.width(); ++x)
 				are_equal(expected[x + y * actual.width()], p[x], location);
+		}
+	}
+
+	inline void are_equal(const wpl::tests::ref_rectangle &expected, const wpl::gcontext::surface_type &actual,
+		const LocationInfo &location)
+	{
+		const wpl::gcontext::pixel_type ref = wpl::tests::make_pixel(expected.color);
+
+		is_true(expected.region.x2 <= static_cast<int>(actual.width()), location);
+		is_true(expected.region.y2 <= static_cast<int>(actual.height()), location);
+		for (int y = expected.region.y1; y < expected.region.y2; ++y)
+		{
+			const wpl::gcontext::pixel_type *p = actual.row_ptr(y);
+
+			for (int x = expected.region.x1; x < expected.region.x2; ++x)
+				are_equal(ref, p[x], location);
 		}
 	}
 }

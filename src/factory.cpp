@@ -6,8 +6,8 @@ using namespace std;
 
 namespace wpl
 {
-	factory::factory(const form_context &context)
-		: _context(context)
+	factory::factory(const form_context &context_)
+		: context(context_)
 	{	}
 
 	void factory::register_form(const form_constructor &constructor)
@@ -19,28 +19,28 @@ namespace wpl
 	shared_ptr<form> factory::create_form() const
 	{
 		if (_default_form_constructor)
-			return _default_form_constructor(_context);
+			return _default_form_constructor(context);
 		throw invalid_argument("");
 	}
 
 	shared_ptr<control> factory::create_control(const char *type) const
 	{
 		auto i = _control_constructors.find(type);
-		control_context context = {
-			_context.stylesheet_,
-			_context.cursor_manager_,
-			_context.clock_,
-			_context.queue_,
+		control_context context_ = {
+			context.stylesheet_,
+			context.cursor_manager_,
+			context.clock_,
+			context.queue_,
 		};
 
 		if (i != _control_constructors.end())
-			return i->second(*this, context);
+			return i->second(*this, context_);
 		throw invalid_argument("");
 	}
 
-	shared_ptr<factory> factory::create_default(const form_context &context)
+	shared_ptr<factory> factory::create_default(const form_context &context_)
 	{
-		shared_ptr<factory> f(new factory(context));
+		shared_ptr<factory> f(new factory(context_));
 
 		setup_default(*f);
 		return f;

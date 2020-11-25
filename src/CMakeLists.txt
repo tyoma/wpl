@@ -7,6 +7,7 @@ set(WPL_SOURCES
 	factory.cpp
 	input_stubs.cpp
 	layout.cpp
+	root_container.cpp
 	stylesheet_db.cpp
 	visual.cpp
 

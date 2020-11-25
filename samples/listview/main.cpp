@@ -1,13 +1,15 @@
 #include <crtdbg.h>
 
-#include <agge.text/text_engine.h>
-#include <samples/common/factory.h>
 #include <samples/common/platform.h>
+#include <samples/common/stylesheet.h>
 #include <samples/common/timer.h>
 #include <wpl/controls.h>
 #include <wpl/factory.h>
 #include <wpl/form.h>
+#include <wpl/layout.h>
+#include <wpl/root_container.h>
 #include <wpl/stylesheet_db.h>
+#include <wpl/stylesheet_helpers.h>
 
 using namespace agge;
 using namespace std;
@@ -85,18 +87,25 @@ int main()
 {
 	_CrtSetDbgFlag(_CrtSetDbgFlag(_CRTDBG_REPORT_FLAG) | _CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
 
-	auto fct = create_sample_factory();
+	auto ss = create_sample_stylesheet();
+	auto fct = factory::create_default(ss);
 	view_location l = { 100, 100, 300, 200 };
 	shared_ptr<form> f = fct->create_form();
 	slot_connection c = f->close += &exit_message_loop;
+	shared_ptr<container> root(apply_stylesheet(make_shared<root_container>(fct->context.cursor_manager_), *ss));
+	shared_ptr<stack> root_layout(new stack(0, false));
 	shared_ptr<listview> lv = static_pointer_cast<listview>(fct->create_control("listview"));
 	shared_ptr<my_columns> cm(new my_columns);
 	shared_ptr<my_model> m(new my_model);
 
+	root->set_layout(root_layout);
+
+	root_layout->add(-100);
+	root->add_view(lv->get_view());
 	lv->set_columns_model(cm);
 	lv->set_model(m);
 
-	f->set_view(lv->get_view());
+	f->set_view(root);
 	f->set_location(l);
 	f->set_visible(true);
 	lv->select(1, true);
