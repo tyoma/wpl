@@ -1,5 +1,6 @@
 #include <wpl/win32/listview.h>
 
+#include "helpers.h"
 #include "helpers-visual.h"
 #include "helpers-win32.h"
 #include "MockupsListView.h"
@@ -34,7 +35,7 @@ namespace wpl
 
 			sort_direction get_column_direction(HWND hlv, columns_model::index_type column)
 			{
-				HDITEM item = { 0 };
+				HDITEM item = { };
 				HWND hheader = ListView_GetHeader(hlv);
 					
 				item.mask = HDI_FORMAT;
@@ -44,7 +45,7 @@ namespace wpl
 
 			basic_string<TCHAR> get_column_text(HWND hlv, columns_model::index_type column)
 			{
-				HDITEM item = { 0 };
+				HDITEM item = { };
 				HWND hheader = ListView_GetHeader(hlv);
 				vector<TCHAR> buffer(item.cchTextMax = 100);
 					
@@ -56,7 +57,7 @@ namespace wpl
 
 			int get_column_width(HWND hlv, columns_model::index_type column)
 			{
-				HDITEM item = { 0 };
+				HDITEM item = { };
 				HWND hheader = ListView_GetHeader(hlv);
 					
 				item.mask = HDI_WIDTH;
@@ -98,17 +99,6 @@ namespace wpl
 				}
 				return enclosing;
 			}
-
-			HWND get_listview_window(control &ctl, HWND hparent, unsigned int width = 1, unsigned int height = 1)
-			{
-				visual::positioned_native_views pnv;
-
-				ctl.get_view()->resize(width, height, pnv);
-				assert_equal(1u, pnv.size());
-				HWND hwnd = pnv[0].get_view().get_window(hparent);
-				::MoveWindow(hwnd, 0, 0, width, height, FALSE);
-				return hwnd;
-			}
 		}
 
 		begin_test_suite( NativeListViewTests )
@@ -139,7 +129,7 @@ namespace wpl
 			{
 				shared_ptr<listview> lv(new win32::listview);
 
-				return make_pair(lv, get_listview_window(*lv, hparent, 200, 150));
+				return make_pair(lv, get_window_and_resize(lv, hparent, 200, 150));
 			}
 
 
@@ -159,6 +149,7 @@ namespace wpl
 
 				// ASSERT
 				assert_equal(23, ListView_GetItemCount(lv.second));
+				assert_is_true(provides_tabstoppable_native_view(lv.first));
 			}
 
 
@@ -779,7 +770,7 @@ namespace wpl
 				};
 				mocks::columns_model_ptr cm(mocks::columns_model::create(columns, columns_model::npos(), false));
 				mocks::model_ptr m(new mocks::listview_model(1, 4));
-				RECT rc_invalidated = { 0 };
+				RECT rc_invalidated = { };
 
 				lv.first->set_model(m);
 				lv.first->set_columns_model(cm);
@@ -2028,30 +2019,6 @@ namespace wpl
 			}
 
 
-			test( ListViewProvidesNativeViewOnResize )
-			{
-				// INIT
-				auto lv = create_listview();
-				visual::positioned_native_views nviews;
-
-				// ACT
-				lv.first->get_view()->resize(10, 11, nviews);
-
-				// ASSERT
-				assert_equal(1u, nviews.size());
-				assert_equal(lv.second, nviews[0].get_view().get_window(hparent));
-				assert_equal(make_position(0, 0, 10, 11), nviews[0].location);
-
-				// ACT
-				lv.first->get_view()->resize(107, 1100, nviews);
-
-				// ASSERT
-				assert_equal(2u, nviews.size());
-				assert_equal(lv.second, nviews[1].get_view().get_window(hparent));
-				assert_equal(make_position(0, 0, 107, 1100), nviews[1].location);
-			}
-
-
 			test( ListViewDoesNotCreateAWindowOnConstruction )
 			{
 				// INIT
@@ -2075,16 +2042,21 @@ namespace wpl
 				// INIT
 				window_tracker wt;
 				shared_ptr<listview> lv(new win32::listview);
-				visual::positioned_native_views pnv;
+				vector<placed_view> v;
+				agge::box<int> b = { 100, 300 };
 
 				// ACT
-				lv->get_view()->resize(100, 300, pnv);
+				lv->layout(make_appender(v), b);
 
 				// ASSERT
-				assert_equal(1u, pnv.size());
+				wt.checkpoint();
+
+				assert_equal(1u, v.size());
+				assert_not_null(v[0].native);
+				assert_is_empty(wt.find_created(WC_LISTVIEW));
 
 				// ACT
-				HWND hlv = pnv[0].get_view().get_window(hparent);
+				HWND hlv = v[0].native->get_window(hparent);
 
 				// ASSERT
 				wt.checkpoint();
@@ -2100,7 +2072,7 @@ namespace wpl
 				shared_ptr<listview> lv(new win32::listview);
 
 				// ACT
-				HWND hwnd = get_listview_window(*lv, hparent);
+				HWND hwnd = get_window_and_resize(lv, hparent);
 
 				// ASSERT
 				enum {
@@ -2131,7 +2103,7 @@ namespace wpl
 				lv->set_columns_model(mocks::columns_model::create(columns1, columns_model::npos(), false));
 
 				// ACT
-				HWND hwnd = get_listview_window(*lv, hparent);
+				HWND hwnd = get_window_and_resize(lv, hparent);
 
 				// ASSERT
 				assert_equal(2u, get_columns_count(hwnd));
@@ -2146,7 +2118,7 @@ namespace wpl
 				lv->set_columns_model(mocks::columns_model::create(columns2, 2, false));
 
 				// ACT
-				HWND hwnd2 = get_listview_window(*lv, hparent2);
+				HWND hwnd2 = get_window_and_resize(lv, hparent2);
 
 				// ASSERT
 				assert_equal(3u, get_columns_count(hwnd2));
@@ -2171,7 +2143,7 @@ namespace wpl
 				lv->set_model(model1);
 
 				// ACT
-				HWND hwnd = get_listview_window(*lv, hparent);
+				HWND hwnd = get_window_and_resize(lv, hparent);
 
 				// ASSERT
 				assert_equal(5, ListView_GetItemCount(hwnd));
@@ -2180,7 +2152,7 @@ namespace wpl
 				lv->set_model(model2);
 
 				// ACT
-				HWND hwnd2 = get_listview_window(*lv, hparent2);
+				HWND hwnd2 = get_window_and_resize(lv, hparent2);
 
 				// ASSERT
 				assert_equal(1311, ListView_GetItemCount(hwnd2));
@@ -2197,7 +2169,7 @@ namespace wpl
 				lv->set_columns_model(mocks::columns_model::create(L"Name", 100));
 				lv->set_model(model);
 
-				HWND hwnd = get_listview_window(*lv, hparent);
+				HWND hwnd = get_window_and_resize(lv, hparent);
 
 				::SetWindowLong(hwnd, GWL_STYLE, ::GetWindowLong(hwnd, GWL_STYLE) & ~LVS_SINGLESEL);
 
@@ -2205,7 +2177,7 @@ namespace wpl
 				lv->select(3, false);
 
 				// ACT
-				hwnd = get_listview_window(*lv, hparent2);
+				hwnd = get_window_and_resize(lv, hparent2);
 
 				// ASSERT
 				vector<table_model::index_type> selection = get_matching_indices(hwnd, LVNI_SELECTED);
@@ -2217,7 +2189,7 @@ namespace wpl
 				lv->select(2, true);
 
 				// ACT
-				hwnd = get_listview_window(*lv, hparent);
+				hwnd = get_window_and_resize(lv, hparent);
 
 				// ASSERT
 				selection = get_matching_indices(hwnd, LVNI_SELECTED);
@@ -2237,7 +2209,7 @@ namespace wpl
 				lv->set_columns_model(mocks::columns_model::create(L"Name", 100));
 				lv->set_model(model);
 
-				HWND hwnd = get_listview_window(*lv, hparent);
+				HWND hwnd = get_window_and_resize(lv, hparent);
 
 				::SetWindowLong(hwnd, GWL_STYLE, ::GetWindowLong(hwnd, GWL_STYLE) & ~LVS_SINGLESEL);
 
@@ -2265,7 +2237,7 @@ namespace wpl
 				// INIT
 				window_tracker wt;
 				shared_ptr<listview> lv(new win32::listview);
-				HWND hlv = get_listview_window(*lv, hparent);
+				HWND hlv = get_window_and_resize(lv, hparent);
 				vector<table_model::index_type> selections;
 				slot_connection c =
 					lv->selection_changed += bind(&push_back<table_model::index_type>, ref(selections), _1);

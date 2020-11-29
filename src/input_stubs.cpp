@@ -22,9 +22,6 @@
 
 namespace wpl
 {
-	void keyboard_input::get_tabbed_controls(std::vector<tabbed_control> &/*tabbed_controls*/, bool /*do_clear*/)
-	{	}
-
 	void keyboard_input::key_down(unsigned /*code*/, int /*modifiers*/)
 	{	}
 

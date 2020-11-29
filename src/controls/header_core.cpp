@@ -125,8 +125,11 @@ namespace wpl
 			}
 		}
 
-		void header_core::resize(unsigned /*cx*/, unsigned cy, positioned_native_views &/*native_views*/)
-		{	_size.h = static_cast<real_t>(cy);	}
+		void header_core::layout(const placed_view_appender &append_view, const agge::box<int> &box_)
+		{
+			_size.h = static_cast<real_t>(box_.h);
+			integrated_control<wpl::header>::layout(append_view, box_);
+		}
 
 		void header_core::draw_item_background(gcontext &/*ctx*/, gcontext::rasterizer_ptr &/*rasterizer*/,
 			const rect_r &/*box*/, index_type /*item*/, unsigned /*item_state_flags*/ /*state*/) const

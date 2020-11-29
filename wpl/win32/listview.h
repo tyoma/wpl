@@ -40,7 +40,7 @@ namespace wpl
 
 		private:
 			// control methods
-			std::shared_ptr<view> get_view();
+			virtual void layout(const placed_view_appender &append_view, const agge::box<int> &box);
 
 			// listview methods
 			virtual void set_columns_model(std::shared_ptr<columns_model> cm);

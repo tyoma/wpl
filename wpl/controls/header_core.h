@@ -42,6 +42,9 @@ namespace wpl
 
 			void set_offset(double offset);
 
+			// control methods
+			virtual void layout(const placed_view_appender &append_view, const agge::box<int> &box);
+
 			// header methods
 			void set_model(std::shared_ptr<columns_model> model);
 
@@ -54,7 +57,6 @@ namespace wpl
 
 			// visual methods
 			virtual void draw(gcontext &ctx, gcontext::rasterizer_ptr &rasterizer) const;
-			virtual void resize(unsigned cx, unsigned cy, positioned_native_views &native_views);
 
 		private:
 			enum handle_type { none_handle, column_handle, resize_handle };

@@ -20,46 +20,43 @@
 
 #pragma once
 
-#include "text_container.h"
+#include "concepts.h"
+#include "control.h"
 
-#include "../controls.h"
-#include <memory>
+#include <vector>
 
 namespace wpl
 {
-	struct button;
-	struct link;
-	struct view_host;
+	struct keyboard_input;
 
-	namespace win32
+	struct keyboard_router_host
 	{
-		class button : public text_container_impl<wpl::button>
-		{
-		public:
-			button();
+		virtual void set_focus(native_view &nview) = 0;
+	};
 
-		private:
-			virtual void layout(const placed_view_appender &append_view, const agge::box<int> &box);
+	class keyboard_router : noncopyable
+	{
+	public:
+		keyboard_router(const std::vector<placed_view> &views, keyboard_router_host &host);
 
-			virtual HWND materialize(HWND hparent);
-			virtual LRESULT on_message(UINT message, WPARAM wparam, LPARAM lparam,
-				const window::original_handler_t &handler);
-		};
+		void reload_views();
+		bool set_focus(const keyboard_input *input);
 
+		// keyboard_input methods
+		void key_down(unsigned code, int modifiers);
+		void character(wchar_t symbol, unsigned repeats, int modifiers);
+		void key_up(unsigned code, int modifiers);
 
-		class link : public text_container_impl<wpl::link>
-		{
-		public:
-			link();
+	private:
+		typedef std::vector<placed_view> placed_views;
 
-		private:
-			virtual void layout(const placed_view_appender &append_view, const agge::box<int> &box);
+	private:
+		void switch_focus(placed_views::const_iterator new_focus);
 
-			virtual HWND materialize(HWND hparent);
-			virtual LRESULT on_message(UINT message, WPARAM wparam, LPARAM lparam,
-				const window::original_handler_t &handler);
-
-			virtual void set_align(halign value);
-		};
-	}
+	private:
+		const std::vector<placed_view> &_views;
+		keyboard_router_host &_host;
+		placed_views _ordered;
+		placed_views::const_iterator _focus;
+	};
 }

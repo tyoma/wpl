@@ -23,14 +23,6 @@ namespace wpl
 			void increment(int *value)
 			{	++*value;	}
 
-			static HWND get_window_and_resize(HWND hparent, control &ctl, int cx, int cy)
-			{
-				visual::positioned_native_views nviews;
-				ctl.get_view()->resize(cx, cy, nviews);
-				assert_is_true(1u <= nviews.size());
-				return nviews[0].get_view().get_window(hparent);
-			}
-
 			template <typename T>
 			void push_back(vector<T> &container, const T &value)
 			{	container.push_back(value);	}
@@ -57,8 +49,11 @@ namespace wpl
 				shared_ptr<button> b(new win32::button);
 				window_tracker wt;
 
+				// ACT / ASSERT
+				assert_is_true(provides_tabstoppable_native_view(b));
+
 				// ACT
-				HWND hwnd = get_window_and_resize(parent, *b, 100, 20);
+				HWND hwnd = get_window_and_resize(b, parent, 100, 20);
 
 				// ASSERT
 				wt.checkpoint();
@@ -67,7 +62,7 @@ namespace wpl
 				assert_equal(parent, ::GetParent(hwnd));
 
 				// ACT / ASSERT (happens in get_window_and_resize)
-				assert_equal(hwnd, get_window_and_resize(parent, *b, 19, 7));
+				assert_equal(hwnd, get_window_and_resize(b, parent, 19, 7));
 
 				// ASSERT
 				wt.checkpoint();
@@ -81,7 +76,7 @@ namespace wpl
 				// INIT
 				int clicks = 0;
 				shared_ptr<button> b(new win32::button);
-				HWND hbutton = get_window_and_resize(parent, *b, 100, 100);
+				HWND hbutton = get_window_and_resize(b, parent, 100, 100);
 				slot_connection c = b->clicked += bind(&increment, &clicks);
 										
 				// ACT
@@ -102,7 +97,7 @@ namespace wpl
 			{
 				// INIT
 				shared_ptr<button> b(new win32::button);
-				HWND hbutton = get_window_and_resize(parent, *b, 100, 20);
+				HWND hbutton = get_window_and_resize(b, parent, 100, 20);
 
 				// ACT
 				b->set_text(L"Launch!");
@@ -126,8 +121,8 @@ namespace wpl
 				// ACT
 				b[0]->set_text(L"Launch!");
 				b[1]->set_text(L"Stop...");
-				HWND hbutton1 = get_window_and_resize(parent, *b[0], 100, 20);
-				HWND hbutton2 = get_window_and_resize(parent, *b[1], 100, 20);
+				HWND hbutton1 = get_window_and_resize(b[0], parent, 100, 20);
+				HWND hbutton2 = get_window_and_resize(b[1], parent, 100, 20);
 
 				// ASSERT
 				assert_equal(L"Launch!", get_window_text(hbutton1));
@@ -139,7 +134,7 @@ namespace wpl
 			{
 				// INIT
 				shared_ptr<button> b(new win32::button);
-				HWND hbutton = get_window_and_resize(parent, *b, 100, 20);
+				HWND hbutton = get_window_and_resize(b, parent, 100, 20);
 				slot_connection c = b->clicked += bind(&reset<button>, ref(b));
 
 				// ACT
@@ -168,8 +163,11 @@ namespace wpl
 				shared_ptr<link> b(new win32::link);
 				window_tracker wt;
 
+				// ACT / ASSERT
+				assert_is_true(provides_tabstoppable_native_view(b));
+
 				// ACT
-				HWND hwnd = get_window_and_resize(parent, *b, 100, 20);
+				HWND hwnd = get_window_and_resize(b, parent, 100, 20);
 
 				// ASSERT
 				wt.checkpoint();
@@ -178,7 +176,7 @@ namespace wpl
 				assert_equal(parent, ::GetParent(hwnd));
 
 				// ACT / ASSERT (happens in get_window_and_resize)
-				assert_equal(hwnd, get_window_and_resize(parent, *b, 19, 7));
+				assert_equal(hwnd, get_window_and_resize(b, parent, 19, 7));
 
 				// ASSERT
 				wt.checkpoint();
@@ -194,7 +192,7 @@ namespace wpl
 
 				// ACT
 				b->set_align(text_container::left);
-				HWND hlink = get_window_and_resize(parent, *b, 100, 20);
+				HWND hlink = get_window_and_resize(b, parent, 100, 20);
 
 				// ASSERT
 				assert_equal(0, LWS_RIGHT & ::GetWindowLong(hlink, GWL_STYLE));
@@ -202,7 +200,7 @@ namespace wpl
 				// ACT
 				b.reset(new win32::link);
 				b->set_align(text_container::right);
-				hlink = get_window_and_resize(parent, *b, 100, 20);
+				hlink = get_window_and_resize(b, parent, 100, 20);
 
 				// ASSERT
 				assert_equal(LWS_RIGHT, LWS_RIGHT & ::GetWindowLong(hlink, GWL_STYLE));
@@ -216,7 +214,7 @@ namespace wpl
 				window_tracker wt;
 
 				// ACT
-				HWND hlink = get_window_and_resize(parent, *b, 100, 20);
+				HWND hlink = get_window_and_resize(b, parent, 100, 20);
 
 				// ASSERT
 				assert_equal(0, LWS_RIGHT & ::GetWindowLong(hlink, GWL_STYLE));
@@ -253,7 +251,7 @@ namespace wpl
 				vector<size_t> log_ids;
 				vector<wstring> log_links;
 				shared_ptr<link> l(new win32::link);
-				HWND hlink = get_window_and_resize(parent, *l, 100, 20);
+				HWND hlink = get_window_and_resize(l, parent, 100, 20);
 				slot_connection c1 = l->clicked += std::bind(&push_back<size_t>, ref(log_ids), _1);
 				slot_connection c2 = l->clicked += std::bind(&push_back<wstring>, ref(log_links), _2);
 				NMLINK nmlink = {};
@@ -292,7 +290,7 @@ namespace wpl
 			{
 				// INIT
 				shared_ptr<link> l(new win32::link);
-				HWND hlink = get_window_and_resize(parent, *l, 100, 20);
+				HWND hlink = get_window_and_resize(l, parent, 100, 20);
 
 				// ACT
 				l->set_text(L"Launch!");
@@ -316,8 +314,8 @@ namespace wpl
 				// ACT
 				l[0]->set_text(L"Launch <a>the rocket</a>!");
 				l[1]->set_text(L"Stop...");
-				HWND hlink1 = get_window_and_resize(parent, *l[0], 100, 20);
-				HWND hlink2 = get_window_and_resize(parent, *l[1], 100, 20);
+				HWND hlink1 = get_window_and_resize(l[0], parent, 100, 20);
+				HWND hlink2 = get_window_and_resize(l[1], parent, 100, 20);
 
 				// ASSERT
 				assert_equal(L"Launch <a>the rocket</a>!", get_window_text(hlink1));
@@ -329,7 +327,7 @@ namespace wpl
 			{
 				// INIT
 				shared_ptr<link> l(new win32::link);
-				HWND hlink = get_window_and_resize(parent, *l, 100, 20);
+				HWND hlink = get_window_and_resize(l, parent, 100, 20);
 				slot_connection c = l->clicked += bind(&reset<link>, ref(l));
 				NMLINK nmlink = {};
 

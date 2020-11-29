@@ -21,6 +21,7 @@
 #include <wpl/win32/form.h>
 
 #include <tchar.h>
+#include <wpl/win32/view_host.h>
 
 using namespace std;
 using namespace placeholders;
@@ -59,8 +60,8 @@ namespace wpl
 				::DestroyWindow(_hwnd);
 		}
 
-		void form::set_view(shared_ptr<view> v)
-		{	_host->set_view(v);	}
+		void form::set_root(shared_ptr<control> root)
+		{	_host->set_root(root);	}
 
 		view_location form::get_location() const
 		{
@@ -97,7 +98,7 @@ namespace wpl
 
 		void form::set_features(unsigned /*features*/ features_)
 		{
-			long style = ::GetWindowLong(_hwnd, GWL_STYLE);
+			auto style = ::GetWindowLong(_hwnd, GWL_STYLE);
 
 			update_flag(style, !!(features_ & resizeable), WS_SIZEBOX);
 			update_flag(style, !!(features_ & minimizable), WS_MINIMIZEBOX);

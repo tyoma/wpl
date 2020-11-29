@@ -65,7 +65,7 @@ namespace wpl
 				lv->set_model(m);
 
 				// ACT
-				f.first->set_view(lv->get_view());
+				f.first->set_root(lv);
 
 				// ASSERT
 				wt.checkpoint();

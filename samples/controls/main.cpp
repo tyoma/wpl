@@ -4,13 +4,9 @@
 #include <samples/common/stylesheet.h>
 #include <samples/common/timer.h>
 #include <wpl/controls.h>
-#include <wpl/controls/scroller.h>
-#include <wpl/container.h>
 #include <wpl/factory.h>
 #include <wpl/form.h>
 #include <wpl/layout.h>
-#include <wpl/root_container.h>
-#include <wpl/stylesheet_helpers.h>
 
 using namespace agge;
 using namespace std;
@@ -104,27 +100,18 @@ int main()
 	view_location l = { 100, 100, 300, 200 };
 	shared_ptr<form> f = fct->create_form();
 	slot_connection c = f->close += &exit_message_loop;
-	shared_ptr<container> root(apply_stylesheet(make_shared<root_container>(fct->context.cursor_manager_), *ss));
-	shared_ptr<stack> root_layout(new stack(5, false));
-	shared_ptr<container> fill(new container);
-	shared_ptr<stack> fill_layout(new stack(5, true));
-	shared_ptr<combobox> cb = static_pointer_cast<combobox>(fct->create_control("combobox"));
-	shared_ptr<scroller> scrl = static_pointer_cast<scroller>(fct->create_control("hscroller"));
-	shared_ptr<scroller> scrl2 = static_pointer_cast<scroller>(fct->create_control("vscroller"));
 
-	root->set_layout(root_layout);
-	fill->set_layout(fill_layout);
+	auto root = make_shared<stack>(5, false);
+		auto cb = fct->create_control<combobox>("combobox");
+			root->add(cb, 40, 1);
 
-	root_layout->add(40);
-	root->add_view(cb->get_view());
+		auto scrl = fct->create_control<scroller>("hscroller");
+			root->add(scrl, 20);
 
-	root_layout->add(20);
-	root->add_view(scrl->get_view());
-
-	root_layout->add(-100);
-	root->add_view(fill);
-		fill_layout->add(8);
-		fill->add_view(scrl2->get_view());
+		auto fill = make_shared<stack>(5, true);
+			root->add(fill, -100);
+				auto scrl2 = fct->create_control<scroller>("vscroller");
+				fill->add(scrl2, 8);
 
 	cb->set_model(shared_ptr<my_model>(new my_model));
 
@@ -133,7 +120,9 @@ int main()
 	scrl->set_model(scrl_model);
 	scrl2->set_model(scrl_model);
 
-	f->set_view(root);
+	new int;
+
+	f->set_root(pad_control(root, 5, 5));
 	f->set_location(l);
 	f->set_visible(true);
 	run_message_loop();

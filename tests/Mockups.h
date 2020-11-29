@@ -139,7 +139,6 @@ namespace wpl
 
 			private:
 				virtual void draw(gcontext &ctx, gcontext::rasterizer_ptr &rasterizer) const;
-				virtual void resize(unsigned cx, unsigned cy, visual::positioned_native_views &nviews);
 			};
 
 
@@ -151,18 +150,10 @@ namespace wpl
 
 			private:
 				virtual void draw(gcontext &ctx, gcontext::rasterizer_ptr &rasterizer) const;
-				virtual void resize(unsigned cx, unsigned cy, visual::positioned_native_views &nviews);
 
 			private:
 				agge::color _color;
 				unsigned _cx, _cy;
-			};
-
-
-			class visual_with_native_view : public view
-			{
-			private:
-				virtual void resize(unsigned cx, unsigned cy, positioned_native_views &nviews);
 			};
 
 
@@ -207,26 +198,6 @@ namespace wpl
 
 
 
-			class logging_layout_manager : public wpl::layout_manager
-			{
-			public:
-				mutable std::vector< std::pair<unsigned, unsigned> > reposition_log;
-				mutable std::vector<container::positioned_view> last_widgets;
-				std::vector<view_location> positions;
-
-			private:
-				virtual void layout(unsigned width, unsigned height, container::positioned_view *widgets, size_t count) const;
-			};
-
-
-			class fill_layout : public wpl::layout_manager
-			{
-			private:
-				virtual void layout(unsigned width, unsigned height, container::positioned_view *widgets, size_t count) const;
-			};
-
-
-
 			template <typename BaseT>
 			inline void logging_visual<BaseT>::draw(gcontext &ctx, gcontext::rasterizer_ptr &rasterizer) const
 			{
@@ -242,10 +213,6 @@ namespace wpl
 				background_color.push_back(std::make_pair(b.uniform_color, b.has_uniform_color));
 			}
 
-			template <typename BaseT>
-			inline void logging_visual<BaseT>::resize(unsigned cx, unsigned cy, visual::positioned_native_views &/*nviews*/)
-			{	resize_log.push_back(std::make_pair(cx, cy));	}
-
 
 			template <typename BaseT>
 			inline filling_visual<BaseT>::filling_visual(agge::color color)
@@ -255,10 +222,6 @@ namespace wpl
 			template <typename BaseT>
 			void filling_visual<BaseT>::draw(gcontext &ctx, gcontext::rasterizer_ptr &/*rasterizer*/) const
 			{	rectangle(ctx, _color, 0, 0, _cx, _cy);	}
-
-			template <typename BaseT>
-			void filling_visual<BaseT>::resize(unsigned cx, unsigned cy, visual::positioned_native_views &/*nviews*/)
-			{	_cx = cx, _cy = cy;	}
 
 
 			inline mouse_event me_down(mouse_input::mouse_buttons button, int already_depressed, int x, int y)

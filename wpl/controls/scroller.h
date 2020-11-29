@@ -45,17 +45,22 @@ namespace wpl
 		public:
 			explicit scroller(orientation orientation_);
 
+			// control methods
+			virtual void layout(const placed_view_appender &append_view, const agge::box<int> &box);
+
+			// scroller methods
 			virtual void set_model(std::shared_ptr<scroll_model> model);
 
 			thumb get_thumb() const;
 
+			// mouse_input methods
 			virtual void mouse_down(mouse_buttons button_, int depressed, int x, int y);
 			virtual void mouse_move(int depressed, int x, int y);
 			virtual void mouse_up(mouse_buttons button_, int depressed, int x, int y);
 			virtual void mouse_scroll(int depressed, int x, int y, int delta_x, int delta_y);
 
+			// visual methods
 			virtual void draw(gcontext &ctx, gcontext::rasterizer_ptr &rasterizer) const;
-			virtual void resize(unsigned cx, unsigned cy, positioned_native_views &native_views);
 
 		private:
 			void page_less();

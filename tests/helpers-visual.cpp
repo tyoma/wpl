@@ -2,9 +2,13 @@
 
 #include <agge/filling_rules.h>
 #include <agge/pixel.h>
+#include <agge.text/text_engine.h>
 #include <string.h>
 
+#pragma warning(disable: 4355)
+
 using namespace agge;
+using namespace std;
 
 namespace wpl
 {
@@ -59,10 +63,26 @@ namespace wpl
 			ras->line_to(static_cast<real_t>(x1), static_cast<real_t>(y1));
 			ctx(ras, default_blender_t(c), winding<>());
 		}
-	}
 
-	bool operator ==(const view_location &lhs, const view_location &rhs)
-	{	return lhs.left == rhs.left && lhs.top == rhs.top && lhs.width == rhs.width && lhs.height == rhs.height;	}
+		shared_ptr<gcontext::text_engine_type> create_faked_text_engine()
+		{
+			struct faked_text_engine_composite : gcontext::text_engine_type::loader
+			{
+				faked_text_engine_composite()
+					: text_engine(*this)
+				{	}
+
+				virtual font::accessor_ptr load(const wchar_t *, int, bool, bool, font::key::grid_fit)
+				{	throw 0;	}
+
+				gcontext::text_engine_type text_engine;
+			};
+
+			shared_ptr<faked_text_engine_composite> c(new faked_text_engine_composite);
+
+			return shared_ptr<gcontext::text_engine_type>(c, &c->text_engine);
+		}
+	}
 }
 
 namespace agge

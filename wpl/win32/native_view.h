@@ -20,35 +20,37 @@
 
 #pragma once
 
+#include "../signals.h"
 #include "window.h"
 
-#include "../view.h"
+#include <agge/types.h>
+#include <vector>
 
 namespace wpl
 {
+	struct placed_view;
 	struct stylesheet;
+
+	typedef std::function<void (const placed_view &pv)> placed_view_appender;
 
 	namespace win32
 	{
 		class font_manager;
 	}
 
-	class native_view : public view, public std::enable_shared_from_this<view>
+	class native_view : public std::enable_shared_from_this<native_view>
 	{
 	public:
 		native_view(const std::string &text_style_name);
 		~native_view();
 
+		void layout(const placed_view_appender &append_view, const agge::box<int> &box);
 		HWND get_window() const throw();
 		HWND get_window(HWND hparent_for);
 		void apply_styles(const stylesheet &stylesheet_, win32::font_manager &font_manager);
 
-	protected:
-		// visual methods
-		virtual void resize(unsigned cx, unsigned cy, visual::positioned_native_views &native_views);
-
-		// keyboard_input methods
-		virtual void got_focus();
+	public:
+		signal<void (bool &handled, LRESULT &result, UINT message, WPARAM wparam, LPARAM lparam)> on_message_hook;
 
 	private:
 		virtual HWND materialize(HWND hparent) = 0;
@@ -59,6 +61,5 @@ namespace wpl
 		std::string _text_style_name;
 		std::shared_ptr<void> _font;
 		std::shared_ptr<win32::window> _window;
-		bool _own;
 	};
 }

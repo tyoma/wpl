@@ -36,8 +36,8 @@ namespace wpl
 			: native_view("text.combobox")
 		{	}
 
-		shared_ptr<view> combobox::get_view()
-		{	return shared_from_this();	}
+		void combobox::layout(const placed_view_appender &append_view, const agge::box<int> &box)
+		{	native_view::layout(append_view, box);	}
 
 		void combobox::set_model(shared_ptr<model_t> model)
 		{

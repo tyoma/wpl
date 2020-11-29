@@ -24,11 +24,10 @@
 
 namespace wpl
 {
-	struct view;
+	struct control;
 
 	struct view_host
 	{
-		virtual ~view_host() {	}
-		virtual void set_view(std::shared_ptr<view> v) = 0;
+		virtual void set_root(std::shared_ptr<control> root) = 0;
 	};
 }

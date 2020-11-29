@@ -103,7 +103,6 @@ namespace wpl
 			shared_ptr<gcontext::text_engine_type> text_engine;
 			shared_ptr<gcontext> ctx;
 			gcontext::rasterizer_ptr ras;
-			view::positioned_native_views nviews;
 			shared_ptr<mocks::cursor_manager> cursor_manager_;
 
 			init( Init )
@@ -121,17 +120,6 @@ namespace wpl
 			}
 
 
-			test( HeaderIsAControl )
-			{
-				// INIT / ACT
-				shared_ptr<tracking_header> th(new tracking_header(cursor_manager_));
-				shared_ptr<header> h = th;
-
-				// ACT / ASSERT
-				assert_equal(static_pointer_cast<view>(th), static_pointer_cast<control>(h)->get_view());
-			}
-
-
 			test( ConstructionOfListViewDoesNotDrawAnything )
 			{
 				// INIT / ACT
@@ -139,6 +127,7 @@ namespace wpl
 
 				// ASSERT
 				assert_is_empty(hdr.events);
+				assert_is_false(provides_tabstoppable_view(hdr));
 			}
 
 
@@ -147,7 +136,7 @@ namespace wpl
 				// INIT
 				tracking_header hdr(cursor_manager_);
 
-				hdr.resize(1000, 30, nviews);
+				resize(hdr, 1000, 30);
 
 				// ACT
 				hdr.draw(*ctx, ras);
@@ -162,7 +151,7 @@ namespace wpl
 				// INIT
 				tracking_header hdr(cursor_manager_);
 
-				hdr.resize(1000, 30, nviews);
+				resize(hdr, 1000, 30);
 
 				// ACT
 				hdr.mouse_down(mouse_input::left, 0, 0, 0);
@@ -183,7 +172,7 @@ namespace wpl
 				};
 
 				hdr.set_model(m);
-				hdr.resize(1000, 30, nviews);
+				resize(hdr, 1000, 30);
 
 				// ACT
 				m->invalidated();
@@ -212,7 +201,7 @@ namespace wpl
 				// INIT
 				tracking_header hdr(cursor_manager_);
 
-				hdr.resize(400, 50, nviews);
+				resize(hdr, 400, 50);
 				hdr.set_model(mocks::columns_model::create(L"abc", 123));
 
 				// ACT
@@ -234,7 +223,7 @@ namespace wpl
 				tracking_header hdr(cursor_manager_);
 				column_t c1[] = { column_t(L"abc", 10), column_t(L"abc zyx", 17), column_t(L"AA bbb Z", 25), };
 
-				hdr.resize(1000, 33, nviews);
+				resize(hdr, 1000, 33);
 				hdr.set_model(mocks::columns_model::create(c1, columns_model::npos(), true));
 
 				// ACT
@@ -255,7 +244,7 @@ namespace wpl
 				// INIT
 				column_t c2[] = { column_t(L"lorem", 100), column_t(L"ipsum", 17), };
 
-				hdr.resize(1000, 13, nviews);
+				resize(hdr, 1000, 13);
 				hdr.set_model(mocks::columns_model::create(c2, columns_model::npos(), true));
 				hdr.events.clear();
 
@@ -281,7 +270,7 @@ namespace wpl
 				column_t c[] = { column_t(L"", 17), column_t(L"", 29), column_t(L"", 25), };
 				shared_ptr<mocks::columns_model> m = mocks::columns_model::create(c, columns_model::npos(), true);
 
-				hdr.resize(1000, 33, nviews);
+				resize(hdr, 1000, 33);
 				hdr.set_model(m);
 
 				// ACT
@@ -347,7 +336,7 @@ namespace wpl
 				column_t c[] = { column_t(L"", 17), column_t(L"", 13), column_t(L"", 29), };
 				shared_ptr<mocks::columns_model> m = mocks::columns_model::create(c, columns_model::npos(), true);
 
-				hdr.resize(1000, 33, nviews);
+				resize(hdr, 1000, 33);
 				hdr.set_model(m);
 
 				// ACT
@@ -396,7 +385,7 @@ namespace wpl
 					});
 				};
 
-				hdr.resize(1000, 33, nviews);
+				resize(hdr, 1000, 33);
 				hdr.set_model(m);
 
 				// ACT
@@ -429,7 +418,7 @@ namespace wpl
 				column_t c[] = { column_t(L"", 17), column_t(L"", 13), column_t(L"", 29), };
 				shared_ptr<mocks::columns_model> m = mocks::columns_model::create(c, columns_model::npos(), true);
 
-				hdr.resize(1000, 33, nviews);
+				resize(hdr, 1000, 33);
 				hdr.set_model(m);
 
 				hdr.mouse_down(mouse_input::left, 0, 17, 0);
@@ -451,7 +440,7 @@ namespace wpl
 				column_t c[] = { column_t(L"", 17), column_t(L"", 13), column_t(L"", 29), };
 				shared_ptr<mocks::columns_model> m = mocks::columns_model::create(c, columns_model::npos(), true);
 
-				hdr.resize(1000, 33, nviews);
+				resize(hdr, 1000, 33);
 				hdr.set_model(m);
 
 				// ACT
@@ -470,7 +459,7 @@ namespace wpl
 				column_t c[] = { column_t(L"a", 10), column_t(L"b", 13), column_t(L"Z A", 17), };
 				shared_ptr<mocks::columns_model> m = mocks::columns_model::create(c, 2, true);
 
-				hdr.resize(1000, 33, nviews);
+				resize(hdr, 1000, 33);
 				hdr.set_model(m);
 
 				// ACT
@@ -520,7 +509,7 @@ namespace wpl
 				shared_ptr<mocks::columns_model> m = mocks::columns_model::create(c, 2, true);
 				auto conn = hdr.invalidate += [&] (const agge::rect_i *r) { assert_null(r); invalidations++; };
 
-				hdr.resize(1000, 33, nviews);
+				resize(hdr, 1000, 33);
 				hdr.set_model(m);
 
 				// ACT
@@ -545,7 +534,7 @@ namespace wpl
 				column_t c[] = { column_t(L"a", 10), column_t(L"b", 13), column_t(L"Z A", 17), };
 				shared_ptr<mocks::columns_model> m = mocks::columns_model::create(c, 2, true);
 
-				hdr.resize(1000, 33, nviews);
+				resize(hdr, 1000, 33);
 				hdr.set_model(m);
 
 				// ACT
@@ -596,7 +585,7 @@ namespace wpl
 				column_t c[] = { column_t(L"a", 10), column_t(L"b", 13), column_t(L"Z A", 17), };
 				shared_ptr<mocks::columns_model> m = mocks::columns_model::create(c, 2, true);
 
-				hdr.resize(1000, 33, nviews);
+				resize(hdr, 1000, 33);
 				hdr.set_model(m);
 
 				// ACT
@@ -620,7 +609,7 @@ namespace wpl
 				column_t columns[] = { column_t(L"a", 10), column_t(L"b", 13), column_t(L"Z A", 17), };
 				shared_ptr<mocks::columns_model> m = mocks::columns_model::create(columns, 2, true);
 
-				hdr.resize(1000, 33, nviews);
+				resize(hdr, 1000, 33);
 				hdr.set_model(mocks::columns_model::create(columns, 2, true));
 
 				auto c = hdr.invalidate += [&] (const void *r) { assert_null(r); invalidations++; };
@@ -669,7 +658,7 @@ namespace wpl
 				column_t columns[] = { column_t(L"a", 10), column_t(L"b", 13), column_t(L"Z A", 17), };
 				shared_ptr<mocks::columns_model> m = mocks::columns_model::create(columns, 2, true);
 
-				hdr.resize(1000, 33, nviews);
+				resize(hdr, 1000, 33);
 				hdr.set_model(mocks::columns_model::create(columns, 2, true));
 				hdr.set_offset(-10);
 

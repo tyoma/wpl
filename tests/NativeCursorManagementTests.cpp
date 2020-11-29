@@ -1,5 +1,4 @@
 #include <wpl/win32/cursor_manager.h>
-#include <wpl/win32/view_host.h>
 
 #include "helpers.h"
 #include "helpers-win32.h"
@@ -7,6 +6,7 @@
 
 #include <ut/assert.h>
 #include <ut/test.h>
+#include <windows.h>
 
 using namespace std;
 

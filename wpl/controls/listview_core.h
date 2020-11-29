@@ -55,7 +55,9 @@ namespace wpl
 
 			// visual methods
 			virtual void draw(gcontext &ctx, gcontext::rasterizer_ptr &rasterizer) const;
-			virtual void resize(unsigned cx, unsigned cy, positioned_native_views &native_views);
+
+			// control methods
+			virtual void layout(const placed_view_appender &append_view, const agge::box<int> &box);
 
 			// listview methods
 			virtual void set_columns_model(std::shared_ptr<columns_model> cmodel);

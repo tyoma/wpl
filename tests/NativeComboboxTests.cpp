@@ -59,14 +59,6 @@ namespace wpl
 				ComboBox_GetLBText(hcombobox, index, &buffer[0]);
 				return wstring(buffer.begin(), buffer.end() - 1);
 			}
-
-			static HWND get_window_and_resize(HWND hparent, control &ctl, int cx, int cy)
-			{
-				visual::positioned_native_views nviews;
-				ctl.get_view()->resize(cx, cy, nviews);
-				assert_is_true(1u <= nviews.size());
-				return nviews[0].get_view().get_window(hparent);
-			}
 		}
 
 		begin_test_suite( ComboboxTests )
@@ -87,7 +79,7 @@ namespace wpl
 				window_tracker wt;
 
 				// ACT
-				HWND hwnd = get_window_and_resize(parent, *cb, 100, 20);
+				HWND hwnd = get_window_and_resize(cb, parent, 100, 20);
 
 				// ASSERT
 				wt.checkpoint();
@@ -100,7 +92,7 @@ namespace wpl
 				wt.created.clear();
 
 				// ACT / ASSERT (happens in get_window_and_resize)
-				assert_equal(hwnd, get_window_and_resize(parent, *cb, 19, 7));
+				assert_equal(hwnd, get_window_and_resize(cb, parent, 19, 7));
 
 				// ASSERT
 				wt.checkpoint();
@@ -117,7 +109,7 @@ namespace wpl
 				window_tracker wt;
 
 				// ACT
-				HWND hwnd = get_window_and_resize(parent, *cb, 100, 20);
+				HWND hwnd = get_window_and_resize(cb, parent, 100, 20);
 
 				// ASSERT
 				assert_equal(required_style, (required_style | CBS_SORT) & GetWindowStyle(hwnd));
@@ -136,7 +128,7 @@ namespace wpl
 				// ACT
 				m->items = mkvector(items1);
 				cb1->set_model(m);
-				HWND hwnd = get_window_and_resize(parent, *cb1, 100, 20);
+				HWND hwnd = get_window_and_resize(cb1, parent, 100, 20);
 
 				// ASSERT
 				assert_equal(2, ComboBox_GetCount(hwnd));
@@ -146,7 +138,7 @@ namespace wpl
 				// ACT
 				m->items = mkvector(items2);
 				cb2->set_model(m);
-				hwnd = get_window_and_resize(parent, *cb2, 100, 20);
+				hwnd = get_window_and_resize(cb2, parent, 100, 20);
 
 				// ASSERT
 				assert_equal(3, ComboBox_GetCount(hwnd));
@@ -164,7 +156,7 @@ namespace wpl
 				shared_ptr<mocks::list_model> m(new mocks::list_model);
 				shared_ptr<combobox> cb(new win32::combobox);
 
-				HWND hwnd = get_window_and_resize(parent, *cb, 100, 20);
+				HWND hwnd = get_window_and_resize(cb, parent, 100, 20);
 
 				// ACT
 				m->items = mkvector(items1);
@@ -193,7 +185,7 @@ namespace wpl
 				shared_ptr<mocks::list_model> m(new mocks::list_model);
 				shared_ptr<combobox> cb(new win32::combobox);
 
-				HWND hwnd = get_window_and_resize(parent, *cb, 100, 20);
+				HWND hwnd = get_window_and_resize(cb, parent, 100, 20);
 				cb->set_model(m);
 				m->items.resize(2);
 
@@ -230,7 +222,7 @@ namespace wpl
 				shared_ptr<mocks::list_model> m(new mocks::list_model);
 				shared_ptr<combobox> cb(new win32::combobox);
 
-				HWND hwnd = get_window_and_resize(parent, *cb, 100, 20);
+				HWND hwnd = get_window_and_resize(cb, parent, 100, 20);
 				m->items.resize(2);
 				cb->set_model(m);
 
@@ -257,7 +249,7 @@ namespace wpl
 				assert_throws(cb->select(0), logic_error);
 
 				// INIT
-				HWND hwnd =  get_window_and_resize(parent, *cb, 100, 20);
+				HWND hwnd =  get_window_and_resize(cb, parent, 100, 20);
 
 				// ACT / ASSERT
 				assert_throws(cb->select(0), logic_error);
@@ -273,7 +265,7 @@ namespace wpl
 				wstring items[] = { L"Lorem ipsum", L"amet dolor", L"sit amet, consectetur adipiscing elit", L"one two" };
 				shared_ptr<mocks::list_model> m(new mocks::list_model);
 				shared_ptr<combobox> cb(new win32::combobox);
-				HWND hwnd =  get_window_and_resize(parent, *cb, 100, 20);
+				HWND hwnd =  get_window_and_resize(cb, parent, 100, 20);
 
 				m->items = mkvector(items);
 				cb->set_model(m);
@@ -310,7 +302,7 @@ namespace wpl
 
 				// ACT
 				cb->select(3);
-				HWND hwnd = get_window_and_resize(parent, *cb, 100, 20);
+				HWND hwnd = get_window_and_resize(cb, parent, 100, 20);
 
 				// ASSERT
 				assert_equal(3, ComboBox_GetCurSel(hwnd));
@@ -321,7 +313,7 @@ namespace wpl
 
 				// ACT
 				cb->select(2);
-				hwnd = get_window_and_resize(parent, *cb, 100, 20);
+				hwnd = get_window_and_resize(cb, parent, 100, 20);
 
 				// ASSERT
 				assert_equal(2, ComboBox_GetCurSel(hwnd));
@@ -339,7 +331,7 @@ namespace wpl
 					selection_log.push_back(s);
 				};
 
-				HWND hwnd = get_window_and_resize(parent, *cb, 100, 20);
+				HWND hwnd = get_window_and_resize(cb, parent, 100, 20);
 
 				m->items = mkvector(items);
 				cb->set_model(m);
@@ -383,7 +375,7 @@ namespace wpl
 				wstring items[] = { L"1", L"2", L"3", L"4", L"5", };
 				shared_ptr<mocks::list_model> m(new mocks::list_model);
 				shared_ptr<combobox> cb(new win32::combobox);
-				HWND hwnd = get_window_and_resize(parent, *cb, 100, 20);
+				HWND hwnd = get_window_and_resize(cb, parent, 100, 20);
 
 				m->items = mkvector(items);
 				cb->set_model(m);
@@ -394,7 +386,7 @@ namespace wpl
 				wmanager.enable_reflection(parent);
 
 				// ACT
-				hwnd = get_window_and_resize(parent, *cb, 100, 20);
+				hwnd = get_window_and_resize(cb, parent, 100, 20);
 
 				// ASSERT
 				assert_equal(3, ComboBox_GetCurSel(hwnd));
@@ -406,7 +398,7 @@ namespace wpl
 				parent = wmanager.create_visible_window();
 
 				// ACT
-				hwnd = get_window_and_resize(parent, *cb, 100, 20);
+				hwnd = get_window_and_resize(cb, parent, 100, 20);
 
 				// ASSERT
 				assert_equal(1, ComboBox_GetCurSel(hwnd));
@@ -419,7 +411,7 @@ namespace wpl
 				shared_ptr<mocks::list_model> m(new mocks::list_model);
 				shared_ptr<combobox> cb(new win32::combobox);
 
-				get_window_and_resize(parent, *cb, 100, 20);
+				get_window_and_resize(cb, parent, 100, 20);
 				m->items.resize(5);
 				cb->set_model(m);
 
@@ -443,7 +435,7 @@ namespace wpl
 				// INIT
 				shared_ptr<mocks::list_model> m(new mocks::list_model);
 				shared_ptr<combobox> cb(new win32::combobox);
-				HWND hwnd = get_window_and_resize(parent, *cb, 100, 20);
+				HWND hwnd = get_window_and_resize(cb, parent, 100, 20);
 
 				m->items.resize(5);
 
@@ -468,7 +460,7 @@ namespace wpl
 				// INIT
 				shared_ptr<mocks::list_model> m(new mocks::list_model);
 				shared_ptr<combobox> cb(new win32::combobox);
-				HWND hwnd = get_window_and_resize(parent, *cb, 100, 20);
+				HWND hwnd = get_window_and_resize(cb, parent, 100, 20);
 
 				m->items.resize(5);
 				cb->set_model(m);
@@ -496,7 +488,7 @@ namespace wpl
 				// INIT
 				shared_ptr<mocks::list_model> m(new mocks::list_model);
 				shared_ptr<combobox> cb(new win32::combobox);
-				HWND hwnd = get_window_and_resize(parent, *cb, 100, 20);
+				HWND hwnd = get_window_and_resize(cb, parent, 100, 20);
 
 				m->items.resize(5);
 				cb->set_model(m);
@@ -519,7 +511,7 @@ namespace wpl
 				shared_ptr<mocks::list_model> m(new mocks::list_model);
 				shared_ptr<mocks::list_model> m2(new mocks::list_model);
 				shared_ptr<combobox> cb(new win32::combobox);
-				HWND hwnd = get_window_and_resize(parent, *cb, 100, 20);
+				HWND hwnd = get_window_and_resize(cb, parent, 100, 20);
 
 				m->items.resize(5);
 				m2->items.resize(6);

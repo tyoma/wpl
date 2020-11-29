@@ -113,8 +113,8 @@ namespace wpl
 		factory_.register_control("header", [] (const factory &, const control_context &context) {
 			return shared_ptr<control>(new controls::header_basic(context.stylesheet_, context.cursor_manager_));
 		});
-		factory_.register_control("listview", [] (const factory &f, const control_context &context) {
-			return controls::create_listview<controls::listview_basic>(f, context);
+		factory_.register_control("listview", [] (const factory &f, const control_context &context) -> shared_ptr<control> {
+			return make_shared< controls::listview_composite<controls::listview_basic> >(f, context);
 		});
 		factory_.register_control("listview.native", [font_manager] (const factory &, const control_context &context) {
 			return apply_stylesheet(make_shared<win32::listview>(), *context.stylesheet_, font_manager);

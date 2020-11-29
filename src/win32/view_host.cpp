@@ -22,13 +22,15 @@
 
 #include <agge/blenders.h>
 #include <agge/blenders_simd.h>
-#include <wpl/win32/controls.h>
+#include <wpl/visual_router.h>
 #include <wpl/win32/native_view.h>
 
 #include <algorithm>
 #include <iterator>
 #include <olectl.h>
 #include <windowsx.h>
+
+#pragma warning(disable: 4355)
 
 using namespace agge;
 using namespace std;
@@ -40,91 +42,102 @@ namespace wpl
 	{
 		namespace
 		{
-			LRESULT passthrough(UINT message, WPARAM wparam, LPARAM lparam, const window::original_handler_t &previous)
-			{	return previous(message, wparam, lparam);	}
+			class paint_sequence : noncopyable, public PAINTSTRUCT
+			{
+			public:
+				paint_sequence(HWND hwnd)
+					: _hwnd(hwnd)
+				{	::BeginPaint(_hwnd, this);	}
+
+				~paint_sequence() throw()
+				{	::EndPaint(_hwnd, this);	}
+
+				count_t width() const throw()
+				{	return rcPaint.right - rcPaint.left;	}
+
+				count_t height() const throw()
+				{	return rcPaint.bottom - rcPaint.top;	}
+
+			private:
+				HWND _hwnd;
+			};
+
+			agge::point<int> unpack_point(LPARAM lparam)
+			{
+				const agge::point<int> pt = {	GET_X_LPARAM(lparam), GET_Y_LPARAM(lparam)	};
+				return pt;
+			}
+
+			void screen_to_client(HWND hwnd, agge::point<int> &point_)
+			{
+				POINT pt = { point_.x, point_.y };
+
+				::ScreenToClient(hwnd, &pt);
+				point_.x = pt.x, point_.y = pt.y;
+			}
+
+			int convert_mouse_modifiers(WPARAM wparam)
+			{
+				auto modifiers = 0;
+
+				modifiers |= MK_CONTROL & wparam ? keyboard_input::control : 0;
+				modifiers |= MK_SHIFT & wparam ? keyboard_input::shift : 0;
+				modifiers |= MK_LBUTTON & wparam ? mouse_input::left : 0;
+				modifiers |= MK_MBUTTON & wparam ? mouse_input::middle : 0;
+				modifiers |= MK_RBUTTON & wparam ? mouse_input::right : 0;
+				return modifiers;
+			}
 		}
-
-		class paint_sequence : noncopyable, public PAINTSTRUCT
-		{
-		public:
-			paint_sequence(HWND hwnd)
-				: _hwnd(hwnd)
-			{	::BeginPaint(_hwnd, this);	}
-
-			~paint_sequence() throw()
-			{	::EndPaint(_hwnd, this);	}
-
-			count_t width() const throw()
-			{	return rcPaint.right - rcPaint.left;	}
-
-			count_t height() const throw()
-			{	return rcPaint.bottom - rcPaint.top;	}
-
-		private:
-			HWND _hwnd;
-		};
-
-		struct capture_context : noncopyable
-		{
-			~capture_context()
-			{	::ReleaseCapture();	}
-		};
-
 
 
 		view_host::view_host(HWND hwnd, const form_context &context_, const window::user_handler_t &user_handler)
 			: context(context_), _user_handler(user_handler), _rasterizer(new gcontext::rasterizer_type), _mouse_in(false),
-				_input_modifiers(0)
-		{
-			_window = window::attach(hwnd, bind(&view_host::wndproc, this, _1, _2, _3, _4));
-			::SetClassLongPtr(_window->hwnd(), GCL_STYLE, CS_DBLCLKS | ::GetClassLongPtr(_window->hwnd(), GCL_STYLE));
-		}
+				_input_modifiers(0), _visual_router(_views, *this), _mouse_router(_views, *this),
+				_keyboard_router(_views, *this)
+		{	_window = window::attach(hwnd, bind(&view_host::wndproc, this, _1, _2, _3, _4));	}
 
 		view_host::~view_host()
 		{	}
 
-		void view_host::set_view(shared_ptr<view> v)
+		void view_host::set_root(shared_ptr<control> root)
 		{
-			_view = v;
-			_connections.clear();
-			_tabbed_controls.clear();
-			if (!v)
-				return;
-			v->get_tabbed_controls(_tabbed_controls);
-			if (_tabbed_controls.empty())
-				_tabbed_controls.assign(1, make_pair(0, v));
-			sort(_tabbed_controls.begin(), _tabbed_controls.end());
-			_focus = _tabbed_controls.end();
-			_connections.push_back(v->invalidate += [this] (const agge::rect_i *rc) {
-				RECT rc2;
+			RECT rc;
 
-				if (rc)
-					rc2.left = rc->x1, rc2.top = rc->y1, rc2.right = rc->x2, rc2.bottom = rc->y2;
-				::InvalidateRect(_window->hwnd(), rc ? &rc2 : NULL, FALSE);
-			});
-			_connections.push_back(v->capture += [this] (shared_ptr<void> &handle) {
-				if (::SetCapture(_window->hwnd()), ::GetCapture() == _window->hwnd())	
-					handle.reset(new capture_context);
-				else
-					handle.reset(); // untested
-			});
-			_connections.push_back(v->force_layout += [this] () {
-				RECT rc;
-
-				::GetClientRect(_window->hwnd(), &rc);
-				resize_view(rc.right, rc.bottom);
-			});
-			_connections.push_back(v->request_focus += [this] (const shared_ptr<keyboard_input> &v) {
-				tabbed_controls_iterator focus = this->find(v);
-
-				if (focus != _tabbed_controls.end() && focus != _focus)
-				{
-					::SetFocus(_window->hwnd());
-					set_focus(focus);
-				}
-			});
-			v->force_layout();
+			_root = root;
+			::GetClientRect(_window->hwnd(), &rc);
+			layout_views(rc.right, rc.bottom);
+			_visual_router.reload_views();
+			_mouse_router.reload_views();
+			_keyboard_router.reload_views();
 		}
+
+		void view_host::invalidate(const agge::rect_i &area)
+		{
+			RECT rc = {	area.x1, area.y1, area.x2, area.y2	};
+
+			::InvalidateRect(_window->hwnd(), &rc, FALSE);
+		}
+
+		void view_host::request_focus(shared_ptr<keyboard_input> input)
+		{
+			if (_keyboard_router.set_focus(input.get()))
+				::SetFocus(_window->hwnd());
+		}
+
+		shared_ptr<void> view_host::capture_mouse()
+		{
+			shared_ptr<bool> h(new bool(false), [] (bool *p) {
+				if (*p)
+					::ReleaseCapture();
+				delete p;
+			});
+
+			::SetCapture(_window->hwnd());
+			return *h = true, _capture_handle = h, h;
+		}
+
+		void view_host::set_focus(native_view &nview)
+		{	::SetFocus(nview.get_window());	}
 
 		LRESULT view_host::passthrough(UINT message, WPARAM wparam, LPARAM lparam,
 			const window::original_handler_t &previous)
@@ -147,130 +160,104 @@ namespace wpl
 			case WM_NOTIFY:
 				return ::SendMessage(reinterpret_cast<const NMHDR*>(lparam)->hwndFrom, OCM_NOTIFY, wparam, lparam);
 
-			case WM_ERASEBKGND:
-				return TRUE;
-
 			case WM_SETCURSOR:
 				if (HTCLIENT == LOWORD(lparam))
 					return TRUE;
 				else
 					break;
-			}
 
-			if (_view)
-			{
-				switch (message)
-				{
-				case WM_CAPTURECHANGED:
-					_view->lost_capture();
-					return 0;
+			case WM_CAPTURECHANGED:
+				if (const auto h = _capture_handle.lock())
+					*h = false;
+				return 0;
 
-				case WM_SIZE:
-					resize_view(LOWORD(lparam), HIWORD(lparam));
-					break;
+			case WM_SIZE:
+				layout_views(LOWORD(lparam), HIWORD(lparam));
+				break;
 
-				case WM_KEYDOWN:
-				case WM_KEYUP:
-					dispatch_key(message, wparam, lparam);
-					break;
+			case WM_KEYDOWN:
+			case WM_KEYUP:
+				dispatch_key(message, wparam, lparam);
+				break;
 
-				case WM_LBUTTONDOWN:
-				case WM_LBUTTONUP:
-				case WM_LBUTTONDBLCLK:
-				case WM_RBUTTONDOWN:
-				case WM_RBUTTONUP:
-				case WM_RBUTTONDBLCLK:
-				case WM_MOUSEMOVE:
-				case WM_MOUSELEAVE:
-				case WM_MOUSEHWHEEL:
-				case WM_MOUSEWHEEL:
-					dispatch_mouse(message, wparam, lparam);
-					break;
+			case WM_LBUTTONDOWN:
+			case WM_LBUTTONUP:
+			case WM_LBUTTONDBLCLK:
+			case WM_RBUTTONDOWN:
+			case WM_RBUTTONUP:
+			case WM_RBUTTONDBLCLK:
+				dispatch_mouse_click(message, wparam, lparam);
+				break;
 
-				case WM_PAINT:
-					paint_sequence ps(_window->hwnd());
-					const vector_i offset = { ps.rcPaint.left, ps.rcPaint.top };
-					const rect_i update_area = { ps.rcPaint.left, ps.rcPaint.top, ps.rcPaint.right, ps.rcPaint.bottom };
+			case WM_MOUSEMOVE:
+			case WM_MOUSELEAVE:
+				dispatch_mouse_move(message, wparam, lparam);
+				break;
 
-					context.backbuffer->resize(ps.width(), ps.height());
+			case WM_MOUSEHWHEEL:
+			case WM_MOUSEWHEEL:
+				dispatch_mouse_scroll(message, wparam, lparam);
+				break;
 
-					gcontext ctx(*context.backbuffer, *context.renderer, *context.text_engine, offset, &update_area);
+			case WM_ERASEBKGND:
+				return TRUE;
 
-					_rasterizer->reset();
-					_view->draw(ctx, _rasterizer);
-					context.backbuffer->blit(ps.hdc, update_area.x1, update_area.y1, ps.width(), ps.height());
-					return 0;
-				}
+			case WM_PAINT:
+				paint_sequence ps(_window->hwnd());
+				const vector_i offset = { ps.rcPaint.left, ps.rcPaint.top };
+				const rect_i update_area = { ps.rcPaint.left, ps.rcPaint.top, ps.rcPaint.right, ps.rcPaint.bottom };
+
+				context.backbuffer->resize(ps.width(), ps.height());
+
+				gcontext ctx(*context.backbuffer, *context.renderer, *context.text_engine, offset, &update_area);
+
+				_rasterizer->reset();
+				_visual_router.draw(ctx, _rasterizer);
+				context.backbuffer->blit(ps.hdc, update_area.x1, update_area.y1, ps.width(), ps.height());
+				return 0;
 			}
 			return _user_handler(message, wparam, lparam, previous);
 		}
 
 		void view_host::dispatch_key(UINT message, WPARAM wparam, LPARAM /*lparam*/)
 		{
-			int code = 0;
-
-			switch (wparam)
-			{
-			case VK_TAB: if (message == WM_KEYDOWN) dispatch_tab(); return;
-			case VK_CONTROL: update_modifier(message, keyboard_input::control); return;
-			case VK_SHIFT: update_modifier(message, keyboard_input::shift); return;
-
-			case VK_LEFT: code = keyboard_input::left; break;
-			case VK_RIGHT: code = keyboard_input::right; break;
-			case VK_UP: code = keyboard_input::up; break;
-			case VK_DOWN: code = keyboard_input::down; break;
-			case VK_PRIOR: code = keyboard_input::page_up; break;
-			case VK_NEXT: code = keyboard_input::page_down; break;
-			case VK_HOME: code = keyboard_input::home; break;
-			case VK_END: code = keyboard_input::end; break;
-			case VK_RETURN: code = keyboard_input::enter; break;
-
-			default: code = static_cast<int>(wparam); break;
-			}
-
-			if (_focus == _tabbed_controls.end())
+			if (update_modifier(message, static_cast<int>(wparam)))
 				return;
 
+			// In here we rely that VK_* key mappings are in accordance with keyboard_input::special_keys.
 			switch (message)
 			{
-			case WM_KEYDOWN: _focus->second->key_down(code, _input_modifiers); break;
-			case WM_KEYUP: _focus->second->key_up(code, _input_modifiers); break;
+			case WM_KEYDOWN: _keyboard_router.key_down(static_cast<int>(wparam), _input_modifiers); break;
+			case WM_KEYUP: _keyboard_router.key_up(static_cast<int>(wparam), _input_modifiers); break;
 			}
 		}
 
-		void view_host::update_modifier(UINT message, unsigned code)
+		bool view_host::update_modifier(UINT message, unsigned code)
 		{
+			auto modifier_flag = 0u;
+
+			switch (code)
+			{
+			case VK_SHIFT:	modifier_flag = keyboard_input::shift;	break;
+			case VK_CONTROL:	modifier_flag = keyboard_input::control;	break;
+			default:	return false;
+			}
 			if (WM_KEYDOWN == message)
-				_input_modifiers |= code;
+				_input_modifiers |= modifier_flag;
 			else if (WM_KEYUP == message)
-				_input_modifiers &= ~code;
+				_input_modifiers &= ~modifier_flag;
+			return true;
 		}
 
-		void view_host::dispatch_tab()
+		void view_host::dispatch_mouse_move(UINT message, WPARAM wparam, LPARAM lparam)
 		{
-			if (_tabbed_controls.empty())
-				return;
-			else if (keyboard_input::shift & _input_modifiers)
-				set_focus(find_previous(_focus));
-			else
-				set_focus(find_next(_focus));
-		}
-
-		void view_host::dispatch_mouse(UINT message, WPARAM wparam, LPARAM lparam)
-		{
-			POINT pt = { GET_X_LPARAM(lparam), GET_Y_LPARAM(lparam) };
-			const int wheel_delta = GET_WHEEL_DELTA_WPARAM(wparam) / WHEEL_DELTA;
-
 			switch (message)
 			{
-			case WM_MOUSEHWHEEL:
-			case WM_MOUSEWHEEL:
-				::ScreenToClient(_window->hwnd(), &pt);
+			case WM_MOUSELEAVE:
+				_mouse_in = false;
+				_mouse_router.mouse_leave();
 				break;
-			}
 
-			switch (message)
-			{
 			case WM_MOUSEMOVE:
 				if (!_mouse_in)
 				{
@@ -278,97 +265,68 @@ namespace wpl
 
 					_mouse_in = true;
 					TrackMouseEvent(&tme);
-					_view->mouse_enter();
 				}
-				_view->mouse_move(0, pt.x, pt.y);
-				break;
-
-			case WM_MOUSELEAVE:
-				_mouse_in = false;
-				_view->mouse_leave();
-				break;
-
-			case WM_LBUTTONDOWN:
-			case WM_RBUTTONDOWN:
-				_view->mouse_down(get_button(message), _input_modifiers, pt.x, pt.y);
-				break;
-
-			case WM_LBUTTONUP:
-			case WM_RBUTTONUP:
-				_view->mouse_up(get_button(message), _input_modifiers, pt.x, pt.y);
-				break;
-
-			case WM_LBUTTONDBLCLK:
-			case WM_RBUTTONDBLCLK:
-				_view->mouse_double_click(get_button(message), _input_modifiers, pt.x, pt.y);
-				break;
-
-			case WM_MOUSEHWHEEL:
-				_view->mouse_scroll(0, pt.x, pt.y, wheel_delta, 0);
-				break;
-
-			case WM_MOUSEWHEEL:
-				_view->mouse_scroll(0, pt.x, pt.y, 0, wheel_delta);
+				_mouse_router.mouse_move(convert_mouse_modifiers(wparam), unpack_point(lparam));
 				break;
 			}
 		}
 
-		void view_host::resize_view(unsigned cx, unsigned cy) throw()
+		void view_host::dispatch_mouse_click(UINT message, WPARAM wparam, LPARAM lparam)
 		{
-			_view->resize(cx, cy, _positioned_views);
+			void (mouse_input::*fn)(mouse_input::mouse_buttons button_, int depressed, int x, int y);
+			mouse_input::mouse_buttons button;
 
-			const HWND hwnd = _window->hwnd();
-			HDWP hdwp = ::BeginDeferWindowPos(static_cast<int>(_positioned_views.size()));
-
-			for (visual::positioned_native_views::const_iterator i = _positioned_views.begin();
-				i != _positioned_views.end(); ++i)
+			switch (message)
 			{
-				HWND h = i->get_view().get_window(hwnd);
-
-				hdwp = ::DeferWindowPos(hdwp, h, NULL, i->location.left, i->location.top,
-					i->location.width, i->location.height, SWP_NOZORDER);
+			case WM_LBUTTONDOWN: case WM_RBUTTONDOWN:	fn = &mouse_input::mouse_down;	break;
+			case WM_LBUTTONUP: case WM_RBUTTONUP:	fn = &mouse_input::mouse_up;	break;
+			case WM_LBUTTONDBLCLK: case WM_RBUTTONDBLCLK:	fn = &mouse_input::mouse_double_click;	break;
+			default:	return;
 			}
-			::EndDeferWindowPos(hdwp);
-			_positioned_views.clear();
-		}
-
-		mouse_input::mouse_buttons view_host::get_button(UINT message)
-		{
 			switch(message)
 			{
-			case WM_LBUTTONDOWN: case WM_LBUTTONUP: case WM_LBUTTONDBLCLK: return mouse_input::left;
-			case WM_RBUTTONDOWN: case WM_RBUTTONUP: case WM_RBUTTONDBLCLK: return mouse_input::right;
-			default: return mouse_input::base;
+			case WM_LBUTTONDOWN: case WM_LBUTTONUP: case WM_LBUTTONDBLCLK:	 button = mouse_input::left;	break;
+			case WM_RBUTTONDOWN: case WM_RBUTTONUP: case WM_RBUTTONDBLCLK:	 button = mouse_input::right;	break;
+			default:	return;
 			}
+			_mouse_router.mouse_click(fn, button, convert_mouse_modifiers(wparam), unpack_point(lparam));
 		}
 
-		void view_host::set_focus(vector<keyboard_input::tabbed_control>::const_iterator focus)
+		void view_host::dispatch_mouse_scroll(UINT message, WPARAM wparam, LPARAM lparam)
 		{
-			if (_focus != _tabbed_controls.end())
-				_focus->second->lost_focus();
-			focus->second->got_focus();
-			_focus = focus;
+			auto pt = unpack_point(lparam);
+			const int wheel_delta = GET_WHEEL_DELTA_WPARAM(wparam) / WHEEL_DELTA;
+
+			screen_to_client(_window->hwnd(), pt);
+			_mouse_router.mouse_scroll(convert_mouse_modifiers(wparam), pt, WM_MOUSEHWHEEL == message ? wheel_delta : 0,
+				WM_MOUSEWHEEL == message ? wheel_delta : 0);
 		}
 
-		view_host::tabbed_controls_iterator view_host::find(const shared_ptr<keyboard_input> &v) const
+		void view_host::layout_views(int width, int height)
 		{
-			return find_if(_tabbed_controls.begin(), _tabbed_controls.end(),
-				[&v] (const keyboard_input::tabbed_control &ctl) {	return ctl.second == v;	});
-		}
+			const agge::box<int> b = { width, height };
 
-		view_host::tabbed_controls_iterator view_host::find_next(tabbed_controls_iterator reference) const
-		{
-			if (reference == _tabbed_controls.end() || ++reference == _tabbed_controls.end())
-				reference = _tabbed_controls.begin();
-			return reference;
-		}
+			_views.clear();
+			if (_root)
+				_root->layout([this] (const placed_view &pv) {	_views.emplace_back(pv);	}, b);
 
-		view_host::tabbed_controls_iterator view_host::find_previous(tabbed_controls_iterator reference) const
-		{
-			if (reference == _tabbed_controls.begin())
-				reference = _tabbed_controls.end();
-			--reference;
-			return reference;
+			const auto n = count_if(_views.begin(), _views.end(), [] (const placed_view &pv) {
+				return !!pv.native;
+			});
+
+			const auto hwnd = _window->hwnd();
+			auto hdwp = ::BeginDeferWindowPos(static_cast<int>(n));
+
+			for (auto i = _views.begin(); i != _views.end(); ++i)
+			{
+				if (const auto nv = i->native)
+				{
+					hdwp = ::DeferWindowPos(hdwp, nv->get_window(hwnd), NULL, i->location.x1, i->location.y1,
+						i->location.x2 - i->location.x1, i->location.y2 - i->location.y1, SWP_NOZORDER);
+				}
+			}
+			::EndDeferWindowPos(hdwp);
+			::InvalidateRect(hwnd, NULL, TRUE);
 		}
 	}
 }

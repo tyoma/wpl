@@ -13,7 +13,7 @@
 
 using namespace agge;
 using namespace std;
-using namespace std::placeholders;
+using namespace placeholders;
 
 namespace wpl
 {
@@ -47,6 +47,12 @@ namespace wpl
 		_segments.push_back(s);
 	}
 
+	void piechart::layout(const placed_view_appender &append_view, const agge::box<int> &box_)
+	{
+		_center_x = box_.w / 2, _center_y = box_.h / 2;
+		controls::integrated_control<wpl::control>::layout(append_view, box_);
+	}
+
 	void piechart::draw(gcontext &ctx, gcontext::rasterizer_ptr &ras) const
 	{
 		float sum = 0.0, angle = -pi / 2;
@@ -66,9 +72,6 @@ namespace wpl
 			angle += d;
 		}
 	}
-
-	void piechart::resize(unsigned cx, unsigned cy, positioned_native_views &)
-	{	_center_x = cx / 2, _center_y = cy / 2;	}
 
 	void piechart::mouse_move(int /*buttons*/, int x, int y)
 	{

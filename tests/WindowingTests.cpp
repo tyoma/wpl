@@ -28,7 +28,7 @@ namespace wpl
 
 				LRESULT on_message(UINT message, WPARAM wparam, LPARAM lparam, const win32::window::original_handler_t &previous)
 				{
-					MSG m = { 0 };
+					MSG m = { };
 
 					m.message = message;
 					m.wParam = wparam;

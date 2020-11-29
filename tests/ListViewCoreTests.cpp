@@ -1,5 +1,6 @@
 #include <wpl/controls/listview_core.h>
 
+#include "helpers.h"
 #include "helpers-listview.h"
 #include "helpers-visual.h"
 #include "Mockups.h"
@@ -34,7 +35,6 @@ namespace wpl
 			shared_ptr<gcontext::text_engine_type> text_engine;
 			shared_ptr<gcontext> ctx;
 			gcontext::rasterizer_ptr ras;
-			view::positioned_native_views nviews;
 
 			init( Init )
 			{
@@ -53,6 +53,7 @@ namespace wpl
 
 				// ASSERT
 				assert_is_empty(lv.events);
+				assert_is_true(provides_tabstoppable_view(lv));
 			}
 
 
@@ -61,8 +62,8 @@ namespace wpl
 				// INIT
 				tracking_listview lv1, lv2;
 
-				lv1.resize(1000, 1000, nviews);
-				lv2.resize(1000, 1000, nviews);
+				resize(lv1, 1000, 1000);
+				resize(lv2, 1000, 1000);
 
 				// ACT
 				lv1.draw(*ctx, ras);
@@ -90,7 +91,7 @@ namespace wpl
 				auto invalidations = 0;
 				tracking_listview lv;
 
-				lv.resize(1000, 1000, nviews);
+				resize(lv, 1000, 1000);
 
 				auto c = lv.invalidate += [&] (const void* p) { assert_null(p); invalidations++; };
 
@@ -114,7 +115,7 @@ namespace wpl
 				// INIT
 				tracking_listview lv;
 
-				lv.resize(1000, 1000, nviews);
+				resize(lv, 1000, 1000);
 				lv.set_columns_model(mocks::columns_model::create(L"Name"));
 				lv.set_model(create_model(1, 1));
 
@@ -140,7 +141,7 @@ namespace wpl
 				tracking_listview lv;
 				column_t c[] = { column_t(L"", 0), column_t(L"", 0), column_t(L"", 0), };
 
-				lv.resize(1000, 1000, nviews);
+				resize(lv, 1000, 1000);
 				lv.set_columns_model(mocks::columns_model::create(c, columns_model::npos(), true));
 				lv.set_model(create_model(4, 3));
 
@@ -197,7 +198,7 @@ namespace wpl
 				column_t c1[] = { column_t(L"", 10), column_t(L"", 30), };
 				column_t c2[] = { column_t(L"", 10), column_t(L"", 13), column_t(L"", 29), };
 
-				lv.resize(1000, 1000, nviews);
+				resize(lv, 1000, 1000);
 				lv.item_height = 3;
 				lv.set_columns_model(mocks::columns_model::create(c1, columns_model::npos(), true));
 				lv.set_model(create_model(3, 2));
@@ -273,7 +274,7 @@ namespace wpl
 				const auto cm = mocks::columns_model::create(c, columns_model::npos(), true);
 				const auto m = create_model(2, 2);
 
-				lv.resize(1000, 1000, nviews);
+				resize(lv, 1000, 1000);
 				lv.item_height = 1;
 				lv.set_columns_model(cm);
 				lv.set_model(m);
@@ -312,7 +313,7 @@ namespace wpl
 				// INIT
 				tracking_listview lv;
 
-				lv.resize(1000, 31, nviews);
+				resize(lv, 1000, 31);
 				lv.item_height = 15.4;
 				lv.set_columns_model(mocks::columns_model::create(L"", 10));
 				lv.set_model(create_model(4, 1));
@@ -379,11 +380,11 @@ namespace wpl
 			test( DestructionOfTheCoreLeavesVerticalScrollFunctional )
 			{
 				// INIT
-				shared_ptr<tracking_listview> lv(new tracking_listview);
+				unique_ptr<tracking_listview> lv(new tracking_listview);
 				const auto sm = lv->get_vscroll_model();
 				const auto m = create_model(1, 1);
 
-				lv->resize(1000, 31, nviews);
+				resize(*lv, 1000, 31);
 				lv->item_height = 15.4;
 				lv->set_columns_model(mocks::columns_model::create(L"", 10));
 				lv->set_model(m);
@@ -406,7 +407,7 @@ namespace wpl
 				const auto sm = lv->get_hscroll_model();
 				const auto m = create_model(1, 1);
 
-				lv->resize(1000, 31, nviews);
+				resize(*lv, 1000, 31);
 				lv->item_height = 15.4;
 				lv->set_columns_model(mocks::columns_model::create(L"", 10));
 				lv->set_model(m);
@@ -429,7 +430,7 @@ namespace wpl
 				const auto sm = lv.get_vscroll_model();
 				const auto m(create_model(1, 1));
 
-				lv.resize(1000, 31, nviews);
+				resize(lv, 1000, 31);
 				lv.item_height = 15.4;
 				lv.set_columns_model(mocks::columns_model::create(L"", 10));
 				lv.set_model(m);
@@ -453,7 +454,7 @@ namespace wpl
 				const auto m(create_model(1, 1));
 				column_t columns1[] = { column_t(L"", 19), column_t(L"", 13), column_t(L"", 37), };
 
-				lv.resize(1000, 31, nviews);
+				resize(lv, 1000, 31);
 				lv.set_columns_model(mocks::columns_model::create(columns1, columns_model::npos(), true));
 
 				// ACT / ASSERT
@@ -477,13 +478,13 @@ namespace wpl
 				const auto m(create_model(1, 1));
 
 				// ACT
-				lv.resize(1000, 31, nviews);
+				resize(lv, 1000, 31);
 
 				// ACT / ASSERT
 				assert_equal_pred(make_pair(0, 1000), sm->get_window(), eq());
 
 				// ACT
-				lv.resize(171, 31, nviews);
+				resize(lv, 171, 31);
 
 				// ACT / ASSERT
 				assert_equal_pred(make_pair(0, 171), sm->get_window(), eq());
@@ -498,7 +499,7 @@ namespace wpl
 				const auto sm = lv.get_hscroll_model();
 				const auto m(create_model(1, 1));
 
-				lv.resize(1000, 31, nviews);
+				resize(lv, 1000, 31);
 
 				const auto c = sm->invalidated += [&] { invalidations++; };
 
@@ -530,14 +531,14 @@ namespace wpl
 				const auto c = sm->invalidated += [&] { invalidations++; };
 
 				// ACT
-				lv.resize(1000, 31, nviews);
+				resize(lv, 1000, 31);
 
 				// ACT / ASSERT
 				assert_equal(1, invalidations);
 
 				// ACT
-				lv.resize(1000, 31, nviews);
-				lv.resize(100, 100, nviews);
+				resize(lv, 1000, 31);
+				resize(lv, 100, 100);
 
 				// ACT / ASSERT
 				assert_equal(3, invalidations);
@@ -556,13 +557,13 @@ namespace wpl
 				lv.set_model(m);
 
 				// ACT
-				lv.resize(1000, 31, nviews);
+				resize(lv, 1000, 31);
 				const auto v1 = sm->get_window();
 
 				// ASSERT
 				assert_approx_equal(0.0, v1.first, 0.0001);
 
-				lv.resize(1000, 39, nviews);
+				resize(lv, 1000, 39);
 				const auto v2 = sm->get_window();
 
 				// ASSERT
@@ -570,7 +571,7 @@ namespace wpl
 				assert_approx_equal(31.0 / 39.0, v1.second / v2.second, 0.0001);
 
 				// ACT
-				lv.resize(1000, 397, nviews);
+				resize(lv, 1000, 397);
 				const auto v3 = sm->get_window().second;
 
 				// ASSERT
@@ -588,7 +589,7 @@ namespace wpl
 				m->items.resize(111, vector<wstring>(1));
 				lv.set_columns_model(mocks::columns_model::create(L"", 10));
 				lv.set_model(m);
-				lv.resize(1000, 1000, nviews);
+				resize(lv, 1000, 1000);
 
 				// ACT
 				lv.item_height = 5;
@@ -614,7 +615,7 @@ namespace wpl
 				tracking_listview lv;
 				const auto sm = lv.get_vscroll_model();
 
-				lv.resize(100, 1000, nviews);
+				resize(lv, 100, 1000);
 				lv.item_height = 10;
 				lv.set_columns_model(mocks::columns_model::create(L"", 10));
 				lv.set_model(create_model(1, 1));
@@ -664,7 +665,7 @@ namespace wpl
 
 				lv.reported_events = tracking_listview::item_background | tracking_listview::subitem_background | tracking_listview::item_self | tracking_listview::subitem_self;
 				lv.item_height = 1;
-				lv.resize(30, 1000, nviews);
+				resize(lv, 30, 1000);
 				lv.set_columns_model(cm);
 				lv.set_model(create_model(1, 3));
 
@@ -750,7 +751,7 @@ namespace wpl
 
 				lv.item_height = 10;
 				lv.reported_events = tracking_listview::item_self;
-				lv.resize(100, 40, nviews);
+				resize(lv, 100, 40);
 				lv.set_columns_model(mocks::columns_model::create(L"", 100));
 				lv.set_model(create_model(100, 1));
 
@@ -787,7 +788,7 @@ namespace wpl
 
 				lv.item_height = 10;
 				lv.reported_events = tracking_listview::item_self;
-				lv.resize(100, 40, nviews);
+				resize(lv, 100, 40);
 				lv.set_columns_model(mocks::columns_model::create(L"", 100));
 				lv.set_model(m);
 
@@ -824,7 +825,7 @@ namespace wpl
 
 				lv.item_height = 10;
 				lv.reported_events = tracking_listview::item_self;
-				lv.resize(100, 40, nviews);
+				resize(lv, 100, 40);
 				lv.set_columns_model(mocks::columns_model::create(L"", 100));
 
 				const auto c = sm->invalidated += [&] { invalidations++; };
@@ -861,7 +862,7 @@ namespace wpl
 
 				lv.item_height = 10;
 				lv.reported_events = tracking_listview::item_self;
-				lv.resize(100, 40, nviews);
+				resize(lv, 100, 40);
 				lv.set_columns_model(mocks::columns_model::create(L"", 100));
 				lv.set_model(create_model(1000, 1));
 
@@ -869,7 +870,7 @@ namespace wpl
 				const auto c2 = sm->invalidated += [&] { scroll_invalidations++; };
 
 				// ACT
-				lv.resize(100, 40, nviews);
+				resize(lv, 100, 40);
 
 				// ASSERT
 				assert_equal(0, invalidations);
@@ -887,7 +888,7 @@ namespace wpl
 
 				lv.item_height = 10;
 				lv.reported_events = tracking_listview::item_self;
-				lv.resize(100, 40, nviews);
+				resize(lv, 100, 40);
 				lv.set_columns_model(mocks::columns_model::create(L"", 100));
 				lv.set_model(create_model(1000, 1));
 
@@ -920,7 +921,7 @@ namespace wpl
 
 				lv.item_height = 5;
 				lv.reported_events = tracking_listview::item_self;
-				lv.resize(10, 28, nviews);
+				resize(lv, 10, 28);
 				lv.set_columns_model(mocks::columns_model::create(L"", 100));
 				lv.set_model(create_model(1000, 1));
 
@@ -971,7 +972,7 @@ namespace wpl
 
 				lv.item_height = 5;
 				lv.reported_events = tracking_listview::item_self;
-				lv.resize(10, 28, nviews);
+				resize(lv, 10, 28);
 				lv.set_columns_model(mocks::columns_model::create(L"", 100));
 				lv.set_model(create_model(1000, 1));
 
@@ -1004,7 +1005,7 @@ namespace wpl
 
 				lv.item_height = 5;
 				lv.reported_events = tracking_listview::item_self;
-				lv.resize(10, 28, nviews);
+				resize(lv, 10, 28);
 				lv.set_columns_model(mocks::columns_model::create(L"", 100));
 				lv.set_model(create_model(1000, 1));
 
@@ -1057,7 +1058,7 @@ namespace wpl
 
 				lv.item_height = 5;
 				lv.reported_events = tracking_listview::item_self;
-				lv.resize(100, 25, nviews);
+				resize(lv, 100, 25);
 
 				const auto c = lv.invalidate += [&] (const void *r) { assert_null(r); invalidations++; };
 
@@ -1096,7 +1097,7 @@ namespace wpl
 
 				lv.item_height = 5;
 				lv.reported_events = tracking_listview::item_self;
-				lv.resize(100, 25, nviews);
+				resize(lv, 100, 25);
 
 				const auto c = sm->invalidated += [&] { invalidations++; };
 
@@ -1132,7 +1133,7 @@ namespace wpl
 
 				lv.item_height = 5;
 				lv.reported_events = tracking_listview::item_self;
-				lv.resize(101, 25, nviews);
+				resize(lv, 101, 25);
 
 				const auto c = lv.invalidate += [&](const void* r) { assert_null(r); invalidations++; };
 				const auto c2 = sm->invalidated += [&] { sinvalidations++; };
@@ -1174,7 +1175,7 @@ namespace wpl
 
 				lv.item_height = 7;
 				lv.reported_events = tracking_listview::item_self;
-				lv.resize(100, 35, nviews);
+				resize(lv, 100, 35);
 
 				// ACT
 				lv.mouse_double_click(mouse_input::left, 0, 13, 8);
@@ -1207,7 +1208,7 @@ namespace wpl
 
 				lv.item_height = 7;
 				lv.reported_events = tracking_listview::item_self;
-				lv.resize(100, 40, nviews);
+				resize(lv, 100, 40);
 
 				// ACT / ASSERT
 				lv.mouse_double_click(mouse_input::left, 0, 13, -1);

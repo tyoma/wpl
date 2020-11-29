@@ -4,19 +4,21 @@ include(test)
 
 set(WPL_TEST_SOURCES
 	AnimatedModelsTests.cpp
-	ContainerTests.cpp
 	FactoryTests.cpp
 	HeaderCoreTests.cpp
 	helpers.cpp
 	helpers-visual.cpp
+	KeyboardRouterTests.cpp
 	LayoutTests.cpp
 	ListViewCoreSelectionTests.cpp
 	ListViewCoreTests.cpp
 	Mockups.cpp
 	MockupsListView.cpp
+	MouseRouterTests.cpp
 	ScrollerTests.cpp
 	SignalTests.cpp
 	StylesheetTests.cpp
+	VisualRouterTests.cpp
 	VisualTests.cpp
 )
 
@@ -24,6 +26,7 @@ if (WIN32)
 	set(WPL_TEST_SOURCES ${WPL_TEST_SOURCES}
 		helpers-win32.cpp
 		IntegrationTests.cpp
+		KeyboardRouterNativeTests.cpp
 		LayoutTests.cpp
 		MockupsNative.cpp
 		NativeComboboxTests.cpp

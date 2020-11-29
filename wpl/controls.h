@@ -32,7 +32,6 @@ namespace wpl
 	{
 		enum halign { left, center, right };
 
-		virtual ~text_container() {	}
 		virtual void set_text(const std::wstring &text) = 0;
 		virtual void set_align(halign value) = 0;
 	};

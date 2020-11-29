@@ -1,6 +1,6 @@
 #include <wpl/animated_models.h>
 
-#include "mock_queue.h"
+#include "mock-queue.h"
 #include "MockupsScroller.h"
 #include "predicates.h"
 

@@ -3,13 +3,14 @@ cmake_minimum_required(VERSION 2.8)
 set(WPL_SOURCES
 	animated_models.cpp
 	animation.cpp
-	container.cpp
 	factory.cpp
 	input_stubs.cpp
+	keyboard_router.cpp
 	layout.cpp
-	root_container.cpp
+	mouse_router.cpp
 	stylesheet_db.cpp
 	visual.cpp
+	visual_router.cpp
 
 	controls/header_basic.cpp
 	controls/header_core.cpp

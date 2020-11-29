@@ -20,46 +20,30 @@
 
 #pragma once
 
-#include "text_container.h"
-
-#include "../controls.h"
-#include <memory>
+#include "concepts.h"
+#include "control.h"
+#include "visual.h"
 
 namespace wpl
 {
-	struct button;
-	struct link;
-	struct view_host;
-
-	namespace win32
+	struct visual_router_host
 	{
-		class button : public text_container_impl<wpl::button>
-		{
-		public:
-			button();
+		virtual void invalidate(const agge::rect_i &area) = 0;
+	};
 
-		private:
-			virtual void layout(const placed_view_appender &append_view, const agge::box<int> &box);
+	class visual_router : noncopyable
+	{
+	public:
+		visual_router(const std::vector<placed_view> &views, visual_router_host &host);
 
-			virtual HWND materialize(HWND hparent);
-			virtual LRESULT on_message(UINT message, WPARAM wparam, LPARAM lparam,
-				const window::original_handler_t &handler);
-		};
+		void reload_views();
 
+		// visual methods
+		void draw(gcontext &ctx, gcontext::rasterizer_ptr &rasterizer) const;
 
-		class link : public text_container_impl<wpl::link>
-		{
-		public:
-			link();
-
-		private:
-			virtual void layout(const placed_view_appender &append_view, const agge::box<int> &box);
-
-			virtual HWND materialize(HWND hparent);
-			virtual LRESULT on_message(UINT message, WPARAM wparam, LPARAM lparam,
-				const window::original_handler_t &handler);
-
-			virtual void set_align(halign value);
-		};
-	}
+	private:
+		const std::vector<placed_view> &_views;
+		visual_router_host &_host;
+		std::vector<slot_connection> _connections;
+	};
 }

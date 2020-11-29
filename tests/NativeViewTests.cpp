@@ -25,8 +25,6 @@ namespace wpl
 					: native_view(font_style)
 				{	}
 
-				using native_view::got_focus;
-
 			public:
 				vector< pair<HWND /*parent*/, HWND /*created*/> > log;
 
@@ -208,27 +206,6 @@ namespace wpl
 				assert_equal(fm.get_font(agge::font::key(L"Tahoma", 18)).get(),
 					(void *)SendMessage(wv.get_window(), WM_GETFONT, 0, 0));
 			}
-
-
-			test( NotifyingOfAFocusSetsItToAViewWindow )
-			{
-				// INIT
-				mocks::windowed_view wv[2];
-				HWND hwnd[] = { wv[0].get_window(parent), wv[1].get_window(parent), };
-
-				// ACT
-				wv[0].got_focus();
-
-				// ASSERT
-				assert_equal(hwnd[0], ::GetFocus());
-
-				// ACT
-				wv[1].got_focus();
-
-				// ASSERT
-				assert_equal(hwnd[1], ::GetFocus());
-			}
-
 
 		end_test_suite
 	}

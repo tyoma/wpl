@@ -33,7 +33,7 @@ namespace wpl
 		public:
 			combobox();
 
-			virtual std::shared_ptr<view> get_view();
+			virtual void layout(const placed_view_appender &append_view, const agge::box<int> &box);
 			virtual void set_model(std::shared_ptr<model_t> model);
 			virtual void select(model_t::index_type index);
 

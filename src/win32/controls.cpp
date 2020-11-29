@@ -36,8 +36,8 @@ namespace wpl
 			: text_container("text.button")
 		{	}
 
-		shared_ptr<view> button::get_view()
-		{	return shared_from_this();	}
+		void button::layout(const placed_view_appender &append_view, const agge::box<int> &box)
+		{	native_view::layout(append_view, box);	}
 
 		HWND button::materialize(HWND hparent)
 		{
@@ -65,8 +65,8 @@ namespace wpl
 			: text_container("text.link")
 		{	_halign = wpl::text_container::left;	}
 
-		shared_ptr<view> link::get_view()
-		{	return shared_from_this();	}
+		void link::layout(const placed_view_appender &append_view, const agge::box<int> &box)
+		{	native_view::layout(append_view, box);	}
 
 		HWND link::materialize(HWND hparent)
 		{

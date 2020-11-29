@@ -25,9 +25,6 @@
     <ClCompile Include="visual.cpp">
       <Filter>src</Filter>
     </ClCompile>
-    <ClCompile Include="container.cpp">
-      <Filter>src</Filter>
-    </ClCompile>
     <ClCompile Include="win32\form.cpp">
       <Filter>src\win32</Filter>
     </ClCompile>
@@ -94,7 +91,13 @@
     <ClCompile Include="win32\font_manager_win32.cpp">
       <Filter>src\win32</Filter>
     </ClCompile>
-    <ClCompile Include="root_container.cpp">
+    <ClCompile Include="visual_router.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="keyboard_router.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="mouse_router.cpp">
       <Filter>src</Filter>
     </ClCompile>
   </ItemGroup>
@@ -118,7 +121,6 @@
       <Filter>win32</Filter>
     </ClInclude>
     <ClInclude Include="..\wpl\concepts.h" />
-    <ClInclude Include="..\wpl\container.h" />
     <ClInclude Include="..\wpl\control.h" />
     <ClInclude Include="..\wpl\controls.h" />
     <ClInclude Include="..\wpl\form.h" />
@@ -177,7 +179,9 @@
     <ClInclude Include="..\wpl\win32\text_container.h">
       <Filter>win32</Filter>
     </ClInclude>
-    <ClInclude Include="..\wpl\root_container.h" />
     <ClInclude Include="..\wpl\stylesheet_helpers.h" />
+    <ClInclude Include="..\wpl\mouse_router.h" />
+    <ClInclude Include="..\wpl\keyboard_router.h" />
+    <ClInclude Include="..\wpl\visual_router.h" />
   </ItemGroup>
 </Project>

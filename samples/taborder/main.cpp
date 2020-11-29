@@ -7,7 +7,6 @@
 #include <wpl/factory.h>
 #include <wpl/form.h>
 #include <wpl/layout.h>
-#include <wpl/root_container.h>
 #include <wpl/stylesheet_helpers.h>
 
 using namespace agge;
@@ -86,36 +85,29 @@ int main()
 {
 	_CrtSetDbgFlag(_CrtSetDbgFlag(_CRTDBG_REPORT_FLAG) | _CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
 
-	auto ss = create_sample_stylesheet();
-	auto fct = factory::create_default(ss);
-
-	view_location l = { 100, 100, 300, 200 };
-	auto f = fct->create_form();
-	shared_ptr<container> c(apply_stylesheet(make_shared<root_container>(fct->context.cursor_manager_), *ss));
-	shared_ptr<stack> stk(new stack(5, false));
-	auto conn = f->close += &exit_message_loop;
-	auto lv = static_pointer_cast<listview>(fct->create_control("listview"));
+	const auto ss = create_sample_stylesheet();
+	const auto fct = factory::create_default(ss);
+	const view_location l = { 100, 100, 300, 200 };
+	const auto f = fct->create_form();
+	const auto conn = f->close += &exit_message_loop;
 	shared_ptr<my_columns> cm(new my_columns);
 	shared_ptr<my_model> m(new my_model);
 
-	c->set_layout(stk);
+	const auto stk = make_shared<stack>(5, false);
+		const auto lv = fct->create_control<listview>("listview");
+		lv->set_columns_model(cm);
+		lv->set_model(m);
+		stk->add(lv, -100, 1);
 
-	lv->set_columns_model(cm);
-	lv->set_model(m);
-	c->add_view(lv->get_view(), 1);
-	stk->add(-100);
+		auto btn1 = fct->create_control<button>("button");
+		btn1->set_text(L"first");
+		stk->add(btn1, 20, 2);
 
-	auto btn = static_pointer_cast<button>(fct->create_control("button"));
-	btn->set_text(L"first");
-	c->add_view(btn->get_view(), 2);
-	stk->add(20);
+		auto btn2 = fct->create_control<button>("button");
+		btn2->set_text(L"second");
+		stk->add(btn2, 20, 3);
 
-	btn = static_pointer_cast<button>(fct->create_control("button"));
-	btn->set_text(L"second");
-	c->add_view(btn->get_view(), 3);
-	stk->add(20);
-
-	f->set_view(c);
+	f->set_root(pad_control(stk, 5, 5));
 	f->set_location(l);
 	f->set_visible(true);
 	run_message_loop();

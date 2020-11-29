@@ -24,55 +24,66 @@ using namespace std;
 
 namespace wpl
 {
+	namespace
+	{
+		placed_view_appender offset(const placed_view_appender &inner, int dx, int dy, int tab_override)
+		{
+			// TODO: use custom appender functor, as std::function may allocate storage dynamically.
+
+			return [&inner, dx, dy, tab_override] (placed_view pv) {
+				pv.location.x1 += dx, pv.location.x2 += dx;
+				pv.location.y1 += dy, pv.location.y2 += dy;
+				pv.tab_order = pv.tab_order ? tab_override ? tab_override : pv.tab_order : 0;
+				inner(pv);
+			};
+		}
+	}
+
 	stack::stack(int spacing, bool horizontal)
 		: _spacing(spacing), _horizontal(horizontal)
 	{	}
 
-	void stack::add(int size)
-	{	_sizes.push_back(size);	}
-
-	inline void stack::layout(unsigned common_size, unsigned shared_size, container::positioned_view *widgets,
-		size_t count) const
+	void stack::add(shared_ptr<control> child, int size, int tab_order)
 	{
-		vector<int>::const_iterator i;
-		int remainder, relative_base, location;
-		container::positioned_view *w;
-		size_t c;
+		item i = { child, size, tab_order };
+		_children.push_back(i);
+	}
 
-		if (_horizontal)
-			swap(common_size, shared_size);
+	void stack::layout(const placed_view_appender &append_view, const agge::box<int> &box)
+	{
+		auto b = box;
+		const auto zero = b.w - b.w; // '0' in coordinates type
+		auto location = zero;
+		auto remainder = _horizontal ? box.w : box.h;
+		auto relative_base = zero;
 
-		for (i = _sizes.begin(), remainder = shared_size, relative_base = 0; count && i != _sizes.end(); ++i)
+		for (auto i = _children.begin(); i != _children.end(); ++i)
+			(i->size > zero ? remainder : relative_base) -= i->size;
+		remainder -= (static_cast<int>(_children.size()) - 1) * _spacing;
+		for (auto i = _children.begin(); i != _children.end(); ++i)
 		{
-			remainder -= *i > 0 ? *i : 0;
-			relative_base += *i < 0 ? *i : 0;
-		}
+			const auto size = i->size > zero ? i->size : -i->size * remainder / relative_base;
 
-		remainder -= (static_cast<unsigned>(_sizes.size()) - 1) * _spacing;
-
-		for (i = _sizes.begin(), location = 0, w = widgets, c = count; c; ++w, ++i, --c)
-		{
-			int size = *i > 0 ? *i : *i * remainder / relative_base;
-
-			w->location.left = _horizontal ? location : 0;
-			w->location.top = _horizontal ? 0 : location;
-			w->location.width = _horizontal ? size : common_size;
-			w->location.height = _horizontal ? common_size : size;
+			(_horizontal ? b.w : b.h) = size;
+			i->child->layout(offset(append_view, _horizontal ? location : 0, _horizontal ? 0 : location, i->tab_order), b);
 			location += size + _spacing;
 		}
 	}
 
 
-	spacer::spacer(int space_x, int space_y)
-		: _space_x(space_x), _space_y(space_y)
+	padding::padding(shared_ptr<control> inner, int px, int py)
+		: _inner(inner), _px(px), _py(py)
 	{	}
 
-	void spacer::layout(unsigned width, unsigned height, container::positioned_view *views, size_t count) const
+	void padding::layout(const placed_view_appender &append_view, const agge::box<int> &box)
 	{
-		for (; count--; ++views)
-		{
-			views->location.left = _space_x, views->location.top = _space_y;
-			views->location.width = width - 2 * _space_x, views->location.height = height - 2 * _space_y;
-		}
+		auto b = box;
+
+		b.w -= 2 * _px, b.h -= 2 * _py;
+		_inner->layout(offset(append_view, _px, _py, 0), b);
 	}
+
+
+	shared_ptr<control> pad_control(shared_ptr<control> inner, int px, int py)
+	{	return make_shared<padding>(inner, px, py);	}
 }

@@ -2,13 +2,13 @@
 
 #include "helpers-visual.h"
 #include "helpers-win32.h"
+#include "mock-control.h"
 #include "Mockups.h"
 #include "MockupsNative.h"
 
-#include <tchar.h>
 #include <ut/assert.h>
 #include <ut/test.h>
-#include <windows.h>
+#include <wpl/stylesheet_db.h>
 
 using namespace agge;
 using namespace std;
@@ -18,72 +18,96 @@ namespace wpl
 	namespace tests
 	{
 		begin_test_suite( NativeViewHostTests )
+
+			form_context context;
+			window_manager wm;
+
+			HWND create_window(bool visible = false, int width = 100, int height = 100)
+			{
+				auto hwnd = wm.create_window(L"static", NULL, WS_POPUP | (visible ? WS_VISIBLE : 0), 0);
+
+				::MoveWindow(hwnd, 10, 20, width, height, FALSE);
+				::ValidateRect(hwnd, NULL);
+				return hwnd;
+			}
+
+			init( Init )
+			{
+				context.backbuffer = make_shared<gcontext::surface_type>(1, 1, 0);
+				context.renderer = make_shared<gcontext::renderer_type>(1);
+				context.text_engine = create_text_engine();
+				context.stylesheet_ = make_shared<stylesheet_db>();
+				context.cursor_manager_ = make_shared<mocks::cursor_manager>();
+			}
+
+
 			test( ResizingHostWindowLeadsToContentResize )
 			{
 				// INIT
-				shared_ptr< mocks::logging_visual<view> > v(new mocks::logging_visual<view>());
-				hosting_window f;
-				RECT rc;
+				auto ctl = make_shared<mocks::control>();
+				auto hwnd = create_window();
+				win32::view_host vh(hwnd, context);
 
-				f.host->set_view(v);
-				v->resize_log.clear();
-
-				// ACT
-				::MoveWindow(f.hwnd, 0, 0, 117, 213, TRUE);
-
-				// ASSERT
-				::GetClientRect(f.hwnd, &rc);
-
-				assert_equal(1u, v->resize_log.size());
-				assert_equal(make_pair((int)rc.right, (int)rc.bottom), v->resize_log[0]);
+				// INIT / ACT
+				vh.set_root(ctl);
+				ctl->size_log.clear();
 
 				// ACT
-				::MoveWindow(f.hwnd, 27, 190, 531, 97, TRUE);
+				::MoveWindow(hwnd, 0, 0, 117, 213, TRUE);
 
 				// ASSERT
-				::GetClientRect(f.hwnd, &rc);
+				assert_equal(1u, ctl->size_log.size());
+				assert_equal(get_client_rect(hwnd), ctl->size_log.back());
 
-				assert_equal(2u, v->resize_log.size());
-				assert_equal(make_pair((int)rc.right, (int)rc.bottom), v->resize_log[1]);
+				// ACT
+				::MoveWindow(hwnd, 27, 190, 531, 97, TRUE);
+
+				// ASSERT
+				assert_equal(2u, ctl->size_log.size());
+				assert_equal(get_client_rect(hwnd), ctl->size_log.back());
 			}
 
 
 			test( MovingHostWindowDoesNotRaiseResizeSignal )
 			{
 				// INIT
-				shared_ptr< mocks::logging_visual<view> > v(new mocks::logging_visual<view>());
-				hosting_window f;
+				auto ctl = make_shared<mocks::control>();
+				auto hwnd = create_window();
+				win32::view_host vh(hwnd, context);
 
-				f.host->set_view(v);
-
-				::MoveWindow(f.hwnd, 0, 0, 117, 213, TRUE);
-				v->resize_log.clear();
+				vh.set_root(ctl);
+				::MoveWindow(hwnd, 0, 0, 117, 213, TRUE);
+				ctl->size_log.clear();
 
 				// ACT
-				::MoveWindow(f.hwnd, 23, 91, 117, 213, TRUE);
-				::MoveWindow(f.hwnd, 53, 91, 117, 213, TRUE);
-				::MoveWindow(f.hwnd, 53, 32, 117, 213, TRUE);
-				::MoveWindow(f.hwnd, 23, 100, 117, 213, TRUE);
+				::MoveWindow(hwnd, 23, 91, 117, 213, TRUE);
+				::MoveWindow(hwnd, 53, 91, 117, 213, TRUE);
+				::MoveWindow(hwnd, 53, 32, 117, 213, TRUE);
+				::MoveWindow(hwnd, 23, 100, 117, 213, TRUE);
 
 				// ASSERT
-				assert_is_empty(v->resize_log);
+				assert_is_empty(ctl->size_log);
 			}
 
 
 			test( RedrawingHostWindowSuppliesBitmapOfTheSizeCorrespondingToRedrawAreaToTheContent )
 			{
 				// INIT
-				shared_ptr< mocks::logging_visual<view> > v(new mocks::logging_visual<view>());
-				hosting_window f;
+				const auto v = make_shared< mocks::logging_visual<view> >();
+				const placed_view pv = {	v, nullptr, make_rect(0, 0, 1000, 1000)	};
+				const auto ctl = make_shared<mocks::control>();
+				const auto hwnd = create_window(true, 1000, 1000);
+				win32::view_host vh(hwnd, context);
 				RECT rc = { 0, 0, 100, 60 };
 
-				f.host->set_view(v);
+				ctl->views.push_back(pv);
 
-				::MoveWindow(f.hwnd, 0, 0, 1000, 1000, TRUE);
-				::ValidateRect(f.hwnd, NULL);
+				vh.set_root(ctl);
+				context.backbuffer->resize(1, 1);
+				::ValidateRect(hwnd, NULL);
 
 				// ACT
-				::RedrawWindow(f.hwnd, &rc, NULL, RDW_INVALIDATE | RDW_UPDATENOW);
+				::RedrawWindow(hwnd, &rc, NULL, RDW_INVALIDATE | RDW_UPDATENOW);
 
 				// ASSERT
 				assert_equal(1u, v->surface_size_log.size());
@@ -99,12 +123,12 @@ namespace wpl
 				rc.bottom = 76;
 
 				// ACT
-				::RedrawWindow(f.hwnd, &rc, NULL, RDW_INVALIDATE | RDW_UPDATENOW);
+				::RedrawWindow(hwnd, &rc, NULL, RDW_INVALIDATE | RDW_UPDATENOW);
 
 				// ASSERT
 				assert_equal(2u, v->text_engines_log.size());
-				assert_equal(f.text_engine.get(), v->text_engines_log[0]);
-				assert_equal(f.text_engine.get(), v->text_engines_log[1]);
+				assert_equal(context.text_engine.get(), v->text_engines_log[0]);
+				assert_equal(context.text_engine.get(), v->text_engines_log[1]);
 
 				assert_equal(2u, v->surface_size_log.size());
 				assert_is_true(115 <= v->surface_size_log[1].first);
@@ -112,25 +136,29 @@ namespace wpl
 				assert_is_true(71 <= v->surface_size_log[1].second);
 				assert_is_true(76 > v->surface_size_log[1].second);
 
-				assert_equal(v->surface_size_log[1].first, static_cast<int>(f.surface->width()));
-				assert_equal(v->surface_size_log[1].second, static_cast<int>(f.surface->height()));
+				assert_equal(115, static_cast<int>(context.backbuffer->width()));
+				assert_equal(71, static_cast<int>(context.backbuffer->height()));
 			}
 
 
 			test( WindowPassedToDrawCorrespondsToInvalidArea )
 			{
 				// INIT
-				shared_ptr< mocks::logging_visual<view> > v(new mocks::logging_visual<view>());
-				hosting_window f;
+				const auto v = make_shared< mocks::logging_visual<view> >();
+				const placed_view pv = {	v, nullptr, make_rect(0, 0, 1000, 1000)	};
+				const auto ctl = make_shared<mocks::control>();
+				const auto hwnd = create_window(true, 1000, 1000);
+				win32::view_host vh(hwnd, context);
 				RECT rc = { 11, 17, 100, 60 };
 
-				f.host->set_view(v);
+				ctl->views.push_back(pv);
 
-				::MoveWindow(f.hwnd, 0, 0, 1000, 1000, TRUE);
-				::ValidateRect(f.hwnd, NULL);
+				vh.set_root(ctl);
+				v->transcending = true;
+				::ValidateRect(hwnd, NULL);
 
 				// ACT
-				::RedrawWindow(f.hwnd, &rc, NULL, RDW_INVALIDATE | RDW_UPDATENOW);
+				::RedrawWindow(hwnd, &rc, NULL, RDW_INVALIDATE | RDW_UPDATENOW);
 
 				// ASSERT
 				assert_equal(1u, v->update_area_log.size());
@@ -140,7 +168,7 @@ namespace wpl
 				RECT rc2 = { 101, 107, 150, 260 };
 
 				// ACT
-				::RedrawWindow(f.hwnd, &rc2, NULL, RDW_INVALIDATE | RDW_UPDATENOW);
+				::RedrawWindow(hwnd, &rc2, NULL, RDW_INVALIDATE | RDW_UPDATENOW);
 
 				// ASSERT
 				assert_equal(2u, v->update_area_log.size());
@@ -151,16 +179,19 @@ namespace wpl
 			test( TheSameRasterizerIsSuppliedToDrawingProcedure )
 			{
 				// INIT
-				shared_ptr< mocks::logging_visual<view> > v(new mocks::logging_visual<view>());
-				hosting_window f;
+				const auto v = make_shared< mocks::logging_visual<view> >();
+				const placed_view pv = {	v, nullptr, make_rect(0, 0, 100, 100)	};
+				const auto ctl = make_shared<mocks::control>();
+				const auto hwnd = create_window(true, 100, 100);
+				win32::view_host vh(hwnd, context);
 
-				f.host->set_view(v);
+				ctl->views.push_back(pv);
 
-				::MoveWindow(f.hwnd, 0, 0, 100, 50, TRUE);
+				vh.set_root(ctl);
 
 				// ACT
-				::RedrawWindow(f.hwnd, NULL, NULL, RDW_UPDATENOW);
-				::RedrawWindow(f.hwnd, NULL, NULL, RDW_INVALIDATE | RDW_UPDATENOW);
+				::RedrawWindow(hwnd, NULL, NULL, RDW_INVALIDATE | RDW_UPDATENOW);
+				::RedrawWindow(hwnd, NULL, NULL, RDW_INVALIDATE | RDW_UPDATENOW);
 
 				// ASSERT
 				assert_equal(2u, v->rasterizers_log.size());
@@ -172,94 +203,146 @@ namespace wpl
 			test( RasterizerIsResetOnDraw )
 			{
 				// INIT
-				shared_ptr< mocks::logging_visual<view> > v(new mocks::logging_visual<view>());
-				hosting_window f;
+				const auto v = make_shared< mocks::logging_visual<view> >();
+				const placed_view pv = {	v, nullptr, make_rect(0, 0, 100, 100)	};
+				const auto ctl = make_shared<mocks::control>();
+				const auto hwnd = create_window(true, 100, 100);
+				win32::view_host vh(hwnd, context);
 
-				f.host->set_view(v);
+				ctl->views.push_back(pv);
 
-				::MoveWindow(f.hwnd, 0, 0, 100, 50, TRUE);
+				vh.set_root(ctl);
 
 				// ACT / ASSERT (done inside)
-				::RedrawWindow(f.hwnd, NULL, NULL, RDW_UPDATENOW);
-				::RedrawWindow(f.hwnd, NULL, NULL, RDW_INVALIDATE | RDW_UPDATENOW);
+				::RedrawWindow(hwnd, NULL, NULL, RDW_INVALIDATE | RDW_UPDATENOW);
+				::RedrawWindow(hwnd, NULL, NULL, RDW_INVALIDATE | RDW_UPDATENOW);
 			}
 
 
 			test( InvalidateSignalMarksAreaAsInvalid )
 			{
 				// INIT
-				shared_ptr< mocks::logging_visual<view> > v(new mocks::logging_visual<view>());
-				hosting_window f;
-				RECT rc, invalid;
+				const auto hwnd = create_window(true, 1000, 1000);
+				win32::view_host vh(hwnd, context);
+				visual_router_host &vrhost = vh;
+				const auto rc1 = make_rect(10, 100, 50, 120);
+				RECT invalid;
 
-				f.host->set_view(v);
-
-				::MoveWindow(f.hwnd, 0, 0, 1000, 1000, TRUE);
-				::GetClientRect(f.hwnd, &rc);
+				::ValidateRect(hwnd, NULL);
 
 				// ACT
-				v->invalidate(0);
+				vrhost.invalidate(rc1);
 
 				// ASSERT
-				assert_is_true(!!::GetUpdateRect(f.hwnd, &invalid, FALSE));
-				assert_equal(rc, invalid);
+				assert_is_true(!!::GetUpdateRect(hwnd, &invalid, FALSE));
+				assert_equal(rc1, invalid);
 
 				// INIT
-				rect_i rc2 = { 10, 13, 131, 251 };
-				::ValidateRect(f.hwnd, NULL);
+				const auto rc2 = make_rect(10, 13, 131, 251);
+				::ValidateRect(hwnd, NULL);
 
 				// ACT
-				v->invalidate(&rc2);
+				vrhost.invalidate(rc2);
 
 				// ASSERT
-				RECT rc3 = { 10, 13, 131, 251 };
+				assert_is_true(!!::GetUpdateRect(hwnd, &invalid, FALSE));
+				assert_equal(rc2, invalid);
+			}
 
-				assert_is_true(!!::GetUpdateRect(f.hwnd, &invalid, FALSE));
-				assert_equal(rc3, invalid);
 
+			test( WholeClientIsInvalidatedOnResizeAndRootSetting )
+			{
 				// INIT
-				rect_i rc4 = { 17, 19, 130, 250 };
-				::ValidateRect(f.hwnd, NULL);
+				const auto hwnd = create_window(true, 40, 40);
+				win32::view_host vh(hwnd, context);
+				const auto ctl = make_shared<mocks::control>();
+				RECT client, invalid;
+
+				::ShowWindow(hwnd, SW_SHOW);
+				::ValidateRect(hwnd, NULL);
 
 				// ACT
-				v->invalidate(&rc4);
+				vh.set_root(ctl);
 
 				// ASSERT
-				RECT rc5 = { 17, 19, 130, 250 };
+				::GetClientRect(hwnd, &client);
+				assert_is_true(!!::GetUpdateRect(hwnd, &invalid, FALSE));
+				assert_equal(client, invalid);
 
-				assert_is_true(!!::GetUpdateRect(f.hwnd, &invalid, FALSE));
-				assert_equal(rc5, invalid);
+				// ACT
+				::MoveWindow(hwnd, 10, 10, 200, 40, FALSE);
+
+				// ASSERT
+				::GetClientRect(hwnd, &client);
+				assert_is_true(!!::GetUpdateRect(hwnd, &invalid, FALSE));
+				assert_equal(client, invalid);
+
+				// ACT
+				::MoveWindow(hwnd, 10, 10, 250, 100, TRUE);
+
+				// ASSERT
+				::GetClientRect(hwnd, &client);
+				assert_is_true(!!::GetUpdateRect(hwnd, &invalid, FALSE));
+				assert_equal(client, invalid);
+			}
+
+
+			test( HostReactsOnInvalidateRequestsFromViews )
+			{
+				// INIT
+				const auto v = make_shared<view>();
+				placed_view pv = { v, nullptr, make_rect(1, 7, 100, 100), };
+				const auto ctl = make_shared<mocks::control>();
+				const auto hwnd = create_window(true, 1000, 1000);
+				win32::view_host vh(hwnd, context);
+				RECT invalid;
+
+				ctl->views.push_back(pv);
+				vh.set_root(ctl);
+				::ValidateRect(hwnd, NULL);
+
+				// ACT
+				v->invalidate(nullptr);
+
+				// ASSERT
+				assert_is_true(!!::GetUpdateRect(hwnd, &invalid, FALSE));
+				assert_equal(make_rect(1, 7, 100, 100), invalid);
 			}
 
 
 			test( MouseEventsAreDispatchedCorrespondingly )
 			{
 				// INIT
-				shared_ptr< mocks::logging_mouse_input<view> > v(new mocks::logging_mouse_input<view>());
-				hosting_window f;
+				const auto v = make_shared< mocks::logging_mouse_input<view> >();
+				const placed_view pv = {	v, nullptr, make_rect(0, 0, 100, 100)	};
+				const auto ctl = make_shared<mocks::control>();
+				const auto hwnd = create_window(true, 100, 100);
+				win32::view_host vh(hwnd, context);
 
-				f.host->set_view(v);
+				::MoveWindow(hwnd, 0, 0, 100, 100, TRUE);
 
-				::MoveWindow(f.hwnd, 0, 0, 100, 50, TRUE);
+				ctl->views.push_back(pv);
+				vh.set_root(ctl);
 
 				// ACT
-				::SendMessage(f.hwnd, WM_LBUTTONDOWN, 0, pack_coordinates(-13, 1002));
-				::SendMessage(f.hwnd, WM_LBUTTONUP, 0, pack_coordinates(11222, -200));
-				::SendMessage(f.hwnd, WM_LBUTTONDOWN, 0, pack_coordinates(10, 10));
-				::SendMessage(f.hwnd, WM_LBUTTONDBLCLK, 0, pack_coordinates(12, 11));
-				::SendMessage(f.hwnd, WM_LBUTTONDBLCLK, 0, pack_coordinates(10, 13));
-				::SendMessage(f.hwnd, WM_MOUSEWHEEL, pack_wheel(23), pack_coordinates(122, 1111));
-				::SendMessage(f.hwnd, WM_MOUSEWHEEL, pack_wheel(-3), pack_coordinates(1010, 1311));
+				::SendMessage(hwnd, WM_LBUTTONDOWN, 0, pack_coordinates(13, 92));
+				::SendMessage(hwnd, WM_LBUTTONUP, 0, pack_coordinates(11, 90));
+				::SendMessage(hwnd, WM_LBUTTONDOWN, 0, pack_coordinates(10, 10));
+				::SendMessage(hwnd, WM_LBUTTONDBLCLK, 0, pack_coordinates(12, 11));
+				::SendMessage(hwnd, WM_LBUTTONDBLCLK, 0, pack_coordinates(10, 13));
+				::SendMessage(hwnd, WM_MOUSEWHEEL, pack_wheel(23), pack_screen_coordinates(hwnd, 29, 17));
+				::SendMessage(hwnd, WM_MOUSEWHEEL, pack_wheel(-3), pack_screen_coordinates(hwnd, 80, 70));
 
 				// ASSERT
 				mocks::mouse_event events1[] = {
-					mocks::me_down(mouse_input::left, 0, -13, 1002),
-					mocks::me_up(mouse_input::left, 0, 11222, -200),
+					mocks::me_enter(),
+					mocks::me_down(mouse_input::left, 0, 13, 92),
+					mocks::me_up(mouse_input::left, 0, 11, 90),
 					mocks::me_down(mouse_input::left, 0, 10, 10),
 					mocks::me_double_click(mouse_input::left, 0, 12, 11),
 					mocks::me_double_click(mouse_input::left, 0, 10, 13),
-					mocks::me_scroll(0, 122, 1111, 0, 23),
-					mocks::me_scroll(0, 1010, 1311, 0, -3),
+					mocks::me_scroll(0, 29, 17, 0, 23),
+					mocks::me_scroll(0, 80, 70, 0, -3),
 				};
 
 				assert_equal(events1, v->events_log);
@@ -268,26 +351,26 @@ namespace wpl
 				v->events_log.clear();
 
 				// ACT
-				::SendMessage(f.hwnd, WM_RBUTTONDOWN, 0, pack_coordinates(-13, 1002));
-				::SendMessage(f.hwnd, WM_RBUTTONUP, 0, pack_coordinates(112, -11));
-				::SendMessage(f.hwnd, WM_RBUTTONDOWN, 0, pack_coordinates(1, 1));
-				::SendMessage(f.hwnd, WM_RBUTTONDBLCLK, 0, pack_coordinates(12, 11));
-				::SendMessage(f.hwnd, WM_RBUTTONDBLCLK, 0, pack_coordinates(10, 13));
-				::SendMessage(f.hwnd, WM_RBUTTONUP, 0, pack_coordinates(-3, -7));
-				::SendMessage(f.hwnd, WM_MOUSEHWHEEL, pack_wheel(7), pack_coordinates(1, 2));
-				::SendMessage(f.hwnd, WM_MOUSEHWHEEL, pack_wheel(-11), pack_coordinates(717, 171));
-				::SendMessage(f.hwnd, WM_MOUSEWHEEL, pack_wheel(1), pack_coordinates(5, 9));
+				::SendMessage(hwnd, WM_RBUTTONDOWN, 0, pack_coordinates(13, 92));
+				::SendMessage(hwnd, WM_RBUTTONUP, 0, pack_coordinates(11, 90));
+				::SendMessage(hwnd, WM_RBUTTONDOWN, 0, pack_coordinates(1, 1));
+				::SendMessage(hwnd, WM_RBUTTONDBLCLK, 0, pack_coordinates(12, 11));
+				::SendMessage(hwnd, WM_RBUTTONDBLCLK, 0, pack_coordinates(10, 13));
+				::SendMessage(hwnd, WM_RBUTTONUP, 0, pack_coordinates(3, 7));
+				::SendMessage(hwnd, WM_MOUSEHWHEEL, pack_wheel(7), pack_screen_coordinates(hwnd, 1, 2));
+				::SendMessage(hwnd, WM_MOUSEHWHEEL, pack_wheel(-11), pack_screen_coordinates(hwnd, 71, 17));
+				::SendMessage(hwnd, WM_MOUSEWHEEL, pack_wheel(1), pack_screen_coordinates(hwnd, 5, 9));
 
 				// ASSERT
 				mocks::mouse_event events2[] = {
-					mocks::me_down(mouse_input::right, 0, -13, 1002),
-					mocks::me_up(mouse_input::right, 0, 112, -11),
+					mocks::me_down(mouse_input::right, 0, 13, 92),
+					mocks::me_up(mouse_input::right, 0, 11, 90),
 					mocks::me_down(mouse_input::right, 0, 1, 1),
 					mocks::me_double_click(mouse_input::right, 0, 12, 11),
 					mocks::me_double_click(mouse_input::right, 0, 10, 13),
-					mocks::me_up(mouse_input::right, 0, -3, -7),
+					mocks::me_up(mouse_input::right, 0, 3, 7),
 					mocks::me_scroll(0, 1, 2, 7, 0),
-					mocks::me_scroll(0, 717, 171, -11, 0),
+					mocks::me_scroll(0, 71, 17, -11, 0),
 					mocks::me_scroll(0, 5, 9, 0, 1),
 				};
 
@@ -297,14 +380,13 @@ namespace wpl
 				v->events_log.clear();
 
 				// ACT
-				::SendMessage(f.hwnd, WM_MOUSEMOVE, 0, pack_coordinates(-11, 12));
-				::SendMessage(f.hwnd, WM_MOUSEMOVE, 0, pack_coordinates(13, -14));
+				::SendMessage(hwnd, WM_MOUSEMOVE, 0, pack_coordinates(91, 12));
+				::SendMessage(hwnd, WM_MOUSEMOVE, 0, pack_coordinates(13, 41));
 
 				// ASSERT
 				mocks::mouse_event events3[] = {
-					mocks::me_enter(),
-					mocks::me_move(0, -11, 12),
-					mocks::me_move(0, 13, -14),
+					mocks::me_move(0, 91, 12),
+					mocks::me_move(0, 13, 41),
 				};
 
 				assert_equal(events3, v->events_log);
@@ -314,37 +396,42 @@ namespace wpl
 			test( ScrollEventsAreTranslatedToWindowClient )
 			{
 				// INIT
-				shared_ptr< mocks::logging_mouse_input<view> > v(new mocks::logging_mouse_input<view>());
-				hosting_window f;
+				const auto v = make_shared< mocks::logging_mouse_input<view> >();
+				const placed_view pv = {	v, nullptr, make_rect(0, 0, 100, 50)	};
+				const auto ctl = make_shared<mocks::control>();
+				const auto hwnd = create_window(true, 100, 100);
+				win32::view_host vh(hwnd, context);
 
-				f.host->set_view(v);
+				ctl->views.push_back(pv);
+				vh.set_root(ctl);
 
-				::MoveWindow(f.hwnd, 17, 151, 100, 50, TRUE);
+				::MoveWindow(hwnd, 17, 151, 100, 60, TRUE);
 
 				// ACT
-				::SendMessage(f.hwnd, WM_MOUSEWHEEL, pack_wheel(1), pack_coordinates(122, 1111));
-				::SendMessage(f.hwnd, WM_MOUSEHWHEEL, pack_wheel(-2), pack_coordinates(1010, 1311));
+				::SendMessage(hwnd, WM_MOUSEWHEEL, pack_wheel(1), pack_screen_coordinates(hwnd, 83, 10));
+				::SendMessage(hwnd, WM_MOUSEHWHEEL, pack_wheel(-2), pack_screen_coordinates(hwnd, 50, 37));
 
 				// ASSERT
 				mocks::mouse_event events1[] = {
-					mocks::me_scroll(0, 105, 960, 0, 1),
-					mocks::me_scroll(0, 993, 1160, -2, 0),
+					mocks::me_enter(),
+					mocks::me_scroll(0, 83, 10, 0, 1),
+					mocks::me_scroll(0, 50, 37, -2, 0),
 				};
 
 				assert_equal(events1, v->events_log);
 
 				// ACT
-				::MoveWindow(f.hwnd, 10, 20, 100, 50, TRUE);
+				::MoveWindow(hwnd, 10, 20, 100, 50, TRUE);
 				v->events_log.clear();
 
 				// ACT
-				::SendMessage(f.hwnd, WM_MOUSEHWHEEL, pack_wheel(1), pack_coordinates(122, 1111));
-				::SendMessage(f.hwnd, WM_MOUSEWHEEL, pack_wheel(-2), pack_coordinates(1010, 1311));
+				::SendMessage(hwnd, WM_MOUSEHWHEEL, pack_wheel(1), pack_screen_coordinates(hwnd, 17, 18));
+				::SendMessage(hwnd, WM_MOUSEWHEEL, pack_wheel(-2), pack_screen_coordinates(hwnd, 50, 40));
 
 				// ASSERT
 				mocks::mouse_event events2[] = {
-					mocks::me_scroll(0, 112, 1091, 1, 0),
-					mocks::me_scroll(0, 1000, 1291, 0, -2),
+					mocks::me_scroll(0, 17, 18, 1, 0),
+					mocks::me_scroll(0, 50, 40, 0, -2),
 				};
 
 				assert_equal(events2, v->events_log);
@@ -354,37 +441,46 @@ namespace wpl
 			test( MouseEventsAreDispatchedCorrespondinglyWithModifiers )
 			{
 				// INIT
-				shared_ptr< mocks::logging_mouse_input<view> > v(new mocks::logging_mouse_input<view>());
-				hosting_window f;
+				const auto v = make_shared< mocks::logging_mouse_input<view> >();
+				const placed_view pv = {	v, nullptr, make_rect(0, 0, 100, 50)	};
+				const auto ctl = make_shared<mocks::control>();
+				const auto hwnd = create_window(true, 100, 100);
+				win32::view_host vh(hwnd, context);
 
-				f.host->set_view(v);
+				ctl->views.push_back(pv);
+				vh.set_root(ctl);
 
-				::MoveWindow(f.hwnd, 0, 0, 100, 50, TRUE);
+				::MoveWindow(hwnd, 0, 0, 150, 100, TRUE);
 
 				// ACT
-				::SendMessage(f.hwnd, WM_KEYDOWN, VK_CONTROL, 0);
-				::SendMessage(f.hwnd, WM_LBUTTONDOWN, 0, pack_coordinates(0, 0));
-				::SendMessage(f.hwnd, WM_LBUTTONUP, 0, pack_coordinates(0, 0));
-				::SendMessage(f.hwnd, WM_LBUTTONDBLCLK, 0, pack_coordinates(0, 0));
-				::SendMessage(f.hwnd, WM_RBUTTONDOWN, 0, pack_coordinates(0, 0));
-				::SendMessage(f.hwnd, WM_RBUTTONUP, 0, pack_coordinates(0, 0));
-				::SendMessage(f.hwnd, WM_RBUTTONDBLCLK, 0, pack_coordinates(0, 0));
-				::SendMessage(f.hwnd, WM_KEYDOWN, VK_SHIFT, 0);
-				::SendMessage(f.hwnd, WM_LBUTTONDOWN, 0, pack_coordinates(0, 0));
-				::SendMessage(f.hwnd, WM_KEYUP, VK_CONTROL, 0);
-				::SendMessage(f.hwnd, WM_KEYUP, VK_SHIFT, 0);
-				::SendMessage(f.hwnd, WM_LBUTTONUP, 0, pack_coordinates(0, 0));
+				::SendMessage(hwnd, WM_LBUTTONDOWN, MK_CONTROL, pack_coordinates(0, 0));
+				::SendMessage(hwnd, WM_LBUTTONUP, MK_CONTROL | MK_RBUTTON, pack_coordinates(0, 0));
+				::SendMessage(hwnd, WM_LBUTTONDBLCLK, MK_CONTROL | MK_MBUTTON, pack_coordinates(0, 0));
+				::SendMessage(hwnd, WM_RBUTTONDOWN, MK_CONTROL | MK_LBUTTON, pack_coordinates(0, 0));
+				::SendMessage(hwnd, WM_RBUTTONUP, MK_CONTROL, pack_coordinates(0, 0));
+				::SendMessage(hwnd, WM_RBUTTONDBLCLK, MK_CONTROL, pack_coordinates(0, 0));
+				::SendMessage(hwnd, WM_LBUTTONDOWN, MK_CONTROL | MK_SHIFT, pack_coordinates(0, 0));
+				::SendMessage(hwnd, WM_LBUTTONUP, 0, pack_coordinates(0, 0));
+				::SendMessage(hwnd, WM_MOUSEMOVE, MK_SHIFT, pack_coordinates(10, 1));
+				::SendMessage(hwnd, WM_MOUSEMOVE, MK_LBUTTON, pack_coordinates(10, 11));
+				::SendMessage(hwnd, WM_MOUSEHWHEEL, pack_wheel(-11) | MK_LBUTTON, pack_screen_coordinates(hwnd, 71, 17));
+				::SendMessage(hwnd, WM_MOUSEWHEEL, pack_wheel(1) | MK_CONTROL, pack_screen_coordinates(hwnd, 5, 9));
 
 				// ASSERT
 				mocks::mouse_event reference[] = {
+					mocks::me_enter(),
 					mocks::me_down(mouse_input::left, keyboard_input::control, 0, 0),
-					mocks::me_up(mouse_input::left, keyboard_input::control, 0, 0),
-					mocks::me_double_click(mouse_input::left, keyboard_input::control, 0, 0),
-					mocks::me_down(mouse_input::right, keyboard_input::control, 0, 0),
+					mocks::me_up(mouse_input::left, keyboard_input::control | mouse_input::right, 0, 0),
+					mocks::me_double_click(mouse_input::left, keyboard_input::control | mouse_input::middle, 0, 0),
+					mocks::me_down(mouse_input::right, keyboard_input::control | mouse_input::left, 0, 0),
 					mocks::me_up(mouse_input::right, keyboard_input::control, 0, 0),
 					mocks::me_double_click(mouse_input::right, keyboard_input::control, 0, 0),
 					mocks::me_down(mouse_input::left, keyboard_input::control | keyboard_input::shift, 0, 0),
 					mocks::me_up(mouse_input::left, 0, 0, 0),
+					mocks::me_move(keyboard_input::shift, 10, 1),
+					mocks::me_move(mouse_input::left, 10, 11),
+					mocks::me_scroll(mouse_input::left, 71, 17, -11, 0),
+					mocks::me_scroll(keyboard_input::control, 5, 9, 0, 1),
 				};
 
 				assert_equal(reference, v->events_log);
@@ -394,58 +490,78 @@ namespace wpl
 			test( RequestingCaptureSetsHandleAndSetsUnderlyingCapture )
 			{
 				// INIT
-				shared_ptr< mocks::logging_mouse_input<view> > v(new mocks::logging_mouse_input<view>());
-				hosting_window f;
+				const auto hwnd = create_window(true, 100, 100);
+				win32::view_host vh(hwnd, context);
+				mouse_router_host &mrh = vh;
 				shared_ptr<void> h;
 
-				f.host->set_view(v);
-
-				::MoveWindow(f.hwnd, 0, 0, 150, 100, TRUE);
-				::SetFocus(f.hwnd);
+				::MoveWindow(hwnd, 0, 0, 150, 100, TRUE);
+				::SetFocus(hwnd);
 
 				// ACT
-				v->capture(h);
+				h = mrh.capture_mouse();
 
 				// ASSERT
 				assert_not_null(h);
-				assert_equal(f.hwnd, ::GetCapture());
+				assert_equal(hwnd, ::GetCapture());
 			}
 
 
-			test( SwitchingCaptureNotifiesView )
+			test( ReleasingRelinquishedCaptureDoesNotAffectNewCapture )
 			{
 				// INIT
-				shared_ptr< mocks::logging_mouse_input<view> > v1(new mocks::logging_mouse_input<view>());
-				shared_ptr< mocks::logging_mouse_input<view> > v2(new mocks::logging_mouse_input<view>());
-				hosting_window f1;
-				hosting_window f2;
-				shared_ptr<void> h1, h2;
+				const auto hwnd1 = create_window(true, 100, 100);
+				const auto hwnd2 = create_window(true, 100, 100);
+				win32::view_host vh1(hwnd1, context);
+				win32::view_host vh2(hwnd2, context);
 
-				f1.host->set_view(v1);
-				f2.host->set_view(v2);
+				::SetFocus(hwnd1);
+				auto h1 = vh1.capture_mouse();
 
-				::SetFocus(f1.hwnd);
-
-				v1->capture(h1);
-					
 				// ACT
-				v2->capture(h2);
+				auto h2 = vh2.capture_mouse();
+				h1.reset();
 
 				// ASSERT
-				assert_equal(1u, v1->capture_lost);
+				assert_equal(hwnd2, ::GetCapture());
 			}
+
+
+			//test( SwitchingCaptureNotifiesView )
+			//{
+			//	// INIT
+			//	shared_ptr< mocks::logging_mouse_input<view> > v1(new mocks::logging_mouse_input<view>());
+			//	shared_ptr< mocks::logging_mouse_input<view> > v2(new mocks::logging_mouse_input<view>());
+			//	hosting_window f1;
+			//	hosting_window f2;
+			//	shared_ptr<void> h1, h2;
+
+			//	f1.host->set_view(v1);
+			//	f2.host->set_view(v2);
+
+			//	::SetFocus(f1.hwnd);
+
+			//	v1->capture(h1);
+			//		
+			//	// ACT
+			//	v2->capture(h2);
+
+			//	// ASSERT
+			//	assert_equal(1u, v1->capture_lost);
+			//}
 
 
 			test( ResettingHandleReleasesTheCapture )
 			{
 				// INIT
-				shared_ptr< mocks::logging_mouse_input<view> > v(new mocks::logging_mouse_input<view>());
-				hosting_window f;
+				const auto hwnd = create_window(true, 100, 100);
+				win32::view_host vh(hwnd, context);
+				mouse_router_host &mrh = vh;
 				shared_ptr<void> h;
 
-				f.host->set_view(v);
-				::SetFocus(f.hwnd);
-				v->capture(h);
+				::MoveWindow(hwnd, 0, 0, 150, 100, TRUE);
+				::SetFocus(hwnd);
+				h = mrh.capture_mouse();
 
 				// ACT
 				h.reset();
@@ -455,17 +571,41 @@ namespace wpl
 			}
 
 
+			test( HostReactsOnCaptureRequestsFromViews )
+			{
+				// INIT
+				const auto v = make_shared<view>();
+				placed_view pv = { v, nullptr, make_rect(0, 0, 100, 100), };
+				const auto ctl = make_shared<mocks::control>();
+				const auto hwnd = create_window(true, 100, 100);
+				win32::view_host vh(hwnd, context);
+				shared_ptr<void> h;
+
+				ctl->views.push_back(pv);
+				vh.set_root(ctl);
+
+				// ACT
+				v->capture(h);
+
+				// ASSERT
+				assert_equal(hwnd, ::GetCapture());
+			}
+
+
 			test( FirstMouseMoveGeneratesMouseEnterPriorTheMouseMove )
 			{
 				// INIT
-				shared_ptr< mocks::logging_mouse_input<view> > v(new mocks::logging_mouse_input<view>());
-				hosting_window f;
-				shared_ptr<void> h;
+				const auto v = make_shared< mocks::logging_mouse_input<view> >();
+				const placed_view pv = {	v, nullptr, make_rect(0, 0, 100, 50)	};
+				const auto ctl = make_shared<mocks::control>();
+				const auto hwnd = create_window(true, 100, 100);
+				win32::view_host vh(hwnd, context);
 
-				f.host->set_view(v);
+				ctl->views.push_back(pv);
+				vh.set_root(ctl);
 
 				// ACT
-				::SendMessage(f.hwnd, WM_MOUSEMOVE, 0, pack_coordinates(0, 0));
+				::SendMessage(hwnd, WM_MOUSEMOVE, 0, pack_coordinates(0, 0));
 
 				// ASSERT
 				mocks::mouse_event events[] = {
@@ -476,7 +616,7 @@ namespace wpl
 				assert_equal(events, v->events_log);
 
 				// ACT
-				::SendMessage(f.hwnd, WM_MOUSEMOVE, 0, pack_coordinates(7, 17));
+				::SendMessage(hwnd, WM_MOUSEMOVE, 0, pack_coordinates(7, 17));
 
 				// ASSERT
 				mocks::mouse_event events2[] = {
@@ -492,21 +632,24 @@ namespace wpl
 			test( MouseLeaveEventCausesNotification )
 			{
 				// INIT
-				shared_ptr< mocks::logging_mouse_input<view> > v(new mocks::logging_mouse_input<view>());
-				hosting_window f;
-				shared_ptr<void> h;
+				const auto v = make_shared< mocks::logging_mouse_input<view> >();
+				const placed_view pv = {	v, nullptr, make_rect(0, 0, 100, 50)	};
+				const auto ctl = make_shared<mocks::control>();
+				const auto hwnd = create_window(true, 100, 100);
+				win32::view_host vh(hwnd, context);
 
-				f.host->set_view(v);
+				ctl->views.push_back(pv);
+				vh.set_root(ctl);
 
-				::SendMessage(f.hwnd, WM_MOUSEMOVE, 0, pack_coordinates(0, 0));
+				::SendMessage(hwnd, WM_MOUSEMOVE, 0, pack_coordinates(1, 20));
 
 				// ACT
-				::SendMessage(f.hwnd, WM_MOUSELEAVE, 0, 0);
+				::SendMessage(hwnd, WM_MOUSELEAVE, 0, 0);
 
 				// ASSERT
 				mocks::mouse_event events[] = {
 					mocks::me_enter(),
-					mocks::me_move(0, 0, 0),
+					mocks::me_move(0, 1, 20),
 					mocks::me_leave(),
 				};
 
@@ -517,17 +660,20 @@ namespace wpl
 			test( MouseEnterCanBeGeneratedAgainAfterMouseLeave )
 			{
 				// INIT
-				shared_ptr< mocks::logging_mouse_input<view> > v(new mocks::logging_mouse_input<view>());
-				hosting_window f;
-				shared_ptr<void> h;
+				const auto v = make_shared< mocks::logging_mouse_input<view> >();
+				const placed_view pv = {	v, nullptr, make_rect(0, 0, 100, 50)	};
+				const auto ctl = make_shared<mocks::control>();
+				const auto hwnd = create_window(true, 100, 100);
+				win32::view_host vh(hwnd, context);
 
-				f.host->set_view(v);
+				ctl->views.push_back(pv);
+				vh.set_root(ctl);
 
-				::SendMessage(f.hwnd, WM_MOUSEMOVE, 0, pack_coordinates(0, 0));
-				::SendMessage(f.hwnd, WM_MOUSELEAVE, 0, 0);
+				::SendMessage(hwnd, WM_MOUSEMOVE, 0, pack_coordinates(0, 0));
+				::SendMessage(hwnd, WM_MOUSELEAVE, 0, 0);
 
 				// ACT
-				::SendMessage(f.hwnd, WM_MOUSEMOVE, 0, pack_coordinates(1, 2));
+				::SendMessage(hwnd, WM_MOUSEMOVE, 0, pack_coordinates(1, 2));
 
 				// ASSERT
 				mocks::mouse_event events[] = {
@@ -542,48 +688,25 @@ namespace wpl
 			}
 
 
-			test( KeyboardInputIsRedirectedToTheViewIfNoTabbedControls )
-			{
-				// INIT
-				hosting_window f;
-				shared_ptr< mocks::logging_key_input<view> > v(new mocks::logging_key_input<view>);
-
-				f.host->set_view(v);
-				::ValidateRect(f.hwnd, NULL);
-
-				// ACT
-				::SendMessage(f.hwnd, WM_KEYDOWN, VK_TAB, 0);
-				::SendMessage(f.hwnd, WM_KEYUP, VK_TAB, 0);
-				::SendMessage(f.hwnd, WM_KEYDOWN, 'Z', 0);
-				::SendMessage(f.hwnd, WM_KEYUP, 'Z', 0);
-
-				// ASSERT
-				mocks::keyboard_event reference[] = {
-					{ mocks::keyboard_event::focusin, 0, 0 },
-					{ mocks::keyboard_event::keydown, 'Z', 0 },
-					{ mocks::keyboard_event::keyup, 'Z', 0 },
-				};
-
-				assert_equal(reference, v->events);
-			}
-
-
 			test( KeyMessagesGetKeyInputCallbacksCalled )
 			{
 				// INIT
-				shared_ptr< mocks::logging_key_input<view> > v(new mocks::logging_key_input<view>());
-				hosting_window f;
+				const auto v = make_shared< mocks::logging_key_input<view> >();
+				const placed_view pv = {	v, nullptr, make_rect(0, 0, 100, 50), 1	};
+				const auto ctl = make_shared<mocks::control>();
+				const auto hwnd = create_window(true);
+				win32::view_host vh(hwnd, context);
 
-				f.host->set_view(v);
-				v->request_focus(v);
-				v->events.clear();
+				ctl->views.push_back(pv);
+				vh.set_root(ctl);
 
 				// ACT
-				::SendMessage(f.hwnd, WM_KEYDOWN, VK_LEFT, 0);
-				::SendMessage(f.hwnd, WM_KEYDOWN, VK_NEXT, 0);
+				::SendMessage(hwnd, WM_KEYDOWN, VK_LEFT, 0);
+				::SendMessage(hwnd, WM_KEYDOWN, VK_NEXT, 0);
 
 				// ASSERT
 				mocks::keyboard_event reference1[] = {
+					{ mocks::keyboard_event::focusin, 0, 0 },
 					{ mocks::keyboard_event::keydown, keyboard_input::left, 0 },
 					{ mocks::keyboard_event::keydown, keyboard_input::page_down, 0 },
 				};
@@ -591,19 +714,32 @@ namespace wpl
 				assert_equal(reference1, v->events);
 
 				// ACT
-				::SendMessage(f.hwnd, WM_KEYUP, VK_RIGHT, 0);
-				::SendMessage(f.hwnd, WM_KEYDOWN, VK_UP, 0);
-				::SendMessage(f.hwnd, WM_KEYUP, VK_DOWN, 0);
-				::SendMessage(f.hwnd, WM_KEYUP, VK_PRIOR, 0);
+				::SendMessage(hwnd, WM_KEYUP, VK_RIGHT, 0);
+				::SendMessage(hwnd, WM_KEYDOWN, VK_UP, 0);
+				::SendMessage(hwnd, WM_KEYUP, VK_DOWN, 0);
+				::SendMessage(hwnd, WM_KEYUP, VK_PRIOR, 0);
+				::SendMessage(hwnd, WM_KEYDOWN, VK_HOME, 0);
+				::SendMessage(hwnd, WM_KEYDOWN, VK_END, 0);
+				::SendMessage(hwnd, WM_KEYDOWN, VK_RETURN, 0);
+				::SendMessage(hwnd, WM_KEYDOWN, 'A', 0);
+				::SendMessage(hwnd, WM_KEYDOWN, 'a', 0);
+				::SendMessage(hwnd, WM_KEYUP, 'a', 0);
 
 				// ASSERT
 				mocks::keyboard_event reference2[] = {
+					{ mocks::keyboard_event::focusin, 0, 0 },
 					{ mocks::keyboard_event::keydown, keyboard_input::left, 0 },
 					{ mocks::keyboard_event::keydown, keyboard_input::page_down, 0 },
 					{ mocks::keyboard_event::keyup, keyboard_input::right, 0 },
 					{ mocks::keyboard_event::keydown, keyboard_input::up, 0 },
 					{ mocks::keyboard_event::keyup, keyboard_input::down, 0 },
 					{ mocks::keyboard_event::keyup, keyboard_input::page_up, 0 },
+					{ mocks::keyboard_event::keydown, keyboard_input::home, 0 },
+					{ mocks::keyboard_event::keydown, keyboard_input::end, 0 },
+					{ mocks::keyboard_event::keydown, keyboard_input::enter, 0 },
+					{ mocks::keyboard_event::keydown, 'A', 0 },
+					{ mocks::keyboard_event::keydown, 'a', 0 },
+					{ mocks::keyboard_event::keyup, 'a', 0 },
 				};
 
 				assert_equal(reference2, v->events);
@@ -613,14 +749,19 @@ namespace wpl
 			test( ControlAndShiftAreNotDeliveredAsKeyDownAndKeyUp )
 			{
 				// INIT
-				shared_ptr< mocks::logging_key_input<view> > v(new mocks::logging_key_input<view>());
-				hosting_window f;
+				const auto v = make_shared< mocks::logging_key_input<view> >();
+				const placed_view pv = {	v, nullptr, make_rect(0, 0, 100, 50), 1	};
+				const auto ctl = make_shared<mocks::control>();
+				const auto hwnd = create_window(true);
+				win32::view_host vh(hwnd, context);
 
-				f.host->set_view(v);
+				ctl->views.push_back(pv);
+				vh.set_root(ctl);
+				v->events.clear();
 
 				// ACT
-				::SendMessage(f.hwnd, WM_KEYDOWN, VK_CONTROL, 0);
-				::SendMessage(f.hwnd, WM_KEYUP, VK_SHIFT, 0);
+				::SendMessage(hwnd, WM_KEYDOWN, VK_CONTROL, 0);
+				::SendMessage(hwnd, WM_KEYUP, VK_SHIFT, 0);
 
 				// ASSERT
 				assert_is_empty(v->events);
@@ -630,17 +771,20 @@ namespace wpl
 			test( KeyMessageIsAccompaniedWithShiftAndControl )
 			{
 				// INIT
-				shared_ptr< mocks::logging_key_input<view> > v(new mocks::logging_key_input<view>());
-				hosting_window f;
+				const auto v = make_shared< mocks::logging_key_input<view> >();
+				const placed_view pv = {	v, nullptr, make_rect(0, 0, 100, 50), 1	};
+				const auto ctl = make_shared<mocks::control>();
+				const auto hwnd = create_window(true);
+				win32::view_host vh(hwnd, context);
 
-				f.host->set_view(v);
-				v->request_focus(v);
+				ctl->views.push_back(pv);
+				vh.set_root(ctl);
 				v->events.clear();
 
 				// ACT
-				::SendMessage(f.hwnd, WM_KEYDOWN, VK_CONTROL, 0);
-				::SendMessage(f.hwnd, WM_KEYDOWN, 'A', 0);
-				::SendMessage(f.hwnd, WM_KEYUP, VK_LEFT, 0);
+				::SendMessage(hwnd, WM_KEYDOWN, VK_CONTROL, 0);
+				::SendMessage(hwnd, WM_KEYDOWN, 'A', 0);
+				::SendMessage(hwnd, WM_KEYUP, VK_LEFT, 0);
 
 				// ASSERT
 				mocks::keyboard_event reference1[] = {
@@ -651,9 +795,9 @@ namespace wpl
 				assert_equal(reference1, v->events);
 
 				// ACT
-				::SendMessage(f.hwnd, WM_KEYDOWN, VK_SHIFT, 0);
-				::SendMessage(f.hwnd, WM_KEYDOWN, 'B', 0);
-				::SendMessage(f.hwnd, WM_KEYUP, 'N', 0);
+				::SendMessage(hwnd, WM_KEYDOWN, VK_SHIFT, 0);
+				::SendMessage(hwnd, WM_KEYDOWN, 'B', 0);
+				::SendMessage(hwnd, WM_KEYUP, 'N', 0);
 
 				// ASSERT
 				mocks::keyboard_event reference2[] = {
@@ -670,20 +814,23 @@ namespace wpl
 			test( KeyMessageIsNotAccompaniedWithShiftAndControlAfterShiftAndControlAreReleased )
 			{
 				// INIT
-				shared_ptr< mocks::logging_key_input<view> > v(new mocks::logging_key_input<view>());
-				hosting_window f;
+				const auto v = make_shared< mocks::logging_key_input<view> >();
+				const placed_view pv = {	v, nullptr, make_rect(0, 0, 100, 50), 1	};
+				const auto ctl = make_shared<mocks::control>();
+				const auto hwnd = create_window(true);
+				win32::view_host vh(hwnd, context);
 
-				f.host->set_view(v);
-				v->request_focus(v);
+				ctl->views.push_back(pv);
+				vh.set_root(ctl);
 				v->events.clear();
 
-				::SendMessage(f.hwnd, WM_KEYDOWN, VK_CONTROL, 0);
-				::SendMessage(f.hwnd, WM_KEYDOWN, VK_SHIFT, 0);
+				::SendMessage(hwnd, WM_KEYDOWN, VK_CONTROL, 0);
+				::SendMessage(hwnd, WM_KEYDOWN, VK_SHIFT, 0);
 
 				// ACT
-				::SendMessage(f.hwnd, WM_KEYUP, VK_CONTROL, 0);
-				::SendMessage(f.hwnd, WM_KEYDOWN, 'T', 0);
-				::SendMessage(f.hwnd, WM_KEYUP, VK_HOME, 0);
+				::SendMessage(hwnd, WM_KEYUP, VK_CONTROL, 0);
+				::SendMessage(hwnd, WM_KEYDOWN, 'T', 0);
+				::SendMessage(hwnd, WM_KEYUP, VK_HOME, 0);
 
 				// ASSERT
 				mocks::keyboard_event reference1[] = {
@@ -694,9 +841,9 @@ namespace wpl
 				assert_equal(reference1, v->events);
 
 				// ACT
-				::SendMessage(f.hwnd, WM_KEYUP, VK_SHIFT, 0);
-				::SendMessage(f.hwnd, WM_KEYDOWN, VK_RETURN, 0);
-				::SendMessage(f.hwnd, WM_KEYDOWN, VK_END, 0);
+				::SendMessage(hwnd, WM_KEYUP, VK_SHIFT, 0);
+				::SendMessage(hwnd, WM_KEYDOWN, VK_RETURN, 0);
+				::SendMessage(hwnd, WM_KEYDOWN, VK_END, 0);
 
 				// ASSERT
 				mocks::keyboard_event reference2[] = {
@@ -713,245 +860,183 @@ namespace wpl
 			test( NativeViewWindowsAreReparented )
 			{
 				// INIT
-				shared_ptr<mocks::native_view> v(new mocks::native_view);
-				hosting_window f;
+				const placed_view pv[] = {
+					{	nullptr, make_shared<mocks::native_view_window>(), make_rect(0, 0, 20, 50)	},
+					{	nullptr, make_shared<mocks::native_view_window>(), make_rect(15, 30, 70, 50)	},
+				};
+				const auto ctl = make_shared<mocks::control>();
+				const auto hwnd1 = create_window(true, 100, 100);
+				win32::view_host vh1(hwnd1, context);
 
-				v->response.push_back(make_pair(shared_ptr<mocks::native_view_window>(new mocks::native_view_window), view_location()));
-				v->response.push_back(make_pair(shared_ptr<mocks::native_view_window>(new mocks::native_view_window), view_location()));
-				f.host->set_view(v);
-
-				// ACT
-				::MoveWindow(f.hwnd, 0, 0, 100, 50, TRUE);
-
-				// ASSERT
-				assert_is_false(v->container_was_dirty);
-				assert_equal(f.hwnd, ::GetParent(v->response[0].first->hwnd()));
-				assert_equal(f.hwnd, ::GetParent(v->response[1].first->hwnd()));
+				ctl->views.assign(begin(pv), end(pv));
 
 				// ACT
-				::MoveWindow(f.hwnd, 0, 0, 101, 51, TRUE);
+				vh1.set_root(ctl);
 
 				// ASSERT
-				assert_is_false(v->container_was_dirty);
+				assert_equal(hwnd1, ::GetParent(pv[0].native->get_window()));
+				assert_equal(hwnd1, ::GetParent(pv[1].native->get_window()));
+
+				// INIT
+				const auto hwnd2 = create_window(true, 100, 100);
+				win32::view_host vh2(hwnd2, context);
+
+				// ACT
+				vh2.set_root(ctl);
+
+				// ASSERT
+				assert_equal(hwnd2, ::GetParent(pv[0].native->get_window()));
+				assert_equal(hwnd2, ::GetParent(pv[1].native->get_window()));
 			}
 
 
 			test( NativeViewWindowsAreResizedAccordinglyToTheirLocations )
 			{
 				// INIT
-				shared_ptr<mocks::native_view> v(new mocks::native_view);
-				hosting_window f;
-				view_location l1 = { 10, 17, 100, 134 }, l2 = { 100, 1, 91, 200 }, l3 = { 10, 10, 100, 200 };
-				shared_ptr<mocks::native_view_window> children[] = {
-					shared_ptr<mocks::native_view_window>(new mocks::native_view_window), shared_ptr<mocks::native_view_window>(new mocks::native_view_window),
+				const placed_view pv[] = {
+					{	nullptr, make_shared<mocks::native_view_window>(), make_rect(10, 17, 110, 151)	},
+					{	nullptr, make_shared<mocks::native_view_window>(), make_rect(100, 1, 191, 201)	},
+					{	nullptr, make_shared<mocks::native_view_window>(), make_rect(10, 10, 110, 210)	},
 				};
+				const auto ctl = make_shared<mocks::control>();
+				const auto hwnd = create_window(true, 100, 100);
+				win32::view_host vh(hwnd, context);
 
-				v->response.push_back(make_pair(children[0], l1));
-				v->response.push_back(make_pair(children[1], l2));
-				f.host->set_view(v);
-
-				// ACT
-				::MoveWindow(f.hwnd, 0, 0, 100, 50, TRUE);
-
-				// ASSERT
-				assert_equal(rect(10, 17, 100, 134), get_window_rect(children[0]->hwnd()));
-				assert_equal(rect(100, 1, 91, 200), get_window_rect(children[1]->hwnd()));
-
-				// INIT
-				v->response[0].second = l3;
-				v->response.resize(1);
+				ctl->views.assign(begin(pv), end(pv));
 
 				// ACT
-				::MoveWindow(f.hwnd, 0, 0, 101, 51, TRUE);
+				vh.set_root(ctl);
 
 				// ASSERT
-				assert_equal(rect(10, 10, 100, 200), get_window_rect(children[0]->hwnd()));
-				assert_equal(rect(100, 1, 91, 200), get_window_rect(children[1]->hwnd()));
+				assert_equal(rect(10, 17, 100, 134), get_window_rect(pv[0].native->get_window()));
+				assert_equal(rect(100, 1, 91, 200), get_window_rect(pv[1].native->get_window()));
+				assert_equal(rect(10, 10, 100, 200), get_window_rect(pv[2].native->get_window()));
 			}
 
 
-			test( ResettingViewDetachesFromEventsOfThePreviousView )
-			{
-				// INIT
-				shared_ptr<view> v(new view);
-				hosting_window f;
-				shared_ptr<void> capture;
+			//test( ResettingViewDetachesFromEventsOfThePreviousView )
+			//{
+			//	// INIT
+			//	shared_ptr<view> v(new view);
+			//	hosting_window f;
+			//	shared_ptr<void> capture;
 
-				f.host->set_view(v);
-				::MoveWindow(f.hwnd, 0, 0, 500, 400, TRUE);
-				::ValidateRect(f.hwnd, NULL);
+			//	f.host->set_view(v);
+			//	::MoveWindow(hwnd, 0, 0, 500, 400, TRUE);
+			//	::ValidateRect(hwnd, NULL);
 
-				// ACT
-				f.host->set_view(shared_ptr<view>());
+			//	// ACT
+			//	f.host->set_view(shared_ptr<view>());
 
-				// ASSERT
-				assert_is_true(v.unique());
+			//	// ASSERT
+			//	assert_is_true(v.unique());
 
-				// ACT
-				v->invalidate(0);
-				v->capture(capture);
+			//	// ACT
+			//	v->invalidate(0);
+			//	v->capture(capture);
 
-				// ASSERT
-				assert_is_false(!!::GetUpdateRect(f.hwnd, NULL, FALSE));
-				assert_equal(HWND(), ::GetCapture());
-				assert_null(capture);
-			}
-
-
-			test( ForcingLayoutSignalLeadsToViewResize )
-			{
-				// INIT
-				shared_ptr< mocks::logging_visual<view> > v(new mocks::logging_visual<view>);
-				hosting_window f;
-				RECT rc;
-
-				f.host->set_view(v);
-				::MoveWindow(f.hwnd, 0, 0, 500, 400, TRUE);
-				::GetClientRect(f.hwnd, &rc);
-				v->resize_log.clear();
-
-				// ACT
-				v->force_layout();
-
-				// ASSERT
-				assert_equal(1u, v->resize_log.size());
-				assert_equal(rc.right, v->resize_log[0].first);
-				assert_equal(rc.bottom, v->resize_log[0].second);
-			}
+			//	// ASSERT
+			//	assert_is_false(!!::GetUpdateRect(hwnd, NULL, FALSE));
+			//	assert_equal(HWND(), ::GetCapture());
+			//	assert_null(capture);
+			//}
 
 
-			test( NativeViewWindowsAreResizedAccordinglyToTheirLocationsOnForceLayout )
-			{
-				// INIT
-				shared_ptr<mocks::native_view> v(new mocks::native_view);
-				hosting_window f;
-				view_location l1 = { 10, 17, 100, 134 }, l2 = { 100, 1, 91, 200 };
-				shared_ptr<mocks::native_view_window> children[] = {
-					shared_ptr<mocks::native_view_window>(new mocks::native_view_window), shared_ptr<mocks::native_view_window>(new mocks::native_view_window),
-				};
+			//test( ForcingLayoutSignalLeadsToViewResize )
+			//{
+			//	// INIT
+			//	shared_ptr< mocks::logging_visual<view> > v(new mocks::logging_visual<view>);
+			//	hosting_window f;
+			//	RECT rc;
 
-				v->response.push_back(make_pair(children[0], l1));
-				v->response.push_back(make_pair(children[1], l2));
-				f.host->set_view(v);
-				::MoveWindow(f.hwnd, 0, 0, 100, 100, TRUE);
-				::MoveWindow(children[0]->hwnd(), 0, 0, 1, 1, TRUE);
-				::MoveWindow(children[1]->hwnd(), 0, 0, 1, 1, TRUE);
+			//	f.host->set_view(v);
+			//	::MoveWindow(hwnd, 0, 0, 500, 400, TRUE);
+			//	::GetClientRect(hwnd, &rc);
+			//	v->resize_log.clear();
 
-				// ACT
-				v->force_layout();
+			//	// ACT
+			//	v->force_layout();
 
-				// ASSERT
-				assert_equal(rect(10, 17, 100, 134), get_window_rect(children[0]->hwnd()));
-				assert_equal(rect(100, 1, 91, 200), get_window_rect(children[1]->hwnd()));
-			}
+			//	// ASSERT
+			//	assert_equal(1u, v->resize_log.size());
+			//	assert_equal(rc.right, v->resize_log[0].first);
+			//	assert_equal(rc.bottom, v->resize_log[0].second);
+			//}
+
+
+			//test( NativeViewWindowsAreResizedAccordinglyToTheirLocationsOnForceLayout )
+			//{
+			//	// INIT
+			//	shared_ptr<mocks::native_view> v(new mocks::native_view);
+			//	hosting_window f;
+			//	view_location l1 = { 10, 17, 100, 134 }, l2 = { 100, 1, 91, 200 };
+			//	shared_ptr<mocks::native_view_window> children[] = {
+			//		shared_ptr<mocks::native_view_window>(new mocks::native_view_window), shared_ptr<mocks::native_view_window>(new mocks::native_view_window),
+			//	};
+
+			//	v->response.push_back(make_pair(children[0], l1));
+			//	v->response.push_back(make_pair(children[1], l2));
+			//	f.host->set_view(v);
+			//	::MoveWindow(hwnd, 0, 0, 100, 100, TRUE);
+			//	::MoveWindow(children[0]->hwnd(), 0, 0, 1, 1, TRUE);
+			//	::MoveWindow(children[1]->hwnd(), 0, 0, 1, 1, TRUE);
+
+			//	// ACT
+			//	v->force_layout();
+
+			//	// ASSERT
+			//	assert_equal(rect(10, 17, 100, 134), get_window_rect(children[0]->hwnd()));
+			//	assert_equal(rect(100, 1, 91, 200), get_window_rect(children[1]->hwnd()));
+			//}
 
 
 			test( SettingViewResizesItToAClient )
 			{
 				// INIT
-				hosting_window f;
-				shared_ptr< mocks::logging_visual<view> > v(new mocks::logging_visual<view>);
-				RECT rc;
-
-				::MoveWindow(f.hwnd, 0, 0, 500, 400, TRUE);
-				::GetClientRect(f.hwnd, &rc);
+				auto ctl = make_shared<mocks::control>();
+				auto hwnd = create_window();
+				win32::view_host vh(hwnd, context);
 
 				// ACT
-				f.host->set_view(v);
+				vh.set_root(ctl);
 
 				// ASSERT
-				assert_equal(1u, v->resize_log.size());
-				assert_equal(rc.right, v->resize_log[0].first);
-				assert_equal(rc.bottom, v->resize_log[0].second);
-
-				// INIT
-				f.host->set_view(shared_ptr<view>());
-				::MoveWindow(f.hwnd, 0, 0, 203, 150, TRUE);
-				::GetClientRect(f.hwnd, &rc);
+				assert_equal(1u, ctl->size_log.size());
+				assert_equal(get_client_rect(hwnd), ctl->size_log.back());
 
 				// ACT
-				f.host->set_view(v);
+				vh.set_root(nullptr);
+				::MoveWindow(hwnd, 0, 0, 203, 150, TRUE);
+				vh.set_root(ctl);
 
 				// ASSERT
-				assert_equal(2u, v->resize_log.size());
-				assert_equal(rc.right, v->resize_log[1].first);
-				assert_equal(rc.bottom, v->resize_log[1].second);
+				assert_equal(2u, ctl->size_log.size());
+				assert_equal(get_client_rect(hwnd), ctl->size_log.back());
 			}
 
 
-			test( KeyboardInputIsRedirectedToTheFirstControlInOrderOnTab )
+			test( FocusMovesAccordinglyToTabOrderAfterFocusRequest )
 			{
 				// INIT
-				hosting_window f;
-				shared_ptr<container> c(new container);
-				shared_ptr< mocks::logging_key_input<view> > v1(new mocks::logging_key_input<view>);
-				shared_ptr< mocks::logging_key_input<view> > v2(new mocks::logging_key_input<view>);
-				shared_ptr< mocks::logging_key_input<view> > v3(new mocks::logging_key_input<view>);
-				shared_ptr<stack> s(new stack(0, true));
-
-				c->set_layout(s);
-				c->add_view(v1, 5), s->add(10);
-				c->add_view(v2, 2), s->add(10);
-				c->add_view(v3, 1000), s->add(10);
-				f.host->set_view(c);
-				::ValidateRect(f.hwnd, NULL);
-
-				// ACT
-				::SendMessage(f.hwnd, WM_KEYDOWN, VK_TAB, 0);
-
-				// ASSERT
-				mocks::keyboard_event reference1[] = {
-					{ mocks::keyboard_event::focusin, 0, 0 },
+				shared_ptr< mocks::logging_key_input<view> > v[] = {
+					make_shared< mocks::logging_key_input<view> >(),
+					make_shared< mocks::logging_key_input<view> >(),
+					make_shared< mocks::logging_key_input<view> >(),
 				};
-
-				assert_is_empty(v1->events);
-				assert_equal(reference1, v2->events);
-				assert_is_empty(v3->events);
-
-				// INIT
-				v2->events.clear();
-
-				// ACT
-				::SendMessage(f.hwnd, WM_KEYUP, VK_TAB, 0);
-				::SendMessage(f.hwnd, WM_KEYDOWN, 'Z', 0);
-				::SendMessage(f.hwnd, WM_KEYDOWN, VK_SHIFT, 0);
-				::SendMessage(f.hwnd, WM_KEYDOWN, 'A', 0);
-				::SendMessage(f.hwnd, WM_KEYUP, 'Z', 0);
-
-				// ASSERT
-				mocks::keyboard_event reference2[] = {
-					{ mocks::keyboard_event::keydown, 'Z', 0 },
-					{ mocks::keyboard_event::keydown, 'A', keyboard_input::shift },
-					{ mocks::keyboard_event::keyup, 'Z', keyboard_input::shift },
+				const placed_view pv[] = {
+					{	v[0], nullptr, make_rect(10, 17, 110, 151), 2	},
+					{	v[1], nullptr, make_rect(100, 1, 191, 201), 1	},
+					{	v[2], nullptr, make_rect(10, 10, 110, 210), 3	},
 				};
+				const auto ctl = make_shared<mocks::control>();
+				const auto hwnd = create_window(true, 100, 100);
+				win32::view_host vh(hwnd, context);
 
-				assert_is_empty(v1->events);
-				assert_equal(reference2, v2->events);
-				assert_is_empty(v3->events);
-			}
-
-
-			test( FocusIsCycledAccordinglyToTabOrder )
-			{
-				// INIT
-				hosting_window f;
-				shared_ptr<container> c(new container);
-				shared_ptr< mocks::logging_key_input<view> > v1(new mocks::logging_key_input<view>);
-				shared_ptr< mocks::logging_key_input<view> > v2(new mocks::logging_key_input<view>);
-				shared_ptr< mocks::logging_key_input<view> > v3(new mocks::logging_key_input<view>);
-				shared_ptr<stack> s(new stack(0, true));
-
-				c->set_layout(s);
-				c->add_view(v1, 5), s->add(10);
-				c->add_view(v2, 2), s->add(10);
-				c->add_view(v3, 1000), s->add(10);
-				f.host->set_view(c);
-				::ValidateRect(f.hwnd, NULL);
+				ctl->views.assign(begin(pv), end(pv));
+				vh.set_root(ctl);
 
 				// ACT
-				::SendMessage(f.hwnd, WM_KEYDOWN, VK_TAB, 0);
-				::SendMessage(f.hwnd, WM_KEYUP, VK_TAB, 0);
-				::SendMessage(f.hwnd, WM_KEYDOWN, VK_TAB, 0);
+				::SendMessage(hwnd, WM_KEYDOWN, VK_TAB, 0);
 
 				// ASSERT
 				mocks::keyboard_event reference_in[] = {
@@ -962,20 +1047,14 @@ namespace wpl
 					{ mocks::keyboard_event::focusout, 0, 0 },
 				};
 
-				assert_equal(reference_in, v1->events);
-				assert_equal(reference_inout, v2->events);
-				assert_is_empty(v3->events);
+				assert_equal(reference_in, v[0]->events);
+				assert_equal(reference_inout, v[1]->events);
+				assert_is_empty(v[2]->events);
 
 				// ACT
-				::SendMessage(f.hwnd, WM_KEYDOWN, VK_TAB, 0);
-
-				// ASSERT
-				assert_equal(reference_inout, v1->events);
-				assert_equal(reference_inout, v2->events);
-				assert_equal(reference_in, v3->events);
-
-				// ACT
-				::SendMessage(f.hwnd, WM_KEYDOWN, VK_TAB, 0);
+				::SendMessage(hwnd, WM_KEYDOWN, VK_SHIFT, 0);
+				::SendMessage(hwnd, WM_KEYDOWN, VK_TAB, 0);
+				::SendMessage(hwnd, WM_KEYUP, VK_SHIFT, 0);
 
 				// ASSERT
 				mocks::keyboard_event reference_inoutin[] = {
@@ -984,282 +1063,149 @@ namespace wpl
 					{ mocks::keyboard_event::focusin, 0, 0 },
 				};
 
-				assert_equal(reference_inout, v1->events);
-				assert_equal(reference_inoutin, v2->events);
-				assert_equal(reference_inout, v3->events);
-			}
-
-
-			test( FocusIsCycledBackwardsAccordinglyToTabOrder )
-			{
-				// INIT
-				hosting_window f;
-				shared_ptr<container> c(new container);
-				shared_ptr< mocks::logging_key_input<view> > v1(new mocks::logging_key_input<view>);
-				shared_ptr< mocks::logging_key_input<view> > v2(new mocks::logging_key_input<view>);
-				shared_ptr< mocks::logging_key_input<view> > v3(new mocks::logging_key_input<view>);
-				shared_ptr<stack> s(new stack(0, true));
-
-				c->set_layout(s);
-				c->add_view(v1, 3), s->add(10);
-				c->add_view(v2, 2), s->add(10);
-				c->add_view(v3, 1), s->add(10);
-				f.host->set_view(c);
-				::ValidateRect(f.hwnd, NULL);
-
-				// ACT
-				::SendMessage(f.hwnd, WM_KEYDOWN, VK_SHIFT, 0);
-				::SendMessage(f.hwnd, WM_KEYDOWN, VK_TAB, 0);
-
-				// ASSERT
-				mocks::keyboard_event reference_in[] = {
-					{ mocks::keyboard_event::focusin, 0, 0 },
-				};
-
-				assert_equal(reference_in, v1->events);
-				assert_is_empty(v2->events);
-				assert_is_empty(v3->events);
-
-				// ACT
-				::SendMessage(f.hwnd, WM_KEYUP, VK_TAB, 0);
-				::SendMessage(f.hwnd, WM_KEYDOWN, VK_TAB, 0);
-				::SendMessage(f.hwnd, WM_KEYDOWN, VK_TAB, 0);
-
-				// ASSERT
-				mocks::keyboard_event reference_inout[] = {
-					{ mocks::keyboard_event::focusin, 0, 0 },
-					{ mocks::keyboard_event::focusout, 0, 0 },
-				};
-
-				assert_equal(reference_inout, v1->events);
-				assert_equal(reference_inout, v2->events);
-				assert_equal(reference_in, v3->events);
+				assert_equal(reference_inout, v[0]->events);
+				assert_equal(reference_inoutin, v[1]->events);
+				assert_is_empty(v[2]->events);
 			}
 
 
 			test( FocusIsSetToTheControlSpecifiedByRequest )
 			{
 				// INIT
-				hosting_window f;
-				shared_ptr<container> c(new container);
-				shared_ptr< mocks::logging_key_input<view> > v1(new mocks::logging_key_input<view>);
-				shared_ptr< mocks::logging_key_input<view> > v2(new mocks::logging_key_input<view>);
-				shared_ptr< mocks::logging_key_input<view> > v3(new mocks::logging_key_input<view>);
-				shared_ptr<stack> s(new stack(0, true));
-
-				c->set_layout(s);
-				c->add_view(v1, 3), s->add(10);
-				c->add_view(v2, 2), s->add(10);
-				c->add_view(v3, 1), s->add(10);
-				f.host->set_view(c);
-				::ValidateRect(f.hwnd, NULL);
-
-				// ACT
-				c->request_focus(v2);
-
-				// ASSERT
-				mocks::keyboard_event reference_in[] = {
-					{ mocks::keyboard_event::focusin, 0, 0 },
+				shared_ptr< mocks::logging_key_input<view> > v[] = {
+					make_shared< mocks::logging_key_input<view> >(),
+					make_shared< mocks::logging_key_input<view> >(),
+					make_shared< mocks::logging_key_input<view> >(),
 				};
+				const placed_view pv[] = {
+					{	v[0], nullptr, make_rect(10, 17, 110, 151), 2	},
+					{	v[1], nullptr, make_rect(100, 1, 191, 201), 1	},
+					{	v[2], nullptr, make_rect(10, 10, 110, 210), 3	},
+				};
+				const auto ctl = make_shared<mocks::control>();
+				const auto hwnd = create_window(true, 100, 100);
+				win32::view_host vh(hwnd, context);
+				mouse_router_host &mrhost = vh;
 
-				assert_is_empty(v1->events);
-				assert_equal(reference_in, v2->events);
-				assert_is_empty(v3->events);
+				ctl->views.assign(begin(pv), end(pv));
+				vh.set_root(ctl);
 
 				// ACT
-				c->request_focus(v1);
+				mrhost.request_focus(v[0]);
 
 				// ASSERT
 				mocks::keyboard_event reference_inout[] = {
 					{ mocks::keyboard_event::focusin, 0, 0 },
 					{ mocks::keyboard_event::focusout, 0, 0 },
 				};
-
-				assert_equal(reference_in, v1->events);
-				assert_equal(reference_inout, v2->events);
-				assert_is_empty(v3->events);
-
-				// ACT
-				c->request_focus(v3);
-
-				// ASSERT
-				assert_equal(reference_inout, v1->events);
-				assert_equal(reference_inout, v2->events);
-				assert_equal(reference_in, v3->events);
-			}
-
-
-			test( FocusMovesAccordinglyToTabOrderAfterFocusRequest )
-			{
-				// INIT
-				hosting_window f;
-				shared_ptr<container> c(new container);
-				shared_ptr< mocks::logging_key_input<view> > v1(new mocks::logging_key_input<view>);
-				shared_ptr< mocks::logging_key_input<view> > v2(new mocks::logging_key_input<view>);
-				shared_ptr< mocks::logging_key_input<view> > v3(new mocks::logging_key_input<view>);
-				shared_ptr<stack> s(new stack(0, true));
-
-				c->set_layout(s);
-				c->add_view(v1, 3), s->add(10);
-				c->add_view(v2, 2), s->add(10);
-				c->add_view(v3, 1), s->add(10);
-				f.host->set_view(c);
-				::ValidateRect(f.hwnd, NULL);
-
-				c->request_focus(v2);
-
-				// ACT
-				::SendMessage(f.hwnd, WM_KEYDOWN, VK_TAB, 0);
-
-				// ASSERT
 				mocks::keyboard_event reference_in[] = {
 					{ mocks::keyboard_event::focusin, 0, 0 },
 				};
-				mocks::keyboard_event reference_inout[] = {
+
+				assert_equal(reference_in, v[0]->events);
+				assert_equal(reference_inout, v[1]->events);
+				assert_is_empty(v[2]->events);
+
+				// ACT
+				mrhost.request_focus(v[1]);
+
+				// ASSERT
+				mocks::keyboard_event reference_inoutin[] = {
 					{ mocks::keyboard_event::focusin, 0, 0 },
 					{ mocks::keyboard_event::focusout, 0, 0 },
+					{ mocks::keyboard_event::focusin, 0, 0 },
 				};
 
-				assert_equal(reference_in, v1->events);
-				assert_equal(reference_inout, v2->events);
-				assert_is_empty(v3->events);
-
-				// ACT
-				::SendMessage(f.hwnd, WM_KEYDOWN, VK_TAB, 0);
-
-				// ASSERT
-				assert_equal(reference_inout, v1->events);
-				assert_equal(reference_inout, v2->events);
-				assert_equal(reference_in, v3->events);
-
-				// INIT
-				c->request_focus(v3);
-				v1->events.clear();
-				v2->events.clear();
-				v3->events.clear();
-
-				// ACT
-				::SendMessage(f.hwnd, WM_KEYDOWN, VK_SHIFT, 0);
-				::SendMessage(f.hwnd, WM_KEYDOWN, VK_TAB, 0);
-
-				// ASSERT
-				mocks::keyboard_event reference_out[] = {
-					{ mocks::keyboard_event::focusout, 0, 0 },
-				};
-
-				assert_equal(reference_in, v1->events);
-				assert_is_empty(v2->events);
-				assert_equal(reference_out, v3->events);
-			}
-
-
-			test( FocusDoesNotMoveIfSetToTheSameControl )
-			{
-				// INIT
-				hosting_window f;
-				shared_ptr<container> c(new container);
-				shared_ptr< mocks::logging_key_input<view> > v1(new mocks::logging_key_input<view>);
-				shared_ptr< mocks::logging_key_input<view> > v2(new mocks::logging_key_input<view>);
-				shared_ptr< mocks::logging_key_input<view> > v3(new mocks::logging_key_input<view>);
-				shared_ptr<stack> s(new stack(0, true));
-
-				c->set_layout(s);
-				c->add_view(v1, 3), s->add(10);
-				c->add_view(v2, 2), s->add(10);
-				c->add_view(v3, 1), s->add(10);
-				f.host->set_view(c);
-				::ValidateRect(f.hwnd, NULL);
-
-				c->request_focus(v2);
-				v2->events.clear();
-
-				// ACT
-				c->request_focus(v2);
-
-				// ASSERT
-				assert_is_empty(v1->events);
-				assert_is_empty(v2->events);
-				assert_is_empty(v3->events);
-			}
-
-
-			test( FocusDoesNotMoveIfUnregisteredControlRequestsForFocus )
-			{
-				// INIT
-				hosting_window f;
-				shared_ptr<container> c(new container);
-				shared_ptr< mocks::logging_key_input<view> > v1(new mocks::logging_key_input<view>);
-				shared_ptr< mocks::logging_key_input<view> > v2(new mocks::logging_key_input<view>);
-				shared_ptr< mocks::logging_key_input<view> > v3(new mocks::logging_key_input<view>);
-				shared_ptr<stack> s(new stack(0, true));
-
-				c->set_layout(s);
-				c->add_view(v1, 3), s->add(10);
-				c->add_view(v2, 2), s->add(10);
-				f.host->set_view(c);
-				::ValidateRect(f.hwnd, NULL);
-
-				c->request_focus(v2);
-				v2->events.clear();
-
-				// ACT
-				c->request_focus(v3);
-
-				// ASSERT
-				assert_is_empty(v1->events);
-				assert_is_empty(v2->events);
-				assert_is_empty(v3->events);
+				assert_equal(reference_inout, v[0]->events);
+				assert_equal(reference_inoutin, v[1]->events);
+				assert_is_empty(v[2]->events);
 			}
 
 
 			test( WindowObtainsFocusOnFocusRequest )
 			{
 				// INIT
-				hosting_window f1;
-				hosting_window f2;
-				shared_ptr<container> c1(new container);
-				shared_ptr<container> c2(new container);
-				shared_ptr< mocks::logging_key_input<view> > v1(new mocks::logging_key_input<view>);
-				shared_ptr< mocks::logging_key_input<view> > v2(new mocks::logging_key_input<view>);
-				shared_ptr<stack> s1(new stack(0, true));
-				shared_ptr<stack> s2(new stack(0, true));
+				const auto v = make_shared<view>();
+				const placed_view pv[] = {
+					{	v, nullptr, make_rect(100, 1, 191, 201), 1	},
+					{	nullptr, make_shared<mocks::native_view_window>(), make_rect(1, 1, 191, 201), 2	},
+				};
+				const auto ctl = make_shared<mocks::control>();
+				const auto hwnd = create_window(true, 100, 100);
+				win32::view_host vh(hwnd, context);
+				mouse_router_host &mrhost = vh;
 
-				c1->set_layout(s1);
-				c1->add_view(v1, 3); s1->add(10);
-				c2->set_layout(s2);
-				c2->add_view(v2, 2); s2->add(10);
-				f1.host->set_view(c1);
-				f2.host->set_view(c2);
-				::ValidateRect(f1.hwnd, NULL);
-				::ValidateRect(f2.hwnd, NULL);
+				ctl->views.assign(begin(pv), end(pv));
+				vh.set_root(ctl);
+				::SetFocus(pv[1].native->get_window());
 
 				// ACT
-				c1->request_focus(v1);
+				mrhost.request_focus(v);
 
 				// ASSERT
-				assert_equal(f1.hwnd, GetFocus());
-
-				// ACT
-				c2->request_focus(v2);
-
-				// ASSERT
-				assert_equal(f2.hwnd, GetFocus());
-
-				// ACT (no change on requesting invalid child)
-				c1->request_focus(v2);
-
-				// ASSERT
-				assert_equal(f2.hwnd, GetFocus());
+				assert_equal(hwnd, ::GetFocus());
 			}
 
 
-			test( SetCursorMessageIsStopped )
+			test( WindowDoesNotObtainFocusOnFocusRequestForANonKeyInputView )
 			{
 				// INIT
-				hosting_window f;
+				const auto v = make_shared<view>();
+				const placed_view pv[] = {
+					{	nullptr, make_shared<mocks::native_view_window>(), make_rect(1, 1, 191, 201)	},
+				};
+				const auto ctl = make_shared<mocks::control>();
+				const auto hwnd = create_window(true, 100, 100);
+				win32::view_host vh(hwnd, context);
+				mouse_router_host &mrhost = vh;
 
-				// ACT / ASSERT
-				assert_equal(TRUE, ::SendMessage(f.hwnd, WM_SETCURSOR, 0, MAKELONG(HTCLIENT, 0)));
+				ctl->views.assign(begin(pv), end(pv));
+				vh.set_root(ctl);
+				::SetFocus(pv[0].native->get_window());
+
+				// ACT
+				mrhost.request_focus(v);
+
+				// ASSERT
+				assert_equal(pv[0].native->get_window(), ::GetFocus());
+			}
+
+
+			//test( SetCursorMessageIsStopped )
+			//{
+			//	// INIT
+			//	hosting_window f;
+
+			//	// ACT / ASSERT
+			//	assert_equal(TRUE, ::SendMessage(hwnd, WM_SETCURSOR, 0, MAKELONG(HTCLIENT, 0)));
+			//}
+
+
+			test( SettingFocusToANativeViewFocusesItsWindow )
+			{
+				// INIT
+				const auto v = make_shared<view>();
+				const auto nv = make_shared<mocks::native_view_window>();
+				const placed_view pv[] = {
+					{	v, nullptr, {}, 1	},
+					{	nullptr, nv, make_rect(10, 17, 110, 151), 2	},
+				};
+				const auto ctl = make_shared<mocks::control>();
+				const auto hwnd = create_window(true, 100, 100);
+				win32::view_host vh(hwnd, context);
+				keyboard_router_host &krhost = vh;
+
+				ctl->views.assign(begin(pv), end(pv));
+				vh.set_root(ctl);
+
+				// INIT / ASSERT
+				assert_not_equal(nv->get_window(), ::GetFocus());
+
+				// ACT
+				krhost.set_focus(*nv);
+
+				// INIT / ASSERT
+				assert_equal(nv->get_window(), ::GetFocus());
 			}
 
 		end_test_suite

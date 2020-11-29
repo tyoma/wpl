@@ -22,6 +22,7 @@
 
 #include <wpl/win32/native_view.h>
 
+#include <wpl/control.h>
 #include <wpl/stylesheet.h>
 #include <wpl/win32/font_manager.h>
 
@@ -31,24 +32,26 @@ using namespace placeholders;
 namespace wpl
 {
 	native_view::native_view(const string &text_style_name)
-		: _text_style_name(text_style_name), _own(false)
+		: _text_style_name(text_style_name)
 	{	}
 
 	native_view::~native_view()
 	{
-		if (_own)
-			if (HWND hwnd = get_window())
-				_window.reset(), ::DestroyWindow(hwnd);
+		if (HWND hwnd = get_window())
+			_window.reset(), ::DestroyWindow(hwnd);
 	}
 
-	void native_view::resize(unsigned cx, unsigned cy, visual::positioned_native_views &native_views)
+	void native_view::layout(const placed_view_appender &append_view, const agge::box<int> &box)
 	{
-		view_location l = { 0, 0, static_cast<int>(cx), static_cast<int>(cy) };
-		native_views.push_back(visual::positioned_native_view(*this, l));
-	}
+		placed_view v = {
+			shared_ptr<view>(),
+			shared_from_this(),
+			{ 0, 0, box.w, box.h },
+			1
+		};
 
-	void native_view::got_focus()
-	{	::SetFocus(get_window());	}
+		append_view(v);
+	}
 
 	HWND native_view::get_window() const throw()
 	{	return _window ? _window->hwnd() : 0;	}
@@ -64,7 +67,6 @@ namespace wpl
 			::DestroyWindow(_window->hwnd());
 		::SendMessage(hwnd, WM_SETFONT, reinterpret_cast<WPARAM>(_font.get()), 0);
 		_window = win32::window::attach(hwnd, bind(&native_view::on_message, this, _1, _2, _3, _4));
-		_own = true;
 		return hwnd;
 	}
 

@@ -46,7 +46,7 @@ namespace wpl
 		typedef agge::pixel32 pixel_type;
 		typedef agge::bitmap<pixel_type, agge::platform::raw_bitmap> surface_type;
 		typedef agge::rasterizer< agge::clipper<int> > rasterizer_type;
-		typedef std::auto_ptr<rasterizer_type> rasterizer_ptr;
+		typedef std::unique_ptr<rasterizer_type> rasterizer_ptr;
 		typedef agge::renderer_parallel renderer_type;
 		typedef agge::text_engine<rasterizer_type> text_engine_type;
 
@@ -78,31 +78,13 @@ namespace wpl
 
 	struct visual
 	{
-		struct positioned_native_view;
-		typedef std::vector<positioned_native_view> positioned_native_views;
-
 		visual();
-		virtual ~visual();
 
 		virtual void draw(gcontext &ctx, gcontext::rasterizer_ptr &rasterizer) const;
-		virtual void resize(unsigned cx, unsigned cy, positioned_native_views &native_views);
 
 		bool transcending;
 
-		signal<void(const agge::rect_i *window)> invalidate;
-		signal<void()> force_layout;
-	};
-
-	struct visual::positioned_native_view
-	{
-		positioned_native_view(native_view &nview_, const view_location &location_) throw();
-
-		native_view &get_view() const throw();
-
-		view_location location;
-
-	private:
-		native_view *_nview;
+		signal<void (const agge::rect_i *window)> invalidate;
 	};
 
 

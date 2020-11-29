@@ -64,8 +64,8 @@ namespace wpl
 			_sort_column = columns_model::npos();
 		}
 
-		std::shared_ptr<view> listview::get_view()
-		{	return shared_from_this();	}
+		void listview::layout(const placed_view_appender &append_view, const agge::box<int> &box)
+		{	native_view::layout(append_view, box);	}
 
 		void listview::set_columns_model(shared_ptr<columns_model> cm)
 		{

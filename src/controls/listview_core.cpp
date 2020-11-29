@@ -136,6 +136,7 @@ namespace wpl
 		listview_core::listview_core()
 			: _vsmodel(new vertical_scroll_model), _hsmodel(new horizontal_scroll_model), _state_vscrolling(false)
 		{
+			tab_stoppable = true;
 			_offset.dx = 0, _offset.dy = 0;
 			_size.w = 0, _size.h = 0;
 			_vsmodel->owner = this;
@@ -298,12 +299,13 @@ namespace wpl
 			}
 		}
 
-		void listview_core::resize(unsigned cx, unsigned cy, positioned_native_views &/*native_views*/)
+		void listview_core::layout(const placed_view_appender &append_view, const agge::box<int> &box_)
 		{
-			_size.w = static_cast<real_t>(cx);
-			_size.h = static_cast<real_t>(cy);
+			_size.w = static_cast<real_t>(box_.w);
+			_size.h = static_cast<real_t>(box_.h);
 			_vsmodel->invalidated();
 			_hsmodel->invalidated();
+			integrated_control<wpl::listview>::layout(append_view, box_);
 		}
 
 		void listview_core::set_columns_model(shared_ptr<columns_model> cmodel)

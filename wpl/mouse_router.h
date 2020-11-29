@@ -20,30 +20,44 @@
 
 #pragma once
 
-#include "signals.h"
-
-#include <agge/types.h>
+#include "concepts.h"
+#include "control.h"
+#include "input.h"
 
 namespace wpl
 {
-	class native_view;
-	struct placed_view;
-	struct view;
-
-	typedef std::function<void (const placed_view &pv)> placed_view_appender;
-
-	struct placed_view
+	struct mouse_router_host
 	{
-		std::shared_ptr<view> regular;
-		std::shared_ptr<native_view> native;
-		agge::rect<int> location;
-		int tab_order;
+		virtual void request_focus(std::shared_ptr<keyboard_input> input) = 0;
+		virtual std::shared_ptr<void> capture_mouse() = 0;
 	};
 
-	struct control
+	class mouse_router : noncopyable
 	{
-		virtual void layout(const placed_view_appender &append_view, const agge::box<int> &box) = 0;
+	public:
+		mouse_router(const std::vector<placed_view> &views, mouse_router_host &host);
 
-		signal<void (bool hierarchy_changed)> force_layout;
+		void reload_views();
+		std::shared_ptr<view> from(agge::point<int> &point) const;
+
+		// mouse_input methods
+		void mouse_leave();
+		void mouse_move(int depressed, agge::point<int> point);
+		void mouse_click(void (mouse_input::*fn)(mouse_input::mouse_buttons, int, int, int),
+			mouse_input::mouse_buttons button_, int depressed, agge::point<int> point);
+		void mouse_scroll(int depressed, agge::point<int> point, int delta_x, int delta_y);
+
+	private:
+		typedef std::pair<std::shared_ptr<void> /*handle*/, size_t /*index*/> capture_target;
+	
+	private:
+		std::shared_ptr<view> switch_mouse_over(agge::point<int> &point);
+
+	private:
+		const std::vector<placed_view> &_views;
+		mouse_router_host &_host;
+		std::shared_ptr<view> _mouse_over;
+		std::weak_ptr<capture_target> _capture_target;
+		std::vector<slot_connection> _connections;
 	};
 }

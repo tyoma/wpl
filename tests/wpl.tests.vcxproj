@@ -44,11 +44,14 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="AnimatedModelsTests.cpp" />
+    <ClCompile Include="KeyboardRouterNativeTests.cpp" />
+    <ClCompile Include="KeyboardRouterTests.cpp" />
+    <ClCompile Include="MouseRouterTests.cpp" />
     <ClCompile Include="NativeCursorManagementTests.cpp" />
     <ClCompile Include="FactoryTests.cpp" />
     <ClCompile Include="ListViewCoreSelectionTests.cpp" />
     <ClCompile Include="NativeComboboxTests.cpp" />
-    <ClCompile Include="ContainerTests.cpp" />
+    <ClCompile Include="VisualRouterTests.cpp" />
     <ClCompile Include="NativeFormTests.cpp" />
     <ClCompile Include="HeaderCoreTests.cpp" />
     <ClCompile Include="helpers-visual.cpp" />
@@ -63,7 +66,12 @@
     <ClCompile Include="NativeControlsTests.cpp" />
     <ClCompile Include="NativeViewHostTests.cpp" />
     <ClCompile Include="NativeViewTests.cpp" />
-    <ClCompile Include="RootContainerTests.cpp" />
+    <ClCompile Include="RootContainerTests.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="ScrollerTests.cpp" />
     <ClCompile Include="SignalTests.cpp" />
     <ClCompile Include="helpers.cpp" />
@@ -76,12 +84,14 @@
     <ClInclude Include="helpers-visual.h" />
     <ClInclude Include="helpers-win32.h" />
     <ClInclude Include="helpers-listview.h" />
+    <ClInclude Include="mock-control.h" />
+    <ClInclude Include="mock-router_host.h" />
     <ClInclude Include="MockupsListView.h" />
     <ClInclude Include="MockupsNative.h" />
     <ClInclude Include="MockupsScroller.h" />
     <ClInclude Include="helpers.h" />
     <ClInclude Include="Mockups.h" />
-    <ClInclude Include="mock_queue.h" />
+    <ClInclude Include="mock-queue.h" />
     <ClInclude Include="predicates.h" />
   </ItemGroup>
   <ItemGroup>

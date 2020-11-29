@@ -15,6 +15,7 @@ typedef struct tagRECT RECT;
 namespace wpl
 {
 	class container;
+	struct control;
 	struct view_host;
 	struct widget;
 
@@ -32,7 +33,10 @@ namespace wpl
 #endif
 		class window_tracker;
 
+		HWND get_window_and_resize(std::shared_ptr<control> control_, HWND hparent, int cx = 150, int cy = 100);
+		bool provides_tabstoppable_native_view(std::shared_ptr<control> control_);
 		RECT get_window_rect(HWND hwnd);
+		agge::box<int> get_client_rect(HWND hwnd);
 		RECT rect(int left, int top, int width, int height);
 		std::wstring get_window_text(HWND hwnd);
 		bool has_style(HWND hwnd, int style);
@@ -41,21 +45,6 @@ namespace wpl
 		void emulate_click(HWND hwnd, int x, int y, mouse_input::mouse_buttons button,
 			int /*mouse_buttons | modifier_keys*/ depressed);
 		std::shared_ptr<gcontext::text_engine_type> create_text_engine();
-
-		class hosting_window : noncopyable
-		{
-		public:
-			hosting_window();
-			~hosting_window();
-
-		public:
-			const HWND hwnd;
-			std::shared_ptr<gcontext::surface_type> surface;
-			std::shared_ptr<gcontext::renderer_type> renderer;
-			std::shared_ptr<gcontext::text_engine_type> text_engine;
-			std::shared_ptr<mocks::cursor_manager> cursor_manager;
-			std::shared_ptr<wpl::view_host> host;
-		};
 
 		class window_manager
 		{
@@ -97,8 +86,11 @@ namespace wpl
 		inline unsigned int pack_coordinates(int x, int y)
 		{	return (unsigned short)x | ((unsigned int )(unsigned short)y << 16);	}
 
+		unsigned int pack_screen_coordinates(HWND hwnd, int x, int y);
+
 		unsigned int pack_wheel(int delta, int modifiers = 0);
 	}
 }
 
 bool operator ==(const RECT &lhs, const RECT &rhs);
+bool operator ==(const agge::rect_i &lhs, const RECT &rhs);

@@ -20,15 +20,18 @@
 
 #pragma once
 
-#include "view_host.h"
-
+#include "../factory_context.h"
 #include "../form.h"
+#include "window.h"
+
 #include <memory>
 
 namespace wpl
 {
 	namespace win32
 	{
+		class view_host;
+
 		class form : public wpl::form
 		{
 		public:
@@ -37,7 +40,7 @@ namespace wpl
 
 		private:
 			// view_host methods
-			virtual void set_view(std::shared_ptr<view> v);
+			virtual void set_root(std::shared_ptr<control> root);
 
 			// form methods
 			virtual view_location get_location() const;
@@ -54,7 +57,6 @@ namespace wpl
 		private:
 			HWND _hwnd;
 			std::shared_ptr<win32::view_host> _host;
-			std::shared_ptr<void> _font;
 		};
 	}
 }

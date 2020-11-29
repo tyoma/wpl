@@ -1,6 +1,7 @@
 #include <wpl/factory.h>
 
 #include "Mockups.h"
+#include "mock-control.h"
 
 #include <wpl/control.h>
 #include <wpl/form.h>
@@ -17,15 +18,10 @@ namespace wpl
 	{
 		namespace mocks
 		{
-			struct control : wpl::control
-			{
-				virtual std::shared_ptr<view> get_view() {	return std::shared_ptr<view>();	}
-			};
-
 			class form : public wpl::form
 			{
 			private:
-				virtual void set_view(shared_ptr<view> /*v*/) { throw 0; }
+				virtual void set_root(shared_ptr<wpl::control> /*root*/) { throw 0; }
 
 				virtual view_location get_location() const { throw 0; }
 				virtual void set_location(const view_location &/*location*/) { throw 0; };

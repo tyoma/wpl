@@ -20,25 +20,38 @@
 
 #pragma once
 
-#include "window.h"
-
 #include "../concepts.h"
 #include "../factory_context.h"
-#include "../view.h"
+#include "../keyboard_router.h"
+#include "../mouse_router.h"
 #include "../view_host.h"
+#include "../visual_router.h"
+#include "window.h"
 
 namespace wpl
 {
 	namespace win32
 	{
-		class view_host : public wpl::view_host, noncopyable
+		class view_host : public wpl::view_host, public visual_router_host, public mouse_router_host,
+			public keyboard_router_host, noncopyable
 		{
 		public:
 			view_host(HWND hwnd, const form_context &context_,
 				const window::user_handler_t &user_handler = &view_host::passthrough);
 			~view_host();
 
-			virtual void set_view(std::shared_ptr<view> v);
+			// view_host methods
+			virtual void set_root(std::shared_ptr<control> root);
+
+			// visual_router_host methods
+			virtual void invalidate(const agge::rect_i &area);
+
+			// mouse_router_host methods
+			virtual void request_focus(std::shared_ptr<keyboard_input> input);
+			virtual std::shared_ptr<void> capture_mouse();
+
+			// keyboard_router_host methods
+			virtual void set_focus(native_view &nview);
 
 			static LRESULT passthrough(UINT message, WPARAM wparam, LPARAM lparam,
 				const window::original_handler_t &previous);
@@ -47,36 +60,29 @@ namespace wpl
 			const form_context context;
 
 		private:
-			typedef std::vector<keyboard_input::tabbed_control> tabbed_controls;
-			typedef tabbed_controls::const_iterator tabbed_controls_iterator;
-
-		private:
 			LRESULT wndproc(UINT message, WPARAM wparam, LPARAM lparam, const window::original_handler_t &previous);
-				
+
 			void dispatch_key(UINT message, WPARAM wparam, LPARAM lparam);
-			void update_modifier(UINT message, unsigned code);
-			void dispatch_tab();
+			bool update_modifier(UINT message, unsigned code);
 
-			void dispatch_mouse(UINT message, WPARAM wparam, LPARAM lparam);
+			void dispatch_mouse_move(UINT message, WPARAM wparam, LPARAM lparam);
+			void dispatch_mouse_click(UINT message, WPARAM wparam, LPARAM lparam);
+			void dispatch_mouse_scroll(UINT message, WPARAM wparam, LPARAM lparam);
 
-			void resize_view(unsigned cx, unsigned cy) throw();
-			static mouse_input::mouse_buttons get_button(UINT message);
-			void set_focus(std::vector<keyboard_input::tabbed_control>::const_iterator focus_i);
-			tabbed_controls_iterator find(const std::shared_ptr<keyboard_input> &v) const;
-			tabbed_controls_iterator find_next(tabbed_controls_iterator reference) const;
-			tabbed_controls_iterator find_previous(tabbed_controls_iterator reference) const;
+			void layout_views(int width, int height);
 
 		private:
 			window::user_handler_t _user_handler;
 			std::shared_ptr<window> _window;
-			std::shared_ptr<view> _view;
-			tabbed_controls _tabbed_controls;
-			tabbed_controls_iterator _focus;
+			std::shared_ptr<control> _root;
+			std::vector<placed_view> _views;
 			gcontext::rasterizer_ptr _rasterizer;
-			std::vector<slot_connection> _connections;
-			std::vector<visual::positioned_native_view> _positioned_views;
+			std::weak_ptr<bool> _capture_handle;
 			unsigned _input_modifiers;
-			bool _mouse_in : 1;
+			unsigned _mouse_in : 1;
+			visual_router _visual_router;
+			mouse_router _mouse_router;
+			keyboard_router _keyboard_router;
 		};
 	}
 }

@@ -2,8 +2,10 @@
 
 #include "Mockups.h"
 
+#include <wpl/control.h>
 #include <wpl/win32/font_loader.h>
-#include <wpl/win32/view_host.h>
+#include <wpl/win32/native_view.h>
+//#include <wpl/win32/view_host.h>
 #include <wpl/win32/window.h>
 
 #include <algorithm>
@@ -61,15 +63,53 @@ namespace wpl
 			}
 		}
 
+		HWND get_window_and_resize(shared_ptr<control> control_, HWND hparent, int cx, int cy)
+		{
+			vector<placed_view> v;
+			agge::box<int> b = { cx, cy };
+
+			control_->layout(make_appender(v), b);
+			assert_equal(1u, v.size());
+			assert_not_null(v[0].native);
+			assert_equal(make_rect(0, 0, cx, cy), v[0].location);
+
+			HWND hwnd = v[0].native->get_window(hparent);
+
+			::MoveWindow(hwnd, 0, 0, cx, cy, TRUE);
+			return hwnd;
+		}
+
+		bool provides_tabstoppable_native_view(std::shared_ptr<control> control_)
+		{
+			vector<placed_view> v;
+			agge::box<int> b = { 1, 1 };
+
+			control_->layout(make_appender(v), b);
+			assert_equal(1u, v.size());
+			assert_is_true(1 == v[0].tab_order || 0 == v[0].tab_order);
+			return !!v[0].tab_order;
+		}
+
 		RECT get_window_rect(HWND hwnd)
 		{
-			RECT rc = { 0 };
+			RECT rc = { };
 			HWND hparent = ::GetParent(hwnd);
 
 			::GetWindowRect(hwnd, &rc);
 			if (hparent)
 				::MapWindowPoints(NULL, hparent, reinterpret_cast<POINT *>(&rc), 2);
 			return rc;
+		}
+
+		agge::box<int> get_client_rect(HWND hwnd)
+		{
+			RECT rc;
+
+			::GetClientRect(hwnd, &rc);
+
+			agge::box<int> b = { rc.right, rc.bottom };
+
+			return b;
 		}
 
 		RECT rect(int left, int top, int width, int height)
@@ -125,22 +165,6 @@ namespace wpl
 			shared_ptr<text_engine_composite> tec(new text_engine_composite);
 
 			return shared_ptr<gcontext::text_engine_type>(tec, &tec->text_engine);
-		}
-
-
-		hosting_window::hosting_window()
-			: hwnd(::CreateWindow(_T("static"), NULL, WS_POPUP | WS_VISIBLE, 0, 0, 100, 70, NULL, NULL, NULL, NULL)),
-				surface(new gcontext::surface_type(1, 1, 16)), renderer(new gcontext::renderer_type(1)),
-				text_engine(create_text_engine()), cursor_manager(new mocks::cursor_manager)
-		{
-			form_context ctx = { surface, renderer, text_engine, shared_ptr<stylesheet>(), cursor_manager, };
-			host.reset(new win32::view_host(hwnd, ctx));
-		}
-
-		hosting_window::~hosting_window()
-		{
-			host.reset();
-			::DestroyWindow(hwnd);
 		}
 
 
@@ -233,6 +257,13 @@ namespace wpl
 			return result;
 		}
 
+		unsigned int pack_screen_coordinates(HWND hwnd, int x, int y)
+		{
+			POINT pt = {	x, y	};
+
+			::ClientToScreen(hwnd, &pt);
+			return pack_coordinates(pt.x, pt.y);
+		}
 
 		unsigned int pack_wheel(int delta, int modifiers)
 		{	return (unsigned short)modifiers | ((unsigned int )(unsigned short)(delta * WHEEL_DELTA) << 16);	}
@@ -241,3 +272,6 @@ namespace wpl
 
 bool operator ==(const RECT &lhs, const RECT &rhs)
 {	return lhs.left == rhs.left && lhs.top == rhs.top && lhs.right == rhs.right && lhs.bottom == rhs.bottom;	}
+
+bool operator ==(const agge::rect_i &lhs, const RECT &rhs)
+{	return lhs.x1 == rhs.left && lhs.y1 == rhs.top && lhs.x2 == rhs.right && lhs.y2 == rhs.bottom;	}

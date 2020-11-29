@@ -23,7 +23,6 @@
 #include "concepts.h"
 #include "factory_context.h"
 #include "stylesheet.h"
-#include "visual.h"
 
 #include <functional>
 #include <memory>
@@ -49,6 +48,7 @@ namespace wpl
 
 		std::shared_ptr<form> create_form() const;
 		std::shared_ptr<control> create_control(const char *type) const;
+		template <typename T> std::shared_ptr<T> create_control(const char *type) const;
 
 		static std::shared_ptr<factory> create_default(const std::shared_ptr<stylesheet> &stylesheet_);
 		static std::shared_ptr<factory> create_default(const form_context &context_);
@@ -61,4 +61,10 @@ namespace wpl
 		form_constructor _default_form_constructor;
 		std::unordered_map<std::string, control_constructor> _control_constructors;
 	};
+
+
+
+	template <typename T>
+	inline std::shared_ptr<T> factory::create_control(const char *type) const
+	{	return std::static_pointer_cast<T>(create_control(type));	}
 }

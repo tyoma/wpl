@@ -3,11 +3,12 @@
 #include "animation.h"
 
 #include <agge/color.h>
-#include <wpl/view.h>
+#include <wpl/control.h>
+#include <wpl/controls/integrated.h>
 
 namespace wpl
 {
-	class piechart : public view
+	class piechart : public controls::integrated_control<control>
 	{
 	public:
 		struct model;
@@ -29,8 +30,9 @@ namespace wpl
 		typedef std::vector<segment> segments_t;
 
 	private:
+		virtual void layout(const placed_view_appender &append_view, const agge::box<int> &box);
+
 		virtual void draw(gcontext &ctx, gcontext::rasterizer_ptr &rasterizer) const;
-		virtual void resize(unsigned cx, unsigned cy, positioned_native_views &);
 
 		virtual void mouse_move(int depressed, int x, int y);
 		virtual void mouse_leave();

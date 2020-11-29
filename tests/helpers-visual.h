@@ -25,6 +25,19 @@ namespace wpl
 			agge::color color;
 		};
 
+		template <typename T>
+		inline agge::point<T> make_point(T w, T h)
+		{
+			agge::point<T> b = { w, h };
+			return b;
+		}
+
+		template <typename T>
+		inline agge::box<T> make_box(T w, T h)
+		{
+			agge::box<T> b = { w, h };
+			return b;
+		}
 
 		template <typename T>
 		inline agge::agge_vector<T> make_vector(T dx, T dy)
@@ -45,9 +58,8 @@ namespace wpl
 		gcontext::pixel_type make_pixel_real(const agge::color& color);
 		void reset(gcontext::surface_type &surface, gcontext::pixel_type ref_pixel);
 		void rectangle(gcontext &ctx, agge::color c, int x1, int y1, int x2, int y2);
+		std::shared_ptr<gcontext::text_engine_type> create_faked_text_engine();
 	}
-
-	bool operator ==(const view_location &lhs, const view_location &rhs);
 }
 
 namespace agge
@@ -59,6 +71,14 @@ namespace agge
 	template <typename T>
 	inline bool operator ==(const rect<T> &lhs, const rect<T> &rhs)
 	{	return lhs.x1 == rhs.x1 && lhs.y1 == rhs.y1 && lhs.x2 == rhs.x2 && lhs.y2 == rhs.y2;	}
+
+	template <typename T>
+	inline bool operator ==(const box<T> &lhs, const box<T> &rhs)
+	{	return lhs.w == rhs.w && lhs.h == rhs.h;	}
+
+	template <typename T>
+	inline bool operator ==(const point<T> &lhs, const point<T> &rhs)
+	{	return lhs.x == rhs.x && lhs.y == rhs.y;	}
 }
 
 namespace ut

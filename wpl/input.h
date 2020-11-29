@@ -26,10 +26,17 @@ namespace wpl
 {
 	struct keyboard_input
 	{
-		typedef std::pair< int /*tab index*/, std::shared_ptr<keyboard_input> > tabbed_control;
-
 		enum special_keys {
-			left, up, right, down, enter, tab, home, end, page_down, page_up,
+			tab = 0x09,
+			enter = 0x0D,
+			page_up = 0x21,
+			page_down = 0x22,
+			left = 0x25,
+			up = 0x26,
+			right = 0x27,
+			down = 0x28,
+			home = 0x24,
+			end = 0x23,
 		};
 
 		enum modifier_keys {
@@ -41,18 +48,12 @@ namespace wpl
 			next = base << 4,
 		};
 
-		virtual ~keyboard_input() {	}
-
-		virtual void get_tabbed_controls(std::vector<tabbed_control> &tabbed_controls, bool do_clear = true);
-
 		virtual void key_down(unsigned code, int modifiers);
 		virtual void character(wchar_t symbol, unsigned repeats, int modifiers);
 		virtual void key_up(unsigned code, int modifiers);
 
 		virtual void got_focus();
 		virtual void lost_focus();
-
-		signal<void (const std::shared_ptr<keyboard_input> &view_)> request_focus;
 	};
 
 	struct mouse_input
@@ -63,8 +64,6 @@ namespace wpl
 			middle = base << 1,
 			right = base << 2,
 		};
-
-		virtual ~mouse_input() {	}
 
 		virtual void mouse_enter();
 		virtual void mouse_leave();
@@ -79,6 +78,6 @@ namespace wpl
 
 		virtual void lost_capture();
 
-		signal<void(std::shared_ptr<void> &handle)> capture;
+		signal<void (std::shared_ptr<void> &handle)> capture;
 	};
 }

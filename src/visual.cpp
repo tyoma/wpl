@@ -54,20 +54,6 @@ namespace wpl
 		: transcending(false)
 	{	}
 
-	visual::~visual()
-	{	}
-
 	void visual::draw(gcontext &/*ctx*/, gcontext::rasterizer_ptr &/*rasterizer*/) const
 	{	}
-
-	void visual::resize(unsigned /*cx*/, unsigned /*cy*/, positioned_native_views &/*native_views*/)
-	{	}
-
-
-	visual::positioned_native_view::positioned_native_view(native_view &nview_, const view_location &location_) throw()
-		: location(location_), _nview(&nview_)
-	{	}
-
-	native_view &visual::positioned_native_view::get_view() const throw()
-	{	return *_nview;	}
 }

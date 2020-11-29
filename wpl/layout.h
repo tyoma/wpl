@@ -21,40 +21,50 @@
 #pragma once
 
 #include "concepts.h"
-#include "container.h"
+#include "control.h"
+
+#include <vector>
 
 namespace wpl
 {
-	struct layout_manager
-	{
-		virtual ~layout_manager() {	}
-
-		virtual void layout(unsigned width, unsigned height, container::positioned_view *views, size_t count) const = 0;
-	};
-
-
-	class stack : public layout_manager
+	class stack : public control, noncopyable
 	{
 	public:
-		explicit stack(int spacing, bool horizontal);
+		stack(int spacing, bool horizontal);
 
-		void add(int size);
-		virtual void layout(unsigned width, unsigned height, container::positioned_view *views, size_t count) const;
+		void add(std::shared_ptr<control> child, int size, int tab_order = 0);
+
+		// control methods
+		virtual void layout(const placed_view_appender &append_view, const agge::box<int> &box);
 
 	private:
-		std::vector<int> _sizes;
+		struct item
+		{
+			std::shared_ptr<control> child;
+			int size;
+			int tab_order;
+		};
+
+	private:
+		std::vector<item> _children;
 		int _spacing;
 		bool _horizontal;
 	};
 
-	class spacer : public layout_manager
+
+	class padding : public control
 	{
 	public:
-		spacer(int space_x, int space_y);
+		padding(std::shared_ptr<control> inner, int px, int py);
 
-		virtual void layout(unsigned width, unsigned height, container::positioned_view *views, size_t count) const;
+		void layout(const placed_view_appender &append_view, const agge::box<int> &box);
 
 	private:
-		int _space_x, _space_y;
+		std::shared_ptr<control> _inner;
+		int _px, _py;
 	};
+
+
+
+	std::shared_ptr<control> pad_control(std::shared_ptr<control> inner, int px, int py);
 }

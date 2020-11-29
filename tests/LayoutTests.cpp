@@ -1,330 +1,444 @@
 #include <wpl/layout.h>
 
+#include "helpers.h"
 #include "helpers-visual.h"
-#include "Mockups.h"
+#include "mock-control.h"
 
 #include <ut/assert.h>
 #include <ut/test.h>
+#include <wpl/view.h>
 
 using namespace std;
 
 namespace wpl
 {
-	namespace
+	static bool operator ==(const placed_view &lhs, const placed_view &rhs)
 	{
-		template <typename IteratorT>
-		stack hstack(IteratorT b, IteratorT e, int spacing)
-		{
-			stack s(spacing, true);
-
-			for (; b != e; ++b)
-				s.add(*b);
-			return s;
-		}
-
-		template <typename IteratorT>
-		stack vstack(IteratorT b, IteratorT e, int spacing)
-		{
-			stack s(spacing, false);
-
-			for (; b != e; ++b)
-				s.add(*b);
-			return s;
-		}
+		return lhs.regular == rhs.regular
+			&& lhs.native == rhs.native
+			&& lhs.location == rhs.location
+			&& lhs.tab_order == rhs.tab_order;
 	}
-
-	static bool operator ==(const container::positioned_view &lhs, const container::positioned_view &rhs)
-	{	return lhs.location == rhs.location;	}
 
 	namespace tests
 	{
+		namespace
+		{
+			const auto nullptr_nv = shared_ptr<native_view>();
+		}
+
 		begin_test_suite( StackLayoutTest )
 
-			test( LayoutHSingleWidgetAbsolute )
+			test( SingleItemOccupiesAbsoluteSizeAssigned )
 			{
 				// INIT
-				int sizes1[] = { 13, };
-				int sizes2[] = { 171, };
-				container::positioned_view p1[1];
-				container::positioned_view p2[1];
+				auto c = make_shared<mocks::control>();
+				vector<placed_view> v;
+				placed_view pv = {	make_shared<view>(), nullptr_nv, make_rect(1, 2, 3, 4), 1,	};
+
+				c->views.push_back(pv);
 
 				// INIT / ACT
-				stack s1 = hstack(begin(sizes1), end(sizes1), 0);
-				stack s2 = hstack(begin(sizes2), end(sizes2), 0);
+				stack sh(0, true);
+				stack sv(0, false);
+
+				sh.add(c, 17, 190);
+				sv.add(c, 91, 11);
 
 				// ACT
-				s1.layout(10, 15, p1, 1);
-				s2.layout(1000, 551, p2, 1);
+				sh.layout(make_appender(v), make_box(100, 100));
+				sv.layout(make_appender(v), make_box(100, 100));
 
 				// ASSERT
-				assert_equal(0, p1[0].location.left);
-				assert_equal(0, p1[0].location.top);
-				assert_equal(13, p1[0].location.width);
-				assert_equal(15, p1[0].location.height);
+				placed_view reference1_views[] = {
+					{ pv.regular, nullptr_nv, make_rect(1, 2, 3, 4), 190 },
+					{ pv.regular, nullptr_nv, make_rect(1, 2, 3, 4), 11 },
+				};
+				agge::box<int> reference1_box[] = {
+					{ 17, 100 },
+					{ 100, 91 },
+				};
 
-				assert_equal(0, p2[0].location.left);
-				assert_equal(0, p2[0].location.top);
-				assert_equal(171, p2[0].location.width);
-				assert_equal(551, p2[0].location.height);
-
-				// ACT
-				s1.layout(10, 19, p1, 1);
-				s2.layout(1000, 41, p2, 1);
-
-				// ASSERT
-				assert_equal(0, p1[0].location.left);
-				assert_equal(0, p1[0].location.top);
-				assert_equal(13, p1[0].location.width);
-				assert_equal(19, p1[0].location.height);
-
-				assert_equal(0, p2[0].location.left);
-				assert_equal(0, p2[0].location.top);
-				assert_equal(171, p2[0].location.width);
-				assert_equal(41, p2[0].location.height);
-			}
-
-
-			test( LayoutHSeveralWidgetsAbsolute )
-			{
-				// INIT
-				int sizes[] = { 13, 17, 121 };
-				container::positioned_view p[3];
+				assert_equal(reference1_views, v);
+				assert_equal(reference1_box, c->size_log);
 
 				// INIT / ACT
-				stack s = hstack(begin(sizes), end(sizes), 0);
+				stack sh2(100, true);
+				stack sv2(10, false);
+
+				sh2.add(c, 170, 1);
+				sv2.add(c, 190, 2);
+
+				// INIT
+				v.clear();
+				c->size_log.clear();
 
 				// ACT
-				s.layout(10, 15, p, 3);
+				sh2.layout(make_appender(v), make_box(1000, 1000));
+				sv2.layout(make_appender(v), make_box(1000, 1000));
 
 				// ASSERT
-				container::positioned_view reference1[] = {
-					{ { 0, 0, 13, 15 }, },
-					{ { 13, 0, 17, 15 }, },
-					{ { 30, 0, 121, 15 }, },
+				placed_view reference2_views[] = {
+					{ pv.regular, nullptr_nv, make_rect(1, 2, 3, 4), 1 },
+					{ pv.regular, nullptr_nv, make_rect(1, 2, 3, 4), 2 },
+				};
+				agge::box<int> reference2_box[] = {
+					{ 170, 1000 },
+					{ 1000, 190 },
 				};
 
-				assert_equal(reference1[0], p[0]);
-				assert_equal(reference1[1], p[1]);
-				assert_equal(reference1[2], p[2]);
-
-				// ACT
-				s.layout(10, 19, p, 3);
-
-				// ASSERT
-				container::positioned_view reference2[] = {
-					{ { 0, 0, 13, 19 }, },
-					{ { 13, 0, 17, 19 }, },
-					{ { 30, 0, 121, 19 }, },
-				};
-
-				assert_equal(reference2[0], p[0]);
-				assert_equal(reference2[1], p[1]);
-				assert_equal(reference2[2], p[2]);
+				assert_equal(reference2_views, v);
+				assert_equal(reference2_box, c->size_log);
 			}
 
 
-			test( LayoutVSeveralWidgetsAbsolute )
+			test( LayoutSeveralWidgetsAbsolute )
 			{
 				// INIT
-				int sizes[] = { 13, 17, 121 };
-				container::positioned_view p[3];
+				shared_ptr<mocks::control> controls[] = {
+					make_shared<mocks::control>(),
+					make_shared<mocks::control>(),
+					make_shared<mocks::control>(),
+				};
+				vector<placed_view> v;
+				placed_view pv[] = {
+					{	make_shared<view>(), nullptr_nv, make_rect(0, 0, 30, 30), 1,	},
+					{	make_shared<view>(), nullptr_nv, make_rect(1, 2, 10, 15), 1,	},
+					{	make_shared<view>(), nullptr_nv, make_rect(3, 5, 30, 20), 1,	},
+				};
+				stack sh(0, true);
 
-				// INIT / ACT
-				stack s = vstack(begin(sizes), end(sizes), 0);
+				controls[0]->views.push_back(pv[0]);
+				controls[1]->views.push_back(pv[1]);
+				controls[2]->views.push_back(pv[2]);
+
+				sh.add(controls[0], 17, 1);
+				sh.add(controls[1], 23, 2);
 
 				// ACT
-				s.layout(11, 15, p, 3);
+				sh.layout(make_appender(v), make_box(100, 100));
 
 				// ASSERT
-				container::positioned_view reference1[] = {
-					{ { 0, 0, 11, 13 }, }, 
-					{ { 0, 13, 11, 17 }, },
-					{ { 0, 30, 11, 121 }, },
+				placed_view reference1_views[] = {
+					{ pv[0].regular, nullptr_nv, make_rect(0, 0, 30, 30), 1 },
+					{ pv[1].regular, nullptr_nv, make_rect(1 + 17, 2, 10 + 17, 15), 2 },
 				};
+				agge::box<int> reference10_box[] = {	{ 17, 100 },	};
+				agge::box<int> reference11_box[] = {	{ 23, 100 },	};
 
-				assert_equal(reference1[0], p[0]);
-				assert_equal(reference1[1], p[1]);
-				assert_equal(reference1[2], p[2]);
+				assert_equal(reference1_views, v);
+				assert_equal(reference10_box, controls[0]->size_log);
+				assert_equal(reference11_box, controls[1]->size_log);
+
+				// INIT
+				stack sv(0, false);
+
+				sv.add(controls[0], 90, 10);
+				sv.add(controls[1], 80, 11);
+				sv.add(controls[2], 55, 12);
+
+				v.clear();
+				controls[0]->size_log.clear();
+				controls[1]->size_log.clear();
 
 				// ACT
-				s.layout(21, 19, p, 3);
+				sv.layout(make_appender(v), make_box(10, 250));
 
-				// ASSERT
-				container::positioned_view reference2[] = {
-					{ { 0, 0, 21, 13 }, },
-					{ { 0, 13, 21, 17 }, },
-					{ { 0, 30, 21, 121 }, },
+				placed_view reference2_views[] = {
+					{ pv[0].regular, nullptr_nv, make_rect(0, 0, 30, 30), 10 },
+					{ pv[1].regular, nullptr_nv, make_rect(1, 2 + 90, 10, 15 + 90), 11 },
+					{ pv[2].regular, nullptr_nv, make_rect(3, 5 + 170, 30, 20 + 170), 12 },
 				};
+				agge::box<int> reference20_box[] = {	{ 10, 90 },	};
+				agge::box<int> reference21_box[] = {	{ 10, 80 },	};
+				agge::box<int> reference22_box[] = {	{ 10, 55 },	};
 
-				assert_equal(reference2[0], p[0]);
-				assert_equal(reference2[1], p[1]);
-				assert_equal(reference2[2], p[2]);
+				assert_equal(reference2_views, v);
+				assert_equal(reference20_box, controls[0]->size_log);
+				assert_equal(reference21_box, controls[1]->size_log);
+				assert_equal(reference22_box, controls[2]->size_log);
 			}
 
 
-			test( LayoutVSeveralWidgetsAbsoluteSpaced )
+			test( LayoutSeveralWidgetsAbsoluteSpaced )
 			{
 				// INIT
-				int sizes[] = { 13, 17, 121, 71 };
-				container::positioned_view p[4];
+				shared_ptr<mocks::control> controls[] = {
+					make_shared<mocks::control>(),
+					make_shared<mocks::control>(),
+					make_shared<mocks::control>(),
+				};
+				vector<placed_view> v;
+				placed_view pv[] = {
+					{	make_shared<view>(), nullptr_nv, make_rect(0, 0, 30, 30), 3,	},
+					{	make_shared<view>(), nullptr_nv, make_rect(1, 2, 10, 15), 10,	},
+					{	make_shared<view>(), nullptr_nv, make_rect(3, 5, 30, 20), 191,	},
+				};
+				stack sh(3, true);
 
-				// INIT / ACT
-				stack s = vstack(begin(sizes), end(sizes), 5);
+				controls[0]->views.push_back(pv[0]);
+				controls[1]->views.push_back(pv[1]);
+				controls[2]->views.push_back(pv[2]);
+
+				sh.add(controls[0], 17);
+				sh.add(controls[1], 23);
+				sh.add(controls[2], 13);
 
 				// ACT
-				s.layout(11, 15, p, 4);
+				sh.layout(make_appender(v), make_box(100, 77));
 
 				// ASSERT
-				container::positioned_view reference1[] = {
-					{ { 0, 0, 11, 13 }, },
-					{ { 0, 18, 11, 17 }, },
-					{ { 0, 40, 11, 121 }, },
-					{ { 0, 166, 11, 71 }, },
+				placed_view reference1_views[] = {
+					{ pv[0].regular, nullptr_nv, make_rect(0, 0, 30, 30), 3 },
+					{ pv[1].regular, nullptr_nv, make_rect(1 + 17 + 3, 2, 10 + 17 + 3, 15), 10 },
+					{ pv[2].regular, nullptr_nv, make_rect(3 + 17 + 3 + 23 + 3, 5, 30 + 17 + 3 + 23 + 3, 20), 191 },
 				};
+				agge::box<int> reference10_box[] = {	{ 17, 77 },	};
+				agge::box<int> reference11_box[] = {	{ 23, 77 },	};
+				agge::box<int> reference12_box[] = {	{ 13, 77 },	};
 
-				assert_equal(reference1[0], p[0]);
-				assert_equal(reference1[1], p[1]);
-				assert_equal(reference1[2], p[2]);
-				assert_equal(reference1[3], p[3]);
-			}
-
-
-			test( LayoutHSingleWidgetRelativelySpaced )
-			{
-				// INIT
-				int sizes1[] = { -10000 /* 10000 / 10000 */ };
-				int sizes2[] = { -5750 /* 5750 / 5750 */ };
-				container::positioned_view p1[1];
-				container::positioned_view p2[1];
-				stack s1 = hstack(begin(sizes1), end(sizes1), 0);
-				stack s2 = hstack(begin(sizes2), end(sizes2), 0);
-
-				// ACT
-				s1.layout(11, 15, p1, 1);
-				s2.layout(1103, 315, p2, 1);
-
-				// ASSERT
-				container::positioned_view reference[] = {
-					{ { 0, 0, 11, 15 }, },
-					{ { 0, 0, 1103, 315 }, },
-				};
-
-				assert_equal(reference[0], p1[0]);
-				assert_equal(reference[1], p2[0]);
-			}
-
-
-			test( LayoutVSeveralWidgetsRelativelySpaced )
-			{
-				// INIT
-				int sizes1[] = { -10000 /* 10000 / 35500 */, -20500 /* 20000 / 35500 */, -5000 /* 5000 / 35500 */, };
-				int sizes2[] = { -5750 /* 5750 / 11500 */, -5750 /* 5750 / 11500 */, };
-				container::positioned_view p1[3];
-				container::positioned_view p2[2];
-				stack s1 = vstack(begin(sizes1), end(sizes1), 0);
-				stack s2 = vstack(begin(sizes2), end(sizes2), 0);
-
-				// ACT
-				s1.layout(19, 1315, p1, 3);
-				s2.layout(31, 316, p2, 2);
-
-				// ASSERT
-				container::positioned_view reference1[] = {
-					{ { 0, 0, 19, 370 }, },
-					{ { 0, 370, 19, 759 }, },
-					{ { 0, 1129, 19, 185 }, },
-				};
-				container::positioned_view reference2[] = {
-					{ { 0, 0, 31, 158 }, },
-					{ { 0, 158, 31, 158 }, },
-				};
-
-				assert_equal(reference1[0], p1[0]);
-				assert_equal(reference1[1], p1[1]);
-				assert_equal(reference1[2], p1[2]);
-
-				assert_equal(reference2[0], p2[0]);
-				assert_equal(reference2[1], p2[1]);
+				assert_equal(reference1_views, v);
+				assert_equal(reference10_box, controls[0]->size_log);
+				assert_equal(reference11_box, controls[1]->size_log);
+				assert_equal(reference12_box, controls[2]->size_log);
 			}
 
 
 			test( LayoutVSeveralWidgetsRelativelyAndAbsolutelySpacedWithInnerSpacing )
 			{
 				// INIT
-				int sizes1[] = { -10000 /* 10000 / 15200 */, 100, -5200 /* 5200 / 15200 */, };
-				int sizes2[] = { -5750 /* 5750 / 5750 */, 107, };
-				container::positioned_view p1[3];
-				container::positioned_view p2[2];
-				stack s1 = vstack(begin(sizes1), end(sizes1), 3);
-				stack s2 = vstack(begin(sizes2), end(sizes2), 7);
+				shared_ptr<mocks::control> controls[] = {
+					make_shared<mocks::control>(),
+					make_shared<mocks::control>(),
+					make_shared<mocks::control>(),
+					make_shared<mocks::control>(),
+					make_shared<mocks::control>(),
+				};
+				vector<placed_view> v;
+				placed_view pv[] = {
+					{	make_shared<view>(), nullptr_nv, make_rect(0, 0, 30, 30), 1,	},
+					{	make_shared<view>(), nullptr_nv, make_rect(1, 2, 10, 15), 2,	},
+					{	make_shared<view>(), nullptr_nv, make_rect(3, 5, 30, 20), 3,	},
+					{	make_shared<view>(), nullptr_nv, make_rect(3, 5, 30, 20), 4,	},
+					{	make_shared<view>(), nullptr_nv, make_rect(3, 5, 30, 20), 4,	},
+				};
+				stack sh(3, true);
+
+				controls[0]->views.push_back(pv[0]);
+				controls[1]->views.push_back(pv[1]);
+				controls[2]->views.push_back(pv[2]);
+				controls[3]->views.push_back(pv[3]);
+				controls[4]->views.push_back(pv[4]);
+
+				sh.add(controls[0], 17);
+				sh.add(controls[1], -3);
+				sh.add(controls[2], 13);
+				sh.add(controls[3], -1);
 
 				// ACT
-				s1.layout(19, 1315, p1, 3);
-				s2.layout(31, 316, p2, 2);
+				sh.layout(make_appender(v), make_box(59, 20));
 
 				// ASSERT
-				container::positioned_view reference1[] = {
-					{ { 0, 0, 19, 795 }, },
-					{ { 0, 798, 19, 100 }, },
-					{ { 0, 901, 19, 413 }, },
+				placed_view reference1_views[] = {
+					{ pv[0].regular, nullptr_nv, make_rect(0, 0, 30, 30), 1 },
+					{ pv[1].regular, nullptr_nv, make_rect(1 + 17 + 3, 2, 10 + 17 + 3, 15), 2 },
+					{ pv[2].regular, nullptr_nv, make_rect(3 + 17 + 3 + 15 + 3, 5, 30 + 17 + 3 + 15 + 3, 20), 3 },
+					{ pv[3].regular, nullptr_nv, make_rect(3 + 17 + 3 + 15 + 3 + 13 + 3, 5, 30 + 17 + 3 + 15 + 3 + 13 + 3, 20), 4 },
 				};
-				container::positioned_view reference2[] = {
-					{ { 0, 0, 31, 202 }, },
-					{ { 0, 209, 31, 107 }, },
+				agge::box<int> reference10_box[] = {	{ 17, 20 },	};
+				agge::box<int> reference11_box[] = {	{ 15, 20 },	};
+				agge::box<int> reference12_box[] = {	{ 13, 20 },	};
+				agge::box<int> reference13_box[] = {	{ 5, 20 },	};
+
+				assert_equal(reference1_views, v);
+				assert_equal(reference10_box, controls[0]->size_log);
+				assert_equal(reference11_box, controls[1]->size_log);
+				assert_equal(reference12_box, controls[2]->size_log);
+				assert_equal(reference13_box, controls[3]->size_log);
+
+				// INIT
+				v.clear();
+
+				// ACT
+				sh.layout(make_appender(v), make_box(63, 20));
+
+				// ASSERT
+				agge::box<int> reference20_box[] = {	{ 17, 20 }, { 17, 20 },	};
+				agge::box<int> reference21_box[] = {	{ 15, 20 }, { 18, 20 },	};
+				agge::box<int> reference22_box[] = {	{ 13, 20 }, { 13, 20 },	};
+				agge::box<int> reference23_box[] = {	{ 5, 20 }, { 6, 20 },	};
+
+				assert_equal(reference20_box, controls[0]->size_log);
+				assert_equal(reference21_box, controls[1]->size_log);
+				assert_equal(reference22_box, controls[2]->size_log);
+				assert_equal(reference23_box, controls[3]->size_log);
+
+				// INIT
+				sh.add(controls[4], -2);
+
+				// ACT
+				sh.layout(make_appender(v), make_box(66, 20));
+
+				// ASSERT
+				agge::box<int> reference31_box[] = {	{ 15, 20 }, { 18, 20 }, { 12, 20 },	};
+				agge::box<int> reference33_box[] = {	{ 5, 20 }, { 6, 20 }, { 4, 20 },	};
+				agge::box<int> reference34_box[] = {	{ 8, 20 },	};
+
+				assert_equal(reference31_box, controls[1]->size_log);
+				assert_equal(reference33_box, controls[3]->size_log);
+				assert_equal(reference34_box, controls[4]->size_log);
+			}
+
+
+			test( AllControlViewsLocationsAreConverted )
+			{
+				// INIT
+				shared_ptr<mocks::control> controls[] = {
+					make_shared<mocks::control>(),
+					make_shared<mocks::control>(),
+				};
+				vector<placed_view> v;
+				placed_view pv[] = {
+					{	make_shared<view>(), nullptr_nv, make_rect(0, 0, 10, 10), 1,	},
+					{	make_shared<view>(), nullptr_nv, make_rect(10, 10, 30, 20), 2,	},
+					{	make_shared<view>(), nullptr_nv, make_rect(0, 0, 30, 30), 3,	},
+					{	make_shared<view>(), nullptr_nv, make_rect(3, 5, 30, 20), 4,	},
+					{	make_shared<view>(), nullptr_nv, make_rect(7, 10, 30, 20), 4,	},
+				};
+				stack sh(5, true);
+
+				controls[0]->views.push_back(pv[0]);
+				controls[0]->views.push_back(pv[1]);
+				controls[1]->views.push_back(pv[2]);
+				controls[1]->views.push_back(pv[3]);
+				controls[1]->views.push_back(pv[4]);
+
+				sh.add(controls[0], 30, 100);
+				sh.add(controls[1], 50);
+
+				// ACT
+				sh.layout(make_appender(v), make_box(150, 20));
+
+				// ASSERT
+				placed_view reference[] = {
+					{ pv[0].regular, nullptr_nv, make_rect(0, 0, 10, 10), 100 },
+					{ pv[1].regular, nullptr_nv, make_rect(10, 10, 30, 20), 100 },
+					{ pv[2].regular, nullptr_nv, make_rect(35, 0, 65, 30), 3 },
+					{ pv[3].regular, nullptr_nv, make_rect(38, 5, 65, 20), 4 },
+					{ pv[4].regular, nullptr_nv, make_rect(42, 10, 65, 20), 4 },
 				};
 
-				assert_equal(reference1[0], p1[0]);
-				assert_equal(reference1[1], p1[1]);
-				assert_equal(reference1[2], p1[2]);
+				assert_equal(reference, v);
+			}
 
-				assert_equal(reference2[0], p2[0]);
-				assert_equal(reference2[1], p2[1]);
+
+			test( OnlyTabStoppableViewsObtainTabOrder )
+			{
+				// INIT
+				const auto control = make_shared<mocks::control>();
+				vector<placed_view> layout;
+				placed_view pv[] = {
+					{	nullptr, nullptr_nv, {}, 0,	},
+					{	nullptr, nullptr_nv, {}, 2,	},
+				};
+				stack sv(0, false);
+
+				control->views.assign(begin(pv), end(pv));
+
+				sv.add(control, 1, 100);
+				sv.add(control, 1);
+				sv.add(control, 1, 13);
+
+				// ACT
+				sv.layout(make_appender(layout), make_box(150, 20));
+
+				// ASSERT
+				placed_view reference[] = {
+					{	nullptr, nullptr_nv, {	0, 0, 0, 0	}, 0	},
+					{	nullptr, nullptr_nv, {	0, 0, 0, 0	}, 100	},
+					{	nullptr, nullptr_nv, {	0, 1, 0, 1	}, 0	},
+					{	nullptr, nullptr_nv, {	0, 1, 0, 1	}, 2	},
+					{	nullptr, nullptr_nv, {	0, 2, 0, 2	}, 0	},
+					{	nullptr, nullptr_nv, {	0, 2, 0, 2	}, 13	},
+				};
+
+				assert_equal(reference, layout);
 			}
 		end_test_suite
 
 
-		begin_test_suite( SpacerLayoutTests )
-			test( AllViewsAreSpacedByCXAndCY )
+		begin_test_suite( PadLayoutTests )
+			test( ControlIsArrangedWithReducedSize )
 			{
 				// INIT
-				spacer rs1(5, 7);
-				layout_manager &s1 = rs1;
-				spacer rs2(3, 11);
-				layout_manager &s2 = rs2;
-				container::positioned_view p1[1];
-				container::positioned_view p2[2];
+				shared_ptr<mocks::control> c = make_shared<mocks::control>();
+				vector<placed_view> v;
+
+				// INIT / ACT
+				auto p = pad_control(c, 1, 2);
 
 				// ACT
-				s1.layout(100, 120, p1, 1);
-				s2.layout(100, 120, p2, 2);
+				p->layout(make_appender(v), make_box(100, 97));
 
 				// ASSERT
-				container::positioned_view reference1[] = {
-					{ { 5, 7, 90, 106 }, },
-				};
-				container::positioned_view reference2[] = {
-					{ { 3, 11, 94, 98 }, },
-					{ { 3, 11, 94, 98 }, },
-				};
+				agge::box<int> reference1[] = {	{ 98, 93 }, };
 
-				assert_equal(reference1, p1);
-				assert_equal(reference2, p2);
+				assert_equal(reference1, c->size_log);
+
+				// INIT / ACT
+				p = pad_control(c, 13, 17);
 
 				// ACT
-				s1.layout(51, 91, p1, 1);
-				s2.layout(51, 91, p2, 2);
+				p->layout(make_appender(v), make_box(1000, 970));
 
 				// ASSERT
-				container::positioned_view reference3[] = {
-					{ { 5, 7, 41, 77 }, },
-				};
-				container::positioned_view reference4[] = {
-					{ { 3, 11, 45, 69 }, },
-					{ { 3, 11, 45, 69 }, },
+				agge::box<int> reference2[] = {	{ 98, 93 }, { 974, 936 },	};
+
+				assert_equal(reference2, c->size_log);
+			}
+
+
+			test( ControlViewsAreOffset )
+			{
+				// INIT
+				shared_ptr<mocks::control> c = make_shared<mocks::control>();
+				vector<placed_view> v;
+				placed_view pv[] = {
+					{	make_shared<view>(), nullptr_nv, make_rect(7, 13, 15, 30), 1,	},
+					{	make_shared<view>(), nullptr_nv, make_rect(10, 20, 30, 200), 2,	},
 				};
 
-				assert_equal(reference3, p1);
-				assert_equal(reference4, p2);
+				c->views.push_back(pv[0]);
+				c->views.push_back(pv[1]);
+
+				// INIT / ACT
+				auto p = pad_control(c, 1, 1);
+
+				// ACT
+				p->layout(make_appender(v), make_box(100, 100));
+
+				// ASSERT
+				placed_view reference1[] = {
+					{ pv[0].regular, nullptr_nv, make_rect(8, 14, 16, 31), 1 },
+					{ pv[1].regular, nullptr_nv, make_rect(11, 21, 31, 201), 2 },
+				};
+
+				assert_equal(reference1, v);
+
+				// INIT / ACT
+				p = pad_control(c, 3, 5);
+				v.clear();
+
+				// ACT
+				p->layout(make_appender(v), make_box(100, 100));
+
+				// ASSERT
+				placed_view reference2[] = {
+					{ pv[0].regular, nullptr_nv, make_rect(10, 18, 18, 35), 1 },
+					{ pv[1].regular, nullptr_nv, make_rect(13, 25, 33, 205), 2 },
+				};
+
+				assert_equal(reference2, v);
 			}
 		end_test_suite
 	}

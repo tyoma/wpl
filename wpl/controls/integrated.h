@@ -27,20 +27,41 @@
 
 namespace wpl
 {
+	struct placed_view;
+
 	namespace controls
 	{
 		template <typename ControlT>
 		class integrated_control : public ControlT, public view, public std::enable_shared_from_this<view>, noncopyable
 		{
 		public:
+			integrated_control();
+
 			// control methods
-			virtual std::shared_ptr<view> get_view();
+			virtual void layout(const placed_view_appender &append_view, const agge::box<int> &box);
+
+		protected:
+			bool tab_stoppable;
 		};
 
 
 
 		template <typename ControlT>
-		inline std::shared_ptr<view> integrated_control<ControlT>::get_view()
-		{	return shared_from_this();	}
+		inline integrated_control<ControlT>::integrated_control()
+			: tab_stoppable(false)
+		{	}
+
+		template <typename ControlT>
+		inline void integrated_control<ControlT>::layout(const placed_view_appender &append_view, const agge::box<int> &box_)
+		{
+			placed_view v = {
+				shared_from_this(),
+				std::shared_ptr<native_view>(),
+				{ 0, 0, box_.w, box_.h },
+				!!tab_stoppable,
+			};
+
+			append_view(v);
+		}
 	}
 }

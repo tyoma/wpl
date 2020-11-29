@@ -155,10 +155,10 @@ namespace wpl
 			}
 		}
 
-		void scroller::resize(unsigned cx, unsigned cy, positioned_native_views &/*native_views*/)
+		void scroller::layout(const placed_view_appender &append_view, const agge::box<int> &box_)
 		{
-			const int extent = _orientation == horizontal ? cx : cy;
-			const int width = _orientation == horizontal ? cy : cx;
+			const int extent = _orientation == horizontal ? box_.w : box_.h;
+			const int width = _orientation == horizontal ? box_.h : box_.w;
 
 			_extent = static_cast<real_t>(extent);
 			_rextent = 1.0 / (extent - width); // TODO: fix division by zero below
@@ -168,8 +168,7 @@ namespace wpl
 				_thumb_style.set_cap(caps::round());
 				_thumb_style.width(w);
 			}
-			if (extent && _width)
-				invalidate(0);
+			integrated_control<wpl::scroller>::layout(append_view, box_);
 		}
 
 		void scroller::page_less()

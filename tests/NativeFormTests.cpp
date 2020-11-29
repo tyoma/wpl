@@ -5,6 +5,7 @@
 
 #include "helpers-visual.h"
 #include "helpers-win32.h"
+#include "mock-control.h"
 #include "Mockups.h"
 #include "MockupsNative.h"
 
@@ -38,6 +39,9 @@ namespace agge
 
 namespace wpl
 {
+	inline bool operator ==(const view_location &lhs, const view_location &rhs)
+	{	return lhs.left == rhs.left && lhs.top == rhs.top && lhs.width == rhs.width && lhs.height == rhs.height;	}
+
 	namespace tests
 	{
 		namespace
@@ -242,30 +246,25 @@ namespace wpl
 			test( ResizingFormWindowLeadsToContentResize )
 			{
 				// INIT
-				shared_ptr<mocks::logging_visual<view>> v(new mocks::logging_visual<view>());
+				const auto ctl = make_shared<mocks::control>();
 				form_and_handle f(create_form_with_handle());
-				RECT rc;
 
-				f.first->set_view(v);
-				v->resize_log.clear();
+				f.first->set_root(ctl);
+				ctl->size_log.clear();
 
 				// ACT
 				::MoveWindow(f.second, 0, 0, 117, 213, TRUE);
 
 				// ASSERT
-				::GetClientRect(f.second, &rc);
-
-				assert_equal(1u, v->resize_log.size());
-				assert_equal(make_pair((int)rc.right, (int)rc.bottom), v->resize_log[0]);
+				assert_equal(1u, ctl->size_log.size());
+				assert_equal(get_client_rect(f.second), ctl->size_log.back());
 
 				// ACT
 				::MoveWindow(f.second, 27, 190, 531, 97, TRUE);
 
 				// ASSERT
-				::GetClientRect(f.second, &rc);
-
-				assert_equal(2u, v->resize_log.size());
-				assert_equal(make_pair((int)rc.right, (int)rc.bottom), v->resize_log[1]);
+				assert_equal(2u, ctl->size_log.size());
+				assert_equal(get_client_rect(f.second), ctl->size_log.back());
 			}
 
 
@@ -358,16 +357,19 @@ namespace wpl
 				// INIT
 				window_tracker wt(L"#32770");
 				shared_ptr<form> f(new win32::form(context));
-				shared_ptr< mocks::logging_visual<view> > v(new mocks::logging_visual<view>);
+				const auto v = make_shared< mocks::logging_visual<view> >();
+				const placed_view pv = {	v, shared_ptr<native_view>(), make_rect(0, 0, 1000, 1000)	};
+				const auto ctl = make_shared<mocks::control>();
 				view_location l = { 10, 11, 200, 91 };
 
+				ctl->views.push_back(pv);
 				f->set_visible(true);
 				wt.checkpoint();
 				wt.created.clear();
 
 				// ACT
 				auto fc = f->create_child(); 
-				fc->set_view(v);
+				fc->set_root(ctl);
 				fc->set_location(l);
 				fc->set_visible(true);
 				wt.checkpoint();
@@ -485,11 +487,15 @@ namespace wpl
 				// INIT
 				window_tracker wt(L"#32770");
 				shared_ptr<form> f(new win32::form(context));
-				shared_ptr< mocks::logging_visual<view> > v(new mocks::logging_visual<view>);
+				const auto v = make_shared< mocks::logging_visual<view> >();
+				const placed_view pv = {	v, shared_ptr<native_view>(), make_rect(0, 0, 1000, 1000)	};
+				const auto ctl = make_shared<mocks::control>();
 				view_location l = { 10, 11, 200, 91 };
 
+				ctl->views.push_back(pv);
+
 				// ACT
-				f->set_view(v);
+				f->set_root(ctl);
 				f->set_location(l);
 				f->set_visible(true);
 				wt.checkpoint();
@@ -523,13 +529,20 @@ namespace wpl
 				// INIT
 				form_and_handle f1(create_form_with_handle());
 				form_and_handle f2(create_form_with_handle());
-				shared_ptr<button> btn(new win32::button);
 
-				btn->set_text(L"a");
-				f1.first->set_view(btn->get_view());
-				btn.reset(new win32::button);
-				btn->set_text(L"b");
-				f2.first->set_view(btn->get_view());
+				const placed_view pv[] = {
+					{	nullptr, make_shared<mocks::native_view_window>(), make_rect(0, 0, 100, 100)	},
+					{	nullptr, make_shared<mocks::native_view_window>(), make_rect(0, 0, 100, 100)	},
+				};
+				const shared_ptr<mocks::control> ctl[] = {
+					make_shared<mocks::control>(), make_shared<mocks::control>(),
+				};
+
+				ctl[0]->views.push_back(pv[0]);
+				ctl[1]->views.push_back(pv[1]);
+
+				f1.first->set_root(ctl[0]);
+				f2.first->set_root(ctl[1]);
 
 				// ACT
 				::SetFocus(f1.second);
