@@ -37,7 +37,7 @@ namespace wpl
 		class listview_basic : public listview_core
 		{
 		public:
-			listview_basic(const std::shared_ptr<stylesheet> &stylesheet_);
+			void apply_styles(const stylesheet &stylesheet_);
 
 		protected:
 			virtual agge::real_t get_minimal_item_height() const;
@@ -48,9 +48,6 @@ namespace wpl
 			virtual void draw_subitem(wpl::gcontext &ctx, wpl::gcontext::rasterizer_ptr &rasterizer,
 				const agge::rect_r &box, index_type item, unsigned state, wpl::columns_model::index_type subitem,
 				const std::wstring &text) const;
-
-		private:
-			void update_styles(const wpl::stylesheet &ss);
 
 		private:
 			agge::real_t _item_height, _padding, _baseline_offset;

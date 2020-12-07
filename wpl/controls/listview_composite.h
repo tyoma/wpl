@@ -37,7 +37,6 @@ namespace wpl
 		{
 		public:
 			listview_composite(const factory &factory_, const control_context &context)
-				: BaseControlT(context.stylesheet_)
 			{
 				using namespace std;
 
@@ -73,10 +72,19 @@ namespace wpl
 				const int scroller_width = 15;
 				const int height2 = box.h - _header_height;
 
+				_scrollers_views.clear();
 				BaseControlT::layout(offset(append_view, 0, _header_height), make_box(box.w, height2));
-				_hscroller->layout(offset(append_view, 0, box.h - scroller_width), make_box(box.w, scroller_width));
-				_vscroller->layout(offset(append_view, box.w - scroller_width, _header_height), make_box(scroller_width, height2));
+				_hscroller->layout(offset(collect(append_view, _scrollers_views), 0, box.h - scroller_width),
+					make_box(box.w, scroller_width));
+				_vscroller->layout(offset(collect(append_view, _scrollers_views), box.w - scroller_width, _header_height),
+					make_box(scroller_width, height2));
 				_header->layout(append_view, make_box(box.w, _header_height));
+			}
+
+			virtual void mouse_scroll(int depressed, int x, int y, int delta_x, int delta_y)
+			{
+				for (auto i = _scrollers_views.begin(); i != _scrollers_views.end(); ++i)
+					i->regular->mouse_scroll(depressed, x, y, delta_x, delta_y);
 			}
 
 			static placed_view_appender offset(const placed_view_appender &inner, int dx, int dy)
@@ -86,6 +94,14 @@ namespace wpl
 				return [&inner, dx, dy] (placed_view pv) {
 					pv.location.x1 += dx, pv.location.x2 += dx;
 					pv.location.y1 += dy, pv.location.y2 += dy;
+					inner(pv);
+				};
+			}
+
+			static placed_view_appender collect(const placed_view_appender &inner, std::vector<placed_view> &views)
+			{
+				return [&inner, &views] (placed_view pv) {
+					views.push_back(pv);
 					inner(pv);
 				};
 			}
@@ -101,6 +117,7 @@ namespace wpl
 			std::shared_ptr<wpl::scroller> _hscroller, _vscroller;
 			int _header_height;
 			wpl::slot_connection _scroll_connection;
+			std::vector<placed_view> _scrollers_views;
 		};
 	}
 }

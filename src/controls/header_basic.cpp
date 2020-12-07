@@ -39,9 +39,9 @@ namespace wpl
 			typedef blender_solid_color<simd::blender_solid_color, order_bgra> blender;
 		}
 
-		header_basic::header_basic(shared_ptr<stylesheet> stylesheet_, shared_ptr<cursor_manager> cursor_manager_)
+		header_basic::header_basic(shared_ptr<cursor_manager> cursor_manager_)
 			: header_core(cursor_manager_)
-		{	update_styles(*stylesheet_);	}
+		{	}
 
 		void header_basic::draw(gcontext &ctx, gcontext::rasterizer_ptr &ras) const
 		{
@@ -86,7 +86,7 @@ namespace wpl
 			}
 		}
 
-		void header_basic::update_styles(const stylesheet &ss)
+		void header_basic::apply_styles(const stylesheet &ss)
 		{
 			_font = ss.get_font("text.header");
 
@@ -101,6 +101,7 @@ namespace wpl
 			_padding = ss.get_value("padding.header");
 			_baseline_offset = _padding + m.ascent;
 			_separator_width = ss.get_value("border.header.separator");
+			invalidate(nullptr);
 		}
 	}
 }

@@ -43,9 +43,31 @@ namespace wpl
 			{	r.x1 -= dx, r.x2 += dx, r.y1 -= dy, r.y2 += dy;	}
 		}
 
+		void listview_basic::apply_styles(const stylesheet &ss)
+		{
+			_font = ss.get_font("text.listview");
 
-		listview_basic::listview_basic(const shared_ptr<stylesheet> &stylesheet_)
-		{	update_styles(*stylesheet_);	}
+			_bg_even = ss.get_color("background.listview.even");
+			_bg_odd = ss.get_color("background.listview.odd");
+			_bg_selected = ss.get_color("background.selected.listview");
+			_fg_normal = ss.get_color("text.listview");
+			_fg_focus = ss.get_color("text.listview");
+			_fg_selected = ss.get_color("text.selected.listview");
+			_fg_focus_selected = ss.get_color("text.selected.listview");
+
+			agge::font::metrics m = _font->get_metrics();
+
+			_padding = ss.get_value("padding");
+			_baseline_offset = _padding + m.ascent;
+			_item_height = _baseline_offset + m.descent + _padding;
+
+			_stroke.set_cap(agge::caps::butt());
+			_stroke.set_join(agge::joins::bevel());
+			_stroke.width(1.0f);
+			_dash.add_dash(1.0f, 1.0f);
+			_dash.dash_start(0.5f);
+			invalidate(nullptr);
+		}
 
 		real_t listview_basic::get_minimal_item_height() const
 		{	return _item_height;	}
@@ -84,31 +106,6 @@ namespace wpl
 			ctx.text_engine.render_string(*ras, *_font, text.c_str(), layout::near, b.x1 + _padding, b.y1 + _baseline_offset, max_width);
 			ras->sort(true);
 			ctx(ras, blender(state & selected ? _fg_selected : _fg_normal), winding<>());
-		}
-
-		void listview_basic::update_styles(const stylesheet &ss)
-		{
-			_font = ss.get_font("text.listview");
-
-			_bg_even = ss.get_color("background.listview.even");
-			_bg_odd = ss.get_color("background.listview.odd");
-			_bg_selected = ss.get_color("background.selected.listview");
-			_fg_normal = ss.get_color("text.listview");
-			_fg_focus = ss.get_color("text.listview");
-			_fg_selected = ss.get_color("text.selected.listview");
-			_fg_focus_selected = ss.get_color("text.selected.listview");
-
-			agge::font::metrics m = _font->get_metrics();
-
-			_padding = ss.get_value("padding");
-			_baseline_offset = _padding + m.ascent;
-			_item_height = _baseline_offset + m.descent + _padding;
-
-			_stroke.set_cap(agge::caps::butt());
-			_stroke.set_join(agge::joins::bevel());
-			_stroke.width(1.0f);
-			_dash.add_dash(1.0f, 1.0f);
-			_dash.dash_start(0.5f);
 		}
 	}
 }

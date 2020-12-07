@@ -35,7 +35,7 @@ namespace wpl
 		class header_basic : public header_core
 		{
 		public:
-			header_basic(std::shared_ptr<stylesheet> stylesheet_, std::shared_ptr<cursor_manager> cursor_manager_);
+			header_basic(std::shared_ptr<cursor_manager> cursor_manager_);
 
 			virtual void draw(gcontext &ctx, gcontext::rasterizer_ptr &rasterizer) const;
 
@@ -44,8 +44,7 @@ namespace wpl
 			virtual void draw_item(gcontext &ctx, gcontext::rasterizer_ptr &ras, const agge::rect_r &b,
 				index_type item, unsigned /*item_state_flags*/ state, const std::wstring &text) const;
 
-		private:
-			void update_styles(const stylesheet &stylesheet_);
+			void apply_styles(const stylesheet &stylesheet_);
 
 		private:
 			agge::real_t _padding, _baseline_offset, _separator_width;
