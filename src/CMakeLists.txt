@@ -12,6 +12,7 @@ set(WPL_SOURCES
 	visual.cpp
 	visual_router.cpp
 
+	controls/background.cpp
 	controls/header_basic.cpp
 	controls/header_core.cpp
 	controls/listview_basic.cpp
@@ -23,14 +24,15 @@ if(WIN32)
 	set(WPL_SOURCES ${WPL_SOURCES}
 		win32/combobox.cpp
 		win32/controls.cpp
+		win32/cursor_manager.cpp
 		win32/factory_win32.cpp
 		win32/font_loader_win32.cpp
 		win32/font_manager_win32.cpp
 		win32/form.cpp
 		win32/listview_win32.cpp
 		win32/native_view.cpp
-		win32/view_host.cpp
 		win32/queue.cpp
+		win32/view_host.cpp
 		win32/window.cpp
 	)
 endif()
