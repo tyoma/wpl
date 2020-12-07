@@ -65,6 +65,19 @@ namespace wpl
 	};
 
 
+	class overlay : public control
+	{
+	public:
+		void add(std::shared_ptr<control> child);
+
+		// control methods
+		virtual void layout(const placed_view_appender &append_view, const agge::box<int> &box);
+
+	private:
+		std::vector< std::shared_ptr<control> > _children;
+	};
+
+
 
 	std::shared_ptr<control> pad_control(std::shared_ptr<control> inner, int px, int py);
 }

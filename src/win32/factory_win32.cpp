@@ -20,10 +20,12 @@
 
 #include <wpl/factory.h>
 
+#include <wpl/controls/background.h>
 #include <wpl/controls/header_basic.h>
 #include <wpl/controls/listview_composite.h>
 #include <wpl/controls/listview_basic.h>
 #include <wpl/controls/scroller.h>
+#include <wpl/stylesheet_helpers.h>
 #include <wpl/win32/cursor_manager.h>
 #include <wpl/win32/font_loader.h>
 #include <wpl/win32/font_manager.h>
@@ -101,6 +103,9 @@ namespace wpl
 			return shared_ptr<form>(new win32::form(context));
 		});
 
+		factory_.register_control("background", [] (const factory &, const control_context &context) {
+			return apply_stylesheet(make_shared<controls::solid_background>(), *context.stylesheet_);
+		});
 		factory_.register_control("button", [font_manager] (const factory &, const control_context &context) {
 			return apply_stylesheet(make_shared<win32::button>(), *context.stylesheet_, font_manager);
 		});

@@ -46,6 +46,7 @@
   <ItemGroup>
     <ClCompile Include="animated_models.cpp" />
     <ClCompile Include="animation.cpp" />
+    <ClCompile Include="controls\background.cpp" />
     <ClCompile Include="controls\header_basic.cpp" />
     <ClCompile Include="controls\header_core.cpp" />
     <ClCompile Include="controls\listview_basic.cpp" />
@@ -102,6 +103,7 @@
     <ClInclude Include="..\wpl\concepts.h" />
     <ClInclude Include="..\wpl\control.h" />
     <ClInclude Include="..\wpl\controls.h" />
+    <ClInclude Include="..\wpl\controls\background.h" />
     <ClInclude Include="..\wpl\controls\header_basic.h" />
     <ClInclude Include="..\wpl\controls\header_core.h" />
     <ClInclude Include="..\wpl\controls\integrated.h" />

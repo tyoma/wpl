@@ -136,7 +136,7 @@ namespace wpl
 		listview_core::listview_core()
 			: _vsmodel(new vertical_scroll_model), _hsmodel(new horizontal_scroll_model), _state_vscrolling(false)
 		{
-			tab_stoppable = true;
+			tab_stop = true;
 			_offset.dx = 0, _offset.dy = 0;
 			_size.w = 0, _size.h = 0;
 			_vsmodel->owner = this;

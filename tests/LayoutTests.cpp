@@ -440,6 +440,80 @@ namespace wpl
 
 				assert_equal(reference2, v);
 			}
+
+		end_test_suite
+
+
+		begin_test_suite( OverlayLayoutTests )
+			test( ControlOccupyFullContainer )
+			{
+				// INIT
+				const shared_ptr<mocks::control> ctls[] = {
+					make_shared<mocks::control>(), make_shared<mocks::control>(),
+				};
+				overlay o;
+				vector<placed_view> v;
+
+				// INIT / ACT
+				o.add(ctls[0]);
+
+				// ACT
+				o.layout(make_appender(v), make_box(100, 97));
+
+				// ASSERT
+				agge::box<int> reference1[] = {	{ 100, 97 }, };
+
+				assert_equal(reference1, ctls[0]->size_log);
+
+				// INIT / ACT
+				o.add(ctls[1]);
+
+				// ACT
+				o.layout(make_appender(v), make_box(1000, 970));
+
+				// ASSERT
+				agge::box<int> reference21[] = {	{ 100, 97 }, { 1000, 970 },	};
+				agge::box<int> reference22[] = {	{ 1000, 970 },	};
+
+				assert_equal(reference21, ctls[0]->size_log);
+				assert_equal(reference22, ctls[1]->size_log);
+			}
+
+
+			test( ControlViewsAreAppendedAsIs )
+			{
+				// INIT
+				const shared_ptr<mocks::control> ctls[] = {
+					make_shared<mocks::control>(), make_shared<mocks::control>(),
+				};
+				placed_view pv[] = {
+					{	make_shared<view>(), nullptr_nv, make_rect(7, 13, 15, 30), 1,	},
+					{	make_shared<view>(), nullptr_nv, make_rect(10, 20, 30, 200), 3,	},
+					{	make_shared<view>(), nullptr_nv, make_rect(10, 20, 30, 200), 2,	},
+				};
+				overlay o;
+				vector<placed_view> v;
+
+				ctls[0]->views.push_back(pv[0]);
+				ctls[0]->views.push_back(pv[1]);
+				ctls[1]->views.push_back(pv[2]);
+
+				// INIT / ACT
+				o.add(ctls[0]);
+				o.add(ctls[1]);
+
+				// ACT
+				o.layout(make_appender(v), make_box(100, 100));
+
+				// ASSERT
+				placed_view reference[] = {
+					{ pv[0].regular, nullptr_nv, make_rect(7, 13, 15, 30), 1 },
+					{ pv[1].regular, nullptr_nv, make_rect(10, 20, 30, 200), 3 },
+					{ pv[2].regular, nullptr_nv, make_rect(10, 20, 30, 200), 2 },
+				};
+
+				assert_equal(reference, v);
+			}
 		end_test_suite
 	}
 }

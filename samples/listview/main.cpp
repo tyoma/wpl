@@ -90,14 +90,19 @@ int main()
 	const view_location l = { 100, 100, 300, 200 };
 	const auto f = fct->create_form();
 	const auto c = f->close += &exit_message_loop;
-	const auto lv = fct->create_control<listview>("listview");
 	shared_ptr<my_columns> cm(new my_columns);
 	shared_ptr<my_model> m(new my_model);
+
+	const auto root = make_shared<overlay>();
+		root->add(fct->create_control<control>("background"));
+
+		const auto lv = fct->create_control<listview>("listview");
+		root->add(pad_control(lv, 5, 5));
 
 	lv->set_columns_model(cm);
 	lv->set_model(m);
 
-	f->set_root(pad_control(lv, 5, 5));
+	f->set_root(root);
 	f->set_location(l);
 	f->set_visible(true);
 	lv->select(1, true);

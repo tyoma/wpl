@@ -20,6 +20,8 @@
 
 #include <wpl/layout.h>
 
+#include <algorithm>
+
 using namespace std;
 
 namespace wpl
@@ -28,7 +30,7 @@ namespace wpl
 	{
 		placed_view_appender offset(const placed_view_appender &inner, int dx, int dy, int tab_override)
 		{
-			// TODO: use custom appender functor, as std::function may allocate storage dynamically.
+			// TODO: use custom appender functor, as function may allocate storage dynamically.
 
 			return [&inner, dx, dy, tab_override] (placed_view pv) {
 				pv.location.x1 += dx, pv.location.x2 += dx;
@@ -81,6 +83,17 @@ namespace wpl
 
 		b.w -= 2 * _px, b.h -= 2 * _py;
 		_inner->layout(offset(append_view, _px, _py, 0), b);
+	}
+
+
+	void overlay::add(shared_ptr<control> child)
+	{	_children.push_back(child);	}
+
+	void overlay::layout(const placed_view_appender &append_view, const agge::box<int> &box)
+	{
+		for_each(_children.begin(), _children.end(), [&append_view, &box] (const shared_ptr<control> &ctl) {
+			ctl->layout(append_view, box);
+		});
 	}
 
 

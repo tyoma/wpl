@@ -101,17 +101,21 @@ int main()
 	shared_ptr<form> f = fct->create_form();
 	slot_connection c = f->close += &exit_message_loop;
 
-	auto root = make_shared<stack>(5, false);
-		auto cb = fct->create_control<combobox>("combobox");
-			root->add(cb, 40, 1);
+	const auto root = make_shared<overlay>();
+		root->add(fct->create_control<control>("background"));
 
-		auto scrl = fct->create_control<scroller>("hscroller");
-			root->add(scrl, 20);
+		const auto vstack = make_shared<stack>(5, false);
+		root->add(pad_control(vstack, 5, 5));
+			auto cb = fct->create_control<combobox>("combobox");
+				vstack->add(cb, 40, 1);
 
-		auto fill = make_shared<stack>(5, true);
-			root->add(fill, -100);
-				auto scrl2 = fct->create_control<scroller>("vscroller");
-				fill->add(scrl2, 8);
+			auto scrl = fct->create_control<scroller>("hscroller");
+				vstack->add(scrl, 20);
+
+			auto fill = make_shared<stack>(5, true);
+				vstack->add(fill, -100);
+					auto scrl2 = fct->create_control<scroller>("vscroller");
+					fill->add(scrl2, 8);
 
 	cb->set_model(shared_ptr<my_model>(new my_model));
 
@@ -122,7 +126,7 @@ int main()
 
 	new int;
 
-	f->set_root(pad_control(root, 5, 5));
+	f->set_root(root);
 	f->set_location(l);
 	f->set_visible(true);
 	run_message_loop();

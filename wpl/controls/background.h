@@ -20,48 +20,27 @@
 
 #pragma once
 
-#include "../concepts.h"
-#include "../view.h"
+#include "../control.h"
+#include "integrated.h"
 
-#include <memory>
+#include <agge/color.h>
 
 namespace wpl
 {
-	struct placed_view;
+	struct stylesheet;
 
 	namespace controls
 	{
-		template <typename ControlT>
-		class integrated_control : public ControlT, public view, public std::enable_shared_from_this<view>, noncopyable
+		class solid_background : public integrated_control<wpl::control>
 		{
 		public:
-			integrated_control();
+			void apply_styles(const stylesheet &stylesheet_);
 
-			// control methods
-			virtual void layout(const placed_view_appender &append_view, const agge::box<int> &box);
+		private:
+			virtual void draw(gcontext &context, gcontext::rasterizer_ptr &rasterizer) const;
 
-		protected:
-			bool tab_stop;
+		private:
+			agge::color _color;
 		};
-
-
-
-		template <typename ControlT>
-		inline integrated_control<ControlT>::integrated_control()
-			: tab_stop(false)
-		{	}
-
-		template <typename ControlT>
-		inline void integrated_control<ControlT>::layout(const placed_view_appender &append_view, const agge::box<int> &box_)
-		{
-			placed_view v = {
-				shared_from_this(),
-				std::shared_ptr<native_view>(),
-				{ 0, 0, box_.w, box_.h },
-				!!tab_stop,
-			};
-
-			append_view(v);
-		}
 	}
 }

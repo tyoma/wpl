@@ -93,21 +93,25 @@ int main()
 	shared_ptr<my_columns> cm(new my_columns);
 	shared_ptr<my_model> m(new my_model);
 
-	const auto stk = make_shared<stack>(5, false);
-		const auto lv = fct->create_control<listview>("listview");
-		lv->set_columns_model(cm);
-		lv->set_model(m);
-		stk->add(lv, -100, 1);
+	const auto root = make_shared<overlay>();
+		root->add(fct->create_control<control>("background"));
 
-		auto btn1 = fct->create_control<button>("button");
-		btn1->set_text(L"first");
-		stk->add(btn1, 20, 2);
+		const auto stk = make_shared<stack>(5, false);
+		root->add(pad_control(stk, 5, 5));
+			const auto lv = fct->create_control<listview>("listview");
+			lv->set_columns_model(cm);
+			lv->set_model(m);
+			stk->add(lv, -100, 1);
 
-		auto btn2 = fct->create_control<button>("button");
-		btn2->set_text(L"second");
-		stk->add(btn2, 20, 3);
+			auto btn1 = fct->create_control<button>("button");
+			btn1->set_text(L"first");
+			stk->add(btn1, 20, 2);
 
-	f->set_root(pad_control(stk, 5, 5));
+			auto btn2 = fct->create_control<button>("button");
+			btn2->set_text(L"second");
+			stk->add(btn2, 20, 3);
+
+	f->set_root(root);
 	f->set_location(l);
 	f->set_visible(true);
 	run_message_loop();

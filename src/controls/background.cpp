@@ -20,48 +20,39 @@
 
 #pragma once
 
-#include "../concepts.h"
-#include "../view.h"
+#include <wpl/controls/background.h>
 
-#include <memory>
+#include <agge/blenders.h>
+#include <agge/blenders_simd.h>
+#include <agge/figures.h>
+#include <agge/filling_rules.h>
+#include <agge/path.h>
+#include <wpl/stylesheet.h>
+
+using namespace agge;
 
 namespace wpl
 {
-	struct placed_view;
-
 	namespace controls
 	{
-		template <typename ControlT>
-		class integrated_control : public ControlT, public view, public std::enable_shared_from_this<view>, noncopyable
+		namespace
 		{
-		public:
-			integrated_control();
+			typedef blender_solid_color<simd::blender_solid_color, order_bgra> blender;
+		}
 
-			// control methods
-			virtual void layout(const placed_view_appender &append_view, const agge::box<int> &box);
-
-		protected:
-			bool tab_stop;
-		};
-
-
-
-		template <typename ControlT>
-		inline integrated_control<ControlT>::integrated_control()
-			: tab_stop(false)
-		{	}
-
-		template <typename ControlT>
-		inline void integrated_control<ControlT>::layout(const placed_view_appender &append_view, const agge::box<int> &box_)
+		void solid_background::apply_styles(const stylesheet &stylesheet_)
 		{
-			placed_view v = {
-				shared_from_this(),
-				std::shared_ptr<native_view>(),
-				{ 0, 0, box_.w, box_.h },
-				!!tab_stop,
-			};
+			_color = stylesheet_.get_color("background");
+			invalidate(nullptr);
+		}
 
-			append_view(v);
+		void solid_background::draw(gcontext &context, gcontext::rasterizer_ptr &rasterizer_) const
+		{
+			const auto r = context.update_area();
+
+			add_path(*rasterizer_, rectangle(static_cast<real_t>(r.x1), static_cast<real_t>(r.y1),
+				static_cast<real_t>(r.x2), static_cast<real_t>(r.y2)));
+			context(rasterizer_, blender(_color), winding<>());
 		}
 	}
 }
