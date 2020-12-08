@@ -21,6 +21,7 @@ namespace wpl
 
 			form_context context;
 			window_manager wm;
+			shared_ptr<mocks::cursor_manager> cursor_manager;
 
 			HWND create_window(bool visible = false, int width = 100, int height = 100)
 			{
@@ -37,7 +38,8 @@ namespace wpl
 				context.renderer = make_shared<gcontext::renderer_type>(1);
 				context.text_engine = create_text_engine();
 				context.stylesheet_ = make_shared<stylesheet_db>();
-				context.cursor_manager_ = make_shared<mocks::cursor_manager>();
+				context.cursor_manager_ = cursor_manager = make_shared<mocks::cursor_manager>();
+				cursor_manager->cursors[cursor_manager::arrow].reset(new cursor(16, 16, 0, 0));
 			}
 
 
@@ -893,7 +895,7 @@ namespace wpl
 			test( NativeViewWindowsAreResizedAccordinglyToTheirLocations )
 			{
 				// INIT
-				const placed_view pv[] = {
+				placed_view pv[] = {
 					{	nullptr, make_shared<mocks::native_view_window>(), make_rect(10, 17, 110, 151)	},
 					{	nullptr, make_shared<mocks::native_view_window>(), make_rect(100, 1, 191, 201)	},
 					{	nullptr, make_shared<mocks::native_view_window>(), make_rect(10, 10, 110, 210)	},
@@ -911,6 +913,15 @@ namespace wpl
 				assert_equal(rect(10, 17, 100, 134), get_window_rect(pv[0].native->get_window()));
 				assert_equal(rect(100, 1, 91, 200), get_window_rect(pv[1].native->get_window()));
 				assert_equal(rect(10, 10, 100, 200), get_window_rect(pv[2].native->get_window()));
+
+				// INIT
+				ctl->views[0].location = make_rect(0, 0, 100, 30);
+
+				// ACT
+				::MoveWindow(hwnd, 0, 0, 200, 200, FALSE);
+
+				// ASSERT
+				assert_equal(rect(0, 0, 100, 30), get_window_rect(pv[0].native->get_window()));
 			}
 
 
@@ -939,54 +950,6 @@ namespace wpl
 			//	assert_is_false(!!::GetUpdateRect(hwnd, NULL, FALSE));
 			//	assert_equal(HWND(), ::GetCapture());
 			//	assert_null(capture);
-			//}
-
-
-			//test( ForcingLayoutSignalLeadsToViewResize )
-			//{
-			//	// INIT
-			//	shared_ptr< mocks::logging_visual<view> > v(new mocks::logging_visual<view>);
-			//	hosting_window f;
-			//	RECT rc;
-
-			//	f.host->set_view(v);
-			//	::MoveWindow(hwnd, 0, 0, 500, 400, TRUE);
-			//	::GetClientRect(hwnd, &rc);
-			//	v->resize_log.clear();
-
-			//	// ACT
-			//	v->force_layout();
-
-			//	// ASSERT
-			//	assert_equal(1u, v->resize_log.size());
-			//	assert_equal(rc.right, v->resize_log[0].first);
-			//	assert_equal(rc.bottom, v->resize_log[0].second);
-			//}
-
-
-			//test( NativeViewWindowsAreResizedAccordinglyToTheirLocationsOnForceLayout )
-			//{
-			//	// INIT
-			//	shared_ptr<mocks::native_view> v(new mocks::native_view);
-			//	hosting_window f;
-			//	view_location l1 = { 10, 17, 100, 134 }, l2 = { 100, 1, 91, 200 };
-			//	shared_ptr<mocks::native_view_window> children[] = {
-			//		shared_ptr<mocks::native_view_window>(new mocks::native_view_window), shared_ptr<mocks::native_view_window>(new mocks::native_view_window),
-			//	};
-
-			//	v->response.push_back(make_pair(children[0], l1));
-			//	v->response.push_back(make_pair(children[1], l2));
-			//	f.host->set_view(v);
-			//	::MoveWindow(hwnd, 0, 0, 100, 100, TRUE);
-			//	::MoveWindow(children[0]->hwnd(), 0, 0, 1, 1, TRUE);
-			//	::MoveWindow(children[1]->hwnd(), 0, 0, 1, 1, TRUE);
-
-			//	// ACT
-			//	v->force_layout();
-
-			//	// ASSERT
-			//	assert_equal(rect(10, 17, 100, 134), get_window_rect(children[0]->hwnd()));
-			//	assert_equal(rect(100, 1, 91, 200), get_window_rect(children[1]->hwnd()));
 			//}
 
 
@@ -1171,14 +1134,70 @@ namespace wpl
 			}
 
 
-			//test( SetCursorMessageIsStopped )
-			//{
-			//	// INIT
-			//	hosting_window f;
+			test( SetCursorMessageIsStopped )
+			{
+				// INIT
+				const auto hwnd = create_window(true, 100, 100);
+				win32::view_host vh(hwnd, context);
 
-			//	// ACT / ASSERT
-			//	assert_equal(TRUE, ::SendMessage(hwnd, WM_SETCURSOR, 0, MAKELONG(HTCLIENT, 0)));
-			//}
+				// ACT / ASSERT
+				assert_equal(TRUE, ::SendMessage(hwnd, WM_SETCURSOR, reinterpret_cast<WPARAM>(hwnd),
+					MAKELONG(HTCLIENT, 0)));
+			}
+
+
+			test( SetCursorMessageForAChildIsNotStopped )
+			{
+				// INIT
+				const auto v = make_shared<view>();
+				const placed_view pv[] = {
+					{	nullptr, make_shared<mocks::native_view_window>(), make_rect(1, 1, 191, 201)	},
+				};
+				const auto ctl = make_shared<mocks::control>();
+				const auto hwnd = create_window(true, 100, 100);
+				win32::view_host vh(hwnd, context);
+
+				ctl->views.assign(begin(pv), end(pv));
+				vh.set_root(ctl);
+
+				// ACT / ASSERT
+				assert_equal(FALSE, ::SendMessage(hwnd, WM_SETCURSOR, reinterpret_cast<WPARAM>(pv[0].native->get_window()),
+					MAKELONG(HTCLIENT, 0)));
+			}
+
+
+			test( CursorIsSetToArrowOnMouseEnter )
+			{
+				// INIT
+				const auto hwnd = create_window(true, 100, 100);
+				win32::view_host vh(hwnd, context);
+
+				// INIT / ASSERT
+				assert_equal(0u, cursor_manager->stack_level);
+
+				// ACT
+				::SendMessage(hwnd, WM_MOUSEMOVE, 0, pack_coordinates(10, 11));
+
+				// ASSERT
+				assert_equal(1u, cursor_manager->stack_level);
+				assert_equal(1u, cursor_manager->attempts);
+				assert_equal(cursor_manager->cursors[cursor_manager::arrow], cursor_manager->recently_set);
+
+				// ACT
+				::SendMessage(hwnd, WM_MOUSEMOVE, 0, pack_coordinates(20, 11));
+
+				// ASSERT
+				assert_equal(1u, cursor_manager->stack_level);
+				assert_equal(1u, cursor_manager->attempts);
+				assert_equal(cursor_manager->cursors[cursor_manager::arrow], cursor_manager->recently_set);
+
+				// ACT
+				::SendMessage(hwnd, WM_MOUSELEAVE, 0, 0);
+
+				// ASSERT
+				assert_equal(0u, cursor_manager->stack_level);
+				assert_equal(1u, cursor_manager->attempts);
+			}
 
 
 			test( SettingFocusToANativeViewFocusesItsWindow )

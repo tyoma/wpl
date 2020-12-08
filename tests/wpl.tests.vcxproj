@@ -66,12 +66,6 @@
     <ClCompile Include="NativeControlsTests.cpp" />
     <ClCompile Include="NativeViewHostTests.cpp" />
     <ClCompile Include="NativeViewTests.cpp" />
-    <ClCompile Include="RootContainerTests.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
-    </ClCompile>
     <ClCompile Include="ScrollerTests.cpp" />
     <ClCompile Include="SignalTests.cpp" />
     <ClCompile Include="helpers.cpp" />

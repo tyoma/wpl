@@ -121,7 +121,7 @@ namespace wpl
 			public:
 				std::map< standard_cursor, std::shared_ptr<const cursor> > cursors;
 				std::shared_ptr<const cursor> recently_set;
-				unsigned stack_level;
+				unsigned attempts, stack_level;
 			};
 
 

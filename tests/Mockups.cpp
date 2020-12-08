@@ -52,7 +52,7 @@ namespace wpl
 
 
 			cursor_manager::cursor_manager()
-				: stack_level(0u)
+				: attempts(0u), stack_level(0u)
 			{	}
 
 			shared_ptr<const cursor> cursor_manager::get(standard_cursor id) const
@@ -64,10 +64,14 @@ namespace wpl
 			}
 
 			void cursor_manager::set(shared_ptr<const cursor> cursor_)
-			{	recently_set = cursor_;	}
+			{
+				attempts++;
+				recently_set = cursor_;
+			}
 
 			void cursor_manager::push(shared_ptr<const cursor> cursor_)
 			{
+				attempts++;
 				stack_level++;
 				recently_set = cursor_;
 			}

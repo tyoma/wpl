@@ -20,8 +20,7 @@
 
 #include <wpl/win32/view_host.h>
 
-#include <agge/blenders.h>
-#include <agge/blenders_simd.h>
+#include <wpl/cursor.h>
 #include <wpl/visual_router.h>
 #include <wpl/win32/native_view.h>
 
@@ -161,7 +160,7 @@ namespace wpl
 				return ::SendMessage(reinterpret_cast<const NMHDR*>(lparam)->hwndFrom, OCM_NOTIFY, wparam, lparam);
 
 			case WM_SETCURSOR:
-				if (HTCLIENT == LOWORD(lparam))
+				if (HTCLIENT == LOWORD(lparam) && _window->hwnd() == reinterpret_cast<HWND>(wparam))
 					return TRUE;
 				else
 					break;
@@ -256,6 +255,7 @@ namespace wpl
 			case WM_MOUSELEAVE:
 				_mouse_in = false;
 				_mouse_router.mouse_leave();
+				context.cursor_manager_->pop();
 				break;
 
 			case WM_MOUSEMOVE:
@@ -265,6 +265,7 @@ namespace wpl
 
 					_mouse_in = true;
 					TrackMouseEvent(&tme);
+					context.cursor_manager_->push(context.cursor_manager_->get(cursor_manager::arrow));
 				}
 				_mouse_router.mouse_move(convert_mouse_modifiers(wparam), unpack_point(lparam));
 				break;

@@ -34,7 +34,7 @@ namespace wpl
 			HFONT create_font(const font::key &key)
 			{
 				return ::CreateFontW(key.height, 0, 0, 0, key.bold ? FW_BOLD : FW_NORMAL, key.italic, FALSE, FALSE,
-					DEFAULT_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, ANTIALIASED_QUALITY, DEFAULT_PITCH,
+					DEFAULT_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH,
 					key.typeface.c_str());
 			}
 		}
