@@ -43,20 +43,20 @@ namespace wpl
 			void set_offset(double offset);
 
 			// control methods
-			virtual void layout(const placed_view_appender &append_view, const agge::box<int> &box);
+			virtual void layout(const placed_view_appender &append_view, const agge::box<int> &box) override;
 
 			// header methods
 			void set_model(std::shared_ptr<columns_model> model);
 
 			// mouse_input methods
-			virtual void mouse_enter();
-			virtual void mouse_leave();
-			virtual void mouse_move(int depressed, int x, int y);
-			virtual void mouse_down(mouse_buttons button_, int buttons, int x, int y);
-			virtual void mouse_up(mouse_buttons button_, int buttons, int x, int y);
+			virtual void mouse_enter() override;
+			virtual void mouse_leave() override;
+			virtual void mouse_move(int depressed, int x, int y) override;
+			virtual void mouse_down(mouse_buttons button_, int buttons, int x, int y) override;
+			virtual void mouse_up(mouse_buttons button_, int buttons, int x, int y) override;
 
 			// visual methods
-			virtual void draw(gcontext &ctx, gcontext::rasterizer_ptr &rasterizer) const;
+			virtual void draw(gcontext &ctx, gcontext::rasterizer_ptr &rasterizer) const override;
 
 		private:
 			enum handle_type { none_handle, column_handle, resize_handle };

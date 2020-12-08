@@ -58,10 +58,10 @@ namespace wpl
 				: owner(nullptr)
 			{	}
 
-			virtual range get_range() const
+			virtual range get_range() const override
 			{	return make_pair(0, owner ? get_max() : 0);	}
 
-			virtual void scroll_window(double window_min, double /*window_width*/)
+			virtual void scroll_window(double window_min, double /*window_width*/) override
 			{
 				if (!owner)
 					return;
@@ -78,40 +78,40 @@ namespace wpl
 
 		struct listview_core::vertical_scroll_model : base_scroll_model
 		{
-			virtual range get_window() const
+			virtual range get_window() const override
 			{
 				return owner && owner->get_minimal_item_height()
 					? range(owner->_offset.dy, owner->_size.h / owner->get_minimal_item_height()) : range(0, 0);
 			}
 
-			virtual double get_increment() const
+			virtual double get_increment() const override
 			{	return 1;	}
 
-			virtual void scrolling(bool begins)
+			virtual void scrolling(bool begins) override
 			{
 				if (owner)
 					owner->_state_vscrolling = begins, owner->_state_keep_focus_visible = false;
 			}
 
-			virtual double get_max() const
+			virtual double get_max() const override
 			{	return owner->_model ? static_cast<double>(owner->_model->get_count()) : 0;	}
 
-			virtual void set_window(double window_min)
+			virtual void set_window(double window_min) override
 			{	owner->_offset.dy = window_min;	}
 		};
 
 		struct listview_core::horizontal_scroll_model : base_scroll_model
 		{
-			virtual range get_window() const
+			virtual range get_window() const override
 			{	return owner ? range(owner->_offset.dx, owner->_size.w) : range(0, 0);	}
 
-			virtual double get_increment() const
+			virtual double get_increment() const override
 			{	return 5;	}
 
-			virtual void scrolling(bool /*begins*/)
+			virtual void scrolling(bool /*begins*/) override
 			{	}
 
-			virtual double get_max() const
+			virtual double get_max() const override
 			{
 				double total = 0;
 
@@ -128,7 +128,7 @@ namespace wpl
 				return total;
 			}
 
-			virtual void set_window(double window_min)
+			virtual void set_window(double window_min) override
 			{	owner->_offset.dx = window_min;	}
 		};
 

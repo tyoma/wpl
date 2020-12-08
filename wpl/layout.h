@@ -35,7 +35,7 @@ namespace wpl
 		void add(std::shared_ptr<control> child, int size, int tab_order = 0);
 
 		// control methods
-		virtual void layout(const placed_view_appender &append_view, const agge::box<int> &box);
+		virtual void layout(const placed_view_appender &append_view, const agge::box<int> &box) override;
 
 	private:
 		struct item
@@ -57,7 +57,7 @@ namespace wpl
 	public:
 		padding(std::shared_ptr<control> inner, int px, int py);
 
-		void layout(const placed_view_appender &append_view, const agge::box<int> &box);
+		virtual void layout(const placed_view_appender &append_view, const agge::box<int> &box) override;
 
 	private:
 		std::shared_ptr<control> _inner;
@@ -71,7 +71,7 @@ namespace wpl
 		void add(std::shared_ptr<control> child);
 
 		// control methods
-		virtual void layout(const placed_view_appender &append_view, const agge::box<int> &box);
+		virtual void layout(const placed_view_appender &append_view, const agge::box<int> &box) override;
 
 	private:
 		std::vector< std::shared_ptr<control> > _children;

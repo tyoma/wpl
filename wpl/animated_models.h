@@ -33,11 +33,11 @@ namespace wpl
 		animated_scroll_model(std::shared_ptr<scroll_model> underlying, const clock &clock_, const queue &queue_,
 			const animation_function &release_animation);
 
-		virtual std::pair<double, double> get_range() const;
-		virtual std::pair<double, double> get_window() const;
-		virtual double get_increment() const;
-		virtual void scrolling(bool begins);
-		virtual void scroll_window(double window_min, double window_width);
+		virtual std::pair<double, double> get_range() const override;
+		virtual std::pair<double, double> get_window() const override;
+		virtual double get_increment() const override;
+		virtual void scrolling(bool begins) override;
+		virtual void scroll_window(double window_min, double window_width) override;
 
 	private:
 		void animate();

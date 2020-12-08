@@ -39,11 +39,11 @@ namespace wpl
 			button();
 
 		private:
-			virtual void layout(const placed_view_appender &append_view, const agge::box<int> &box);
+			virtual void layout(const placed_view_appender &append_view, const agge::box<int> &box) override;
 
-			virtual HWND materialize(HWND hparent);
+			virtual HWND materialize(HWND hparent) override;
 			virtual LRESULT on_message(UINT message, WPARAM wparam, LPARAM lparam,
-				const window::original_handler_t &handler);
+				const window::original_handler_t &handler) override;
 		};
 
 
@@ -53,13 +53,13 @@ namespace wpl
 			link();
 
 		private:
-			virtual void layout(const placed_view_appender &append_view, const agge::box<int> &box);
+			virtual void layout(const placed_view_appender &append_view, const agge::box<int> &box) override;
 
-			virtual HWND materialize(HWND hparent);
+			virtual HWND materialize(HWND hparent) override;
 			virtual LRESULT on_message(UINT message, WPARAM wparam, LPARAM lparam,
-				const window::original_handler_t &handler);
+				const window::original_handler_t &handler) override;
 
-			virtual void set_align(halign value);
+			virtual void set_align(halign value) override;
 		};
 	}
 }

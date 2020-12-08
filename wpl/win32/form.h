@@ -40,17 +40,17 @@ namespace wpl
 
 		private:
 			// view_host methods
-			virtual void set_root(std::shared_ptr<control> root);
+			virtual void set_root(std::shared_ptr<control> root) override;
 
 			// form methods
-			virtual view_location get_location() const;
-			virtual void set_location(const view_location &location);
-			virtual void set_visible(bool value);
-			virtual void set_caption(const std::wstring &caption);
-			virtual void set_caption_icon(const gcontext::surface_type &icon);
-			virtual void set_task_icon(const gcontext::surface_type &icon);
-			virtual std::shared_ptr<wpl::form> create_child();
-			virtual void set_features(unsigned /*features*/ features_);
+			virtual view_location get_location() const override;
+			virtual void set_location(const view_location &location) override;
+			virtual void set_visible(bool value) override;
+			virtual void set_caption(const std::wstring &caption) override;
+			virtual void set_caption_icon(const gcontext::surface_type &icon) override;
+			virtual void set_task_icon(const gcontext::surface_type &icon) override;
+			virtual std::shared_ptr<wpl::form> create_child() override;
+			virtual void set_features(unsigned /*features*/ features_) override;
 
 			LRESULT wndproc(UINT message, WPARAM wparam, LPARAM lparam, const window::original_handler_t &previous);
 

@@ -37,12 +37,12 @@ namespace wpl
 		public:
 			header_basic(std::shared_ptr<cursor_manager> cursor_manager_);
 
-			virtual void draw(gcontext &ctx, gcontext::rasterizer_ptr &rasterizer) const;
+			virtual void draw(gcontext &ctx, gcontext::rasterizer_ptr &rasterizer) const override;
 
 			virtual void draw_item_background(gcontext &ctx, gcontext::rasterizer_ptr &rasterizer,
-				const agge::rect_r &box, index_type item, unsigned /*item_state_flags*/ state) const;
+				const agge::rect_r &box, index_type item, unsigned /*item_state_flags*/ state) const override;
 			virtual void draw_item(gcontext &ctx, gcontext::rasterizer_ptr &ras, const agge::rect_r &b,
-				index_type item, unsigned /*item_state_flags*/ state, const std::wstring &text) const;
+				index_type item, unsigned /*item_state_flags*/ state, const std::wstring &text) const override;
 
 			void apply_styles(const stylesheet &stylesheet_);
 

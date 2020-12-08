@@ -37,9 +37,9 @@ namespace wpl
 		typedef std::unordered_map<std::string, agge::real_t> values_t;
 
 	private:
-		virtual agge::color get_color(const char *id) const;
-		virtual agge::font::ptr get_font(const char *id) const;
-		virtual agge::real_t get_value(const char *id) const;
+		virtual agge::color get_color(const char *id) const override;
+		virtual agge::font::ptr get_font(const char *id) const override;
+		virtual agge::real_t get_value(const char *id) const override;
 
 		template <typename ContainerT>
 		typename ContainerT::mapped_type get_value(const ContainerT &container_, const char *id) const;

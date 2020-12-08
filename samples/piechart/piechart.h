@@ -30,12 +30,12 @@ namespace wpl
 		typedef std::vector<segment> segments_t;
 
 	private:
-		virtual void layout(const placed_view_appender &append_view, const agge::box<int> &box);
+		virtual void layout(const placed_view_appender &append_view, const agge::box<int> &box) override;
 
-		virtual void draw(gcontext &ctx, gcontext::rasterizer_ptr &rasterizer) const;
+		virtual void draw(gcontext &ctx, gcontext::rasterizer_ptr &rasterizer) const override;
 
-		virtual void mouse_move(int depressed, int x, int y);
-		virtual void mouse_leave();
+		virtual void mouse_move(int depressed, int x, int y) override;
+		virtual void mouse_leave() override;
 
 		void update_animation(unsigned elapsed);
 

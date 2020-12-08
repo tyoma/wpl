@@ -38,7 +38,7 @@ namespace wpl
 			integrated_control();
 
 			// control methods
-			virtual void layout(const placed_view_appender &append_view, const agge::box<int> &box);
+			virtual void layout(const placed_view_appender &append_view, const agge::box<int> &box) override;
 
 		protected:
 			bool tab_stop;

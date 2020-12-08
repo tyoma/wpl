@@ -60,14 +60,14 @@ namespace wpl
 				get_hscroll_model()->invalidated();
 			}
 
-			virtual void set_columns_model(std::shared_ptr<columns_model> m)
+			virtual void set_columns_model(std::shared_ptr<columns_model> m) override
 			{
 				_header->set_model(m);
 				BaseControlT::set_columns_model(m);
 			}
 
 		private:
-			virtual void layout(const placed_view_appender &append_view, const agge::box<int> &box)
+			virtual void layout(const placed_view_appender &append_view, const agge::box<int> &box) override
 			{
 				const int scroller_width = 15;
 				const int height2 = box.h - _header_height;
@@ -81,7 +81,7 @@ namespace wpl
 				_header->layout(append_view, make_box(box.w, _header_height));
 			}
 
-			virtual void mouse_scroll(int depressed, int x, int y, int delta_x, int delta_y)
+			virtual void mouse_scroll(int depressed, int x, int y, int delta_x, int delta_y) override
 			{
 				for (auto i = _scrollers_views.begin(); i != _scrollers_views.end(); ++i)
 					i->regular->mouse_scroll(depressed, x, y, delta_x, delta_y);

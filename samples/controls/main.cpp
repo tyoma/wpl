@@ -33,10 +33,10 @@ namespace
 			});
 		}
 
-		virtual index_type get_count() const throw()
+		virtual index_type get_count() const throw() override
 		{	return 4;	}
 
-		virtual void get_value(index_type index, wstring &text) const
+		virtual void get_value(index_type index, wstring &text) const override
 		{
 			switch (index)
 			{
@@ -47,7 +47,7 @@ namespace
 			}
 		}
 
-		virtual shared_ptr<const trackable> track(index_type row) const
+		virtual shared_ptr<const trackable> track(index_type row) const override
 		{
 			shared_ptr<my_trackable> t(new my_trackable);
 			t->_index = row;
@@ -56,7 +56,7 @@ namespace
 
 		struct my_trackable : trackable
 		{
-			virtual index_type index() const {	return _index;	}
+			virtual index_type index() const override {	return _index;	}
 			index_type _index;
 		};
 
@@ -70,19 +70,19 @@ namespace
 			: _window(0, 7)
 		{	}
 
-		virtual pair<double /*range_min*/, double /*range_width*/> get_range() const
+		virtual pair<double /*range_min*/, double /*range_width*/> get_range() const override
 		{	return make_pair(0, 100);	}
 
-		virtual pair<double /*window_min*/, double /*window_width*/> get_window() const
+		virtual pair<double /*window_min*/, double /*window_width*/> get_window() const override
 		{	return _window;	}
 
-		virtual double get_increment() const
+		virtual double get_increment() const override
 		{	return 1.0;	}
 
-		virtual void scrolling(bool /*begins*/)
+		virtual void scrolling(bool /*begins*/) override
 		{	}
 
-		virtual void scroll_window(double window_min, double window_width)
+		virtual void scroll_window(double window_min, double window_width) override
 		{
 			_window = make_pair(window_min, window_width);
 			invalidated();

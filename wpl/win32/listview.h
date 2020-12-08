@@ -40,21 +40,21 @@ namespace wpl
 
 		private:
 			// control methods
-			virtual void layout(const placed_view_appender &append_view, const agge::box<int> &box);
+			virtual void layout(const placed_view_appender &append_view, const agge::box<int> &box) override;
 
 			// listview methods
-			virtual void set_columns_model(std::shared_ptr<columns_model> cm);
-			virtual void set_model(std::shared_ptr<table_model> model);
+			virtual void set_columns_model(std::shared_ptr<columns_model> cm) override;
+			virtual void set_model(std::shared_ptr<table_model> model) override;
 
-			virtual void adjust_column_widths();
+			virtual void adjust_column_widths() override;
 
-			virtual void select(index_type item, bool reset_previous);
-			virtual void focus(index_type item);
+			virtual void select(index_type item, bool reset_previous) override;
+			virtual void focus(index_type item) override;
 
 			// native_view methods
-			virtual HWND materialize(HWND hparent_for);
+			virtual HWND materialize(HWND hparent_for) override;
 			virtual LRESULT on_message(UINT message, WPARAM wparam, LPARAM lparam,
-				const window::original_handler_t &previous);
+				const window::original_handler_t &previous) override;
 
 			static void setup_columns(HWND hlistview, const columns_model &cm);
 			static void setup_data(HWND hlistview, index_type item_count);

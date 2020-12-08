@@ -33,14 +33,14 @@ namespace wpl
 		public:
 			combobox();
 
-			virtual void layout(const placed_view_appender &append_view, const agge::box<int> &box);
-			virtual void set_model(std::shared_ptr<model_t> model);
-			virtual void select(model_t::index_type index);
+			virtual void layout(const placed_view_appender &append_view, const agge::box<int> &box) override;
+			virtual void set_model(std::shared_ptr<model_t> model) override;
+			virtual void select(model_t::index_type index) override;
 
 		private:
-			virtual HWND materialize(HWND hparent);
+			virtual HWND materialize(HWND hparent) override;
 			virtual LRESULT on_message(UINT message, WPARAM wparam, LPARAM lparam,
-				const window::original_handler_t &handler);
+				const window::original_handler_t &handler) override;
 
 			void on_invalidated(const model_t *model);
 			void update(HWND hcombobox, const model_t *model) const;

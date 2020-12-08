@@ -41,17 +41,17 @@ namespace wpl
 			~view_host();
 
 			// view_host methods
-			virtual void set_root(std::shared_ptr<control> root);
+			virtual void set_root(std::shared_ptr<control> root) override;
 
 			// visual_router_host methods
-			virtual void invalidate(const agge::rect_i &area);
+			virtual void invalidate(const agge::rect_i &area) override;
 
 			// mouse_router_host methods
-			virtual void request_focus(std::shared_ptr<keyboard_input> input);
-			virtual std::shared_ptr<void> capture_mouse();
+			virtual void request_focus(std::shared_ptr<keyboard_input> input) override;
+			virtual std::shared_ptr<void> capture_mouse() override;
 
 			// keyboard_router_host methods
-			virtual void set_focus(native_view &nview);
+			virtual void set_focus(native_view &nview) override;
 
 			static LRESULT passthrough(UINT message, WPARAM wparam, LPARAM lparam,
 				const window::original_handler_t &previous);

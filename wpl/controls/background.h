@@ -37,7 +37,7 @@ namespace wpl
 			void apply_styles(const stylesheet &stylesheet_);
 
 		private:
-			virtual void draw(gcontext &context, gcontext::rasterizer_ptr &rasterizer) const;
+			virtual void draw(gcontext &context, gcontext::rasterizer_ptr &rasterizer) const override;
 
 		private:
 			agge::color _color;

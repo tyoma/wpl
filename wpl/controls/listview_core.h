@@ -46,27 +46,27 @@ namespace wpl
 			void make_visible(index_type item);
 
 			// keyboard_input methods
-			virtual void key_down(unsigned code, int modifiers);
+			virtual void key_down(unsigned code, int modifiers) override;
 
 			// mouse_input methods
-			virtual void mouse_down(mouse_buttons button_, int buttons, int x, int y);
-			virtual void mouse_up(mouse_buttons button_, int buttons, int x, int y);
-			virtual void mouse_double_click(mouse_buttons button_, int depressed, int x, int y);
+			virtual void mouse_down(mouse_buttons button_, int buttons, int x, int y) override;
+			virtual void mouse_up(mouse_buttons button_, int buttons, int x, int y) override;
+			virtual void mouse_double_click(mouse_buttons button_, int depressed, int x, int y) override;
 
 			// visual methods
-			virtual void draw(gcontext &ctx, gcontext::rasterizer_ptr &rasterizer) const;
+			virtual void draw(gcontext &ctx, gcontext::rasterizer_ptr &rasterizer) const override;
 
 			// control methods
-			virtual void layout(const placed_view_appender &append_view, const agge::box<int> &box);
+			virtual void layout(const placed_view_appender &append_view, const agge::box<int> &box) override;
 
 			// listview methods
-			virtual void set_columns_model(std::shared_ptr<columns_model> cmodel);
-			virtual void set_model(std::shared_ptr<table_model> model);
+			virtual void set_columns_model(std::shared_ptr<columns_model> cmodel) override;
+			virtual void set_model(std::shared_ptr<table_model> model) override;
 
-			virtual void adjust_column_widths();
+			virtual void adjust_column_widths() override;
 
-			virtual void select(index_type item, bool reset_previous);
-			virtual void focus(index_type item);
+			virtual void select(index_type item, bool reset_previous) override;
+			virtual void focus(index_type item) override;
 
 		private:
 			typedef std::shared_ptr<const trackable> trackable_ptr;

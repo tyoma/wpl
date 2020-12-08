@@ -36,10 +36,10 @@ namespace wpl
 			cursor_manager();
 			~cursor_manager();
 
-			virtual std::shared_ptr<const cursor> get(standard_cursor id) const;
-			virtual void set(std::shared_ptr<const cursor> cursor_);
-			virtual void push(std::shared_ptr<const cursor> cursor_);
-			virtual void pop();
+			virtual std::shared_ptr<const cursor> get(standard_cursor id) const override;
+			virtual void set(std::shared_ptr<const cursor> cursor_) override;
+			virtual void push(std::shared_ptr<const cursor> cursor_) override;
+			virtual void pop() override;
 
 		private:
 			typedef std::map<const cursor *, std::shared_ptr<void> /*HCURSOR*/> cached_cursors;

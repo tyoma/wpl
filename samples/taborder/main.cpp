@@ -23,12 +23,12 @@ namespace
 		{	}
 
 	private:
-		virtual index_type get_count() const throw() { return static_cast<index_type>(_columns.size()); }
-		virtual void get_value(index_type index, short int &w) const { w = _columns[index].width; }
-		virtual void get_column(index_type index, column &column_) const { column_ = _columns[index]; }
-		virtual void update_column(index_type index, short int width) { _columns[index].width = width, invalidated(); }
-		virtual pair<index_type, bool> get_sort_order() const throw() { return make_pair(npos(), false); }
-		virtual void activate_column(index_type /*column*/) {	}
+		virtual index_type get_count() const throw() override { return static_cast<index_type>(_columns.size()); }
+		virtual void get_value(index_type index, short int &w) const override { w = _columns[index].width; }
+		virtual void get_column(index_type index, column &column_) const override { column_ = _columns[index]; }
+		virtual void update_column(index_type index, short int width) override { _columns[index].width = width, invalidated(); }
+		virtual pair<index_type, bool> get_sort_order() const throw() override { return make_pair(npos(), false); }
+		virtual void activate_column(index_type /*column*/) override {	}
 
 	private:
 		vector<column> _columns;
@@ -46,19 +46,19 @@ namespace
 			});
 		}
 
-		virtual index_type get_count() const throw()
+		virtual index_type get_count() const throw() override
 		{	return 100u;	}
 
-		virtual void get_text(index_type row, index_type column, wstring &text) const
+		virtual void get_text(index_type row, index_type column, wstring &text) const override
 		{
 			row++, column++;
 			text = to_wstring(long double(row * _n + 13 * column * _n));
 		}
 
-		virtual void set_order(index_type /*column*/, bool /*ascending*/)
+		virtual void set_order(index_type /*column*/, bool /*ascending*/) override
 		{	}
 
-		virtual shared_ptr<const trackable> track(index_type row) const
+		virtual shared_ptr<const trackable> track(index_type row) const override
 		{
 			shared_ptr<my_trackable> t(new my_trackable);
 
@@ -69,7 +69,7 @@ namespace
 	private:
 		struct my_trackable : trackable
 		{
-			virtual index_type index() const
+			virtual index_type index() const override
 			{	return _index;	}
 
 			index_type _index;

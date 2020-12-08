@@ -38,8 +38,8 @@ namespace wpl
 		protected:
 			text_container_impl(const std::string &text_style_name);
 
-			virtual void set_align(wpl::text_container::halign value);
-			virtual void set_text(const std::wstring &text);
+			virtual void set_align(wpl::text_container::halign value) override;
+			virtual void set_text(const std::wstring &text) override;
 
 		protected:
 			std::wstring _text;
