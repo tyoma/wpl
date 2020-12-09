@@ -18,8 +18,6 @@
 //	OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //	THE SOFTWARE.
 
-#pragma once
-
 #include <wpl/controls/background.h>
 
 #include <agge/blenders.h>

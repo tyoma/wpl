@@ -75,7 +75,7 @@ namespace wpl
 		void listview_basic::draw_item_background(gcontext &ctx, gcontext::rasterizer_ptr &ras, const rect_r &b,
 			index_type item, unsigned state) const
 		{
-			const color bg = state & selected ? _bg_selected : (item & 1) ? _bg_odd : _bg_even;
+			const auto bg = state & selected ? _bg_selected : (item & 1) ? _bg_odd : _bg_even;
 
 			if (bg.a)
 			{
@@ -101,7 +101,7 @@ namespace wpl
 		void listview_basic::draw_subitem(gcontext &ctx, gcontext::rasterizer_ptr &ras, const rect_r &b, index_type /*item*/,
 			unsigned state, columns_model::index_type /*subitem*/, const wstring &text) const
 		{
-			const real_t max_width = b.x2 - b.x1 - 2.0f * _padding;
+			const auto max_width = b.x2 - b.x1 - 2.0f * _padding;
 
 			ctx.text_engine.render_string(*ras, *_font, text.c_str(), layout::near, b.x1 + _padding, b.y1 + _baseline_offset, max_width);
 			ras->sort(true);

@@ -39,6 +39,7 @@ namespace wpl
 
 		public:
 			header_core(std::shared_ptr<cursor_manager> cursor_manager_);
+			~header_core();
 
 			void set_offset(double offset);
 
@@ -60,8 +61,10 @@ namespace wpl
 
 		private:
 			enum handle_type { none_handle, column_handle, resize_handle };
+			struct resize_data;
 
 		private:
+			virtual short measure_column(columns_model &model, index_type index) const;
 			virtual void draw_item_background(gcontext &ctx, gcontext::rasterizer_ptr &rasterizer,
 				const agge::rect_r &box, index_type item, unsigned /*item_state_flags*/ state) const;
 			virtual void draw_item(gcontext &ctx, gcontext::rasterizer_ptr &rasterizer,
@@ -71,12 +74,11 @@ namespace wpl
 			std::pair<index_type, handle_type> handle_from_point(int x) const;
 
 		private:
-			std::shared_ptr<cursor_manager> _cursor_manager;
+			const std::shared_ptr<cursor_manager> _cursor_manager;
 			std::shared_ptr<columns_model> _model;
 			agge::box_r _size;
 			agge::real_t _offset;
-			std::pair<index_type, int /* click point */> _resizing_colum;
-			std::shared_ptr<void> _resizing_capture;
+			std::unique_ptr<resize_data> _resize;
 			std::pair<index_type, bool /*ascending*/> _sorted_column;
 			slot_connection _model_invalidation;
 			slot_connection _model_sorting_change;

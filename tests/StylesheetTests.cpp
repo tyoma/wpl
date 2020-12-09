@@ -17,9 +17,9 @@ namespace wpl
 
 			struct dummy_accessor_ : agge::font::accessor
 			{
-				virtual agge::font::metrics get_metrics() const {	return agge::zero();	}
-				virtual agge::uint16_t get_glyph_index(wchar_t) const {	throw 0;	}
-				virtual agge::glyph::outline_ptr load_glyph(agge::uint16_t, agge::glyph::glyph_metrics &) const {	throw 0;	}
+				virtual agge::font::metrics get_metrics() const override {	return agge::zero();	}
+				virtual agge::uint16_t get_glyph_index(wchar_t) const override {	throw 0;	}
+				virtual agge::glyph::outline_ptr load_glyph(agge::uint16_t, agge::glyph::glyph_metrics &) const override {	throw 0;	}
 			};
 
 			shared_ptr<dummy_accessor_> dummy_accessor;

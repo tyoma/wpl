@@ -21,7 +21,7 @@ namespace wpl
 		{
 			struct trackable : wpl::trackable
 			{
-				virtual index_type index() const
+				virtual index_type index() const override
 				{	return index_;	}
 
 				index_type index_;
@@ -29,13 +29,13 @@ namespace wpl
 
 			struct list_model : wpl::list_model<wstring>
 			{
-				virtual index_type get_count() const throw()
+				virtual index_type get_count() const throw() override
 				{	return items.size();	}
 
-				virtual void get_value(index_type index, wstring &text) const
+				virtual void get_value(index_type index, wstring &text) const override
 				{	text = items[index];	}
 
-				virtual shared_ptr<const wpl::trackable> track(index_type row) const
+				virtual shared_ptr<const wpl::trackable> track(index_type row) const override
 				{
 					assert_is_true(0 <= row && row < get_count());
 

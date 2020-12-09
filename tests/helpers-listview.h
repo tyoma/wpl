@@ -47,32 +47,32 @@ namespace wpl
 			unsigned reported_events;
 
 		private:
-			virtual agge::real_t get_minimal_item_height() const
+			virtual agge::real_t get_minimal_item_height() const override
 			{	return (agge::real_t)item_height;	}
 
 			virtual void draw_item_background(gcontext &ctx, gcontext::rasterizer_ptr &rasterizer,
-				const agge::rect_r &box, index_type item, unsigned state) const
+				const agge::rect_r &box, index_type item, unsigned state) const override
 			{
 				if (item_background & reported_events)
 					events.push_back(drawing_event(item_background, ctx, rasterizer, box, item, state));
 			}
 
 			virtual void draw_subitem_background(gcontext &ctx, gcontext::rasterizer_ptr &rasterizer,
-				const agge::rect_r &box, index_type item, unsigned state, columns_model::index_type subitem) const
+				const agge::rect_r &box, index_type item, unsigned state, columns_model::index_type subitem) const override
 			{
 				if (subitem_background & reported_events)
 					events.push_back(drawing_event(subitem_background, ctx, rasterizer, box, item, state, subitem));
 			}
 
 			virtual void draw_item(gcontext &ctx, gcontext::rasterizer_ptr &rasterizer,
-				const agge::rect_r &box, index_type item, unsigned state) const
+				const agge::rect_r &box, index_type item, unsigned state) const override
 			{
 				if (item_self & reported_events)
 					events.push_back(drawing_event(item_self, ctx, rasterizer, box, item, state));
 			}
 
 			virtual void draw_subitem(gcontext &ctx, gcontext::rasterizer_ptr &rasterizer, const agge::rect_r &box,
-				index_type item, unsigned state, columns_model::index_type subitem, const std::wstring &text) const
+				index_type item, unsigned state, columns_model::index_type subitem, const std::wstring &text) const override
 			{
 				if (subitem_self & reported_events)
 					events.push_back(drawing_event(subitem_self, ctx, rasterizer, box, item, state, subitem, text));

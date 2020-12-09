@@ -16,22 +16,22 @@ namespace wpl
 					: increment(1)
 				{	}
 
-				virtual std::pair<double /*[min*/, double /*max)*/> get_range() const
+				virtual std::pair<double /*[min*/, double /*max)*/> get_range() const override
 				{	return range;	}
 
-				virtual std::pair<double /*[window_min*/, double /*window_width)*/> get_window() const
+				virtual std::pair<double /*[window_min*/, double /*window_width)*/> get_window() const override
 				{	return window;	}
 
-				virtual double get_increment() const
+				virtual double get_increment() const override
 				{	return increment;	}
 
-				virtual void scrolling(bool begins)
+				virtual void scrolling(bool begins) override
 				{
 					if (on_scrolling)
 						on_scrolling(begins);
 				}
 
-				virtual void scroll_window(double window_min, double window_width)
+				virtual void scroll_window(double window_min, double window_width) override
 				{
 					if (on_scroll)
 						on_scroll(window_min, window_width);

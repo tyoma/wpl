@@ -16,7 +16,7 @@ namespace wpl
 				std::function<void (native_view &nview)> on_set_focus;
 
 			private:
-				virtual void set_focus(native_view &nview);
+				virtual void set_focus(native_view &nview) override;
 			};
 
 
@@ -26,7 +26,7 @@ namespace wpl
 				std::function<void (const agge::rect_i &area)> on_invalidate;
 
 			private:
-				virtual void invalidate(const agge::rect_i &area);
+				virtual void invalidate(const agge::rect_i &area) override;
 			};
 
 
@@ -37,8 +37,8 @@ namespace wpl
 				std::function<std::shared_ptr<void> ()> on_capture_mouse;
 
 			private:
-				virtual void request_focus(std::shared_ptr<keyboard_input> input);
-				virtual std::shared_ptr<void> capture_mouse();
+				virtual void request_focus(std::shared_ptr<keyboard_input> input) override;
+				virtual std::shared_ptr<void> capture_mouse() override;
 			};
 
 

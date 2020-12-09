@@ -29,8 +29,19 @@ namespace wpl
 {
 	namespace controls
 	{
+		struct header_core::resize_data
+		{
+			index_type index;
+			int click_width;
+			std::shared_ptr<void> capture_handle;
+		};
+
+
 		header_core::header_core(shared_ptr<cursor_manager> cursor_manager_)
-			: _cursor_manager(cursor_manager_), _offset(0.0f), _resizing_colum(make_pair(npos(), 0))
+			: _cursor_manager(cursor_manager_), _offset(0.0f)
+		{	}
+
+		header_core::~header_core()
 		{	}
 
 		void header_core::set_offset(double offset)
@@ -41,7 +52,6 @@ namespace wpl
 
 		void header_core::set_model(shared_ptr<columns_model> model)
 		{
-			_model = model;
 			if (model)
 			{
 				_model_invalidation = model->invalidated += [this] { invalidate(nullptr); };
@@ -54,7 +64,11 @@ namespace wpl
 			else
 			{
 				_model_invalidation = nullptr;
+				_model_sorting_change = nullptr;
 			}
+			_model = model;
+			_resize.reset();
+			invalidate(nullptr);
 		}
 
 		void header_core::mouse_enter()
@@ -65,39 +79,43 @@ namespace wpl
 
 		void header_core::mouse_move(int /*depressed*/, int x, int /*y*/)
 		{
-			const pair<index_type, handle_type> h = handle_from_point(x);
-			const cursor_manager::standard_cursor c = h.second == resize_handle ? cursor_manager::h_resize
+			const auto h = handle_from_point(x);
+			const auto c = h.second == resize_handle ? cursor_manager::h_resize
 				: h.second == column_handle ? cursor_manager::hand : cursor_manager::arrow;
 
 			_cursor_manager->set(_cursor_manager->get(c));
-			if (_resizing_colum.first != npos())
-				_model->update_column(_resizing_colum.first, static_cast<short>(_resizing_colum.second + x));
+			if (_resize)
+			{
+				_model->update_column(_resize->index, static_cast<short>((max<int>)(_resize->click_width + x,
+					measure_column(*_model, _resize->index))));
+			}
 		}
 
-		void header_core::mouse_down(mouse_buttons /*button*/, int /*buttons*/, int x, int /*y*/)
+		void header_core::mouse_down(mouse_buttons /*button*/, int /*depressed*/, int x, int /*y*/)
 		{
-			pair<index_type, handle_type> h = handle_from_point(x);
+			const auto h = handle_from_point(x);
 
 			if (h.second == resize_handle)
 			{
 				short w;
+				resize_data resize = { h.first, -x, };
 
+				capture(resize.capture_handle);
 				_model->get_value(h.first, w);
-				_resizing_colum = make_pair(h.first, w - x);
-				capture(_resizing_capture);
+				resize.click_width += w;
+				_resize.reset(new resize_data(resize));
 			}
 		}
 
-		void header_core::mouse_up(mouse_buttons /*button*/, int /*buttons*/, int x, int /*y*/)
+		void header_core::mouse_up(mouse_buttons /*button*/, int /*depressed*/, int x, int /*y*/)
 		{
-			if (_resizing_colum.first != npos())
+			if (_resize)
 			{
-				_resizing_colum.first = npos();
-				_resizing_capture.reset();
+				_resize.reset();
 			}
 			else
 			{
-				pair<index_type, handle_type> h = handle_from_point(x);
+				auto h = handle_from_point(x);
 
 				if (h.second == column_handle)
 					_model->activate_column(h.first);
@@ -113,7 +131,7 @@ namespace wpl
 
 				for (index_type i = 0, n = _model->get_count(); i != n; ++i)
 				{
-					unsigned int state = i == _sorted_column.first ? sorted | (_sorted_column.second ? ascending : 0) : 0;
+					auto state = i == _sorted_column.first ? sorted | (_sorted_column.second ? ascending : 0) : 0;
 
 					_model->get_column(i, c);
 					rc.x1 = rc.x2;
@@ -130,6 +148,9 @@ namespace wpl
 			_size.h = static_cast<real_t>(box_.h);
 			integrated_control<wpl::header>::layout(append_view, box_);
 		}
+
+		short header_core::measure_column(columns_model &/*model*/, index_type /*index*/) const
+		{	return 0;	}
 
 		void header_core::draw_item_background(gcontext &/*ctx*/, gcontext::rasterizer_ptr &/*rasterizer*/,
 			const rect_r &/*box*/, index_type /*item*/, unsigned /*item_state_flags*/ /*state*/) const

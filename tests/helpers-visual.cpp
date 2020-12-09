@@ -72,7 +72,7 @@ namespace wpl
 					: text_engine(*this)
 				{	}
 
-				virtual font::accessor_ptr load(const wchar_t *, int, bool, bool, font::key::grid_fit)
+				virtual font::accessor_ptr load(const wchar_t *, int, bool, bool, font::key::grid_fit) override
 				{	throw 0;	}
 
 				gcontext::text_engine_type text_engine;

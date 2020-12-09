@@ -21,23 +21,23 @@ namespace wpl
 			class form : public wpl::form
 			{
 			private:
-				virtual void set_root(shared_ptr<wpl::control> /*root*/) { throw 0; }
+				virtual void set_root(shared_ptr<wpl::control> /*root*/) override { throw 0; }
 
-				virtual view_location get_location() const { throw 0; }
-				virtual void set_location(const view_location &/*location*/) { throw 0; };
-				virtual void set_visible(bool /*value*/) { throw 0; };
-				virtual void set_caption(const wstring &/*caption*/) { throw 0; };
-				virtual void set_caption_icon(const gcontext::surface_type &/*icon*/) { throw 0; };
-				virtual void set_task_icon(const gcontext::surface_type &/*icon*/) { throw 0; };
-				virtual shared_ptr<wpl::form> create_child() { throw 0; };
-				virtual void set_features(unsigned /*features*/ /*features_*/) { throw 0; };
+				virtual view_location get_location() const override { throw 0; }
+				virtual void set_location(const view_location &/*location*/) override { throw 0; };
+				virtual void set_visible(bool /*value*/) override { throw 0; };
+				virtual void set_caption(const wstring &/*caption*/) override { throw 0; };
+				virtual void set_caption_icon(const gcontext::surface_type &/*icon*/) override { throw 0; };
+				virtual void set_task_icon(const gcontext::surface_type &/*icon*/) override { throw 0; };
+				virtual shared_ptr<wpl::form> create_child() override { throw 0; };
+				virtual void set_features(unsigned /*features*/ /*features_*/) override { throw 0; };
 			};
 
 			class stylesheet : public wpl::stylesheet
 			{
-				virtual agge::color get_color(const char * /*id*/) const { throw 0; }
-				virtual agge::font::ptr get_font(const char * /*id*/) const { throw 0; }
-				virtual agge::real_t get_value(const char * /*id*/) const { throw 0; }
+				virtual agge::color get_color(const char * /*id*/) const override { throw 0; }
+				virtual agge::font::ptr get_font(const char * /*id*/) const override { throw 0; }
+				virtual agge::real_t get_value(const char * /*id*/) const override { throw 0; }
 			};
 		}
 

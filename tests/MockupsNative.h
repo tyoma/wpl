@@ -16,9 +16,9 @@ namespace wpl
 				~native_view_window();
 
 			private:
-				virtual HWND materialize(HWND hparent);
+				virtual HWND materialize(HWND hparent) override;
 				virtual LRESULT on_message(UINT message, WPARAM wparam, LPARAM lparam,
-					const win32::window::original_handler_t &handler);
+					const win32::window::original_handler_t &handler) override;
 
 			private:
 				HWND _hparent, _hwnd;

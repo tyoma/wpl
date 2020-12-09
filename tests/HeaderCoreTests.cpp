@@ -46,27 +46,27 @@ namespace wpl
 
 			public:
 				tracking_header(shared_ptr<cursor_manager> cursor_manager_)
-					: header_core(cursor_manager_), item_height(0), reported_events(item_background | item_self)
+					: header_core(cursor_manager_), reported_events(item_background | item_self)
 				{	}
 
 			public:
 				mutable vector<drawing_event> events;
-				double item_height;
 				unsigned reported_events;
+				function<short (columns_model &model, columns_model::index_type index)> on_measure_column;
 
 			private:
-				virtual agge::real_t get_minimal_item_height() const
-				{	return (agge::real_t)item_height;	}
+				virtual short measure_column(columns_model &model, index_type index) const override
+				{	return on_measure_column ? on_measure_column(model, index) : 0;	}
 
 				virtual void draw_item_background(gcontext &ctx, gcontext::rasterizer_ptr &rasterizer,
-					const agge::rect_r &box, index_type item, unsigned state) const
+					const agge::rect_r &box, index_type item, unsigned state) const override
 				{
 					if (item_background & reported_events)
 						events.push_back(drawing_event(item_background, ctx, rasterizer, box, item, state));
 				}
 
 				virtual void draw_item(gcontext &ctx, gcontext::rasterizer_ptr &rasterizer,
-					const agge::rect_r &box, index_type item, unsigned state, const wstring &text) const
+					const agge::rect_r &box, index_type item, unsigned state, const wstring &text) const override
 				{
 					if (item_self & reported_events)
 						events.push_back(drawing_event(item_self, ctx, rasterizer, box, item, state, text));
@@ -160,12 +160,39 @@ namespace wpl
 			}
 
 
+			test( HeaderIsInvalidateOnModelSet )
+			{
+				// INIT
+				int invalidations = 0;
+				tracking_header hdr(cursor_manager_);
+				const auto m = mocks::columns_model::create(L"x", 1);
+				slot_connection conn = hdr.invalidate += [&] (const agge::rect_i *r) {
+					++invalidations;
+					assert_null(r);
+				};
+
+				resize(hdr, 1000, 30);
+
+				// ACT
+				hdr.set_model(m);
+
+				// ASSERT
+				assert_equal(1, invalidations);
+
+				// ACT
+				hdr.set_model(nullptr);
+
+				// ASSERT
+				assert_equal(2, invalidations);
+			}
+
+
 			test( ViewInvalidationIsRequestedOnModelInvalidation )
 			{
 				// INIT
 				int invalidations = 0;
 				tracking_header hdr(cursor_manager_);
-				shared_ptr<mocks::columns_model> m = mocks::columns_model::create(L"x", 1);
+				const auto m = mocks::columns_model::create(L"x", 1);
 				slot_connection conn = hdr.invalidate += [&] (const agge::rect_i *r) {
 					++invalidations;
 					assert_null(r);
@@ -173,6 +200,7 @@ namespace wpl
 
 				hdr.set_model(m);
 				resize(hdr, 1000, 30);
+				invalidations = 0;
 
 				// ACT
 				m->invalidated();
@@ -189,10 +217,12 @@ namespace wpl
 
 				// ACT
 				hdr.set_model(nullptr);
+				invalidations = 0;
 				m->invalidated();
+				m->sort_order_changed(1, true);
 
 				// ASSERT
-				assert_equal(3, invalidations);
+				assert_equal(0, invalidations);
 			}
 
 
@@ -268,7 +298,7 @@ namespace wpl
 				// INIT
 				tracking_header hdr(cursor_manager_);
 				column_t c[] = { column_t(L"", 17), column_t(L"", 29), column_t(L"", 25), };
-				shared_ptr<mocks::columns_model> m = mocks::columns_model::create(c, columns_model::npos(), true);
+				const auto m = mocks::columns_model::create(c, columns_model::npos(), true);
 
 				resize(hdr, 1000, 33);
 				hdr.set_model(m);
@@ -334,7 +364,7 @@ namespace wpl
 				// INIT
 				tracking_header hdr(cursor_manager_);
 				column_t c[] = { column_t(L"", 17), column_t(L"", 13), column_t(L"", 29), };
-				shared_ptr<mocks::columns_model> m = mocks::columns_model::create(c, columns_model::npos(), true);
+				const auto m = mocks::columns_model::create(c, columns_model::npos(), true);
 
 				resize(hdr, 1000, 33);
 				hdr.set_model(m);
@@ -369,12 +399,57 @@ namespace wpl
 			}
 
 
+			test( ColumnCannotBeMadeSmallerThanMeasured )
+			{
+				// INIT
+				tracking_header hdr(cursor_manager_);
+				column_t c[] = { column_t(L"", 17), column_t(L"", 13), column_t(L"", 29), };
+				const auto m = mocks::columns_model::create(c, columns_model::npos(), true);
+
+				resize(hdr, 1000, 33);
+				hdr.set_model(m);
+
+				hdr.on_measure_column = [&] (columns_model &m_, columns_model::index_type index) -> short {
+					assert_equal(m.get(), &m_);
+					assert_equal(0, index);
+					return 11;
+				};
+
+				// ACT
+				hdr.mouse_down(mouse_input::left, 0, 17, 0);
+				hdr.mouse_move(mouse_input::left, 5, 10);
+
+				// ASSERT
+				assert_equal(11, m->columns[0].width);
+
+				// ACT
+				hdr.mouse_move(mouse_input::left, 25, 10);
+
+				// ASSERT
+				assert_equal(25, m->columns[0].width);
+
+				// INIT
+				hdr.mouse_up(mouse_input::left, 0, 25, 10);
+				hdr.on_measure_column = [&] (columns_model &, columns_model::index_type index) -> short {
+					assert_equal(2, index);
+					return 23;
+				};
+
+				// ACT
+				hdr.mouse_down(mouse_input::left, 0, 67, 0);
+				hdr.mouse_move(mouse_input::left, 0, 10);
+
+				// ASSERT
+				assert_equal(23, m->columns[2].width);
+			}
+
+
 			test( MouseIsCapturedOnStartingWidthUpdate )
 			{
 				// INIT
 				tracking_header hdr(cursor_manager_);
 				column_t c[] = { column_t(L"", 17), column_t(L"", 13), column_t(L"", 29), };
-				shared_ptr<mocks::columns_model> m = mocks::columns_model::create(c, columns_model::npos(), true);
+				const auto m = mocks::columns_model::create(c, columns_model::npos(), true);
 				auto capture = 0;
 				auto release = 0;
 				auto conn = hdr.capture += [&] (shared_ptr<void> &handle) {
@@ -411,12 +486,45 @@ namespace wpl
 			}
 
 
+			test( ResizeModeIsCancelledOnModelReset )
+			{
+				// INIT
+				tracking_header hdr(cursor_manager_);
+				column_t c[] = { column_t(L"", 17), column_t(L"", 13), column_t(L"", 29), };
+				const auto m = mocks::columns_model::create(c, columns_model::npos(), true);
+				auto capture = 0;
+				auto conn = hdr.capture += [&] (shared_ptr<void> &handle) {
+					capture++;
+					handle.reset(new int, [&] (int *p) {
+						capture--;
+						delete p;
+					});
+				};
+
+				resize(hdr, 1000, 33);
+				hdr.set_model(m);
+				hdr.mouse_down(mouse_input::left, 0, 17, 0);
+
+				// ACT
+				hdr.set_model(nullptr);
+
+				// ASSERT
+				assert_equal(0, capture);
+
+				// ACT
+				hdr.mouse_move(0, 20, 0);
+
+				// ASSERT
+				assert_equal(17, m->columns[0].width);
+			}
+
+
 			test( WidthUpdatesAreEndedWithMouseUp )
 			{
 				// INIT
 				tracking_header hdr(cursor_manager_);
 				column_t c[] = { column_t(L"", 17), column_t(L"", 13), column_t(L"", 29), };
-				shared_ptr<mocks::columns_model> m = mocks::columns_model::create(c, columns_model::npos(), true);
+				const auto m = mocks::columns_model::create(c, columns_model::npos(), true);
 
 				resize(hdr, 1000, 33);
 				hdr.set_model(m);
@@ -438,7 +546,7 @@ namespace wpl
 				// INIT
 				tracking_header hdr(cursor_manager_);
 				column_t c[] = { column_t(L"", 17), column_t(L"", 13), column_t(L"", 29), };
-				shared_ptr<mocks::columns_model> m = mocks::columns_model::create(c, columns_model::npos(), true);
+				const auto m = mocks::columns_model::create(c, columns_model::npos(), true);
 
 				resize(hdr, 1000, 33);
 				hdr.set_model(m);
@@ -457,7 +565,7 @@ namespace wpl
 				// INIT
 				tracking_header hdr(cursor_manager_);
 				column_t c[] = { column_t(L"a", 10), column_t(L"b", 13), column_t(L"Z A", 17), };
-				shared_ptr<mocks::columns_model> m = mocks::columns_model::create(c, 2, true);
+				const auto m = mocks::columns_model::create(c, 2, true);
 
 				resize(hdr, 1000, 33);
 				hdr.set_model(m);
@@ -506,11 +614,12 @@ namespace wpl
 				tracking_header hdr(cursor_manager_);
 				auto invalidations = 0;
 				column_t c[] = { column_t(L"a", 10), column_t(L"b", 13), column_t(L"Z A", 17), };
-				shared_ptr<mocks::columns_model> m = mocks::columns_model::create(c, 2, true);
+				const auto m = mocks::columns_model::create(c, 2, true);
 				auto conn = hdr.invalidate += [&] (const agge::rect_i *r) { assert_null(r); invalidations++; };
 
 				resize(hdr, 1000, 33);
 				hdr.set_model(m);
+				invalidations = 0;
 
 				// ACT
 				m->set_sort_order(0, true);
@@ -532,7 +641,7 @@ namespace wpl
 				// INIT
 				tracking_header hdr(cursor_manager_);
 				column_t c[] = { column_t(L"a", 10), column_t(L"b", 13), column_t(L"Z A", 17), };
-				shared_ptr<mocks::columns_model> m = mocks::columns_model::create(c, 2, true);
+				const auto m = mocks::columns_model::create(c, 2, true);
 
 				resize(hdr, 1000, 33);
 				hdr.set_model(m);
@@ -583,7 +692,7 @@ namespace wpl
 				// INIT
 				tracking_header hdr(cursor_manager_);
 				column_t c[] = { column_t(L"a", 10), column_t(L"b", 13), column_t(L"Z A", 17), };
-				shared_ptr<mocks::columns_model> m = mocks::columns_model::create(c, 2, true);
+				const auto m = mocks::columns_model::create(c, 2, true);
 
 				resize(hdr, 1000, 33);
 				hdr.set_model(m);
@@ -607,7 +716,7 @@ namespace wpl
 				tracking_header hdr(cursor_manager_);
 				auto invalidations = 0;
 				column_t columns[] = { column_t(L"a", 10), column_t(L"b", 13), column_t(L"Z A", 17), };
-				shared_ptr<mocks::columns_model> m = mocks::columns_model::create(columns, 2, true);
+				const auto m = mocks::columns_model::create(columns, 2, true);
 
 				resize(hdr, 1000, 33);
 				hdr.set_model(mocks::columns_model::create(columns, 2, true));
@@ -656,7 +765,7 @@ namespace wpl
 				// INIT
 				tracking_header hdr(cursor_manager_);
 				column_t columns[] = { column_t(L"a", 10), column_t(L"b", 13), column_t(L"Z A", 17), };
-				shared_ptr<mocks::columns_model> m = mocks::columns_model::create(columns, 2, true);
+				const auto m = mocks::columns_model::create(columns, 2, true);
 
 				resize(hdr, 1000, 33);
 				hdr.set_model(mocks::columns_model::create(columns, 2, true));

@@ -43,6 +43,24 @@ namespace wpl
 			: header_core(cursor_manager_)
 		{	}
 
+		void header_basic::apply_styles(const stylesheet &ss)
+		{
+			_font = ss.get_font("text.header");
+
+			_bg = ss.get_color("background.header");
+			_bg_sorted = ss.get_color("background.header.sorted");
+			_fg_normal = ss.get_color("text.header");
+			_fg_sorted = ss.get_color("text.header.sorted");
+			_fg_separator = ss.get_color("border.header.separator");
+
+			agge::font::metrics m = _font->get_metrics();
+
+			_padding = ss.get_value("padding.header");
+			_baseline_offset = _padding + m.ascent;
+			_separator_width = ss.get_value("border.header.separator");
+			invalidate(nullptr);
+		}
+
 		void header_basic::draw(gcontext &ctx, gcontext::rasterizer_ptr &ras) const
 		{
 			if (_bg.a)
@@ -84,24 +102,6 @@ namespace wpl
 				ctx.text_engine.render_string(*ras, *_font, order_string, layout::center, b.x1 + 0.5f * w, b.y2 - _font->get_metrics().descent);
 				ctx(ras, blender(_fg_normal), winding<>());
 			}
-		}
-
-		void header_basic::apply_styles(const stylesheet &ss)
-		{
-			_font = ss.get_font("text.header");
-
-			_bg = ss.get_color("background.header");
-			_bg_sorted = ss.get_color("background.header.sorted");
-			_fg_normal = ss.get_color("text.header");
-			_fg_sorted = ss.get_color("text.header.sorted");
-			_fg_separator = ss.get_color("border.header.separator");
-
-			agge::font::metrics m = _font->get_metrics();
-
-			_padding = ss.get_value("padding.header");
-			_baseline_offset = _padding + m.ascent;
-			_separator_width = ss.get_value("border.header.separator");
-			invalidate(nullptr);
 		}
 	}
 }

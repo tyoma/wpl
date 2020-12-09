@@ -29,7 +29,7 @@ namespace wpl
 				static std::shared_ptr<listview_trackable> add(Map &m, index_type index);
 
 			private:
-				virtual index_type index() const;
+				virtual index_type index() const override;
 
 			public:
 				index_type track_result;
@@ -59,12 +59,12 @@ namespace wpl
 					: columns(columns_, columns_ + n), sort_column(sort_column_), sort_ascending(ascending_)
 				{	}
 
-				virtual index_type get_count() const throw();
-				virtual void get_value(index_type index, short int &width) const;
-				virtual void get_column(index_type index, column &column) const;
-				virtual void update_column(index_type index, short int width);
-				virtual std::pair<index_type, bool> get_sort_order() const throw();
-				virtual void activate_column(index_type column);
+				virtual index_type get_count() const throw() override;
+				virtual void get_value(index_type index, short int &width) const override;
+				virtual void get_column(index_type index, column &column) const override;
+				virtual void update_column(index_type index, short int width) override;
+				virtual std::pair<index_type, bool> get_sort_order() const throw() override;
+				virtual void activate_column(index_type column) override;
 			};
 
 			class listview_model : public table_model
@@ -81,10 +81,10 @@ namespace wpl
 				mutable std::vector<index_type> tracking_requested;
 
 			private:
-				virtual index_type get_count() const throw();
-				virtual void get_text(index_type row, index_type column, std::wstring &text) const;
-				virtual void set_order(index_type column, bool ascending);
-				virtual std::shared_ptr<const trackable> track(index_type row) const;
+				virtual index_type get_count() const throw() override;
+				virtual void get_text(index_type row, index_type column, std::wstring &text) const override;
+				virtual void set_order(index_type column, bool ascending) override;
+				virtual std::shared_ptr<const trackable> track(index_type row) const override;
 			};
 
 			class autotrackable_table_model : public listview_model
@@ -98,7 +98,7 @@ namespace wpl
 				std::shared_ptr<trackables_map> auto_trackables;
 
 			private:
-				virtual std::shared_ptr<const trackable> track(index_type row) const;
+				virtual std::shared_ptr<const trackable> track(index_type row) const override;
 			};
 
 

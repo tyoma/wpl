@@ -30,10 +30,10 @@ namespace wpl
 
 			private:
 				virtual LRESULT on_message(UINT message, WPARAM wparam, LPARAM lparam,
-					const win32::window::original_handler_t &original)
+					const win32::window::original_handler_t &original) override
 				{	return original(message, wparam, lparam);	}
 
-				virtual HWND materialize(HWND hparent)
+				virtual HWND materialize(HWND hparent) override
 				{
 					HWND hwnd = ::CreateWindow(L"static", 0, WS_CHILD, 0, 0, 1, 1, hparent, 0, 0, 0);
 

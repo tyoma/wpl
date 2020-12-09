@@ -12,7 +12,7 @@ namespace wpl
 			class control : public wpl::control
 			{
 			public:
-				virtual void layout(const placed_view_appender &append_view, const agge::box<int> &box);
+				virtual void layout(const placed_view_appender &append_view, const agge::box<int> &box) override;
 
 			public:
 				std::vector< agge::box<int> > size_log;

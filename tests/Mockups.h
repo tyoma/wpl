@@ -103,7 +103,7 @@ namespace wpl
 
 			struct font_loader : gcontext::text_engine_type::loader
 			{
-				virtual agge::font::accessor_ptr load(const wchar_t *, int, bool, bool, agge::font::key::grid_fit)
+				virtual agge::font::accessor_ptr load(const wchar_t *, int, bool, bool, agge::font::key::grid_fit) override
 				{	return agge::font::accessor_ptr();	}
 			};
 
@@ -113,10 +113,10 @@ namespace wpl
 			public:
 				cursor_manager();
 
-				virtual std::shared_ptr<const cursor> get(standard_cursor id) const;
-				virtual void set(std::shared_ptr<const cursor> cursor_);
-				virtual void push(std::shared_ptr<const cursor> cursor_);
-				virtual void pop();
+				virtual std::shared_ptr<const cursor> get(standard_cursor id) const override;
+				virtual void set(std::shared_ptr<const cursor> cursor_) override;
+				virtual void push(std::shared_ptr<const cursor> cursor_) override;
+				virtual void pop() override;
 
 			public:
 				std::map< standard_cursor, std::shared_ptr<const cursor> > cursors;
@@ -138,7 +138,7 @@ namespace wpl
 				std::vector< std::pair<int /*cx*/, int /*cy*/> > resize_log;
 
 			private:
-				virtual void draw(gcontext &ctx, gcontext::rasterizer_ptr &rasterizer) const;
+				virtual void draw(gcontext &ctx, gcontext::rasterizer_ptr &rasterizer) const override;
 			};
 
 
@@ -149,7 +149,7 @@ namespace wpl
 				filling_visual(agge::color color);
 
 			private:
-				virtual void draw(gcontext &ctx, gcontext::rasterizer_ptr &rasterizer) const;
+				virtual void draw(gcontext &ctx, gcontext::rasterizer_ptr &rasterizer) const override;
 
 			private:
 				agge::color _color;
@@ -168,14 +168,14 @@ namespace wpl
 				unsigned capture_lost;
 
 			private:
-				virtual void mouse_enter();
-				virtual void mouse_leave();
-				virtual void mouse_move(int depressed, int x, int y);
-				virtual void mouse_down(mouse_input::mouse_buttons button, int depressed, int x, int y);
-				virtual void mouse_up(mouse_input::mouse_buttons button, int depressed, int x, int y);
-				virtual void mouse_double_click(mouse_input::mouse_buttons button, int depressed, int x, int y);
-				virtual void mouse_scroll(int depressed, int x, int y, int delta_x, int delta_y);
-				virtual void lost_capture();
+				virtual void mouse_enter() override;
+				virtual void mouse_leave() override;
+				virtual void mouse_move(int depressed, int x, int y) override;
+				virtual void mouse_down(mouse_input::mouse_buttons button, int depressed, int x, int y) override;
+				virtual void mouse_up(mouse_input::mouse_buttons button, int depressed, int x, int y) override;
+				virtual void mouse_double_click(mouse_input::mouse_buttons button, int depressed, int x, int y) override;
+				virtual void mouse_scroll(int depressed, int x, int y, int delta_x, int delta_y) override;
+				virtual void lost_capture() override;
 			};
 
 
@@ -189,11 +189,11 @@ namespace wpl
 				std::vector<keyboard_event> events;
 
 			private:
-				virtual void key_down(unsigned code, int modifiers);
-				virtual void character(wchar_t symbol, unsigned repeats, int modifiers);
-				virtual void key_up(unsigned code, int modifiers);
-				virtual void got_focus();
-				virtual void lost_focus();
+				virtual void key_down(unsigned code, int modifiers) override;
+				virtual void character(wchar_t symbol, unsigned repeats, int modifiers) override;
+				virtual void key_up(unsigned code, int modifiers) override;
+				virtual void got_focus() override;
+				virtual void lost_focus() override;
 			};
 
 
