@@ -58,7 +58,4 @@ namespace wpl
 
 	void mouse_input::mouse_scroll(int /*depressed*/, int /*x*/, int /*y*/, int /*delta_x*/, int /*delta_y*/)
 	{	}
-
-	void mouse_input::lost_capture()
-	{	}
 }

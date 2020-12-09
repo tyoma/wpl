@@ -76,8 +76,6 @@ namespace wpl
 
 		virtual void mouse_scroll(int depressed, int x, int y, int delta_x, int delta_y);
 
-		virtual void lost_capture();
-
 		signal<void (std::shared_ptr<void> &handle)> capture;
 	};
 }

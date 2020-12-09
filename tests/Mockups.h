@@ -165,7 +165,6 @@ namespace wpl
 
 			public:
 				std::vector<mouse_event> events_log;
-				unsigned capture_lost;
 
 			private:
 				virtual void mouse_enter() override;
@@ -175,7 +174,6 @@ namespace wpl
 				virtual void mouse_up(mouse_input::mouse_buttons button, int depressed, int x, int y) override;
 				virtual void mouse_double_click(mouse_input::mouse_buttons button, int depressed, int x, int y) override;
 				virtual void mouse_scroll(int depressed, int x, int y, int delta_x, int delta_y) override;
-				virtual void lost_capture() override;
 			};
 
 
@@ -279,7 +277,6 @@ namespace wpl
 
 			template <typename BaseT>
 			inline logging_mouse_input<BaseT>::logging_mouse_input()
-				: capture_lost(0)
 			{	}
 
 			template <typename BaseT>
@@ -309,10 +306,6 @@ namespace wpl
 			template <typename BaseT>
 			inline void logging_mouse_input<BaseT>::mouse_scroll(int depressed, int x, int y, int delta_x, int delta_y)
 			{	events_log.push_back(me_scroll(depressed, x, y, delta_x, delta_y));	}
-
-			template <typename BaseT>
-			inline void logging_mouse_input<BaseT>::lost_capture()
-			{	++capture_lost;	}
 
 
 			template <typename BaseT>
