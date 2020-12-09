@@ -501,7 +501,7 @@ namespace wpl
 
 				resize(lv, 1000, 31);
 
-				const auto c = sm->invalidated += [&] { invalidations++; };
+				const auto c = sm->invalidate += [&] { invalidations++; };
 
 				// ACT
 				lv.set_columns_model(mocks::columns_model::create(L"", 123));
@@ -528,7 +528,7 @@ namespace wpl
 
 				lv.set_columns_model(mocks::columns_model::create(L"", 123));
 
-				const auto c = sm->invalidated += [&] { invalidations++; };
+				const auto c = sm->invalidate += [&] { invalidations++; };
 
 				// ACT
 				resize(lv, 1000, 31);
@@ -798,7 +798,7 @@ namespace wpl
 				};
 
 				// ACT
-				m->invalidated(10);
+				m->invalidate(10);
 
 				// ASSERT
 				assert_equal(1, invalidations);
@@ -808,7 +808,7 @@ namespace wpl
 				invalidations = 0;
 
 				// ACT
-				m->invalidated(100);
+				m->invalidate(100);
 
 				// ASSERT
 				assert_equal(0, invalidations);
@@ -828,24 +828,24 @@ namespace wpl
 				resize(lv, 100, 40);
 				lv.set_columns_model(mocks::columns_model::create(L"", 100));
 
-				const auto c = sm->invalidated += [&] { invalidations++; };
+				const auto c = sm->invalidate += [&] { invalidations++; };
 
 				lv.set_model(m);
 
 				// ACT
-				m->invalidated(1000);
+				m->invalidate(1000);
 
 				// ASSERT
 				assert_equal(0, invalidations);
 
 				// ACT
-				m->invalidated(100);
+				m->invalidate(100);
 
 				// ASSERT
 				assert_equal(1, invalidations);
 
 				// ACT
-				m->invalidated(100);
+				m->invalidate(100);
 
 				// ASSERT
 				assert_equal(1, invalidations);
@@ -867,7 +867,7 @@ namespace wpl
 				lv.set_model(create_model(1000, 1));
 
 				const auto c1 = lv.invalidate += [&] (const void *) { invalidations++; };
-				const auto c2 = sm->invalidated += [&] { scroll_invalidations++; };
+				const auto c2 = sm->invalidate += [&] { scroll_invalidations++; };
 
 				// ACT
 				resize(lv, 100, 40);
@@ -893,7 +893,7 @@ namespace wpl
 				lv.set_model(create_model(1000, 1));
 
 				const auto c1 = lv.invalidate += [&] (const void *) { invalidations++; };
-				const auto c2 = sm->invalidated += [&] { scroll_invalidations++; };
+				const auto c2 = sm->invalidate += [&] { scroll_invalidations++; };
 
 				// ACT
 				sm->scroll_window(10, 0);
@@ -926,7 +926,7 @@ namespace wpl
 				lv.set_model(create_model(1000, 1));
 
 				const auto c1 = lv.invalidate += [&] (const void *) { invalidations++; };
-				const auto c2 = sm->invalidated += [&] { scroll_invalidations++; };
+				const auto c2 = sm->invalidate += [&] { scroll_invalidations++; };
 
 				// ACT
 				lv.make_visible(31);
@@ -977,7 +977,7 @@ namespace wpl
 				lv.set_model(create_model(1000, 1));
 
 				const auto c1 = lv.invalidate += [&] (const void *) { invalidations++; };
-				const auto c2 = sm->invalidated += [&] { scroll_invalidations++; };
+				const auto c2 = sm->invalidate += [&] { scroll_invalidations++; };
 
 				lv.make_visible(31);
 				lv.make_visible(5);
@@ -1010,7 +1010,7 @@ namespace wpl
 				lv.set_model(create_model(1000, 1));
 
 				const auto c1 = lv.invalidate += [&] (const void *) { invalidations++; };
-				const auto c2 = sm->invalidated += [&] { scroll_invalidations++; };
+				const auto c2 = sm->invalidate += [&] { scroll_invalidations++; };
 
 				lv.make_visible(31);
 				invalidations = 0;
@@ -1063,21 +1063,21 @@ namespace wpl
 				const auto c = lv.invalidate += [&] (const void *r) { assert_null(r); invalidations++; };
 
 				// ACT
-				cm->invalidated();
+				cm->invalidate();
 
 				// ASSERT
 				assert_equal(1, invalidations);
 
 				// ACT
-				cm->invalidated();
-				cm->invalidated();
+				cm->invalidate();
+				cm->invalidate();
 
 				// ASSERT
 				assert_equal(3, invalidations);
 
 				// ACT
 				lv.set_columns_model(nullptr);
-				cm->invalidated();
+				cm->invalidate();
 
 				// ASSERT
 				assert_equal(3, invalidations);
@@ -1099,17 +1099,17 @@ namespace wpl
 				lv.reported_events = tracking_listview::item_self;
 				resize(lv, 100, 25);
 
-				const auto c = sm->invalidated += [&] { invalidations++; };
+				const auto c = sm->invalidate += [&] { invalidations++; };
 
 				// ACT
-				cm->invalidated();
+				cm->invalidate();
 
 				// ASSERT
 				assert_equal(1, invalidations);
 
 				// ACT
-				cm->invalidated();
-				cm->invalidated();
+				cm->invalidate();
+				cm->invalidate();
 
 				// ASSERT
 				assert_equal(3, invalidations);
@@ -1136,7 +1136,7 @@ namespace wpl
 				resize(lv, 101, 25);
 
 				const auto c = lv.invalidate += [&](const void* r) { assert_null(r); invalidations++; };
-				const auto c2 = sm->invalidated += [&] { sinvalidations++; };
+				const auto c2 = sm->invalidate += [&] { sinvalidations++; };
 
 				// ACT
 				sm->scroll_window(10, 101);

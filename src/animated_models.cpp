@@ -14,7 +14,7 @@ namespace wpl
 	animated_scroll_model::animated_scroll_model(shared_ptr<scroll_model> underlying, const clock &clock_,
 			const queue &queue_, const animation_function &release_animation)
 		: _underlying(underlying), _clock(clock_), _queue(queue_), _release_animation(release_animation),
-			_invalidate_connection(underlying->invalidated += [this] {	invalidated();	})
+			_invalidate_connection(underlying->invalidate += [this] {	invalidate();	})
 	{	}
 
 	pair<double, double> animated_scroll_model::get_range() const
@@ -99,6 +99,6 @@ namespace wpl
 			_queue([this] {	animate();	}, 10);
 		else
 			_underlying->scrolling(false);
-		invalidated();
+		invalidate();
 	}
 }

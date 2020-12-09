@@ -97,7 +97,7 @@ namespace wpl
 					model->set_order(sort_order.first, sort_order.second);
 			}
 			_invalidated_connection = model ?
-				model->invalidated += bind(&listview::invalidate_view, this, _1) : slot_connection();
+				model->invalidate += bind(&listview::invalidate_view, this, _1) : slot_connection();
 			invalidate_view(model ? model->get_count() : 0);
 			_focused_item.reset();
 			_selected_items.clear();

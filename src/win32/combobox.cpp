@@ -44,7 +44,7 @@ namespace wpl
 			_model = model;
 			_selected_item.reset();
 			_invalidated_connection = model
-				? model->invalidated += bind(&combobox::on_invalidated, this, model.get())
+				? model->invalidate += bind(&combobox::on_invalidated, this, model.get())
 				: shared_ptr<void>();
 			if (const HWND hcombobox = get_window())
 			{

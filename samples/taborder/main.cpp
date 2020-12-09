@@ -26,7 +26,7 @@ namespace
 		virtual index_type get_count() const throw() override { return static_cast<index_type>(_columns.size()); }
 		virtual void get_value(index_type index, short int &w) const override { w = _columns[index].width; }
 		virtual void get_column(index_type index, column &column_) const override { column_ = _columns[index]; }
-		virtual void update_column(index_type index, short int width) override { _columns[index].width = width, invalidated(); }
+		virtual void update_column(index_type index, short int width) override { _columns[index].width = width, invalidate(); }
 		virtual pair<index_type, bool> get_sort_order() const throw() override { return make_pair(npos(), false); }
 		virtual void activate_column(index_type /*column*/) override {	}
 
@@ -42,7 +42,7 @@ namespace
 		{
 			_timer = create_timer(20, [this] (unsigned) {
 				_n++;
-				invalidated(100);
+				invalidate(100);
 			});
 		}
 

@@ -209,7 +209,7 @@ namespace wpl
 				assert_is_false(!!::GetUpdateRect(lv.second, NULL, FALSE));
 
 				// ACT
-				m->invalidated(11);
+				m->invalidate(11);
 
 				// ASSERT
 				assert_is_true(!!::GetUpdateRect(lv.second, NULL, FALSE));
@@ -1307,7 +1307,7 @@ namespace wpl
 
 				// ACT
 				t->track_result = 7;
-				m->invalidated(100);
+				m->invalidate(100);
 
 				// ASSERT
 				matched = get_matching_indices(lv.second, LVNI_FOCUSED);
@@ -1317,7 +1317,7 @@ namespace wpl
 
 				// ACT
 				t->track_result = 13;
-				m->invalidated(100);
+				m->invalidate(100);
 
 				// ASSERT
 				matched = get_matching_indices(lv.second, LVNI_FOCUSED);
@@ -1343,7 +1343,7 @@ namespace wpl
 				// ACT
 				t->track_result = table_model::npos();
 				t.reset();
-				m->invalidated(100);
+				m->invalidate(100);
 
 				// ASSERT
 				assert_is_true(wt.expired());
@@ -1372,7 +1372,7 @@ namespace wpl
 
 				// ACT
 				t[2]->track_result = 21;
-				m->invalidated(100);
+				m->invalidate(100);
 
 				// ASSERT
 				table_model::index_type expected1[] = {	5, 7, 21,	};
@@ -1381,7 +1381,7 @@ namespace wpl
 
 				// ACT
 				t[0]->track_result = 13;
-				m->invalidated(100);
+				m->invalidate(100);
 
 				// ASSERT
 				table_model::index_type expected2[] = {	13, 7, 21,	};
@@ -1390,7 +1390,7 @@ namespace wpl
 
 				// ACT
 				t[1]->track_result = table_model::npos();
-				m->invalidated(100);
+				m->invalidate(100);
 
 				// ASSERT
 				table_model::index_type expected3[] = {	13, 21,	};

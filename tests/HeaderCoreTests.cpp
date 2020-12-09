@@ -203,14 +203,14 @@ namespace wpl
 				invalidations = 0;
 
 				// ACT
-				m->invalidated();
+				m->invalidate();
 
 				// ASSERT
 				assert_equal(1, invalidations);
 
 				// ACT
-				m->invalidated();
-				m->invalidated();
+				m->invalidate();
+				m->invalidate();
 
 				// ASSERT
 				assert_equal(3, invalidations);
@@ -218,7 +218,7 @@ namespace wpl
 				// ACT
 				hdr.set_model(nullptr);
 				invalidations = 0;
-				m->invalidated();
+				m->invalidate();
 				m->sort_order_changed(1, true);
 
 				// ASSERT

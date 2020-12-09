@@ -53,7 +53,7 @@ namespace wpl
 		virtual void scrolling(bool begins) = 0;
 		virtual void scroll_window(double window_min, double window_width) = 0;
 
-		signal<void ()> invalidated;
+		signal<void ()> invalidate;
 	};
 
 
@@ -64,7 +64,7 @@ namespace wpl
 		virtual void get_value(typename index_traits_t<IndexT>::index_type index, ValueT &value) const = 0;
 		virtual std::shared_ptr<const trackable> track(typename index_traits_t<IndexT>::index_type row) const;
 
-		signal<void ()> invalidated;
+		signal<void ()> invalidate;
 	};
 
 
@@ -103,7 +103,7 @@ namespace wpl
 		virtual void precache(index_type from, index_type count) const;
 		virtual std::shared_ptr<const trackable> track(index_type row) const;
 
-		signal<void (index_type new_count)> invalidated;
+		signal<void (index_type new_count)> invalidate;
 	};
 
 

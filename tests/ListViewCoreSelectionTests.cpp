@@ -215,7 +215,7 @@ namespace wpl
 
 				// ACT
 				m->move_tracking(0, 2);
-				m->invalidated(1000);
+				m->invalidate(1000);
 
 				// ASSERT
 				pair<table_model::index_type, unsigned /*state*/> reference1[] = {
@@ -229,7 +229,7 @@ namespace wpl
 				// ACT
 				m->move_tracking(1, 10);
 				m->move_tracking(3, 15);
-				m->invalidated(1000);
+				m->invalidate(1000);
 
 				// ASSERT
 				pair<table_model::index_type, unsigned /*state*/> reference2[] = {
@@ -255,7 +255,7 @@ namespace wpl
 			{
 				// INIT
 				tracking_listview lv;
-				int invalidated = 0;
+				int invalidate = 0;
 
 				lv.item_height = 1;
 				lv.reported_events = tracking_listview::item_self;
@@ -265,7 +265,7 @@ namespace wpl
 
 				lv.select(2, true);
 
-				const auto conn = lv.invalidate += [&] (const void *r) {	assert_null(r); invalidated++;	};
+				const auto conn = lv.invalidate += [&] (const void *r) {	assert_null(r); invalidate++;	};
 
 				// ACT
 				lv.focus(1);
@@ -280,7 +280,7 @@ namespace wpl
 				};
 
 				assert_equal_pred(reference1, lv.events, listview_event_eq());
-				assert_equal(1, invalidated);
+				assert_equal(1, invalidate);
 
 				// INIT
 				lv.events.clear();
@@ -299,7 +299,7 @@ namespace wpl
 				};
 
 				assert_equal_pred(reference2, lv.events, listview_event_eq());
-				assert_equal(3, invalidated);
+				assert_equal(3, invalidate);
 			}
 
 
@@ -363,7 +363,7 @@ namespace wpl
 
 				// ACT
 				m->move_tracking(1, 4);
-				m->invalidated(1000);
+				m->invalidate(1000);
 
 				// ASSERT
 				pair<table_model::index_type, unsigned /*state*/> reference1[] = {
@@ -374,7 +374,7 @@ namespace wpl
 
 				// ACT
 				m->move_tracking(4, 0);
-				m->invalidated(1000);
+				m->invalidate(1000);
 
 				// ASSERT
 				pair<table_model::index_type, unsigned /*state*/> reference2[] = {
@@ -389,7 +389,7 @@ namespace wpl
 			{
 				// INIT
 				tracking_listview lv;
-				int invalidated = 0;
+				int invalidate = 0;
 				const auto m = create_model(1000, 1);
 				const auto sm = lv.get_vscroll_model();
 
@@ -400,7 +400,7 @@ namespace wpl
 
 				lv.focus(200);
 
-				const auto conn = lv.invalidate += [&] (const void *r) {	assert_null(r); invalidated++;	};
+				const auto conn = lv.invalidate += [&] (const void *r) {	assert_null(r); invalidate++;	};
 
 				// ACT
 				lv.focus(table_model::npos());
@@ -449,7 +449,7 @@ namespace wpl
 			{
 				// INIT
 				tracking_listview lv;
-				int invalidated = 0;
+				int invalidate = 0;
 
 				lv.item_height = 1;
 				lv.reported_events = tracking_listview::item_self;
@@ -460,7 +460,7 @@ namespace wpl
 				auto conn = lv.invalidate += [&] (const void *) {
 
 					// ASSERT
-					invalidated++;
+					invalidate++;
 
 					pair<table_model::index_type, unsigned /*state*/> reference[] = {
 						make_pair(3, controls::listview_core::selected),
@@ -473,17 +473,17 @@ namespace wpl
 				lv.select(3, true);
 
 				// ASSERT
-				assert_equal(1, invalidated);
+				assert_equal(1, invalidate);
 
 				// ACT
 				lv.select(table_model::npos(), false);
 
 				// ASSERT
-				assert_equal(1, invalidated);
+				assert_equal(1, invalidate);
 
 				// INIT
 				conn = lv.invalidate += [&] (const void *r) {
-					invalidated++;
+					invalidate++;
 
 					// ASSERT
 					assert_null(r);
@@ -493,7 +493,7 @@ namespace wpl
 				lv.select(table_model::npos(), true);
 
 				// ASSERT
-				assert_equal(2, invalidated);
+				assert_equal(2, invalidate);
 			}
 
 
@@ -1405,14 +1405,14 @@ namespace wpl
 
 				// ACT
 				m->move_tracking(10, 97);
-				m->invalidated(1000);
+				m->invalidate(1000);
 
 				// ASSERT
 				assert_approx_equal(91.4, sm->get_window().first, 0.001);
 
 				// ACT
 				m->move_tracking(97, 37);
-				m->invalidated(1000);
+				m->invalidate(1000);
 
 				// ASSERT
 				assert_approx_equal(37.0, sm->get_window().first, 0.001);
@@ -1436,7 +1436,7 @@ namespace wpl
 				sm->scrolling(true);
 				sm->scroll_window(40, 33.0 / 5);
 				m->move_tracking(25, 100);
-				m->invalidated(1000);
+				m->invalidate(1000);
 
 				// ASSERT
 				assert_approx_equal(40.0, sm->get_window().first, 0.001);
@@ -1456,7 +1456,7 @@ namespace wpl
 
 				// ACT
 				m->move_tracking(25, 0);
-				m->invalidated(1000);
+				m->invalidate(1000);
 
 				// ASSERT
 				assert_approx_equal(40.0, sm->get_window().first, 0.001);
@@ -1469,7 +1469,7 @@ namespace wpl
 
 				// ACT
 				m->move_tracking(25, 10);
-				m->invalidated(1000);
+				m->invalidate(1000);
 
 				// ASSERT
 				assert_approx_equal(10.0, sm->get_window().first, 0.001);

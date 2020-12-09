@@ -54,10 +54,10 @@ namespace wpl
 				_vscroller->set_model(shared_ptr<animated_scroll_model>(new animated_scroll_model(get_vscroll_model(),
 					context.clock_, context.queue_, smooth_animation())));
 
-				_scroll_connection = get_hscroll_model()->invalidated += [this] {
+				_scroll_connection = get_hscroll_model()->invalidate += [this] {
 					_header->set_offset(get_hscroll_model()->get_window().first);
 				};
-				get_hscroll_model()->invalidated();
+				get_hscroll_model()->invalidate();
 			}
 
 			virtual void set_columns_model(std::shared_ptr<columns_model> m) override

@@ -65,23 +65,23 @@ namespace wpl
 			test( InvalidationsArePassedOnDownstream )
 			{
 				// INIT
-				auto invalidated = 0;
+				auto invalidate = 0;
 				shared_ptr<mocks::scroll_model> u(new mocks::scroll_model);
 				animated_scroll_model m(u, clock_, queue_, &no_animation);
-				auto conn = m.invalidated += [&] {	invalidated++;	};
+				auto conn = m.invalidate += [&] {	invalidate++;	};
 
 				// ACT
-				u->invalidated();
+				u->invalidate();
 
 				// ASSERT
-				assert_equal(1, invalidated);
+				assert_equal(1, invalidate);
 
 				// ACT
-				u->invalidated();
-				u->invalidated();
+				u->invalidate();
+				u->invalidate();
 
 				// ASSERT
-				assert_equal(3, invalidated);
+				assert_equal(3, invalidate);
 			}
 
 
@@ -409,12 +409,12 @@ namespace wpl
 				shared_ptr<mocks::scroll_model> u(new mocks::scroll_model);
 				double progress;
 				auto result = true;
-				auto invalidated = 0;
+				auto invalidate = 0;
 				animated_scroll_model m(u, clock_, queue_, [&] (double &p, double) -> bool {
 					p = progress;
 					return result;
 				});
-				auto conn = m.invalidated += [&] {	invalidated++;	};
+				auto conn = m.invalidate += [&] {	invalidate++;	};
 				vector< pair<double, double> > log;
 				vector<int> events;
 
@@ -442,7 +442,7 @@ namespace wpl
 				assert_equal_pred(make_pair(log[0].first * 0.9 + 107 * 0.1, 7), log[1], eq());
 				assert_equal(1u, queued.size());
 				assert_equal(10, queued.front().defer_by);
-				assert_equal(1, invalidated);
+				assert_equal(1, invalidate);
 
 				// ACT
 				time = 122991;
@@ -457,7 +457,7 @@ namespace wpl
 				assert_equal_pred(make_pair(log[0].first * 0.19 + 107 * 0.81, 7), log[2], eq());
 				assert_equal(1u, queued.size());
 				assert_equal(10, queued.front().defer_by);
-				assert_equal(2, invalidated);
+				assert_equal(2, invalidate);
 
 				// INIT
 				u->range = make_pair(3, 100);

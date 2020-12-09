@@ -67,7 +67,7 @@ namespace wpl
 					return;
 				set_window(window_min);
 				owner->invalidate_();
-				invalidated();
+				invalidate();
 			}
 
 			virtual double get_max() const = 0;
@@ -160,7 +160,7 @@ namespace wpl
 			if (is_visible(item) | _state_vscrolling | (npos() == item))
 				return;
 			_offset.dy = static_cast<double>(item < _offset.dy ? item : item - _size.h / get_minimal_item_height() + 1);
-			_vsmodel->invalidated();
+			_vsmodel->invalidate();
 			invalidate_();
 		}
 
@@ -303,28 +303,28 @@ namespace wpl
 		{
 			_size.w = static_cast<real_t>(box_.w);
 			_size.h = static_cast<real_t>(box_.h);
-			_vsmodel->invalidated();
-			_hsmodel->invalidated();
+			_vsmodel->invalidate();
+			_hsmodel->invalidate();
 			integrated_control<wpl::listview>::layout(append_view, box_);
 		}
 
 		void listview_core::set_columns_model(shared_ptr<columns_model> cmodel)
 		{
-			_cmodel_invalidation = cmodel ? cmodel->invalidated += [this] {
+			_cmodel_invalidation = cmodel ? cmodel->invalidate += [this] {
 				invalidate_();
-				_hsmodel->invalidated();
+				_hsmodel->invalidate();
 			} : nullptr;
 			_cmodel = cmodel;
-			_hsmodel->invalidated();
+			_hsmodel->invalidate();
 		}
 
 		void listview_core::set_model(shared_ptr<table_model> model)
 		{
 			if (model == _model)
 				return;
-			_model_invalidation = model ? model->invalidated += [this] (index_type count) {
+			_model_invalidation = model ? model->invalidate += [this] (index_type count) {
 				if (_item_count != count)
-					_vsmodel->invalidated(), _item_count = count;
+					_vsmodel->invalidate(), _item_count = count;
 				sort(_selected.begin(), _selected.end(), listview_core::trackable_less());
 				if (_focused && _state_keep_focus_visible)
 					make_visible(_focused->index());

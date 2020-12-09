@@ -65,6 +65,6 @@ namespace wpl
 	inline void drag_helper::cancel()
 	{
 		if (_on_drag)
-		_on_drag(0, 0), _capture_handle.reset(), _on_drag = std::function<void(int, int)>();
+			_on_drag(0, 0), _capture_handle.reset(), _on_drag = std::function<void(int, int)>();
 	}
 }

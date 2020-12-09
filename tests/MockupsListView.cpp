@@ -57,7 +57,7 @@ namespace wpl
 			void listview_model::set_count(index_type new_count)
 			{
 				items.resize(new_count, vector<wstring>(columns_count));
-				invalidated(static_cast<index_type>(items.size()));
+				invalidate(static_cast<index_type>(items.size()));
 			}
 
 			listview_model::index_type listview_model::get_count() const throw()
