@@ -100,12 +100,13 @@ namespace wpl
 
 		void header_core::mouse_up(mouse_buttons button_, int /*depressed*/, int x, int /*y*/)
 		{
-			_resize.mouse_up(button_);
+			if (!_resize.mouse_up(button_))
+			{
+				auto h = handle_from_point(x);
 
-			auto h = handle_from_point(x);
-
-			if (h.second == column_handle)
-				_model->activate_column(h.first);
+				if (h.second == column_handle)
+					_model->activate_column(h.first);
+			}
 		}
 
 		void header_core::draw(gcontext &ctx, gcontext::rasterizer_ptr &rasterizer_) const

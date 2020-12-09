@@ -540,7 +540,6 @@ namespace wpl
 				m->window = make_pair(50, 40);
 				m->on_scrolling = [&] (bool begins) {
 					scrolling = begins;
-					assert_is_empty(cp.log); // must get called before the mouse is captured.
 				};
 				m->on_scroll = [&] (double, double) { assert_is_true(false); };
 

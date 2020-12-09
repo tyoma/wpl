@@ -71,7 +71,7 @@ namespace wpl
 			return t;
 		}
 
-		void scroller::mouse_down(mouse_buttons /*button*/, int /*depressed*/, int x, int y)
+		void scroller::mouse_down(mouse_buttons button_, int /*depressed*/, int x, int y)
 		{
 			const thumb t =  get_thumb();
 
@@ -89,33 +89,26 @@ namespace wpl
 				}
 				else
 				{
+					const auto initial_window = _model->get_window();
+
+					_scroll.start([this, initial_window] (int dx, int dy) {
+						const pair<double, double> r(_model->get_range());
+						const double delta = (_orientation == horizontal ? dx : dy) * _rextent * r.second;
+
+						_model->scroll_window(initial_window.first + delta, initial_window.second);
+					}, capture, button_, x, y);
 					_model->scrolling(true);
-					_captured_point = c;
-					_captured_window = _model->get_window();
-					capture(_capture);
 				}
 			}
 		}
 
 		void scroller::mouse_move(int /*depressed*/, int x, int y)
-		{
-			if (_capture)
-			{
-				const int c = _orientation == horizontal ? x : y;
-				const pair<double, double> r(_model->get_range()), w = _captured_window;
-				const double delta = (c - _captured_point) * _rextent * r.second;
+		{	_scroll.mouse_move(x, y);	}
 
-				_model->scroll_window(w.first + delta, w.second);
-			}
-		}
-
-		void scroller::mouse_up(mouse_buttons /*button*/, int /*depressed*/, int /*x*/, int /*y*/)
+		void scroller::mouse_up(mouse_buttons button_, int /*depressed*/, int /*x*/, int /*y*/)
 		{
-			if (_capture)
-			{
-				_capture.reset();
+			if (_scroll.mouse_up(button_))
 				_model->scrolling(false);
-			}
 		}
 
 		void scroller::mouse_scroll(int /*depressed*/, int /*x*/, int /*y*/, int delta_x, int delta_y)

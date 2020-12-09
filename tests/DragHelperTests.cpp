@@ -85,14 +85,15 @@ namespace wpl
 
 				dh.start([] (int, int) {}, on_capture, mouse_input::left, 0, 0);
 
-				// ACT
-				dh.mouse_up(mouse_input::left);
-
 				// ACT / ASSERT
+				assert_is_true(dh.mouse_up(mouse_input::left));
 				assert_is_false(dh.mouse_move(10, 11));
 
 				// ASSERT
 				assert_equal(0, captured);
+
+				// ACT / ASSERT
+				assert_is_false(dh.mouse_up(mouse_input::left));
 			}
 
 

@@ -22,6 +22,7 @@
 
 #include "../concepts.h"
 #include "../controls.h"
+#include "../drag_helper.h"
 #include "../models.h"
 #include "integrated.h"
 
@@ -74,10 +75,7 @@ namespace wpl
 			agge::real_t _width, _extent;
 			mutable agge::stroke _thumb_style;
 			slot_connection _underlying_invalidate;
-
-			std::shared_ptr<void> _capture;
-			int _captured_point;
-			std::pair<double, double> _captured_window;
+			drag_helper _scroll;
 		};
 	}
 }

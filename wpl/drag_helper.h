@@ -30,7 +30,7 @@ namespace wpl
 		template <typename CaptureFn, typename OnDragFn>
 		void start(const OnDragFn &on_drag, const CaptureFn &capture, mouse_input::mouse_buttons button_, int x, int y);
 		bool mouse_move(int x, int y);
-		void mouse_up(mouse_input::mouse_buttons button_);
+		bool mouse_up(mouse_input::mouse_buttons button_);
 		void cancel();
 
 	private:
@@ -56,10 +56,10 @@ namespace wpl
 	inline bool drag_helper::mouse_move(int x, int y)
 	{	return _on_drag ? _on_drag(x - _x, y - _y), true : false;	}
 
-	inline void drag_helper::mouse_up(mouse_input::mouse_buttons button_)
+	inline bool drag_helper::mouse_up(mouse_input::mouse_buttons button_)
 	{
-		if (_button == button_)
-			_capture_handle.reset(), _on_drag = std::function<void(int, int)>();
+		return _button == button_ && _on_drag
+			? _capture_handle.reset(), _on_drag = std::function<void(int, int)>(), true : false;
 	}
 
 	inline void drag_helper::cancel()
