@@ -20,6 +20,8 @@
 
 #include <wpl/controls/header_basic.h>
 
+#include "../glyphs.h"
+
 #include <agge/blenders.h>
 #include <agge/blenders_simd.h>
 #include <agge/filling_rules.h>
@@ -43,6 +45,9 @@ namespace wpl
 			: header_core(cursor_manager_)
 		{	}
 
+		header_basic::~header_basic()
+		{	}
+
 		void header_basic::apply_styles(const stylesheet &ss)
 		{
 			_font = ss.get_font("text.header");
@@ -58,6 +63,10 @@ namespace wpl
 			_padding = ss.get_value("padding.header");
 			_baseline_offset = _padding + m.ascent;
 			_separator_width = ss.get_value("border.header.separator");
+
+			_up.reset(new glyph(glyphs::up(_font->get_key().height)));
+			_down.reset(new glyph(glyphs::down(_font->get_key().height)));
+
 			invalidate(nullptr);
 		}
 
@@ -98,8 +107,9 @@ namespace wpl
 
 			if (header_basic::sorted & state)
 			{
-				const auto order_string = (header_basic::ascending & state) ? L"\x02C4" : L"\x02C5";
-				ctx.text_engine.render_string(*ras, *_font, order_string, layout::center, b.x1 + 0.5f * w, b.y2 - _font->get_metrics().descent);
+				auto &g = (header_basic::ascending & state) ? *_up : *_down;
+
+				add_path(*ras, offset(g, b.x2 - _padding - g.bounds().x2, b.y1 + _padding - g.bounds().y1));
 				ctx(ras, blender(_fg_normal), winding<>());
 			}
 		}

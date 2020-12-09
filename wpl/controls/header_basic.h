@@ -28,6 +28,7 @@
 
 namespace wpl
 {
+	class glyph;
 	struct stylesheet;
 
 	namespace controls
@@ -36,6 +37,7 @@ namespace wpl
 		{
 		public:
 			header_basic(std::shared_ptr<cursor_manager> cursor_manager_);
+			~header_basic();
 
 			void apply_styles(const stylesheet &stylesheet_);
 
@@ -53,6 +55,7 @@ namespace wpl
 			agge::real_t _padding, _baseline_offset, _separator_width;
 			agge::font::ptr _font;
 			agge::color _bg, _bg_sorted, _fg_normal, _fg_sorted, _fg_separator;
+			std::unique_ptr<glyph> _up, _down;
 		};
 	}
 }

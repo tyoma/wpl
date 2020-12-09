@@ -103,6 +103,9 @@
     <ClCompile Include="controls\background.cpp">
       <Filter>src\controls</Filter>
     </ClCompile>
+    <ClCompile Include="glyphs.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\wpl\controls\listview_core.h">
@@ -190,5 +193,8 @@
       <Filter>controls</Filter>
     </ClInclude>
     <ClInclude Include="..\wpl\drag_helper.h" />
+    <ClInclude Include="glyphs.h">
+      <Filter>src</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

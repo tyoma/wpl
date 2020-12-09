@@ -19,7 +19,7 @@ namespace
 	{
 	public:
 		my_columns()
-			: _columns(20, column(L"test", 60))
+			: _columns(20, column(L"test", 60)), _sort_order(npos(), false)
 		{	}
 
 	private:
@@ -27,11 +27,15 @@ namespace
 		virtual void get_value(index_type index, short int &w) const override { w = _columns[index].width; }
 		virtual void get_column(index_type index, column &column_) const override { column_ = _columns[index]; }
 		virtual void update_column(index_type index, short int width) override { _columns[index].width = width, invalidate(); }
-		virtual pair<index_type, bool> get_sort_order() const throw() override { return make_pair(npos(), false); }
-		virtual void activate_column(index_type /*column*/) override {	}
+		virtual pair<index_type, bool> get_sort_order() const throw() override { return _sort_order; }
+		virtual void activate_column(index_type index) override {
+			_sort_order.first = index, _sort_order.second = !_sort_order.second;
+			sort_order_changed(_sort_order.first, _sort_order.second);
+		}
 
 	private:
 		vector<column> _columns;
+		pair<index_type, bool> _sort_order;
 	};
 
 	class my_model : public table_model

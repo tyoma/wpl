@@ -53,6 +53,7 @@
     <ClCompile Include="controls\listview_core.cpp" />
     <ClCompile Include="controls\scroller.cpp" />
     <ClCompile Include="factory.cpp" />
+    <ClCompile Include="glyphs.cpp" />
     <ClCompile Include="input_stubs.cpp" />
     <ClCompile Include="keyboard_router.cpp" />
     <ClCompile Include="mouse_router.cpp" />
@@ -143,6 +144,7 @@
     <ClInclude Include="..\wpl\win32\combobox.h" />
     <ClInclude Include="..\wpl\win32\listview.h" />
     <ClInclude Include="..\wpl\win32\view_host.h" />
+    <ClInclude Include="glyphs.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
 </Project>

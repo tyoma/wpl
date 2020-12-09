@@ -4,6 +4,7 @@ set(WPL_SOURCES
 	animated_models.cpp
 	animation.cpp
 	factory.cpp
+	glyphs.cpp
 	input_stubs.cpp
 	keyboard_router.cpp
 	layout.cpp
