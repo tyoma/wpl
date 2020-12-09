@@ -21,6 +21,7 @@
 #pragma once
 
 #include "../controls.h"
+#include "../drag_helper.h"
 #include "integrated.h"
 
 namespace wpl
@@ -61,7 +62,6 @@ namespace wpl
 
 		private:
 			enum handle_type { none_handle, column_handle, resize_handle };
-			struct resize_data;
 
 		private:
 			virtual short measure_column(columns_model &model, index_type index) const;
@@ -78,7 +78,7 @@ namespace wpl
 			std::shared_ptr<columns_model> _model;
 			agge::box_r _size;
 			agge::real_t _offset;
-			std::unique_ptr<resize_data> _resize;
+			drag_helper _resize;
 			std::pair<index_type, bool /*ascending*/> _sorted_column;
 			slot_connection _model_invalidation;
 			slot_connection _model_sorting_change;

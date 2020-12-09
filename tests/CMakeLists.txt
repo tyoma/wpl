@@ -4,6 +4,7 @@ include(test)
 
 set(WPL_TEST_SOURCES
 	AnimatedModelsTests.cpp
+	DragHelperTests.cpp
 	FactoryTests.cpp
 	HeaderCoreTests.cpp
 	helpers.cpp

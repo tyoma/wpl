@@ -29,14 +29,6 @@ namespace wpl
 {
 	namespace controls
 	{
-		struct header_core::resize_data
-		{
-			index_type index;
-			int click_width;
-			std::shared_ptr<void> capture_handle;
-		};
-
-
 		header_core::header_core(shared_ptr<cursor_manager> cursor_manager_)
 			: _cursor_manager(cursor_manager_), _offset(0.0f)
 		{	}
@@ -66,8 +58,8 @@ namespace wpl
 				_model_invalidation = nullptr;
 				_model_sorting_change = nullptr;
 			}
+			_resize.cancel();
 			_model = model;
-			_resize.reset();
 			invalidate(nullptr);
 		}
 
@@ -77,49 +69,43 @@ namespace wpl
 		void header_core::mouse_leave()
 		{	_cursor_manager->pop();	}
 
-		void header_core::mouse_move(int /*depressed*/, int x, int /*y*/)
+		void header_core::mouse_move(int /*depressed*/, int x, int y)
 		{
-			const auto h = handle_from_point(x);
-			const auto c = h.second == resize_handle ? cursor_manager::h_resize
-				: h.second == column_handle ? cursor_manager::hand : cursor_manager::arrow;
-
-			_cursor_manager->set(_cursor_manager->get(c));
-			if (_resize)
+			if (!_resize.mouse_move(x, y))
 			{
-				_model->update_column(_resize->index, static_cast<short>((max<int>)(_resize->click_width + x,
-					measure_column(*_model, _resize->index))));
+				const auto h = handle_from_point(x);
+
+				_cursor_manager->set(_cursor_manager->get(h.second == resize_handle ? cursor_manager::h_resize
+					: h.second == column_handle ? cursor_manager::hand : cursor_manager::arrow));
 			}
 		}
 
-		void header_core::mouse_down(mouse_buttons /*button*/, int /*depressed*/, int x, int /*y*/)
+		void header_core::mouse_down(mouse_buttons button_, int /*depressed*/, int x, int y)
 		{
 			const auto h = handle_from_point(x);
 
 			if (h.second == resize_handle)
 			{
-				short w;
-				resize_data resize = { h.first, -x, };
+				const auto index = h.first;
+				short initial_width;
 
-				capture(resize.capture_handle);
-				_model->get_value(h.first, w);
-				resize.click_width += w;
-				_resize.reset(new resize_data(resize));
+				_model->get_value(h.first, initial_width);
+				_resize.start([this, index, initial_width] (int dx, int) {
+					auto w = (max<int>)(initial_width + dx, measure_column(*_model, index));
+
+					_model->update_column(index, static_cast<short>(w));
+				}, capture, button_, x, y);
 			}
 		}
 
-		void header_core::mouse_up(mouse_buttons /*button*/, int /*depressed*/, int x, int /*y*/)
+		void header_core::mouse_up(mouse_buttons button_, int /*depressed*/, int x, int /*y*/)
 		{
-			if (_resize)
-			{
-				_resize.reset();
-			}
-			else
-			{
-				auto h = handle_from_point(x);
+			_resize.mouse_up(button_);
 
-				if (h.second == column_handle)
-					_model->activate_column(h.first);
-			}
+			auto h = handle_from_point(x);
+
+			if (h.second == column_handle)
+				_model->activate_column(h.first);
 		}
 
 		void header_core::draw(gcontext &ctx, gcontext::rasterizer_ptr &rasterizer_) const

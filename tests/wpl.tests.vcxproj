@@ -44,6 +44,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="AnimatedModelsTests.cpp" />
+    <ClCompile Include="DragHelperTests.cpp" />
     <ClCompile Include="KeyboardRouterNativeTests.cpp" />
     <ClCompile Include="KeyboardRouterTests.cpp" />
     <ClCompile Include="MouseRouterTests.cpp" />

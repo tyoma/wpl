@@ -189,5 +189,6 @@
     <ClInclude Include="..\wpl\controls\background.h">
       <Filter>controls</Filter>
     </ClInclude>
+    <ClInclude Include="..\wpl\drag_helper.h" />
   </ItemGroup>
 </Project>
