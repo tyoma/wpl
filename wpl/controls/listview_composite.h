@@ -48,16 +48,16 @@ namespace wpl
 
 				_header = factory_.create_control<header_basic>("header");
 				_hscroller = factory_.create_control<scroller>("hscroller");
-				_hscroller->set_model(shared_ptr<animated_scroll_model>(new animated_scroll_model(get_hscroll_model(),
+				_hscroller->set_model(shared_ptr<animated_scroll_model>(new animated_scroll_model(this->get_hscroll_model(),
 					context.clock_, context.queue_, smooth_animation())));
 				_vscroller = factory_.create_control<scroller>("vscroller");
-				_vscroller->set_model(shared_ptr<animated_scroll_model>(new animated_scroll_model(get_vscroll_model(),
+				_vscroller->set_model(shared_ptr<animated_scroll_model>(new animated_scroll_model(this->get_vscroll_model(),
 					context.clock_, context.queue_, smooth_animation())));
 
-				_scroll_connection = get_hscroll_model()->invalidate += [this] {
-					_header->set_offset(get_hscroll_model()->get_window().first);
+				_scroll_connection = this->get_hscroll_model()->invalidate += [this] {
+					_header->set_offset(this->get_hscroll_model()->get_window().first);
 				};
-				get_hscroll_model()->invalidate();
+				this->get_hscroll_model()->invalidate();
 			}
 
 			virtual void set_columns_model(std::shared_ptr<columns_model> m) override

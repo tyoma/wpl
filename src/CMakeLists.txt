@@ -36,6 +36,10 @@ if(WIN32)
 		win32/view_host.cpp
 		win32/window.cpp
 	)
+elseif(APPLE)
+	set(WPL_SOURCES ${WPL_SOURCES}
+		macos/factory_macos.cpp
+	)
 endif()
 
 add_library(wpl STATIC ${WPL_SOURCES})

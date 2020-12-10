@@ -18,6 +18,7 @@ endif()
 add_compile_options(
 	$<$<OR:$<CXX_COMPILER_ID:GNU>,$<CXX_COMPILER_ID:Clang>>:$<$<COMPILE_LANGUAGE:C>:-fPIC>>
 	$<$<OR:$<CXX_COMPILER_ID:GNU>,$<CXX_COMPILER_ID:Clang>>:$<$<COMPILE_LANGUAGE:CXX>:-fPIC>>
+    $<$<OR:$<CXX_COMPILER_ID:GNU>,$<CXX_COMPILER_ID:Clang>>:$<$<COMPILE_LANGUAGE:CXX>:-std=c++11>>
 	$<$<OR:$<CXX_COMPILER_ID:GNU>,$<CXX_COMPILER_ID:Clang>>:$<$<COMPILE_LANGUAGE:CXX>:-fno-rtti>>
 )
 
@@ -26,6 +27,10 @@ if (CMAKE_VERSION VERSION_GREATER_EQUAL 3.13.5)
 		"$<$<CXX_COMPILER_ID:GNU>:-Wl,--no-undefined>"
 		"$<$<CXX_COMPILER_ID:Clang>:-Wl,-undefined,error>"
 	)
+endif()
+
+if(APPLE)
+    link_libraries("-framework Foundation -framework Cocoa")
 endif()
 
 if (UNIX)
