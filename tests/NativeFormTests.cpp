@@ -257,14 +257,14 @@ namespace wpl
 
 				// ASSERT
 				assert_equal(1u, ctl->size_log.size());
-				assert_equal(get_client_rect(f.second), ctl->size_log.back());
+				assert_equal(get_client_size(f.second), ctl->size_log.back());
 
 				// ACT
 				::MoveWindow(f.second, 27, 190, 531, 97, TRUE);
 
 				// ASSERT
 				assert_equal(2u, ctl->size_log.size());
-				assert_equal(get_client_rect(f.second), ctl->size_log.back());
+				assert_equal(get_client_size(f.second), ctl->size_log.back());
 			}
 
 

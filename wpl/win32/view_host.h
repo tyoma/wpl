@@ -77,6 +77,7 @@ namespace wpl
 			std::shared_ptr<control> _root;
 			std::vector<placed_view> _views;
 			gcontext::rasterizer_ptr _rasterizer;
+			slot_connection _layout_changed_connection;
 			std::weak_ptr<bool> _capture_handle;
 			unsigned _input_modifiers;
 			unsigned _mouse_in : 1;

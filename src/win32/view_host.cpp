@@ -100,14 +100,26 @@ namespace wpl
 
 		void view_host::set_root(shared_ptr<control> root)
 		{
-			RECT rc;
+			const auto layout = [this] {
+				RECT rc;
+
+				::GetClientRect(_window->hwnd(), &rc);
+				layout_views(rc.right, rc.bottom);
+			};
+			const auto reload = [this] {
+				_visual_router.reload_views();
+				_mouse_router.reload_views();
+				_keyboard_router.reload_views();
+			};
 
 			_root = root;
-			::GetClientRect(_window->hwnd(), &rc);
-			layout_views(rc.right, rc.bottom);
-			_visual_router.reload_views();
-			_mouse_router.reload_views();
-			_keyboard_router.reload_views();
+			layout();
+			reload();
+			_layout_changed_connection = root ? root->layout_changed += [layout, reload] (bool hierarchy_changed) {
+				layout();
+				if (hierarchy_changed)
+					reload();
+			} : slot_connection();
 		}
 
 		void view_host::invalidate(const agge::rect_i &area)

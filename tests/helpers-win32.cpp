@@ -101,7 +101,7 @@ namespace wpl
 			return rc;
 		}
 
-		agge::box<int> get_client_rect(HWND hwnd)
+		agge::box<int> get_client_size(HWND hwnd)
 		{
 			RECT rc;
 

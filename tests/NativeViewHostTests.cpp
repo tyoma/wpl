@@ -17,6 +17,25 @@ namespace wpl
 {
 	namespace tests
 	{
+		namespace
+		{
+			rect_i get_client_rect(HWND hwnd)
+			{
+				RECT rc;
+
+				::GetClientRect(hwnd, &rc);
+				return make_rect<int>(rc.left, rc.top, rc.right, rc.bottom);
+			}
+
+			rect_i get_update_rect(HWND hwnd)
+			{
+				RECT rc;
+
+				assert_is_true(!!::GetUpdateRect(hwnd, &rc, FALSE));
+				return make_rect<int>(rc.left, rc.top, rc.right, rc.bottom);
+			}
+		}
+
 		begin_test_suite( NativeViewHostTests )
 
 			form_context context;
@@ -59,14 +78,14 @@ namespace wpl
 
 				// ASSERT
 				assert_equal(1u, ctl->size_log.size());
-				assert_equal(get_client_rect(hwnd), ctl->size_log.back());
+				assert_equal(get_client_size(hwnd), ctl->size_log.back());
 
 				// ACT
 				::MoveWindow(hwnd, 27, 190, 531, 97, TRUE);
 
 				// ASSERT
 				assert_equal(2u, ctl->size_log.size());
-				assert_equal(get_client_rect(hwnd), ctl->size_log.back());
+				assert_equal(get_client_size(hwnd), ctl->size_log.back());
 			}
 
 
@@ -258,7 +277,6 @@ namespace wpl
 				const auto hwnd = create_window(true, 40, 40);
 				win32::view_host vh(hwnd, context);
 				const auto ctl = make_shared<mocks::control>();
-				RECT client, invalid;
 
 				::ShowWindow(hwnd, SW_SHOW);
 				::ValidateRect(hwnd, NULL);
@@ -267,25 +285,79 @@ namespace wpl
 				vh.set_root(ctl);
 
 				// ASSERT
-				::GetClientRect(hwnd, &client);
-				assert_is_true(!!::GetUpdateRect(hwnd, &invalid, FALSE));
-				assert_equal(client, invalid);
+				assert_equal(get_client_rect(hwnd), get_update_rect(hwnd));
 
 				// ACT
 				::MoveWindow(hwnd, 10, 10, 200, 40, FALSE);
 
 				// ASSERT
-				::GetClientRect(hwnd, &client);
-				assert_is_true(!!::GetUpdateRect(hwnd, &invalid, FALSE));
-				assert_equal(client, invalid);
+				assert_equal(get_client_rect(hwnd), get_update_rect(hwnd));
 
 				// ACT
 				::MoveWindow(hwnd, 10, 10, 250, 100, TRUE);
 
 				// ASSERT
-				::GetClientRect(hwnd, &client);
-				assert_is_true(!!::GetUpdateRect(hwnd, &invalid, FALSE));
-				assert_equal(client, invalid);
+				assert_equal(get_client_rect(hwnd), get_update_rect(hwnd));
+			}
+
+
+			test( RootLayoutChangesAreIgnoredOnRootReset )
+			{
+				// INIT
+				const auto hwnd = create_window(true, 40, 40);
+				win32::view_host vh(hwnd, context);
+				const auto ctl = make_shared<mocks::control>();
+
+				::ShowWindow(hwnd, SW_SHOW);
+				vh.set_root(ctl);
+				::ValidateRect(hwnd, NULL);
+
+				// ACT
+				vh.set_root(nullptr);
+
+				// ASSERT
+				assert_equal(get_client_rect(hwnd), get_update_rect(hwnd));
+
+				// INIT
+				::ValidateRect(hwnd, NULL);
+
+				// ACT
+				ctl->layout_changed(false);
+				ctl->layout_changed(true);
+
+				// ASSERT
+				assert_is_false(!!::GetUpdateRect(hwnd, NULL, FALSE));
+			}
+
+
+			test( ForcingLayoutWithoutHierarchyChangeSignalLeadsToLayoutRequestInvalidatesWindow )
+			{
+				// INIT
+				const shared_ptr<view> v[] = {
+					make_shared<view>(), make_shared<view>(), make_shared<view>(),
+				};
+				const placed_view pv[] = {
+					{ v[0], nullptr, make_rect(1, 7, 30, 25), 1 },
+					{ v[1], nullptr, make_rect(1, 7, 100, 100), 2 },
+					{ v[2], nullptr, make_rect(50, 40, 75, 100), 3 },
+				};
+				auto ctl = make_shared<mocks::control>();
+				const auto hwnd = create_window(true, 100, 100);
+				win32::view_host vh(hwnd, context);
+
+				ctl->views.assign(begin(pv), end(pv));
+				vh.set_root(ctl);
+				::ValidateRect(hwnd, NULL);
+				ctl->size_log.clear();
+
+				// ACT
+				ctl->layout_changed(false);
+
+				// ASSERT
+				box<int> reference1[] = {	get_client_size(hwnd),	};
+
+				assert_equal(reference1, ctl->size_log);
+				assert_equal(get_client_rect(hwnd), get_update_rect(hwnd));
 			}
 
 
@@ -309,6 +381,68 @@ namespace wpl
 				// ASSERT
 				assert_is_true(!!::GetUpdateRect(hwnd, &invalid, FALSE));
 				assert_equal(make_rect(1, 7, 100, 100), invalid);
+			}
+
+
+			test( NewViewsAreNotAttachedWhenNoHierarchyChangesAreReportedOnLayout )
+			{
+				// INIT
+				const auto v = make_shared< mocks::logging_key_input<view> >();
+				placed_view pv = {	v, nullptr, make_rect(10, 15, 40, 50), 1	};
+				const auto hwnd = create_window(true);
+				win32::view_host vh(hwnd, context);
+				const auto ctl = make_shared<mocks::control>();
+				shared_ptr<void> capture_handle;
+
+				vh.set_root(ctl);
+				ctl->views.push_back(pv);
+
+				// ACT
+				ctl->layout_changed(false);
+				::ValidateRect(hwnd, NULL);
+				v->capture(capture_handle);
+				v->invalidate(nullptr);
+
+				// ASSERT
+				assert_is_empty(v->events);
+				assert_null(capture_handle);
+				assert_is_false(!!::GetUpdateRect(hwnd, NULL, FALSE));
+			}
+
+
+			test( NewViewsAreAttachedWhenHierarchyChangeIsReportedOnLayout )
+			{
+				// INIT
+				const auto v = make_shared< mocks::logging_key_input<view> >();
+				placed_view pv = {	v, nullptr, make_rect(10, 15, 40, 50), 1	};
+				const auto hwnd = create_window(true);
+				win32::view_host vh(hwnd, context);
+				const auto ctl = make_shared<mocks::control>();
+				shared_ptr<void> capture_handle;
+
+				vh.set_root(ctl);
+				ctl->views.push_back(pv);
+
+				// ACT
+				ctl->layout_changed(true);
+
+				// ASSERT
+				mocks::keyboard_event reference[] = {
+					{	mocks::keyboard_event::focusin, 0, 0	},
+				};
+
+				assert_equal(reference, v->events);
+
+				// INIT
+				::ValidateRect(hwnd, NULL);
+
+				// ACT
+				v->capture(capture_handle);
+				v->invalidate(nullptr);
+
+				// ASSERT
+				assert_not_null(capture_handle);
+				assert_equal(make_rect(10, 15, 40, 50), get_update_rect(hwnd));
 			}
 
 
@@ -527,30 +661,6 @@ namespace wpl
 				// ASSERT
 				assert_equal(hwnd2, ::GetCapture());
 			}
-
-
-			//test( SwitchingCaptureNotifiesView )
-			//{
-			//	// INIT
-			//	shared_ptr< mocks::logging_mouse_input<view> > v1(new mocks::logging_mouse_input<view>());
-			//	shared_ptr< mocks::logging_mouse_input<view> > v2(new mocks::logging_mouse_input<view>());
-			//	hosting_window f1;
-			//	hosting_window f2;
-			//	shared_ptr<void> h1, h2;
-
-			//	f1.host->set_view(v1);
-			//	f2.host->set_view(v2);
-
-			//	::SetFocus(f1.hwnd);
-
-			//	v1->capture(h1);
-			//		
-			//	// ACT
-			//	v2->capture(h2);
-
-			//	// ASSERT
-			//	assert_equal(1u, v1->capture_lost);
-			//}
 
 
 			test( ResettingHandleReleasesTheCapture )
@@ -925,34 +1035,6 @@ namespace wpl
 			}
 
 
-			//test( ResettingViewDetachesFromEventsOfThePreviousView )
-			//{
-			//	// INIT
-			//	shared_ptr<view> v(new view);
-			//	hosting_window f;
-			//	shared_ptr<void> capture;
-
-			//	f.host->set_view(v);
-			//	::MoveWindow(hwnd, 0, 0, 500, 400, TRUE);
-			//	::ValidateRect(hwnd, NULL);
-
-			//	// ACT
-			//	f.host->set_view(shared_ptr<view>());
-
-			//	// ASSERT
-			//	assert_is_true(v.unique());
-
-			//	// ACT
-			//	v->invalidate(0);
-			//	v->capture(capture);
-
-			//	// ASSERT
-			//	assert_is_false(!!::GetUpdateRect(hwnd, NULL, FALSE));
-			//	assert_equal(HWND(), ::GetCapture());
-			//	assert_null(capture);
-			//}
-
-
 			test( SettingViewResizesItToAClient )
 			{
 				// INIT
@@ -965,7 +1047,7 @@ namespace wpl
 
 				// ASSERT
 				assert_equal(1u, ctl->size_log.size());
-				assert_equal(get_client_rect(hwnd), ctl->size_log.back());
+				assert_equal(get_client_size(hwnd), ctl->size_log.back());
 
 				// ACT
 				vh.set_root(nullptr);
@@ -974,7 +1056,7 @@ namespace wpl
 
 				// ASSERT
 				assert_equal(2u, ctl->size_log.size());
-				assert_equal(get_client_rect(hwnd), ctl->size_log.back());
+				assert_equal(get_client_size(hwnd), ctl->size_log.back());
 			}
 
 
