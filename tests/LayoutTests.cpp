@@ -28,6 +28,64 @@ namespace wpl
 		}
 
 		begin_test_suite( StackLayoutTest )
+			test( AddingAViewForcesLayoutRecalculate )
+			{
+				// INIT
+				stack s(0, false);
+				auto layout_forced = 0;
+				slot_connection conn = s.layout_changed += [&] (bool hierarchy_changed) {
+					layout_forced++;
+					assert_is_true(hierarchy_changed);
+				};
+
+				// ACT
+				s.add(make_shared<mocks::control>(), 10);
+
+				// ASSERT
+				assert_equal(1, layout_forced);
+
+				// ACT
+				s.add(make_shared<mocks::control>(), 50);
+
+				// ASSERT
+				assert_equal(2, layout_forced);
+			}
+
+
+			test( ForceLayoutIsPropagatedUpstream )
+			{
+				// INIT
+				stack s(0, false);
+				auto layout_forced = 0;
+				auto expect_change = true;
+				shared_ptr<mocks::control> ctls[] = {
+					make_shared<mocks::control>(), make_shared<mocks::control>(),
+				};
+				slot_connection conn = s.layout_changed += [&] (bool hierarchy_changed) {
+					layout_forced++;
+					assert_equal(expect_change, hierarchy_changed);
+				};
+
+				s.add(ctls[0], 10);
+				s.add(ctls[1], 10);
+				layout_forced = 0;
+
+				// ACT
+				ctls[0]->layout_changed(true);
+
+				// ASSERT
+				assert_equal(1, layout_forced);
+
+				// INIT
+				expect_change = false;
+
+				// ACT
+				ctls[1]->layout_changed(false);
+
+				// ASSERT
+				assert_equal(2, layout_forced);
+			}
+
 
 			test( SingleItemOccupiesAbsoluteSizeAssigned )
 			{
@@ -368,6 +426,38 @@ namespace wpl
 
 
 		begin_test_suite( PadLayoutTests )
+			test( ForceLayoutIsPropagatedUpstream )
+			{
+				// INIT
+				auto layout_forced = 0;
+				auto expect_change = true;
+				shared_ptr<mocks::control> ctl = make_shared<mocks::control>();
+
+				// INIT / ACT
+				auto p = pad_control(ctl, 0, 0);
+
+				slot_connection conn = p->layout_changed += [&] (bool hierarchy_changed) {
+					layout_forced++;
+					assert_equal(expect_change, hierarchy_changed);
+				};
+
+				// ACT
+				ctl->layout_changed(true);
+
+				// ASSERT
+				assert_equal(1, layout_forced);
+
+				// INIT
+				expect_change = false;
+
+				// ACT
+				ctl->layout_changed(false);
+
+				// ASSERT
+				assert_equal(2, layout_forced);
+			}
+
+
 			test( ControlIsArrangedWithReducedSize )
 			{
 				// INIT
@@ -445,6 +535,65 @@ namespace wpl
 
 
 		begin_test_suite( OverlayLayoutTests )
+			test( AddingAViewForcesLayoutRecalculate )
+			{
+				// INIT
+				overlay o;
+				auto layout_forced = 0;
+				slot_connection conn = o.layout_changed += [&] (bool hierarchy_changed) {
+					layout_forced++;
+					assert_is_true(hierarchy_changed);
+				};
+
+				// ACT
+				o.add(make_shared<mocks::control>());
+
+				// ASSERT
+				assert_equal(1, layout_forced);
+
+				// ACT
+				o.add(make_shared<mocks::control>());
+
+				// ASSERT
+				assert_equal(2, layout_forced);
+			}
+
+
+			test( ForceLayoutIsPropagatedUpstream )
+			{
+				// INIT
+				stack s(0, false);
+				auto layout_forced = 0;
+				auto expect_change = true;
+				shared_ptr<mocks::control> ctls[] = {
+					make_shared<mocks::control>(), make_shared<mocks::control>(),
+				};
+				slot_connection conn = s.layout_changed += [&] (bool hierarchy_changed) {
+					layout_forced++;
+					assert_equal(expect_change, hierarchy_changed);
+				};
+
+				s.add(ctls[0], 10);
+				s.add(ctls[1], 10);
+				layout_forced = 0;
+
+				// ACT
+				ctls[0]->layout_changed(true);
+
+				// ASSERT
+				assert_equal(1, layout_forced);
+
+				// INIT
+				expect_change = false;
+
+				// ACT
+				ctls[1]->layout_changed(false);
+
+				// ASSERT
+				assert_equal(2, layout_forced);
+			}
+
+
 			test( ControlOccupyFullContainer )
 			{
 				// INIT

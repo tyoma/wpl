@@ -27,7 +27,17 @@
 
 namespace wpl
 {
-	class stack : public control, noncopyable
+	class container : public control, noncopyable
+	{
+	protected:
+		void add(control &child);
+
+	private:
+		std::vector<wpl::slot_connection> _connections;
+	};
+
+
+	class stack : public container
 	{
 	public:
 		stack(int spacing, bool horizontal);
@@ -61,11 +71,12 @@ namespace wpl
 
 	private:
 		std::shared_ptr<control> _inner;
+		slot_connection _connection;
 		int _px, _py;
 	};
 
 
-	class overlay : public control
+	class overlay : public container
 	{
 	public:
 		void add(std::shared_ptr<control> child);

@@ -41,6 +41,16 @@ namespace wpl
 		}
 	}
 
+
+	void container::add(control &child)
+	{
+		_connections.push_back(child.layout_changed += [this] (bool hierarchy_changed) {
+			layout_changed(hierarchy_changed);
+		});
+		layout_changed(true);
+	}
+
+
 	stack::stack(int spacing, bool horizontal)
 		: _spacing(spacing), _horizontal(horizontal)
 	{	}
@@ -49,6 +59,7 @@ namespace wpl
 	{
 		item i = { child, size, tab_order };
 		_children.push_back(i);
+		container::add(*child);
 	}
 
 	void stack::layout(const placed_view_appender &append_view, const agge::box<int> &box)
@@ -75,7 +86,11 @@ namespace wpl
 
 	padding::padding(shared_ptr<control> inner, int px, int py)
 		: _inner(inner), _px(px), _py(py)
-	{	}
+	{
+		_connection = inner->layout_changed += [this] (bool hierarchy_changed) {
+			layout_changed(hierarchy_changed);
+		};
+	}
 
 	void padding::layout(const placed_view_appender &append_view, const agge::box<int> &box)
 	{
@@ -87,7 +102,10 @@ namespace wpl
 
 
 	void overlay::add(shared_ptr<control> child)
-	{	_children.push_back(child);	}
+	{
+		_children.push_back(child);
+		container::add(*child);
+	}
 
 	void overlay::layout(const placed_view_appender &append_view, const agge::box<int> &box)
 	{

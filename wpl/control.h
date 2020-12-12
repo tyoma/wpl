@@ -44,6 +44,6 @@ namespace wpl
 	{
 		virtual void layout(const placed_view_appender &append_view, const agge::box<int> &box) = 0;
 
-		signal<void (bool hierarchy_changed)> force_layout;
+		signal<void (bool hierarchy_changed)> layout_changed;
 	};
 }
