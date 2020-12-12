@@ -1,5 +1,7 @@
 #include <wpl/animated_models.h>
 
+#include <algorithm>
+
 #pragma warning(disable: 4355)
 
 using namespace std;
@@ -27,12 +29,12 @@ namespace wpl
 
 		if (uw.first < r.first)
 		{
-			uw.second = max(c_max_squeeze * uw.second, uw.first + uw.second - r.first);
+			uw.second = (max)(c_max_squeeze * uw.second, uw.first + uw.second - r.first);
 			uw.first = r.first;
 		}
 		else if (uw.first + uw.second > r.first + r.second)
 		{
-			uw.second = max(c_max_squeeze * uw.second, r.first + r.second - uw.first);
+			uw.second = (max)(c_max_squeeze * uw.second, r.first + r.second - uw.first);
 			uw.first = r.first + r.second - uw.second;
 		}
 		return uw;

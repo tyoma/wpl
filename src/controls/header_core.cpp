@@ -20,6 +20,7 @@
 
 #include <wpl/controls/header_core.h>
 
+#include <algorithm>
 #include <wpl/cursor.h>
 
 using namespace agge;
