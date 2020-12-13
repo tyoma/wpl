@@ -18,39 +18,29 @@
 //	OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //	THE SOFTWARE.
 
-#pragma once
+#include <wpl/helpers.h>
 
-#include "visual.h"
+#include <agge.text/text_engine.h>
 
-#include <agge/types.h>
-#include <agge.text/layout.h>
+using namespace agge;
+using namespace std;
 
 namespace wpl
 {
-	enum valign {	va_top, va_bottom, va_center,	};
+	void render_string(gcontext::rasterizer_type &target, const wstring &text, gcontext::text_engine_type &text_engine_,
+		const font &font_, const rect_r &box_, layout::halign halign, valign valign_)
+	{
+		const auto align_vcenter = [&] () -> real_t {
+			const auto gm = font_.get_metrics();
+			const auto fh = gm.ascent + gm.descent;
 
+			return 0.5f * wpl::height(box_) + fh - gm.descent;
+		};
+		const auto y = valign_ == va_top ? box_.y1 + font_.get_metrics().ascent : valign_ == va_bottom
+			? box_.y2 - font_.get_metrics().descent : align_vcenter();
+		const auto x = halign == layout::near_ ? box_.x1 : halign == layout::far_
+			? box_.x2 : box_.x1 + 0.5f * wpl::width(box_);
 
-	template <typename T>
-	inline T width(const agge::rect<T> &rect_)
-	{	return rect_.x2 - rect_.x1;	}
-
-	template <typename T>
-	inline T height(const agge::rect<T> &rect_)
-	{	return rect_.y2 - rect_.y1;	}
-
-	template <typename T>
-	inline void inflate(agge::rect<T> &rect_, T dx, T dy)
-	{	rect_.x1 -= dx, rect_.y1 -= dy, rect_.x2 += dx, rect_.y2 += dy;	}
-
-	template <typename T>
-	inline void offset(agge::rect<T> &rect_, T dx, T dy)
-	{	rect_.x1 += dx, rect_.y1 += dy, rect_.x2 += dx, rect_.y2 += dy;	}
-
-	template <typename T>
-	inline agge::rect<T> make_rect(T x1, T y1, T x2, T y2)
-	{	agge::rect<T> r = {	x1, y1, x2, y2	}; return r;	}
-
-	void render_string(gcontext::rasterizer_type &target, const std::wstring &text,
-		gcontext::text_engine_type &text_engine, const agge::font &font, const agge::rect_r &box,
-		agge::layout::halign halign, valign valign_);
+		text_engine_.render_string(target, font_, text.c_str(), halign, x, y, wpl::width(box_));
+	}
 }

@@ -22,6 +22,7 @@
 
 #include <algorithm>
 #include <wpl/cursor.h>
+#include <wpl/helpers.h>
 
 using namespace agge;
 using namespace std;
@@ -114,7 +115,7 @@ namespace wpl
 		{
 			if (_model)
 			{
-				rect_r rc = { 0.0f, 0.0f, -_offset, _size.h };
+				auto rc = make_rect(real_t(), real_t(), -_offset, _size.h);
 				columns_model::column c;
 
 				for (index_type i = 0, n = _model->get_count(); i != n; ++i)

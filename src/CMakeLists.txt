@@ -5,6 +5,7 @@ set(WPL_SOURCES
 	animation.cpp
 	factory.cpp
 	glyphs.cpp
+	helpers.cpp
 	input_stubs.cpp
 	keyboard_router.cpp
 	layout.cpp

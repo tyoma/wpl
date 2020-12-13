@@ -24,6 +24,7 @@
 #include <agge/stroke.h>
 #include <agge/stroke_features.h>
 #include <wpl/concepts.h>
+#include <wpl/helpers.h>
 
 using namespace agge;
 using namespace std;
@@ -81,7 +82,7 @@ namespace wpl
 		glyph build_glyph(const path_storage_t &from, real_t stroke_width)
 		{
 			stroke s;
-			rect_r r = {	30000.0f, 30000.0f, -30000.0f, -30000.0f	};
+			auto r = make_rect<real_t>(30000.0f, 30000.0f, -30000.0f, -30000.0f);
 			glyph src(from, r);
 			path_storage_t dest;
 			glyph_writer w(dest, r);

@@ -100,7 +100,7 @@ namespace wpl
 		void header_basic::draw_item(gcontext &ctx, gcontext::rasterizer_ptr &ras, const agge::rect_r &b, index_type /*item*/,
 			unsigned /*item_state_flags*/ state, const wstring &text) const
 		{
-			auto halign_ = /*item ? layout::far :*/ layout::near;
+			auto halign_ = /*item ? layout::far_ :*/ layout::near_;
 			auto box = b;
 
 			box.x2 -= _separator_width;
@@ -112,7 +112,7 @@ namespace wpl
 			{
 				const auto gbox = g->bounds();
 
-				if (halign_ == layout::far)
+				if (halign_ == layout::far_)
 					add_path(*ras, offset(*g, box.x1 - gbox.x1, box.y1 - gbox.y1)), box.x1 += wpl::width(gbox) + _padding;
 				else
 					add_path(*ras, offset(*g, box.x2 - gbox.x2, box.y1 - gbox.y1)), box.x2 -= wpl::width(gbox) + _padding;

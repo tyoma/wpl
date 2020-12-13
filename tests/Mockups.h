@@ -7,21 +7,12 @@
 #include <agge/filling_rules.h>
 #include <agge/figures.h>
 #include <agge/path.h>
+#include <agge.text/text_engine.h>
 #include <map>
 #include <wpl/cursor.h>
 #include <wpl/view.h>
 #include <wpl/layout.h>
 #include <ut/assert.h>
-
-#ifdef far
-	#undef far
-#endif
-
-#ifdef near
-	#undef near
-#endif
-
-#include <agge.text/text_engine.h>
 
 namespace wpl
 {

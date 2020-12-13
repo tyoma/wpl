@@ -348,8 +348,8 @@ namespace wpl
 				// INIT
 				typedef signal<void ()> signal_type;
 
-				auto_ptr<signal_type> ps(new signal_type());
-				slot_connection c1(*ps += bind(&auto_ptr<signal_type>::reset, &ps, static_cast<signal_type *>(0)));
+				unique_ptr<signal_type> ps(new signal_type());
+				slot_connection c1(*ps += bind(&unique_ptr<signal_type>::reset, &ps, static_cast<signal_type *>(0)));
 				slot_connection c2(*ps += s1_f);
 				
 				// ACT / ASSERT (must not throw)
@@ -366,8 +366,8 @@ namespace wpl
 				// INIT
 				typedef signal<void (int)> signal_type;
 
-				auto_ptr<signal_type> ps(new signal_type());
-				slot_connection c1(*ps += bind(&auto_ptr<signal_type>::reset, &ps, static_cast<signal_type *>(0)));
+				unique_ptr<signal_type> ps(new signal_type());
+				slot_connection c1(*ps += bind(&unique_ptr<signal_type>::reset, &ps, static_cast<signal_type *>(0)));
 				slot_connection c2(*ps += s2_f);
 				
 				// ACT / ASSERT (must not throw)
@@ -384,8 +384,8 @@ namespace wpl
 				// INIT
 				typedef signal<void (int, int)> signal_type;
 
-				auto_ptr<signal_type> ps(new signal_type());
-				slot_connection c1(*ps += bind(&auto_ptr<signal_type>::reset, &ps, static_cast<signal_type *>(0)));
+				unique_ptr<signal_type> ps(new signal_type());
+				slot_connection c1(*ps += bind(&unique_ptr<signal_type>::reset, &ps, static_cast<signal_type *>(0)));
 				slot_connection c2(*ps += s4_f);
 				
 				// ACT / ASSERT (must not throw)
@@ -402,8 +402,8 @@ namespace wpl
 				// INIT
 				typedef signal<void (int, int, int)> signal_type;
 
-				auto_ptr<signal_type> ps(new signal_type());
-				slot_connection c1(*ps += bind(&auto_ptr<signal_type>::reset, &ps, static_cast<signal_type *>(0)));
+				unique_ptr<signal_type> ps(new signal_type());
+				slot_connection c1(*ps += bind(&unique_ptr<signal_type>::reset, &ps, static_cast<signal_type *>(0)));
 				slot_connection c2(*ps += s6_f);
 				
 				// ACT / ASSERT (must not throw)
@@ -420,8 +420,8 @@ namespace wpl
 				// INIT
 				typedef signal<void (int, int, int, int)> signal_type;
 
-				auto_ptr<signal_type> ps(new signal_type());
-				slot_connection c1(*ps += bind(&auto_ptr<signal_type>::reset, &ps, static_cast<signal_type *>(0)));
+				unique_ptr<signal_type> ps(new signal_type());
+				slot_connection c1(*ps += bind(&unique_ptr<signal_type>::reset, &ps, static_cast<signal_type *>(0)));
 				slot_connection c2(*ps += s8_f);
 				
 				// ACT / ASSERT (must not throw)
@@ -438,8 +438,8 @@ namespace wpl
 				// INIT
 				typedef signal<void (int, int, int, int, int)> signal_type;
 
-				auto_ptr<signal_type> ps(new signal_type());
-				slot_connection c1(*ps += bind(&auto_ptr<signal_type>::reset, &ps, static_cast<signal_type *>(0)));
+				unique_ptr<signal_type> ps(new signal_type());
+				slot_connection c1(*ps += bind(&unique_ptr<signal_type>::reset, &ps, static_cast<signal_type *>(0)));
 				slot_connection c2(*ps += s10_f);
 				
 				// ACT / ASSERT (must not throw)

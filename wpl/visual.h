@@ -52,7 +52,9 @@ namespace wpl
 
 	public:
 		gcontext(surface_type &surface, renderer_type &renderer, text_engine_type &text_engine_,
-			const agge::vector_i &offset, const agge::rect_i *window_ = 0) throw();
+			const agge::vector_i &offset) throw();
+		gcontext(surface_type &surface, renderer_type &renderer, text_engine_type &text_engine_,
+			const agge::vector_i &offset, const agge::rect_i &window_) throw();
 
 		gcontext translate(int offset_x, int offset_y) const throw();
 		gcontext window(int x1, int y1, int x2, int y2) const throw();

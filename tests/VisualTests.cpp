@@ -165,13 +165,13 @@ namespace wpl
 
 				// ACT / ASSERT
 				rect_i w1 = { 10, 13, 50, 40 };
-				assert_equal(w1, gcontext(s, *renderer, *text_engine, agge::zero(), &w1).update_area());
+				assert_equal(w1, gcontext(s, *renderer, *text_engine, agge::zero(), w1).update_area());
 				rect_i w2 = { 100, 3, 150, 50 };
-				assert_equal(w2, gcontext(s, *renderer, *text_engine, agge::zero(), &w2).update_area());
+				assert_equal(w2, gcontext(s, *renderer, *text_engine, agge::zero(), w2).update_area());
 				rect_i w3 = { 10, 13, 50, 40 };
-				assert_equal(w1, gcontext(s, *renderer, *text_engine, make_vector(10, 13), &w3).update_area());
+				assert_equal(w1, gcontext(s, *renderer, *text_engine, make_vector(10, 13), w3).update_area());
 				rect_i w4 = { 100, 3, 150, 50 };
-				assert_equal(w2, gcontext(s, *renderer, *text_engine, make_vector(-1, -2), &w4).update_area());
+				assert_equal(w2, gcontext(s, *renderer, *text_engine, make_vector(-1, -2), w4).update_area());
 			}
 
 
@@ -184,9 +184,9 @@ namespace wpl
 
 				// ACT / ASSERT
 				assert_equal(make_rect(9, 10, 49, 37),
-					gcontext(s, *renderer, *text_engine, agge::zero(), &w1).translate(1, 3).update_area());
+					gcontext(s, *renderer, *text_engine, agge::zero(), w1).translate(1, 3).update_area());
 				assert_equal(make_rect(30, 30, 61, 48),
-					gcontext(s, *renderer, *text_engine, agge::zero(), &w2).translate(-10, -7).update_area());
+					gcontext(s, *renderer, *text_engine, agge::zero(), w2).translate(-10, -7).update_area());
 			}
 
 
@@ -199,9 +199,9 @@ namespace wpl
 
 				// ACT / ASSERT
 				assert_equal(make_rect(11, 17, 40, 37),
-					gcontext(s, *renderer, *text_engine, agge::zero(), &w1).window(11, 17, 40, 37).update_area());
+					gcontext(s, *renderer, *text_engine, agge::zero(), w1).window(11, 17, 40, 37).update_area());
 				assert_equal(make_rect(23, 27, 50, 40),
-					gcontext(s, *renderer, *text_engine, agge::zero(), &w2).window(23, 27, 50, 40).update_area());
+					gcontext(s, *renderer, *text_engine, agge::zero(), w2).window(23, 27, 50, 40).update_area());
 			}
 
 

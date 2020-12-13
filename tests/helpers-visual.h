@@ -5,6 +5,7 @@
 #include <agge/types.h>
 #include <ut/assert.h>
 #include <wpl/concepts.h>
+#include <wpl/helpers.h>
 #include <wpl/visual.h>
 
 namespace wpl
@@ -44,13 +45,6 @@ namespace wpl
 		{
 			agge::agge_vector<T> v = { dx, dy };
 			return v;
-		}
-
-		template <typename T>
-		inline agge::rect<T> make_rect(T x1, T y1, T x2, T y2)
-		{
-			agge::rect<T> r = { x1, y1, x2, y2 };
-			return r;
 		}
 
 		view_location make_position(int x, int y, int width, int height);

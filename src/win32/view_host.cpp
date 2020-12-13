@@ -218,15 +218,13 @@ namespace wpl
 			case WM_PAINT:
 				paint_sequence ps(_window->hwnd());
 				const vector_i offset = { ps.rcPaint.left, ps.rcPaint.top };
-				const rect_i update_area = { ps.rcPaint.left, ps.rcPaint.top, ps.rcPaint.right, ps.rcPaint.bottom };
+				gcontext ctx(*context.backbuffer, *context.renderer, *context.text_engine, offset,
+					make_rect<int>(ps.rcPaint.left, ps.rcPaint.top, ps.rcPaint.right, ps.rcPaint.bottom));
 
 				context.backbuffer->resize(ps.width(), ps.height());
-
-				gcontext ctx(*context.backbuffer, *context.renderer, *context.text_engine, offset, &update_area);
-
 				_rasterizer->reset();
 				_visual_router.draw(ctx, _rasterizer);
-				context.backbuffer->blit(ps.hdc, update_area.x1, update_area.y1, ps.width(), ps.height());
+				context.backbuffer->blit(ps.hdc, ps.rcPaint.left, ps.rcPaint.top, ps.width(), ps.height());
 				return 0;
 			}
 			return _user_handler(message, wparam, lparam, previous);

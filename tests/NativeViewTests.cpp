@@ -1,9 +1,8 @@
-#include <agge.text/text_engine.h>
-
 #include <wpl/win32/native_view.h>
 
 #include "helpers-win32.h"
 
+#include <agge.text/text_engine.h>
 #include <tchar.h>
 #include <ut/assert.h>
 #include <ut/test.h>

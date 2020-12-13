@@ -22,8 +22,9 @@
 
 #include <agge/math.h>
 #include <algorithm>
-#include <numeric>
 #include <cmath>
+#include <numeric>
+#include <wpl/helpers.h>
 
 using namespace agge;
 using namespace std;
@@ -262,7 +263,7 @@ namespace wpl
 			const index_type focused_item = _focused ? _focused->index() : npos();
 			real_t total_width = 0.0f;
 			index_type r = (max)(0, static_cast<int>(_offset.dy));
-			rect_r box = { 0.0f, item_height * static_cast<real_t>(r - _offset.dy), 0.0f, 0.0f };
+			auto box = make_rect(real_t(), item_height * static_cast<real_t>(r - _offset.dy), real_t(), real_t());
 
 			_widths.clear();
 			for (columns_model::index_type c = 0; c != columns; ++c)
@@ -277,7 +278,7 @@ namespace wpl
 			{
 				const unsigned state = (is_selected(r) ? selected : 0) | (focused_item == r ? focused : 0);
 
-				box.x2 = box.x1 = -static_cast<agge::real_t>(_offset.dx), box.x2 += total_width;
+				box.x1 = -static_cast<agge::real_t>(_offset.dx), box.x2 = box.x1 + total_width;
 				draw_item_background(ctx, ras, box, r, state);
 				for (columns_model::index_type c = 0; c != columns; box.x1 = box.x2, ++c)
 				{
@@ -286,7 +287,7 @@ namespace wpl
 						continue;
 					draw_subitem_background(ctx, ras, box, r, state, c);
 				}
-				box.x2 = box.x1 = -static_cast<agge::real_t>(_offset.dx), box.x2 += total_width;
+				box.x1 = -static_cast<agge::real_t>(_offset.dx), box.x2 = box.x1 + total_width;
 				draw_item(ctx, ras, box, r, state);
 				for (columns_model::index_type c = 0; c != columns; box.x1 = box.x2, ++c)
 				{
