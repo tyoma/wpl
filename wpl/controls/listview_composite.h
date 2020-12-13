@@ -40,12 +40,6 @@ namespace wpl
 			{
 				using namespace std;
 
-				const auto header_font_metrics = context.stylesheet_->get_font("text.header")->get_metrics();
-				
-				_header_height = static_cast<int>(2.0f * context.stylesheet_->get_value("padding.header")
-					+ header_font_metrics.ascent + header_font_metrics.descent
-					+ context.stylesheet_->get_value("border.header"));
-
 				_header = factory_.create_control<header_basic>("header");
 				_hscroller = factory_.create_control<scroller>("hscroller");
 				_hscroller->set_model(shared_ptr<animated_scroll_model>(new animated_scroll_model(this->get_hscroll_model(),
@@ -58,6 +52,17 @@ namespace wpl
 					_header->set_offset(this->get_hscroll_model()->get_window().first);
 				};
 				this->get_hscroll_model()->invalidate();
+			}
+
+			void apply_styles(const stylesheet &ss)
+			{
+				const auto header_font_metrics = ss.get_font("text.header")->get_metrics();
+				
+				_header_height = static_cast<int>(2.0f * ss.get_value("padding.header")
+					+ header_font_metrics.ascent + header_font_metrics.descent
+					+ ss.get_value("border.header"));
+				BaseControlT::apply_styles(ss);
+				layout_changed(false);
 			}
 
 			virtual void set_columns_model(std::shared_ptr<columns_model> m) override

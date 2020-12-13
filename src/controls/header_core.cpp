@@ -133,7 +133,7 @@ namespace wpl
 
 		void header_core::layout(const placed_view_appender &append_view, const agge::box<int> &box_)
 		{
-			_size.h = static_cast<real_t>(box_.h);
+			_size.w = static_cast<real_t>(box_.w), _size.h = static_cast<real_t>(box_.h);
 			integrated_control<wpl::header>::layout(append_view, box_);
 		}
 

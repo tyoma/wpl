@@ -196,5 +196,6 @@
     <ClInclude Include="glyphs.h">
       <Filter>src</Filter>
     </ClInclude>
+    <ClInclude Include="..\wpl\helpers.h" />
   </ItemGroup>
 </Project>

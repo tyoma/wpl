@@ -27,6 +27,7 @@
 #include <agge/filling_rules.h>
 #include <agge/figures.h>
 #include <agge.text/text_engine.h>
+#include <wpl/helpers.h>
 #include <wpl/stylesheet.h>
 
 using namespace agge;
@@ -79,7 +80,11 @@ namespace wpl
 					static_cast<real_t>(ua.x2), static_cast<real_t>(ua.y2)));
 				ctx(ras, blender(_bg), winding<>());
 			}
+
 			header_core::draw(ctx, ras);
+
+			add_path(*ras, rectangle(0.0f, _size.h - _separator_width, _size.w, _size.h));
+			ctx(ras, blender(_fg_normal), winding<>());
 		}
 
 		void header_basic::draw_item_background(gcontext &ctx, gcontext::rasterizer_ptr &ras, const agge::rect_r &b,
@@ -95,23 +100,33 @@ namespace wpl
 		void header_basic::draw_item(gcontext &ctx, gcontext::rasterizer_ptr &ras, const agge::rect_r &b, index_type /*item*/,
 			unsigned /*item_state_flags*/ state, const wstring &text) const
 		{
-			const auto w = b.x2 - b.x1;
+			auto halign_ = /*item ? layout::far :*/ layout::near;
+			auto box = b;
 
-			ctx.text_engine.render_string(*ras, *_font, text.c_str(), layout::near, b.x1 + _padding, b.y1 + _baseline_offset, w);
-			ctx(ras, blender(state & sorted ? _fg_sorted : _fg_normal), winding<>());
+			box.x2 -= _separator_width;
+			box.y2 -= _separator_width;
+			inflate(box, -_padding, -_padding);
 
-			add_path(*ras, rectangle(b.x2 - _separator_width, b.y1, b.x2, b.y2));
-			ctx(ras, blender(_fg_separator), winding<>());
-			add_path(*ras, rectangle(b.x1, b.y2 - _separator_width, b.x2, b.y2));
-			ctx(ras, blender(_fg_separator), winding<>());
-
-			if (header_basic::sorted & state)
+			// 1. Draw sort mark, if any.
+			if (const auto g = sorted & state ? ascending & state ? _up.get() : _down.get() : nullptr)
 			{
-				auto &g = (header_basic::ascending & state) ? *_up : *_down;
+				const auto gbox = g->bounds();
 
-				add_path(*ras, offset(g, b.x2 - _padding - g.bounds().x2, b.y1 + _padding - g.bounds().y1));
+				if (halign_ == layout::near)
+					add_path(*ras, offset(*g, box.x2 - gbox.x2, box.y1 - gbox.y1)), box.x2 -= wpl::width(gbox) + _padding;
+				else
+					add_path(*ras, offset(*g, box.x1 - gbox.x1, box.y1 - gbox.y1)), box.x1 += wpl::width(gbox) + _padding;
 				ctx(ras, blender(_fg_normal), winding<>());
 			}
+
+			// 2. Draw text.
+			render_string(*ras, text, ctx.text_engine, *_font, box, halign_, va_bottom);
+			ctx(ras, blender(state & sorted ? _fg_sorted : _fg_normal), winding<>());
+
+			// 3. Draw right separator.
+			inflate(box, 0.0f, 0.5f * _padding);
+			add_path(*ras, rectangle(b.x2 - _separator_width, box.y1, b.x2, box.y2));
+			ctx(ras, blender(_fg_normal), winding<>());
 		}
 	}
 }

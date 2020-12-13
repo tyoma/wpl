@@ -60,6 +60,9 @@ namespace wpl
 			// visual methods
 			virtual void draw(gcontext &ctx, gcontext::rasterizer_ptr &rasterizer) const override;
 
+		protected:
+			agge::box_r _size;
+
 		private:
 			enum handle_type { none_handle, column_handle, resize_handle };
 
@@ -76,7 +79,6 @@ namespace wpl
 		private:
 			const std::shared_ptr<cursor_manager> _cursor_manager;
 			std::shared_ptr<columns_model> _model;
-			agge::box_r _size;
 			agge::real_t _offset;
 			drag_helper _resize;
 			std::pair<index_type, bool /*ascending*/> _sorted_column;
