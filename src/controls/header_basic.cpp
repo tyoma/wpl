@@ -107,15 +107,15 @@ namespace wpl
 			box.y2 -= _separator_width;
 			inflate(box, -_padding, -_padding);
 
-			// 1. Draw sort mark, if any.
+			// 1. Draw sort mark, if any. Adjust text box.
 			if (const auto g = sorted & state ? ascending & state ? _up.get() : _down.get() : nullptr)
 			{
 				const auto gbox = g->bounds();
 
-				if (halign_ == layout::near)
-					add_path(*ras, offset(*g, box.x2 - gbox.x2, box.y1 - gbox.y1)), box.x2 -= wpl::width(gbox) + _padding;
-				else
+				if (halign_ == layout::far)
 					add_path(*ras, offset(*g, box.x1 - gbox.x1, box.y1 - gbox.y1)), box.x1 += wpl::width(gbox) + _padding;
+				else
+					add_path(*ras, offset(*g, box.x2 - gbox.x2, box.y1 - gbox.y1)), box.x2 -= wpl::width(gbox) + _padding;
 				ctx(ras, blender(_fg_normal), winding<>());
 			}
 

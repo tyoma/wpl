@@ -20,6 +20,7 @@
 
 #include <wpl/visual_router.h>
 
+#include <wpl/helpers.h>
 #include <wpl/view.h>
 
 using namespace std;
@@ -48,8 +49,7 @@ namespace wpl
 						{
 							auto a = *area;
 
-							a.x1 += l.x1, a.x2 += l.x1;
-							a.y1 += l.y1, a.y2 += l.y1;
+							offset(a, l.x1, l.y1);
 							_host.invalidate(a);
 						}
 						else
@@ -76,8 +76,7 @@ namespace wpl
 				}
 				else
 				{
-					auto child_ctx_windowed = child_ctx.window(0, 0,
-						i->location.x2 - i->location.x1, i->location.y2 - i->location.y1);
+					auto child_ctx_windowed = child_ctx.window(0, 0, wpl::width(i->location), wpl::height(i->location));
 
 					v->draw(child_ctx_windowed, rasterizer);
 				}

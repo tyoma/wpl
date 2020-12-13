@@ -26,6 +26,7 @@
 #include <agge/filling_rules.h>
 #include <agge/stroke_features.h>
 #include <agge.text/text_engine.h>
+#include <wpl/helpers.h>
 #include <wpl/stylesheet.h>
 
 using namespace agge;
@@ -38,9 +39,6 @@ namespace wpl
 		namespace
 		{
 			typedef blender_solid_color<simd::blender_solid_color, order_bgra> blender;
-
-			void inflate(rect_r &r, real_t dx, real_t dy)
-			{	r.x1 -= dx, r.x2 += dx, r.y1 -= dy, r.y2 += dy;	}
 		}
 
 		void listview_basic::apply_styles(const stylesheet &ss)
@@ -90,20 +88,20 @@ namespace wpl
 			if (state & focused)
 			{
 				rect_r b(b_);
-				const real_t d = -0.5f * _padding;
 
-				inflate(b, d, d);
+				inflate(b, -0.5f * _padding, -0.5f * _padding);
 				add_path(*ras, assist(assist(rectangle(b.x1, b.y1, b.x2, b.y2), _dash), _stroke));
 				ctx(ras, blender(state & selected ? _fg_focus_selected : _fg_focus), winding<>());
 			}
 		}
 
-		void listview_basic::draw_subitem(gcontext &ctx, gcontext::rasterizer_ptr &ras, const rect_r &b, index_type /*item*/,
+		void listview_basic::draw_subitem(gcontext &ctx, gcontext::rasterizer_ptr &ras, const rect_r &b_, index_type /*item*/,
 			unsigned state, columns_model::index_type /*subitem*/, const wstring &text) const
 		{
-			const auto max_width = b.x2 - b.x1 - 2.0f * _padding;
+			rect_r b(b_);
 
-			ctx.text_engine.render_string(*ras, *_font, text.c_str(), layout::near, b.x1 + _padding, b.y1 + _baseline_offset, max_width);
+			inflate(b, -0.5f * _padding, -0.5f * _padding);
+			render_string(*ras, text, ctx.text_engine, *_font, b, layout::near, va_top);
 			ras->sort(true);
 			ctx(ras, blender(state & selected ? _fg_selected : _fg_normal), winding<>());
 		}

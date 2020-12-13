@@ -21,6 +21,7 @@
 #include <wpl/layout.h>
 
 #include <algorithm>
+#include <wpl/helpers.h>
 
 using namespace std;
 
@@ -33,8 +34,7 @@ namespace wpl
 			// TODO: use custom appender functor, as function may allocate storage dynamically.
 
 			return [&inner, dx, dy, tab_override] (placed_view pv) {
-				pv.location.x1 += dx, pv.location.x2 += dx;
-				pv.location.y1 += dy, pv.location.y2 += dy;
+				wpl::offset(pv.location, dx, dy);
 				pv.tab_order = pv.tab_order ? tab_override ? tab_override : pv.tab_order : 0;
 				inner(pv);
 			};

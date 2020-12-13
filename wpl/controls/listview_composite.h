@@ -25,6 +25,7 @@
 #include "../animated_models.h"
 #include "../controls.h"
 #include "../factory.h"
+#include "../helpers.h"
 #include "../layout.h"
 #include "../stylesheet.h"
 
@@ -97,8 +98,7 @@ namespace wpl
 				// TODO: use custom appender functor, as std::function may allocate storage dynamically.
 
 				return [&inner, dx, dy] (placed_view pv) {
-					pv.location.x1 += dx, pv.location.x2 += dx;
-					pv.location.y1 += dy, pv.location.y2 += dy;
+					wpl::offset(pv.location, dx, dy);
 					inner(pv);
 				};
 			}

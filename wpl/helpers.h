@@ -44,7 +44,7 @@ namespace wpl
 
 	template <typename T>
 	inline void offset(agge::rect<T> &rect_, T dx, T dy)
-	{	rect_.x1 += dx, rect_.y1 += dy, rect_.x2 -= dx, rect_.y2 -= dy;	}
+	{	rect_.x1 += dx, rect_.y1 += dy, rect_.x2 += dx, rect_.y2 += dy;	}
 
 	inline void render_string(gcontext::rasterizer_type &target, const std::wstring &text,
 		gcontext::text_engine_type &text_engine, const agge::font &font, const agge::rect_r &box,

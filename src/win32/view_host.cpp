@@ -18,6 +18,8 @@
 //	OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //	THE SOFTWARE.
 
+#include <wpl/helpers.h>
+
 #include <wpl/win32/view_host.h>
 
 #include <wpl/cursor.h>
@@ -335,7 +337,7 @@ namespace wpl
 				if (const auto nv = i->native)
 				{
 					hdwp = ::DeferWindowPos(hdwp, nv->get_window(hwnd), NULL, i->location.x1, i->location.y1,
-						i->location.x2 - i->location.x1, i->location.y2 - i->location.y1, SWP_NOZORDER);
+						wpl::width(i->location), wpl::height(i->location), SWP_NOZORDER);
 				}
 			}
 			::EndDeferWindowPos(hdwp);
