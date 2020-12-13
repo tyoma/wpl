@@ -24,6 +24,8 @@
 #include "control.h"
 #include "input.h"
 
+#include <vector>
+
 namespace wpl
 {
 	struct mouse_router_host

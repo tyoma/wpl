@@ -22,20 +22,16 @@
 
 namespace wpl
 {
-	struct destructible
-	{
-		virtual ~destructible()	{	}
-	};
-
-
 	class noncopyable
 	{
-		noncopyable(const noncopyable &other);
-		const noncopyable &operator =(const noncopyable &rhs);
-
 	protected:
 		noncopyable();
+
+	private:
+		noncopyable(const noncopyable &other);
+		const noncopyable &operator =(const noncopyable &rhs);
 	};
+
 
 
 	inline noncopyable::noncopyable()

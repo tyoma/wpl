@@ -8,6 +8,7 @@
 #include <iterator>
 #include <set>
 #include <string>
+#include <vector>
 
 typedef struct HWND__ *HWND;	// stolen from windows.h
 typedef struct tagRECT RECT;

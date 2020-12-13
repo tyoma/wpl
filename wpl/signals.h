@@ -20,9 +20,11 @@
 
 #pragma once
 
+#include "concepts.h"
+
 #include <functional>
+#include <list>
 #include <memory>
-#include <vector>
 
 namespace wpl
 {
@@ -31,171 +33,151 @@ namespace wpl
 	template <typename F>
 	class signal
 	{
-		class auto_connection;
-
-	protected:
-		typedef std::vector<F> _slots_t;
-		typedef std::shared_ptr< _slots_t > _slots_ptr_t;
-		typedef typename _slots_t::const_iterator _slots_iterator_t;
-
-		const _slots_ptr_t _slots;
-
+	public:
 		signal();
 		signal(const signal &other);
 
-		const signal &operator =(const signal &rhs);
-
-	public:
+		signal &operator =(const signal &rhs);
 		slot_connection operator +=(const F &slot);
-	};
 
-	template <typename R>
-	struct signal<R ()> : signal< std::function<void ()> >
-	{
-		typedef signal this_type;
-		void operator ()() const;
-	};
+	protected:
+		template <typename InvokerT>
+		void for_each_invoke(const InvokerT &invoker) const;
 
-	template <typename R, typename T1>
-	struct signal<R (T1)> : signal< std::function<void (T1)> >
-	{
-		typedef signal this_type;
-		void operator ()(T1 arg1) const;
-	};
+	private:
+		struct cleanup_lock;
+		struct function_list;
+		typedef F function_t;
 
-	template <typename R, typename T1, typename T2>
-	struct signal<R (T1, T2)> : signal< std::function<void (T1, T2)> >
-	{
-		typedef signal this_type;
-		void operator ()(T1 arg1, T2 arg2) const;
+	private:
+		std::shared_ptr<function_list> _function_list;
 	};
-
-	template <typename R, typename T1, typename T2, typename T3>
-	struct signal<R (T1, T2, T3)> : signal< std::function<void (T1, T2, T3)> >
-	{
-		typedef signal this_type;
-		void operator ()(T1 arg1, T2 arg2, T3 arg3) const;
-	};
-
-	template <typename R, typename T1, typename T2, typename T3, typename T4>
-	struct signal<R (T1, T2, T3, T4)> : signal< std::function<void (T1, T2, T3, T4)> >
-	{
-		typedef signal this_type;
-		void operator ()(T1 arg1, T2 arg2, T3 arg3, T4 arg4) const;
-	};
-
-	template <typename R, typename T1, typename T2, typename T3, typename T4, typename T5>
-	struct signal<R (T1, T2, T3, T4, T5)> : signal< std::function<void (T1, T2, T3, T4, T5)> >
-	{
-		typedef signal this_type;
-		void operator ()(T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5) const;
-	};
-
 
 	template <typename F>
-	class signal<F>::auto_connection
+	struct signal<F>::cleanup_lock
 	{
-		_slots_ptr_t _slots;
-		size_t _index;
+		cleanup_lock(const std::shared_ptr<function_list> &list_);
+		~cleanup_lock();
 
-	public:
-		auto_connection(const _slots_ptr_t slots, size_t index);
-		~auto_connection() throw();
+		std::shared_ptr<function_list> list;
 	};
 
-
 	template <typename F>
-	inline signal<F>::auto_connection::auto_connection(const _slots_ptr_t slots, size_t index)
-		: _slots(slots), _index(index)
-	{	}
+	struct signal<F>::function_list
+	{
+		function_list();
 
-	template <typename F>
-	inline signal<F>::auto_connection::~auto_connection() throw()
-	{	_slots->at(_index) = F();	}
+		std::list<F> functions;
+		bool traversing, require_cleanup;
+	};
+
 
 
 	template <typename F>
 	inline signal<F>::signal()
-		: _slots(new _slots_t())
+		: _function_list(std::make_shared<function_list>())
 	{	}
 
 	template <typename F>
-	inline signal<F>::signal(const signal &)
-		: _slots(new _slots_t())
+	inline signal<F>::signal(const signal &/*other*/)
+		: _function_list(std::make_shared<function_list>())
 	{	}
 
 	template <typename F>
-	inline const signal<F> &signal<F>::operator =(const signal &)
+	inline signal<F> &signal<F>::operator =(const signal &/*rhs*/)
 	{	return *this;	}
 
 	template <typename F>
 	inline slot_connection signal<F>::operator +=(const F &slot)
 	{
-		size_t index(_slots->size());
+		const auto l = _function_list;
+		const auto i = l->functions.insert(l->functions.end(), slot);
 
-		_slots->push_back(slot);
-
-		return slot_connection(new auto_connection(_slots, index));
+		return slot_connection(&*i, [l, i] (void *) {
+			if (l->traversing)
+				*i = F(), l->require_cleanup = true;
+			else
+				l->functions.erase(i);
+		});
 	}
 
-
-	template <typename R>
-	inline void signal<R ()>::operator ()() const
+	template <typename F>
+	template <typename InvokerT>
+	inline void signal<F>::for_each_invoke(const InvokerT &invoker) const
 	{
-		typename this_type::_slots_ptr_t slots(this->_slots);
+		cleanup_lock l(_function_list);
 
-		for (typename this_type::_slots_iterator_t i = slots->begin(); i != slots->end(); ++i)
+		for (auto i = l.list->functions.begin(); i != l.list->functions.end(); ++i)
+		{
 			if (*i)
-				(*i)();
+				invoker(*i);
+		}
 	}
 
-	template <typename R, typename T1>
-	inline void signal<R (T1)>::operator ()(T1 arg1) const
+
+	template <typename F>
+	inline signal<F>::cleanup_lock::cleanup_lock(const std::shared_ptr<function_list> &list_)
+		: list(list_)
+	{	list->traversing = true;	}
+
+	template <typename F>
+	inline signal<F>::cleanup_lock::~cleanup_lock()
 	{
-		typename this_type::_slots_ptr_t slots(this->_slots);
-
-		for (typename this_type::_slots_iterator_t i = slots->begin(); i != slots->end(); ++i)
-			if (*i)
-				(*i)(arg1);
+		if (list->require_cleanup)
+		{
+			list->functions.remove_if([] (const function_t &f) {	return !!f;	});
+			list->require_cleanup = false;
+		}
+		list->traversing = false;
 	}
 
-	template <typename R, typename T1, typename T2>
-	inline void signal<R (T1, T2)>::operator ()(T1 arg1, T2 arg2) const
+
+	template <typename F>
+	inline signal<F>::function_list::function_list()
+		: traversing(false), require_cleanup(false)
+	{	}
+
+
+
+	template <>
+	struct signal<void ()> : signal< std::function<void ()> >
 	{
-		typename this_type::_slots_ptr_t slots(this->_slots);
+		void operator ()() const
+		{	this->for_each_invoke([] (const std::function<void ()> &f) {	f();	});	}
+	};
 
-		for (typename this_type::_slots_iterator_t i = slots->begin(); i != slots->end(); ++i)
-			if (*i)
-				(*i)(arg1, arg2);
-	}
-
-	template <typename R, typename T1, typename T2, typename T3>
-	inline void signal<R (T1, T2, T3)>::operator ()(T1 arg1, T2 arg2, T3 arg3) const
+	template <typename T1>
+	struct signal<void (T1)> : signal< std::function<void (T1)> >
 	{
-		typename this_type::_slots_ptr_t slots(this->_slots);
+		void operator ()(T1 arg1) const
+		{	this->for_each_invoke([&] (const std::function<void (T1)> &f) {	f(arg1);	});	}
+	};
 
-		for (typename this_type::_slots_iterator_t i = slots->begin(); i != slots->end(); ++i)
-			if (*i)
-				(*i)(arg1, arg2, arg3);
-	}
-
-	template <typename R, typename T1, typename T2, typename T3, typename T4>
-	inline void signal<R (T1, T2, T3, T4)>::operator ()(T1 arg1, T2 arg2, T3 arg3, T4 arg4) const
+	template <typename T1, typename T2>
+	struct signal<void (T1, T2)> : signal< std::function<void (T1, T2)> >
 	{
-		typename this_type::_slots_ptr_t slots(this->_slots);
+		void operator ()(T1 arg1, T2 arg2) const
+		{	this->for_each_invoke([&] (const std::function<void (T1, T2)> &f) {	f(arg1, arg2);	});	}
+	};
 
-		for (typename this_type::_slots_iterator_t i = slots->begin(); i != slots->end(); ++i)
-			if (*i)
-				(*i)(arg1, arg2, arg3, arg4);
-	}
-
-	template <typename R, typename T1, typename T2, typename T3, typename T4, typename T5>
-	inline void signal<R (T1, T2, T3, T4, T5)>::operator ()(T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5) const
+	template <typename T1, typename T2, typename T3>
+	struct signal<void (T1, T2, T3)> : signal< std::function<void (T1, T2, T3)> >
 	{
-		typename this_type::_slots_ptr_t slots(this->_slots);
+		void operator ()(T1 arg1, T2 arg2, T3 arg3) const
+		{	this->for_each_invoke([&] (const std::function<void (T1, T2, T3)> &f) {	f(arg1, arg2, arg3);	});	}
+	};
 
-		for (typename this_type::_slots_iterator_t i = slots->begin(); i != slots->end(); ++i)
-			if (*i)
-				(*i)(arg1, arg2, arg3, arg4, arg5);
-	}
+	template <typename T1, typename T2, typename T3, typename T4>
+	struct signal<void (T1, T2, T3, T4)> : signal< std::function<void (T1, T2, T3, T4)> >
+	{
+		void operator ()(T1 arg1, T2 arg2, T3 arg3, T4 arg4) const
+		{	this->for_each_invoke([&] (const std::function<void (T1, T2, T3, T4)> &f) {	f(arg1, arg2, arg3, arg4);	});	}
+	};
+
+	template <typename T1, typename T2, typename T3, typename T4, typename T5>
+	struct signal<void (T1, T2, T3, T4, T5)> : signal< std::function<void (T1, T2, T3, T4, T5)> >
+	{
+		void operator ()(T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5) const
+		{	this->for_each_invoke([&] (const std::function<void (T1, T2, T3, T4, T5)> &f) {	f(arg1, arg2, arg3, arg4, arg5);	});	}
+	};
 }

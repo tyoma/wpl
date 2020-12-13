@@ -23,6 +23,8 @@
 #include "../controls.h"
 #include "integrated.h"
 
+#include <vector>
+
 namespace wpl
 {
 	namespace controls

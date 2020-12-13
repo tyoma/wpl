@@ -24,6 +24,8 @@
 #include "control.h"
 #include "visual.h"
 
+#include <vector>
+
 namespace wpl
 {
 	struct visual_router_host
