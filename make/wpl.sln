@@ -21,7 +21,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "agge", "..\libraries\agge\s
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "agge.text", "..\libraries\agge\src\agge.text\agge.text.vcxproj", "{4B446510-FA62-AD02-51BA-9BDE9564FF26}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "wpl-samples-common", "..\samples\common\samples-common.vcxproj", "{0939EE39-A722-3638-385B-C3656B191B84}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "wpl-samples-common", "..\samples\common\src\samples-common.vcxproj", "{0939EE39-A722-3638-385B-C3656B191B84}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "controls", "..\samples\controls\controls.vcxproj", "{122F81B0-7589-2059-70AA-4B56055C3190}"
 EndProject

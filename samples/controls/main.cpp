@@ -1,6 +1,4 @@
-#include <crtdbg.h>
-
-#include <samples/common/platform.h>
+#include <samples/common/application.h>
 #include <samples/common/stylesheet.h>
 #include <samples/common/timer.h>
 #include <wpl/controls.h>
@@ -95,11 +93,14 @@ namespace
 
 int main()
 {
+	application app;
+
 	auto ss = create_sample_stylesheet();
 	auto fct = factory::create_default(ss);
 	view_location l = { 100, 100, 300, 200 };
 	shared_ptr<form> f = fct->create_form();
-	slot_connection c = f->close += &exit_message_loop;
+	slot_connection c = f->close += [&app] {	app.exit();	};
+	shared_ptr<my_scroll_model> scrl_model(new my_scroll_model);
 
 	const auto root = make_shared<overlay>();
 		root->add(fct->create_control<control>("background"));
@@ -107,27 +108,22 @@ int main()
 		const auto vstack = make_shared<stack>(5, false);
 		root->add(pad_control(vstack, 5, 5));
 			auto cb = fct->create_control<combobox>("combobox");
-				vstack->add(cb, 40, 1);
+			vstack->add(cb, 40, 1);
+			cb->set_model(shared_ptr<my_model>(new my_model));
 
 			auto scrl = fct->create_control<scroller>("hscroller");
-				vstack->add(scrl, 20);
+			vstack->add(scrl, 20);
+			scrl->set_model(scrl_model);
 
 			auto fill = make_shared<stack>(5, true);
-				vstack->add(fill, -100);
-					auto scrl2 = fct->create_control<scroller>("vscroller");
-					fill->add(scrl2, 8);
-
-	cb->set_model(shared_ptr<my_model>(new my_model));
-
-	shared_ptr<my_scroll_model> scrl_model(new my_scroll_model);
-
-	scrl->set_model(scrl_model);
-	scrl2->set_model(scrl_model);
-
-	new int;
+			vstack->add(fill, -100);
+				auto scrl2 = fct->create_control<scroller>("vscroller");
+				fill->add(scrl2, 8);
+				scrl2->set_model(scrl_model);
 
 	f->set_root(root);
 	f->set_location(l);
 	f->set_visible(true);
-	run_message_loop();
+	
+	app.run();
 }

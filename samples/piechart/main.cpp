@@ -1,6 +1,6 @@
 #include "piechart.h"
 
-#include <samples/common/platform.h>
+#include <samples/common/application.h>
 #include <samples/common/stylesheet.h>
 #include <wpl/factory.h>
 #include <wpl/form.h>
@@ -11,10 +11,12 @@ using namespace wpl;
 
 int main()
 {
+	application app;
+
 	auto ss = create_sample_stylesheet();
 	auto fct = factory::create_default(ss);
 	auto f = fct->create_form();
-	const auto c = f->close += &exit_message_loop;
+	const auto c = f->close += [&app] {	app.exit();	};
 
 	const auto root = make_shared<overlay>();
 		root->add(fct->create_control<control>("background"));
@@ -32,5 +34,6 @@ int main()
 
 	f->set_root(root);
 	f->set_visible(true);
-	run_message_loop();
+
+	app.run();
 }

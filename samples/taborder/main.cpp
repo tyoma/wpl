@@ -1,6 +1,4 @@
-#include <crtdbg.h>
-
-#include <samples/common/platform.h>
+#include <samples/common/application.h>
 #include <samples/common/stylesheet.h>
 #include <samples/common/timer.h>
 #include <wpl/controls.h>
@@ -56,7 +54,7 @@ namespace
 		virtual void get_text(index_type row, index_type column, wstring &text) const override
 		{
 			row++, column++;
-			text = to_wstring(long double(row * _n + 13 * column * _n));
+			text = to_wstring(static_cast<long double>(row * _n + 13 * column * _n));
 		}
 
 		virtual void set_order(index_type /*column*/, bool /*ascending*/) override
@@ -87,13 +85,13 @@ namespace
 
 int main()
 {
-	_CrtSetDbgFlag(_CrtSetDbgFlag(_CRTDBG_REPORT_FLAG) | _CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
+	application app;
 
 	const auto ss = create_sample_stylesheet();
 	const auto fct = factory::create_default(ss);
 	const view_location l = { 100, 100, 300, 200 };
 	const auto f = fct->create_form();
-	const auto conn = f->close += &exit_message_loop;
+	const auto conn = f->close += [&app] {	app.exit();	};
 	shared_ptr<my_columns> cm(new my_columns);
 	shared_ptr<my_model> m(new my_model);
 
@@ -118,5 +116,6 @@ int main()
 	f->set_root(root);
 	f->set_location(l);
 	f->set_visible(true);
-	run_message_loop();
+
+	app.run();
 }

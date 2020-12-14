@@ -50,3 +50,7 @@ if (NOT WPL_NO_TESTS)
 	endif()
 	add_subdirectory(tests)
 endif()
+
+if (WIN32 OR APPLE)
+	add_subdirectory(samples)
+endif()

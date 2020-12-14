@@ -38,8 +38,11 @@ if(WIN32)
 		win32/window.cpp
 	)
 elseif(APPLE)
-	set(WPL_SOURCES ${WPL_SOURCES}
+	enable_language(OBJCXX)
+	
+	set(WPL_SOURCES ${WPL_SOURCES}		
 		macos/factory_macos.cpp
+		macos/form.mm
 	)
 endif()
 

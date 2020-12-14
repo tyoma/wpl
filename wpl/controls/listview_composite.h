@@ -63,7 +63,7 @@ namespace wpl
 					+ header_font_metrics.ascent + header_font_metrics.descent
 					+ ss.get_value("border.header"));
 				BaseControlT::apply_styles(ss);
-				layout_changed(false);
+				this->layout_changed(false);
 			}
 
 			virtual void set_columns_model(std::shared_ptr<columns_model> m) override

@@ -38,14 +38,16 @@
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="application_win32.cpp" />
     <ClCompile Include="stylesheet.cpp" />
-    <ClCompile Include="platform.cpp" />
-    <ClCompile Include="timer.cpp" />
+    <ClCompile Include="text_engine_win32.cpp" />
+    <ClCompile Include="timer_win32.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="stylesheet.h" />
-    <ClInclude Include="platform.h" />
-    <ClInclude Include="timer.h" />
+    <ClInclude Include="..\application.h" />
+    <ClInclude Include="..\stylesheet.h" />
+    <ClInclude Include="..\text_engine.h" />
+    <ClInclude Include="..\timer.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
 </Project>

@@ -1,6 +1,6 @@
-#include "stylesheet.h"
+#include "../stylesheet.h"
 
-#include "platform.h"
+#include "../text_engine.h"
 
 #include <agge.text/text_engine.h>
 #include <wpl/stylesheet_db.h>
@@ -22,13 +22,16 @@ namespace wpl
 		};
 	}
 
-	std::shared_ptr<stylesheet> create_sample_stylesheet()
+	shared_ptr<stylesheet> create_sample_stylesheet()
 	{
 		auto ssc = make_shared<stylesheet_composite>();
 		shared_ptr<stylesheet> ss(ssc, &ssc->ss);
 
-		ssc->ss.set_font("text", ssc->text_engine->create_font(L"Segoe UI", 18, false, false, agge::font::key::gf_vertical));
-		ssc->ss.set_font("text.header", ssc->text_engine->create_font(L"Segoe UI", 18, true, false, agge::font::key::gf_vertical));
+		if (ssc->text_engine)
+		{
+			ssc->ss.set_font("text", ssc->text_engine->create_font(L"Segoe UI", 18, false, false, agge::font::key::gf_vertical));
+			ssc->ss.set_font("text.header", ssc->text_engine->create_font(L"Segoe UI", 18, true, false, agge::font::key::gf_vertical));
+		}
 		ssc->ss.set_color("background", agge::color::make(16, 16, 16));
 		ssc->ss.set_color("background.selected", agge::color::make(192, 192, 192));
 		ssc->ss.set_color("background.listview.odd", agge::color::make(48, 48, 48));

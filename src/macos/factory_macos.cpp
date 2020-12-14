@@ -25,6 +25,7 @@
 #include <wpl/controls/listview_composite.h>
 #include <wpl/controls/listview_basic.h>
 #include <wpl/controls/scroller.h>
+#include <wpl/macos/form.h>
 #include <wpl/stylesheet_helpers.h>
 
 using namespace std;
@@ -48,6 +49,9 @@ namespace wpl
 
 	void factory::setup_default(factory &factory_)
 	{
+		factory_.register_form([] (const form_context &context_) {
+			return make_shared<macos::form>(context_);
+		});
 		factory_.register_control("background", [] (const factory &, const control_context &context) {
 			return apply_stylesheet(make_shared<controls::solid_background>(), *context.stylesheet_);
 		});

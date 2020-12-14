@@ -18,11 +18,10 @@
 //	OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //	THE SOFTWARE.
 
-#include <wpl/helpers.h>
-
 #include <wpl/win32/view_host.h>
 
 #include <wpl/cursor.h>
+#include <wpl/helpers.h>
 #include <wpl/visual_router.h>
 #include <wpl/win32/native_view.h>
 
