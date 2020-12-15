@@ -1,8 +1,8 @@
 #include <wpl/layout.h>
 
-#include "helpers.h"
-#include "helpers-visual.h"
-#include "mock-control.h"
+#include <tests/common/helpers.h>
+#include <tests/common/helpers-visual.h>
+#include <tests/common/mock-control.h>
 
 #include <ut/assert.h>
 #include <ut/test.h>

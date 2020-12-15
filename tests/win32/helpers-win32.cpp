@@ -1,6 +1,6 @@
 #include "helpers-win32.h"
 
-#include "Mockups.h"
+#include <tests/common/Mockups.h>
 
 #include <wpl/control.h>
 #include <wpl/win32/font_loader.h>

@@ -1,9 +1,9 @@
 #include <wpl/controls/scroller.h>
 
-#include "helpers-visual.h"
-#include "Mockups.h"
-#include "MockupsScroller.h"
-#include "predicates.h"
+#include <tests/common/helpers-visual.h>
+#include <tests/common/Mockups.h>
+#include <tests/common/MockupsScroller.h>
+#include <tests/common/predicates.h>
 
 #include <string.h>
 #include <functional>

@@ -1,0 +1,33 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="helpers-visual.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="helpers.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="Mockups.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="MockupsListView.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="helpers-visual.h" />
+    <ClInclude Include="helpers.h" />
+    <ClInclude Include="mock-control.h" />
+    <ClInclude Include="mock-queue.h" />
+    <ClInclude Include="mock-router_host.h" />
+    <ClInclude Include="Mockups.h" />
+    <ClInclude Include="MockupsListView.h" />
+    <ClInclude Include="MockupsScroller.h" />
+    <ClInclude Include="predicates.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="src">
+      <UniqueIdentifier>{e716f252-dd23-4e3a-bdd4-8d2a3010dca7}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

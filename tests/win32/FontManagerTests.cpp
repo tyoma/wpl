@@ -21,7 +21,7 @@ namespace wpl
 			}
 		}
 
-		begin_test_suite( NativeFontManagerTests )
+		begin_test_suite( FontManagerTests )
 			test( DifferentFontsAreReturnedForTheDifferentKeys )
 			{
 				// INIT

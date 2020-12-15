@@ -1,8 +1,9 @@
 #include <wpl/win32/cursor_manager.h>
 
-#include "helpers.h"
 #include "helpers-win32.h"
-#include "Mockups.h"
+
+#include <tests/common/helpers.h>
+#include <tests/common/Mockups.h>
 
 #include <ut/assert.h>
 #include <ut/test.h>
@@ -23,7 +24,7 @@ namespace wpl
 			}
 		}
 
-		begin_test_suite( NativeCursorManagementTests )
+		begin_test_suite( CursorManagementTests )
 
 			test( CursorManagerReturnsDistinctPredefinedCursors )
 			{

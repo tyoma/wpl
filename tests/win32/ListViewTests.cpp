@@ -1,9 +1,10 @@
 #include <wpl/win32/listview.h>
 
-#include "helpers.h"
-#include "helpers-visual.h"
 #include "helpers-win32.h"
-#include "MockupsListView.h"
+
+#include <tests/common/helpers.h>
+#include <tests/common/helpers-visual.h>
+#include <tests/common/MockupsListView.h>
 
 #include <windows.h>
 #include <commctrl.h>
@@ -101,7 +102,7 @@ namespace wpl
 			}
 		}
 
-		begin_test_suite( NativeListViewTests )
+		begin_test_suite( ListViewTests )
 
 			window_manager windowManager;
 			HWND hparent;

@@ -3,11 +3,12 @@
 #include <wpl/win32/font_manager.h>
 #include <wpl/win32/native_view.h>
 
-#include "helpers-visual.h"
 #include "helpers-win32.h"
-#include "mock-control.h"
-#include "Mockups.h"
 #include "MockupsNative.h"
+
+#include <tests/common/helpers-visual.h>
+#include <tests/common/mock-control.h>
+#include <tests/common/Mockups.h>
 
 #include <tchar.h>
 #include <ut/assert.h>
@@ -87,7 +88,7 @@ namespace wpl
 			}
 		}
 
-		begin_test_suite( NativeFormTests )
+		begin_test_suite( FormTests )
 			form_context context;
 			window_manager windowManager;
 			shared_ptr<win32::font_manager> font_manager;

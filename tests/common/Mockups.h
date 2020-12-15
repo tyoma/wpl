@@ -161,9 +161,9 @@ namespace wpl
 				virtual void mouse_enter() override;
 				virtual void mouse_leave() override;
 				virtual void mouse_move(int depressed, int x, int y) override;
-				virtual void mouse_down(mouse_input::mouse_buttons button, int depressed, int x, int y) override;
-				virtual void mouse_up(mouse_input::mouse_buttons button, int depressed, int x, int y) override;
-				virtual void mouse_double_click(mouse_input::mouse_buttons button, int depressed, int x, int y) override;
+				virtual void mouse_down(mouse_input::mouse_buttons button_, int depressed, int x, int y) override;
+				virtual void mouse_up(mouse_input::mouse_buttons button_, int depressed, int x, int y) override;
+				virtual void mouse_double_click(mouse_input::mouse_buttons button_, int depressed, int x, int y) override;
 				virtual void mouse_scroll(int depressed, int x, int y, int delta_x, int delta_y) override;
 			};
 
@@ -213,21 +213,21 @@ namespace wpl
 			{	rectangle(ctx, _color, 0, 0, _cx, _cy);	}
 
 
-			inline mouse_event me_down(mouse_input::mouse_buttons button, int already_depressed, int x, int y)
+			inline mouse_event me_down(mouse_input::mouse_buttons button_, int already_depressed, int x, int y)
 			{
-				mouse_event e = { mouse_event::down, button, already_depressed, x, y };
+				mouse_event e = { mouse_event::down, button_, already_depressed, x, y };
 				return e;
 			}
 
-			inline mouse_event me_up(mouse_input::mouse_buttons button, int already_depressed, int x, int y)
+			inline mouse_event me_up(mouse_input::mouse_buttons button_, int already_depressed, int x, int y)
 			{
-				mouse_event e = { mouse_event::up, button, already_depressed, x, y };
+				mouse_event e = { mouse_event::up, button_, already_depressed, x, y };
 				return e;
 			}
 
-			inline mouse_event me_double_click(mouse_input::mouse_buttons button, int already_depressed, int x, int y)
+			inline mouse_event me_double_click(mouse_input::mouse_buttons button_, int already_depressed, int x, int y)
 			{
-				mouse_event e = { mouse_event::double_click, button, already_depressed, x, y };
+				mouse_event e = { mouse_event::double_click, button_, already_depressed, x, y };
 				return e;
 			}
 
@@ -283,16 +283,16 @@ namespace wpl
 			{	events_log.push_back(me_move(depressed, x, y));	}
 
 			template <typename BaseT>
-			inline void logging_mouse_input<BaseT>::mouse_down(mouse_input::mouse_buttons button, int depressed, int x, int y)
-			{	events_log.push_back(me_down(button, depressed, x, y));	}
+			inline void logging_mouse_input<BaseT>::mouse_down(mouse_input::mouse_buttons button_, int depressed, int x, int y)
+			{	events_log.push_back(me_down(button_, depressed, x, y));	}
 
 			template <typename BaseT>
-			inline void logging_mouse_input<BaseT>::mouse_up(mouse_input::mouse_buttons button, int depressed, int x, int y)
-			{	events_log.push_back(me_up(button, depressed, x, y));	}
+			inline void logging_mouse_input<BaseT>::mouse_up(mouse_input::mouse_buttons button_, int depressed, int x, int y)
+			{	events_log.push_back(me_up(button_, depressed, x, y));	}
 
 			template <typename BaseT>
-			inline void logging_mouse_input<BaseT>::mouse_double_click(mouse_input::mouse_buttons button, int depressed, int x, int y)
-			{	events_log.push_back(me_double_click(button, depressed, x, y));	}
+			inline void logging_mouse_input<BaseT>::mouse_double_click(mouse_input::mouse_buttons button_, int depressed, int x, int y)
+			{	events_log.push_back(me_double_click(button_, depressed, x, y));	}
 
 			template <typename BaseT>
 			inline void logging_mouse_input<BaseT>::mouse_scroll(int depressed, int x, int y, int delta_x, int delta_y)

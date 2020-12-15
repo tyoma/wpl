@@ -1,7 +1,7 @@
 #include <wpl/visual.h>
 
-#include "Mockups.h"
-#include "helpers-visual.h"
+#include <tests/common/Mockups.h>
+#include <tests/common/helpers-visual.h>
 
 #include <agge/blenders_generic.h>
 #include <agge/filling_rules.h>

@@ -1,0 +1,18 @@
+cmake_minimum_required(VERSION 2.8)
+
+set(WPL_WIN32_SOURCES
+	combobox.cpp
+	controls.cpp
+	cursor_manager.cpp
+	factory_win32.cpp
+	font_loader_win32.cpp
+	font_manager_win32.cpp
+	form.cpp
+	listview_win32.cpp
+	native_view.cpp
+	queue.cpp
+	view_host.cpp
+	window.cpp
+)
+
+add_library(wpl.win32 STATIC ${WPL_WIN32_SOURCES})

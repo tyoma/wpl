@@ -29,11 +29,6 @@ if (CMAKE_VERSION VERSION_GREATER_EQUAL 3.13.5)
 	)
 endif()
 
-if(APPLE)
-	set(CMAKE_OBJCXX_STANDARD 11)
-	link_libraries("-framework Foundation -framework Cocoa")
-endif()
-
 if (UNIX)
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread")
 endif()

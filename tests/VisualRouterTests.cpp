@@ -1,8 +1,8 @@
 #include <wpl/visual_router.h>
 
-#include "helpers-visual.h"
-#include "mock-router_host.h"
-#include "Mockups.h"
+#include <tests/common/helpers-visual.h>
+#include <tests/common/mock-router_host.h>
+#include <tests/common/Mockups.h>
 
 #include <ut/assert.h>
 #include <ut/test.h>

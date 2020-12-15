@@ -1,6 +1,6 @@
 #include <wpl/stylesheet_db.h>
 
-#include "helpers-visual.h"
+#include <tests/common/helpers-visual.h>
 
 #include <agge.text/font.h>
 #include <stdexcept>

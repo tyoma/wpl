@@ -1,11 +1,11 @@
 #include <wpl/controls/listview_core.h>
 
-#include "helpers.h"
+#include <tests/common/helpers.h>
 #include "helpers-listview.h"
-#include "helpers-visual.h"
-#include "Mockups.h"
-#include "MockupsListView.h"
-#include "predicates.h"
+#include <tests/common/helpers-visual.h>
+#include <tests/common/Mockups.h>
+#include <tests/common/MockupsListView.h>
+#include <tests/common/predicates.h>
 
 #include <ut/assert.h>
 #include <ut/test.h>

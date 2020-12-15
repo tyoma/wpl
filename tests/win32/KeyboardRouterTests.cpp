@@ -1,8 +1,9 @@
 #include <wpl/keyboard_router.h>
 
-#include "mock-router_host.h"
-#include "Mockups.h"
 #include "MockupsNative.h"
+
+#include <tests/common/mock-router_host.h>
+#include <tests/common/Mockups.h>
 
 #include <ut/assert.h>
 #include <ut/test.h>
@@ -13,7 +14,7 @@ namespace wpl
 {
 	namespace tests
 	{
-		begin_test_suite( KeyboardRouterNativeTests )
+		begin_test_suite( KeyboardRouterTests )
 			vector<placed_view> views;
 			mocks::keyboard_router_host host;
 

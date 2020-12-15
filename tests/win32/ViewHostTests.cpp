@@ -1,10 +1,11 @@
 #include <wpl/win32/view_host.h>
 
-#include "helpers-visual.h"
 #include "helpers-win32.h"
-#include "mock-control.h"
-#include "Mockups.h"
 #include "MockupsNative.h"
+
+#include <tests/common/helpers-visual.h>
+#include <tests/common/mock-control.h>
+#include <tests/common/Mockups.h>
 
 #include <ut/assert.h>
 #include <ut/test.h>
@@ -36,7 +37,7 @@ namespace wpl
 			}
 		}
 
-		begin_test_suite( NativeViewHostTests )
+		begin_test_suite( ViewHostTests )
 
 			form_context context;
 			window_manager wm;

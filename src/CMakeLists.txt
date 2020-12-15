@@ -22,30 +22,14 @@ set(WPL_SOURCES
 	controls/scroller.cpp
 )
 
-if(WIN32)
-	set(WPL_SOURCES ${WPL_SOURCES}
-		win32/combobox.cpp
-		win32/controls.cpp
-		win32/cursor_manager.cpp
-		win32/factory_win32.cpp
-		win32/font_loader_win32.cpp
-		win32/font_manager_win32.cpp
-		win32/form.cpp
-		win32/listview_win32.cpp
-		win32/native_view.cpp
-		win32/queue.cpp
-		win32/view_host.cpp
-		win32/window.cpp
-	)
-elseif(APPLE)
-	enable_language(OBJCXX)
-	
-	set(WPL_SOURCES ${WPL_SOURCES}		
-		macos/factory_macos.cpp
-		macos/form.mm
-	)
-endif()
-
 add_library(wpl STATIC ${WPL_SOURCES})
+
+if(WIN32)
+	add_subdirectory(win32)
+	target_link_libraries(wpl wpl.win32)
+elseif(APPLE)
+	add_subdirectory(macos)
+	target_link_libraries(wpl wpl.macos)
+endif()
 
 target_link_libraries(wpl agge.text agge)

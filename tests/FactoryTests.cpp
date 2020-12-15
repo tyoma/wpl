@@ -1,7 +1,7 @@
 #include <wpl/factory.h>
 
-#include "Mockups.h"
-#include "mock-control.h"
+#include <tests/common/mock-control.h>
+#include <tests/common/Mockups.h>
 
 #include <wpl/control.h>
 #include <wpl/form.h>

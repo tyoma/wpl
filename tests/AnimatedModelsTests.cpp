@@ -1,8 +1,8 @@
 #include <wpl/animated_models.h>
 
-#include "mock-queue.h"
-#include "MockupsScroller.h"
-#include "predicates.h"
+#include <tests/common/mock-queue.h>
+#include <tests/common/MockupsScroller.h>
+#include <tests/common/predicates.h>
 
 #include <ut/assert.h>
 #include <ut/test.h>

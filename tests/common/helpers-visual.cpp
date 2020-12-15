@@ -14,6 +14,21 @@ namespace wpl
 {
 	namespace tests
 	{
+		namespace
+		{
+			struct faked_text_engine_composite : gcontext::text_engine_type::loader
+			{
+				faked_text_engine_composite()
+					: text_engine_(*this)
+				{	}
+
+				virtual font::accessor_ptr load(const wchar_t *, int, bool, bool, font::key::grid_fit) override
+				{	throw 0;	}
+
+				gcontext::text_engine_type text_engine_;
+			};
+		}
+
 		view_location make_position(int x, int y, int width, int height)
 		{
 			view_location p = { x, y, width, height };
@@ -31,10 +46,10 @@ namespace wpl
 			return p;
 		}
 
-		gcontext::pixel_type make_pixel_real(const color& color)
+		gcontext::pixel_type make_pixel_real(const color& color_)
 		{
 			default_blender_t::cover_type cover = static_cast<default_blender_t::cover_type>(-1);
-			default_blender_t b(color);
+			default_blender_t b(color_);
 			gcontext::pixel_type p = {};
 
 			b(&p, 0, 0, 1u, &cover);
@@ -66,21 +81,9 @@ namespace wpl
 
 		shared_ptr<gcontext::text_engine_type> create_faked_text_engine()
 		{
-			struct faked_text_engine_composite : gcontext::text_engine_type::loader
-			{
-				faked_text_engine_composite()
-					: text_engine(*this)
-				{	}
-
-				virtual font::accessor_ptr load(const wchar_t *, int, bool, bool, font::key::grid_fit) override
-				{	throw 0;	}
-
-				gcontext::text_engine_type text_engine;
-			};
-
 			shared_ptr<faked_text_engine_composite> c(new faked_text_engine_composite);
 
-			return shared_ptr<gcontext::text_engine_type>(c, &c->text_engine);
+			return shared_ptr<gcontext::text_engine_type>(c, &c->text_engine_);
 		}
 	}
 }

@@ -1,7 +1,8 @@
 #include <wpl/win32/combobox.h>
 
-#include "helpers.h"
 #include "helpers-win32.h"
+
+#include <tests/common/helpers.h>
 
 #include <list>
 #include <windows.h>

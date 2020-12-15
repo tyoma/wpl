@@ -1,6 +1,6 @@
 #pragma once
 
-#include "predicates.h"
+#include <tests/common/predicates.h>
 
 #include <wpl/controls/listview_core.h>
 

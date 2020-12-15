@@ -2,7 +2,8 @@
 #include <wpl/win32/form.h>
 
 #include "helpers-win32.h"
-#include "MockupsListView.h"
+
+#include <tests/common/MockupsListView.h>
 
 #include <windows.h>
 #include <commctrl.h>

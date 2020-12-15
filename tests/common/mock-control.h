@@ -1,6 +1,7 @@
 #pragma once
 
 #include <algorithm>
+#include <vector>
 #include <wpl/control.h>
 
 namespace wpl

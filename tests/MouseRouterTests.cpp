@@ -1,7 +1,7 @@
 #include <wpl/mouse_router.h>
 
-#include "Mockups.h"
-#include "mock-router_host.h"
+#include <tests/common/Mockups.h>
+#include <tests/common/mock-router_host.h>
 
 #include <ut/assert.h>
 #include <ut/test.h>

@@ -19,11 +19,12 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{685F6A5E-B74A-4ACF-873F-A5A6FB6AC8C9}</ProjectGuid>
+    <ProjectGuid>{0AB5C43E-DEAD-4C33-9B56-702BAFC1EA37}</ProjectGuid>
   </PropertyGroup>
   <Import Project="$(SolutionDir)build.props\platform.props" />
   <PropertyGroup Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="PropertySheets">
@@ -33,36 +34,38 @@
   </ImportGroup>
   <ItemDefinitionGroup>
     <ClCompile>
-      <AdditionalIncludeDirectories>..;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <DisableLanguageExtensions>false</DisableLanguageExtensions>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
+      <AdditionalManifestDependencies>type='win32' name='Microsoft.Windows.Common-Controls' version='6.0.0.0' processorArchitecture='*' publicKeyToken='6595b64144ccf1df' language='*'</AdditionalManifestDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="AnimatedModelsTests.cpp" />
-    <ClCompile Include="DragHelperTests.cpp" />
+    <ClCompile Include="ComboboxTests.cpp" />
+    <ClCompile Include="ControlsTests.cpp" />
+    <ClCompile Include="CursorManagementTests.cpp" />
+    <ClCompile Include="FontManagerTests.cpp" />
+    <ClCompile Include="FormTests.cpp" />
+    <ClCompile Include="helpers-win32.cpp" />
+    <ClCompile Include="IntegrationTests.cpp" />
     <ClCompile Include="KeyboardRouterTests.cpp" />
-    <ClCompile Include="MouseRouterTests.cpp" />
-    <ClCompile Include="FactoryTests.cpp" />
-    <ClCompile Include="ListViewCoreSelectionTests.cpp" />
-    <ClCompile Include="VisualRouterTests.cpp" />
-    <ClCompile Include="HeaderCoreTests.cpp" />
-    <ClCompile Include="LayoutTests.cpp" />
-    <ClCompile Include="ListViewCoreTests.cpp" />
-    <ClCompile Include="ScrollerTests.cpp" />
-    <ClCompile Include="SignalTests.cpp" />
-    <ClCompile Include="StylesheetTests.cpp" />
-    <ClCompile Include="VisualTests.cpp" />
+    <ClCompile Include="ListViewTests.cpp" />
+    <ClCompile Include="MockupsNative.cpp" />
+    <ClCompile Include="NativeViewTests.cpp" />
+    <ClCompile Include="ViewHostTests.cpp" />
+    <ClCompile Include="WindowingTests.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="helpers-listview.h" />
+    <ClInclude Include="helpers-win32.h" />
+    <ClInclude Include="MockupsNative.h" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\src\wpl.vcxproj">
+    <ProjectReference Include="..\..\src\wpl.vcxproj">
       <Project>{2423f23a-b689-f3f7-a864-a1729ec337c9}</Project>
     </ProjectReference>
-    <ProjectReference Include="common\wpl-tests-common.vcxproj">
+    <ProjectReference Include="..\common\wpl-tests-common.vcxproj">
       <Project>{9a6a2463-d5ce-47dd-b69f-e13b08f8e1ec}</Project>
     </ProjectReference>
   </ItemGroup>
