@@ -25,6 +25,7 @@
 #include <wpl/controls/listview_composite.h>
 #include <wpl/controls/listview_basic.h>
 #include <wpl/controls/scroller.h>
+#include <wpl/freetype2/font_loader.h>
 #include <wpl/macos/form.h>
 #include <wpl/stylesheet_helpers.h>
 
@@ -32,12 +33,29 @@ using namespace std;
 
 namespace wpl
 {
+	namespace
+	{
+		struct text_engine_composite
+		{
+			text_engine_composite()
+				: text_engine(loader)
+			{	}
+
+			font_loader loader;
+			gcontext::text_engine_type text_engine;
+		};
+	
+	}
+	
 	shared_ptr<factory> factory::create_default(const shared_ptr<stylesheet> &stylesheet_)
 	{
+		const auto tec = make_shared<text_engine_composite>();
+		shared_ptr<gcontext::text_engine_type> text_engine(tec, &tec->text_engine);
+	
 		factory_context context = {
 			shared_ptr<gcontext::surface_type>(new gcontext::surface_type(1, 1, 16)),
 			shared_ptr<gcontext::renderer_type>(new gcontext::renderer_type(2)),
-			nullptr,
+			text_engine,
 			stylesheet_,
 			nullptr,
 			[] {	return timestamp();	},
