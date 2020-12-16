@@ -96,7 +96,7 @@ namespace wpl
 			FT_Done_Face(*p);
 			delete p;
 		});
-		FT_Set_Char_Size(*_face, 0, height * c_26x6_1, static_cast<int>(96 / _overscale), 96);
+		FT_Set_Pixel_Sizes(*_face, static_cast<int>(height / _overscale), height);
 	}
 
 	font::metrics font_accessor::get_metrics() const

@@ -29,11 +29,13 @@ namespace wpl
 
 		if (ssc->text_engine)
 		{
-			ssc->ss.set_font("text", ssc->text_engine->create_font(L"Segoe UI", 18, false, false, agge::font::key::gf_vertical));
-			ssc->ss.set_font("text.header", ssc->text_engine->create_font(L"Segoe UI", 18, true, false, agge::font::key::gf_vertical));
+			ssc->ss.set_font("text", ssc->text_engine->create_font(L"Segoe UI", -15, false, false, agge::font::key::gf_vertical));
+			ssc->ss.set_font("text.header", ssc->text_engine->create_font(L"Segoe UI", -15, true, false, agge::font::key::gf_vertical));
 
-//			ssc->ss.set_font("text", ssc->text_engine->create_font(L"/System/Library/Fonts/HelveticaNeue.ttc", 25, false, false, agge::font::key::gf_vertical));
-//			ssc->ss.set_font("text.header", ssc->text_engine->create_font(L"/System/Library/Fonts/HelveticaNeue.ttc", 25, true, false, agge::font::key::gf_vertical));
+//			ssc->ss.set_font("text", ssc->text_engine->create_font(L"/System/Library/Fonts/HelveticaNeue.ttc", 15, false, false, agge::font::key::gf_vertical));
+//			ssc->ss.set_font("text.header", ssc->text_engine->create_font(L"/System/Library/Fonts/HelveticaNeue.ttc", 15, true, false, agge::font::key::gf_vertical));
+//			ssc->ss.set_font("text", ssc->text_engine->create_font(L"c:\\Windows\\Fonts\\segoeui.ttf", 15, false, false, agge::font::key::gf_vertical));
+//			ssc->ss.set_font("text.header", ssc->text_engine->create_font(L"c:\\Windows\\Fonts\\segoeuib.ttf", 15, true, false, agge::font::key::gf_vertical));
 		}
 		ssc->ss.set_color("background", agge::color::make(16, 16, 16));
 		ssc->ss.set_color("background.selected", agge::color::make(192, 192, 192));
