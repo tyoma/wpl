@@ -36,9 +36,6 @@
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\src\wpl.vcxproj">
-      <Project>{2423f23a-b689-f3f7-a864-a1729ec337c9}</Project>
-    </ProjectReference>
     <ProjectReference Include="..\common\src\samples-common.vcxproj">
       <Project>{0939ee39-a722-3638-385b-c3656b191b84}</Project>
     </ProjectReference>

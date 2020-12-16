@@ -1,5 +1,6 @@
 #include "../text_engine.h"
 
+#include <wpl/freetype2/font_loader.h>
 #include <wpl/win32/font_loader.h>
 
 using namespace std;
@@ -15,6 +16,7 @@ namespace wpl
 			{	}
 
 			win32::font_loader loader;
+//			font_loader loader;
 			gcontext::text_engine_type text_engine;
 		};
 		auto tec = make_shared<text_engine_composite>();

@@ -17,6 +17,12 @@
     <Filter Include="src\controls">
       <UniqueIdentifier>{d30c3096-0faf-4b46-ae36-26e34a4a23d4}</UniqueIdentifier>
     </Filter>
+    <Filter Include="freetype2">
+      <UniqueIdentifier>{397c7c87-11a2-4e75-a60d-400e70ecec5c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\freetype2">
+      <UniqueIdentifier>{50a95ee8-f1cd-4264-a44a-b60078dc932e}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="layout.cpp">
@@ -109,6 +115,9 @@
     <ClCompile Include="helpers.cpp">
       <Filter>src</Filter>
     </ClCompile>
+    <ClCompile Include="freetype2\font_loader.cpp">
+      <Filter>src\freetype2</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\wpl\controls\listview_core.h">
@@ -200,5 +209,8 @@
       <Filter>src</Filter>
     </ClInclude>
     <ClInclude Include="..\wpl\helpers.h" />
+    <ClInclude Include="..\wpl\freetype2\font_loader.h">
+      <Filter>freetype2</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

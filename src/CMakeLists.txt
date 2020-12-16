@@ -20,6 +20,8 @@ set(WPL_SOURCES
 	controls/listview_basic.cpp
 	controls/listview_core.cpp
 	controls/scroller.cpp
+
+	freetype2/font_loader.cpp
 )
 
 add_library(wpl STATIC ${WPL_SOURCES})
@@ -32,4 +34,4 @@ elseif(APPLE)
 	target_link_libraries(wpl wpl.macos)
 endif()
 
-target_link_libraries(wpl agge.text agge)
+target_link_libraries(wpl agge.text agge freetype)

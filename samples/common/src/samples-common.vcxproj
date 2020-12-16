@@ -30,12 +30,16 @@
   <ImportGroup Label="PropertySheets">
     <Import Project="$(SolutionDir)build.props\config.props" Condition="exists('$(SolutionDir)build.props\config.props')" />
     <Import Project="$(SolutionDir)build.props\agge.include.props" Condition="exists('$(SolutionDir)build.props\agge.include.props')" />
+    <Import Project="$(SolutionDir)build.props\freetype.include.props" Condition="exists('$(SolutionDir)build.props\freetype.include.props')" />
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <ItemDefinitionGroup>
     <ClCompile>
       <DisableLanguageExtensions>false</DisableLanguageExtensions>
     </ClCompile>
+    <ProjectReference>
+      <LinkLibraryDependencies>true</LinkLibraryDependencies>
+    </ProjectReference>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="application_win32.cpp" />
@@ -48,6 +52,11 @@
     <ClInclude Include="..\stylesheet.h" />
     <ClInclude Include="..\text_engine.h" />
     <ClInclude Include="..\timer.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\src\wpl.vcxproj">
+      <Project>{2423f23a-b689-f3f7-a864-a1729ec337c9}</Project>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
 </Project>

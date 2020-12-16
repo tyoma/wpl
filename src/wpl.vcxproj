@@ -30,6 +30,7 @@
   <ImportGroup Label="PropertySheets">
     <Import Project="$(SolutionDir)build.props\config.props" Condition="exists('$(SolutionDir)build.props\config.props')" />
     <Import Project="$(SolutionDir)build.props\agge.include.props" Condition="exists('$(SolutionDir)build.props\agge.include.props')" />
+    <Import Project="$(SolutionDir)build.props\freetype.include.props" Condition="exists('$(SolutionDir)build.props\freetype.include.props')" />
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <ItemDefinitionGroup>
@@ -53,6 +54,7 @@
     <ClCompile Include="controls\listview_core.cpp" />
     <ClCompile Include="controls\scroller.cpp" />
     <ClCompile Include="factory.cpp" />
+    <ClCompile Include="freetype2\font_loader.cpp" />
     <ClCompile Include="glyphs.cpp" />
     <ClCompile Include="helpers.cpp" />
     <ClCompile Include="input_stubs.cpp" />
@@ -100,6 +102,7 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\wpl\freetype2\font_loader.h" />
     <ClInclude Include="..\wpl\animated_models.h" />
     <ClInclude Include="..\wpl\animation.h" />
     <ClInclude Include="..\wpl\concepts.h" />
