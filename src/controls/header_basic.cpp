@@ -124,7 +124,6 @@ namespace wpl
 			ctx(ras, blender(state & sorted ? _fg_sorted : _fg_normal), winding<>());
 
 			// 3. Draw right separator.
-			inflate(box, 0.0f, 0.5f * _padding);
 			add_path(*ras, rectangle(b.x2 - _separator_width, box.y1, b.x2, box.y2));
 			ctx(ras, blender(_fg_normal), winding<>());
 		}

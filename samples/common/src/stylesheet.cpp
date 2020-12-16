@@ -29,9 +29,8 @@ namespace wpl
 
 		if (ssc->text_engine)
 		{
-			ssc->ss.set_font("text", ssc->text_engine->create_font(L"Segoe UI", -15, false, false, agge::font::key::gf_vertical));
-			ssc->ss.set_font("text.header", ssc->text_engine->create_font(L"Segoe UI", -15, true, false, agge::font::key::gf_vertical));
-
+			ssc->ss.set_font("text", ssc->text_engine->create_font(L"Segoe UI", 15, false, false, agge::font::key::gf_vertical));
+			ssc->ss.set_font("text.header", ssc->text_engine->create_font(L"Segoe UI", 15, true, false, agge::font::key::gf_vertical));
 //			ssc->ss.set_font("text", ssc->text_engine->create_font(L"/System/Library/Fonts/HelveticaNeue.ttc", 15, false, false, agge::font::key::gf_vertical));
 //			ssc->ss.set_font("text.header", ssc->text_engine->create_font(L"/System/Library/Fonts/HelveticaNeue.ttc", 15, true, false, agge::font::key::gf_vertical));
 //			ssc->ss.set_font("text", ssc->text_engine->create_font(L"c:\\Windows\\Fonts\\segoeui.ttf", 15, false, false, agge::font::key::gf_vertical));
