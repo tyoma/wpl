@@ -48,7 +48,7 @@ namespace wpl
 			virtual void layout(const placed_view_appender &append_view, const agge::box<int> &box) override;
 
 			// header methods
-			void set_model(std::shared_ptr<columns_model> model);
+			void set_model(std::shared_ptr<columns_model> model) override;
 
 			// mouse_input methods
 			virtual void mouse_enter() override;

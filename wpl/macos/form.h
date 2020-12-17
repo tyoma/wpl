@@ -13,11 +13,11 @@
 #ifdef __OBJC__
 	@class form_macos;
 	@class NSView;
-	@class NSWindow;
+	@class window_macos;
 #else
 	struct form_macos;
 	struct NSView;
-	struct NSWindow;
+	struct window_macos;
 #endif
 
 namespace wpl
@@ -47,7 +47,7 @@ namespace wpl
 			NSView *_native_view;
 		};
 			
-		class form : public wpl::form
+		class form : public wpl::form, noncopyable
 		{
 		public:
 			form(const wpl::form_context &context);
@@ -65,8 +65,9 @@ namespace wpl
 			virtual void set_features(unsigned /*features*/ features_) override;
 			
 		private:
-			NSWindow *_window;
+			window_macos *_window;
 			form_macos *_view;
+			std::vector<slot_connection> _connections;
 		};
 	}
 }

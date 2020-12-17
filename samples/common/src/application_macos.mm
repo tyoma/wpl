@@ -4,25 +4,6 @@
 
 using namespace std;
 
-@interface AppDelegate : NSObject<NSApplicationDelegate>
-	{
-	}
-@end
-
-@implementation AppDelegate
-	- (id)init
-	{	return [super init];	}
-
-	- (void)dealloc
-	{	[super dealloc];	}
-
-	- (void)applicationWillFinishLaunching:(NSNotification *)notification
-	{	}
-
-	- (void)applicationDidFinishLaunching:(NSNotification *)notification
-	{	}
-@end
-
 namespace wpl
 {
 	class application::impl
@@ -32,12 +13,9 @@ namespace wpl
 		{
 			_pool = [[NSAutoreleasePool alloc] init];
 			_application = [NSApplication sharedApplication];
-			_applicationDelegate =[[[AppDelegate alloc] init] autorelease];
 
 			[NSApp setActivationPolicy:NSApplicationActivationPolicyRegular];
 			[NSApp activateIgnoringOtherApps:YES];
-
-			[_application setDelegate:_applicationDelegate];
 		}
 		
 		~impl()
@@ -47,12 +25,11 @@ namespace wpl
 		{	[_application run];	}
 	
 		void exit()
-		{	[_application stop];	}
+		{	[_application stop:nil];	}
 
 	private:
 		NSAutoreleasePool *_pool;
 		NSApplication *_application;
-		AppDelegate *_applicationDelegate;
 	};
 	
 	application::application()

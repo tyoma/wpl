@@ -7,6 +7,20 @@ using namespace agge;
 using namespace std;
 using namespace wpl;
 
+#if TARGET_RT_BIG_ENDIAN
+	const NSStringEncoding kEncoding_wchar_t = CFStringConvertEncodingToNSStringEncoding(kCFStringEncodingUTF32BE);
+#else
+	const NSStringEncoding kEncoding_wchar_t = CFStringConvertEncodingToNSStringEncoding(kCFStringEncodingUTF32LE);
+#endif
+
+@interface window_macos : NSWindow
+	{
+		@public wpl::signal<void ()> close_;
+	}
+	
+	- (void) close;
+@end
+
 @interface form_macos : NSView
 	{
 		wpl::form_context _context;
@@ -57,21 +71,23 @@ namespace wpl
 		{
 			NSRect content = NSMakeRect(0.0f, 0.0f, 600.0f, 400.0f);
 			
-			_window = [[[NSWindow alloc] autorelease]
+			_window = [[[window_macos alloc] autorelease]
 				initWithContentRect:content
-				styleMask:(NSWindowStyleMaskTitled | NSWindowStyleMaskResizable)
+				styleMask:(NSWindowStyleMaskTitled | NSWindowStyleMaskResizable | NSWindowStyleMaskClosable)
 				backing:NSBackingStoreBuffered
 				defer:YES];
 			_view = [[[form_macos alloc] autorelease]
 				initWithFrame:content];
 			[_view setFormContext:context];
 			[_window setContentView:_view];
+			_connections.push_back(_window->close_ += [this] {	close();	});
 		}
 			
 		form::~form()
 		{
-			[_view release];
-			[_window release];
+			[_window setContentView:nil];
+			[_view setRoot:nullptr];
+			_connections.clear();
 		}
 			
 		void form::set_root(shared_ptr<control> root)
@@ -87,7 +103,10 @@ namespace wpl
 		{	[_window setIsVisible:value];	}
 			
 		void form::set_caption(const wstring &caption)
-		{	}
+		{
+			[_window setTitle:[[NSString alloc]
+				initWithBytes:caption.c_str() length:caption.size() encoding:kEncoding_wchar_t]];
+		}
 			
 		void form::set_caption_icon(const gcontext::surface_type &icon)
 		{	}
@@ -99,9 +118,22 @@ namespace wpl
 		{	throw 0;	}
 			
 		void form::set_features(unsigned /*features*/ features_)
-		{	}
+		{
+			auto styleMask = [_window styleMask];
+			
+			styleMask |= (form::resizeable & features_) ? NSWindowStyleMaskResizable : 0;
+			styleMask &= !(form::resizeable & features_) ? ~NSWindowStyleMaskResizable : 0;
+			styleMask |= (form::minimizable & features_) ? NSWindowStyleMaskMiniaturizable : 0;
+			styleMask &= !(form::minimizable & features_) ? ~NSWindowStyleMaskMiniaturizable : 0;
+			[_window setStyleMask:styleMask];
+		}
 	}
 }
+
+@implementation window_macos
+	- (void) close
+	{	close_();	}
+@end
 
 @implementation form_macos
 	- (void) setFormContext:(wpl::form_context)context
@@ -110,10 +142,7 @@ namespace wpl
 	- (void) setRoot:(shared_ptr<wpl::control>)root
 	{
 		const auto layout = [self] {
-			auto f = [self frame];
-			const agge::box<int> b = { 2 * static_cast<int>(f.size.width), 2 * static_cast<int>(f.size.height) };
-
-			[self layout_views:b];
+			[self layout_views:[self frame].size];
 		};
 		const auto reload = [self] {
 			_visual_router->reload_views();
@@ -131,8 +160,10 @@ namespace wpl
 		} : slot_connection();
 	}
 	
-	-(void) layout_views:(box<int>)size
+	-(void) layout_views:(NSSize)size_
 	{
+		const agge::box<int> size = { static_cast<int>(size_.width), static_cast<int>(size_.height) };
+		
 		_views.clear();
 		if (_root)
 			_root->layout([self] (const placed_view &pv) {	_views.emplace_back(pv);	}, size);
@@ -148,15 +179,12 @@ namespace wpl
 		_visual_router.reset(new wpl::visual_router(_views, *_routers_host));
 	
 		self = [super initWithFrame:frameRect];
-		[self scaleUnitSquareToSize:NSMakeSize(0.5, 0.5)];
 		return self;
 	}
 
 	- (void) setFrameSize:(NSSize)newSize
 	{
-		const agge::box<int> b = { 2 * static_cast<int>(newSize.width), 2 * static_cast<int>(newSize.height) };
-
-		[self layout_views:b];
+		[self layout_views:newSize];
 		[super setFrameSize:newSize];
 	}
 
