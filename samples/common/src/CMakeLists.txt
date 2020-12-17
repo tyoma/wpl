@@ -7,16 +7,14 @@ set(SAMPLES_COMMON_SOURCES
 if (WIN32)
 	set(SAMPLES_COMMON_SOURCES ${SAMPLES_COMMON_SOURCES}
 		application_win32.cpp
-		text_engine_win32.cpp
-		timer_win32.cpp
 	)
 elseif(APPLE)
 	enable_language(OBJCXX)
-	
+
+	set(CMAKE_OBJCXX_STANDARD 11)
+
 	set(SAMPLES_COMMON_SOURCES ${SAMPLES_COMMON_SOURCES}
 		application_macos.mm
-		text_engine_macos.cpp
-		timer_macos.cpp
 	)
 endif()
 

@@ -6,6 +6,7 @@ set(CMAKE_OBJCXX_STANDARD 11)
 	
 set(WPL_MACOS_SOURCES
 	factory_macos.cpp
+	font_loader_freetype_unix.cpp
 	form.mm
 )
 

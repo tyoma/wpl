@@ -36,6 +36,19 @@ namespace wpl
 		const int c_26x6_1 = 64;
 		const real_t c_26x6_unit = 1.0f / static_cast<real_t>(c_26x6_1);
 
+
+		struct text_engine_composite
+		{
+			text_engine_composite()
+				: text_engine(loader)
+			{	}
+
+			font_loader loader;
+			gcontext::text_engine_type text_engine;
+		};
+
+
+
 		glyph::path_point path_point(int command, real_t x, real_t y)
 		{
 			glyph::path_point p = { command, x, y };
@@ -71,7 +84,7 @@ namespace wpl
 			{
 				real_t x, y;
 
-				agge::cbezier::calculate(&x, &y, x1, y1, x2, y2, x3, y3, x4, y4, t);
+				cbezier::calculate(&x, &y, x1, y1, x2, y2, x3, y3, x4, y4, t);
 				outline.push_back(path_point(path_command_line_to, x, y));
 			}
 			outline.push_back(path_point(path_command_line_to, x3, y3));
@@ -79,31 +92,41 @@ namespace wpl
 
 		void close_polygon(glyph::outline_storage &outline)
 		{	outline.push_back(path_point(path_flag_close, 0.0f, 0.0f));	}
+
+		shared_ptr<FT_LibraryRec_> create_freetype()
+		{
+			FT_Library freetype;
+
+			if (FT_Error error = FT_Init_FreeType(&freetype))
+				throw runtime_error("Cannot initialize freetype!");
+			return shared_ptr<iterator_traits<FT_Library>::value_type>(freetype, [] (FT_Library p) {
+				FT_Done_FreeType(p);
+			});
+		}
+
+		shared_ptr<FT_FaceRec_> open_face(FT_Library freetype, const string &path, unsigned index)
+		{
+			FT_Face face;
+
+			if (FT_Error error = FT_New_Face(freetype, path.c_str(), index, &face))
+				throw runtime_error("Cannot load font-face '" + path +"'!");
+			return shared_ptr<iterator_traits<FT_Face>::value_type>(face, [] (FT_Face p) {
+				FT_Done_Face(p);
+			});
+		}
 	}
 
-	font_accessor::font_accessor(shared_ptr<FT_Library> freetype_, const wchar_t *font_family_, int height,
-		bool /*bold*/, bool /*italic*/, font::key::grid_fit grid_fit)
+	font_accessor::font_accessor(FT_Library freetype_, const string &path, unsigned index, int height,
+			font::key::grid_fit grid_fit)
 		: _overscale(font::key::gf_vertical == grid_fit ? 1.0f / static_cast<real_t>(c_overscale) : 1.0f),
-			_hint(font::key::gf_none != grid_fit)
-	{
-		unique_ptr<FT_Face> face_(new FT_Face);
-		wstring font_family_w(font_family_);
-		string font_family(font_family_w.begin(), font_family_w.end());
-
-		if (FT_Error error = FT_New_Face(*freetype_, font_family.c_str(), 0, face_.get()))
-			throw runtime_error("Cannot load fontface '" + font_family + "'!");
-		_face.reset(face_.release(), [] (FT_Face *p) {
-			FT_Done_Face(*p);
-			delete p;
-		});
-		FT_Set_Pixel_Sizes(*_face, static_cast<int>(height / _overscale), height);
-	}
+			_hint(font::key::gf_none != grid_fit), _face(open_face(freetype_, path, index))
+	{	FT_Set_Pixel_Sizes(_face.get(), static_cast<int>(height / _overscale), height);	}
 
 	font::metrics font_accessor::get_metrics() const
 	{
 		font::metrics m = {
-			-scale_y((*_face)->size->metrics.ascender),
-			scale_y((*_face)->size->metrics.descender),
+			-scale_y(_face->size->metrics.ascender),
+			scale_y(_face->size->metrics.descender),
 			0.0f,
 		};
 
@@ -111,18 +134,18 @@ namespace wpl
 	}
 
 	uint16_t font_accessor::get_glyph_index(wchar_t character) const
-	{	return static_cast<uint16_t>(FT_Get_Char_Index(*_face, character));	}
+	{	return static_cast<uint16_t>(FT_Get_Char_Index(_face.get(), character));	}
 
 	glyph::outline_ptr font_accessor::load_glyph(uint16_t index, glyph::glyph_metrics &m) const
 	{
 		glyph::outline_ptr path(new glyph::outline_storage);
 
-		if (FT_Error error = FT_Load_Glyph(*_face, index, _hint ? FT_LOAD_DEFAULT : FT_LOAD_NO_HINTING))
+		if (FT_Error error = FT_Load_Glyph(_face.get(), index, _hint ? FT_LOAD_DEFAULT : FT_LOAD_NO_HINTING))
 			return path;
-		m.advance_x = scale_x((*_face)->glyph->advance.x);
-		m.advance_y = scale_y((*_face)->glyph->advance.y);
+		m.advance_x = scale_x(_face->glyph->advance.x);
+		m.advance_y = scale_y(_face->glyph->advance.y);
 
-		FT_Outline outline = (*_face)->glyph->outline;
+		FT_Outline outline = _face->glyph->outline;
 		FT_Vector v_last;
 		FT_Vector v_control;
 		FT_Vector v_start;
@@ -280,19 +303,53 @@ Do_Conic:
 	{	return static_cast<real_t>(-value) * c_26x6_unit;	}
 
 
-	font_loader::font_loader()
-	{
-		unique_ptr<FT_Library> freetype_(new FT_Library);
+	size_t font_loader::font_key_hasher::operator ()(const font::key &/*key*/) const
+	{	return 1;	}
 
-		if (FT_Error error = FT_Init_FreeType(freetype_.get()))
-			throw runtime_error("Cannot initialize freetype2!");
-		_freetype.reset(freetype_.release(), [] (FT_Library *p) {
-			FT_Done_FreeType(*p);
-			delete p;
-		});
+	font_loader::font_loader()
+		: _freetype(create_freetype())
+	{	build_index();	}
+
+	font::accessor_ptr font_loader::load(const wchar_t *family, int height, bool bold, bool italic,
+		font::key::grid_fit grid_fit)
+	{
+		const auto m = _mapping.find(font::key(family, 0, bold, italic, font::key::gf_none));
+
+		if (m != _mapping.end())
+			return make_shared<font_accessor>(_freetype.get(), m->second.first.c_str(), m->second.second, height, grid_fit);
+		return nullptr;
 	}
 
-	font::accessor_ptr font_loader::load(const wchar_t *family_filename, int height, bool bold, bool italic,
-		font::key::grid_fit grid_fit)
-	{	return make_shared<font_accessor>(_freetype, family_filename, height, bold, italic, grid_fit);	}
+	void font_loader::build_index()
+	{
+		string family;
+		font::key key(L"", 0);
+		string path;
+
+		for (const auto e = create_fonts_enumerator(); e(path); )
+		{
+			auto index = 0;
+			auto faces = 0;
+
+			do
+			{
+				const auto face = open_face(_freetype.get(), path, index);
+
+				faces = face->num_faces;
+				family = face->family_name;
+				key.typeface.assign(family.begin(), family.end());
+				key.bold = !!(FT_STYLE_FLAG_BOLD & face->style_flags);
+				key.italic = !!(FT_STYLE_FLAG_ITALIC & face->style_flags);
+				_mapping[key] = make_pair(path, index);
+			} while (++index < faces);
+		}
+	}
+
+
+	shared_ptr<gcontext::text_engine_type> create_text_engine()
+	{
+		auto tec = make_shared<text_engine_composite>();
+
+		return shared_ptr<gcontext::text_engine_type>(tec, &tec->text_engine);
+	}
 }

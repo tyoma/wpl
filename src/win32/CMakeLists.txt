@@ -5,6 +5,7 @@ set(WPL_WIN32_SOURCES
 	controls.cpp
 	cursor_manager.cpp
 	factory_win32.cpp
+	font_loader_freetype_win32.cpp
 	font_loader_win32.cpp
 	font_manager_win32.cpp
 	form.cpp

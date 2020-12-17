@@ -1,6 +1,4 @@
 #include <samples/common/application.h>
-#include <samples/common/stylesheet.h>
-#include <samples/common/timer.h>
 #include <wpl/controls.h>
 #include <wpl/factory.h>
 #include <wpl/form.h>
@@ -20,15 +18,24 @@ namespace
 
 	struct my_model : list_model<wstring>
 	{
-		my_model()
+		my_model(const queue &queue_)
+			: _queue(queue_), _elapsed(0), _alive(make_shared<bool>(true))
+		{	on_timer(_alive);	}
+
+		~my_model()
+		{	*_alive = false;	}
+
+		void on_timer(const shared_ptr<bool> &alive)
 		{
-			_timer = create_timer(20, [this] (int elapsed) {
+			if (*alive)
+			{
 				wchar_t buffer[100];
 
-				swprintf(buffer, sizeof(buffer), L"Dynamic: %d", elapsed);
+				swprintf(buffer, sizeof(buffer), L"Dynamic: %d", _elapsed += 10);
 				_dynamic_item = buffer;
 				invalidate();
-			});
+				_queue([this, alive] {	on_timer(alive);	}, 10);
+			}
 		}
 
 		virtual index_type get_count() const throw() override
@@ -58,8 +65,10 @@ namespace
 			index_type _index;
 		};
 
-		shared_ptr<void> _timer;
+		queue _queue;
+		int _elapsed;
 		wstring _dynamic_item;
+		shared_ptr<bool> _alive;
 	};
 
 	struct my_scroll_model : scroll_model
@@ -94,9 +103,7 @@ namespace
 int main()
 {
 	application app;
-
-	auto ss = create_sample_stylesheet();
-	auto fct = factory::create_default(ss);
+	const auto fct = app.create_default_factory();
 	view_location l = { 100, 100, 300, 200 };
 	shared_ptr<form> f = fct->create_form();
 	slot_connection c = f->close += [&app] {	app.exit();	};
@@ -109,7 +116,7 @@ int main()
 		root->add(pad_control(vstack, 5, 5));
 			auto cb = fct->create_control<combobox>("combobox");
 			vstack->add(cb, 40, 1);
-			cb->set_model(shared_ptr<my_model>(new my_model));
+			cb->set_model(shared_ptr<my_model>(new my_model(app.get_application_queue())));
 
 			auto scrl = fct->create_control<scroller>("hscroller");
 			vstack->add(scrl, 20);

@@ -6,6 +6,7 @@
 #include <vector>
 #include <wpl/control.h>
 #include <wpl/controls/integrated.h>
+#include <wpl/factory_context.h>
 
 namespace wpl
 {
@@ -15,7 +16,7 @@ namespace wpl
 		struct model;
 
 	public:
-		piechart();
+		piechart(const control_context &ctx);
 
 		void set_model(const std::shared_ptr<model> &m);
 		void limit(unsigned max_segments);
@@ -38,13 +39,14 @@ namespace wpl
 		virtual void mouse_move(int depressed, int x, int y) override;
 		virtual void mouse_leave() override;
 
-		void update_animation(unsigned elapsed);
+		void update_animation();
 
 	private:
 		segments_t _segments;
 		int _center_x, _center_y, _base_radius;
 		int _hover_index;
-		std::shared_ptr<void> _animation_timer;
+		wpl::clock _clock;
+		wpl::queue _animation_queue;
 	};
 
 	struct piechart::model

@@ -118,6 +118,9 @@
     <ClCompile Include="freetype2\font_loader.cpp">
       <Filter>src\freetype2</Filter>
     </ClCompile>
+    <ClCompile Include="win32\font_loader_freetype_win32.cpp">
+      <Filter>src\win32</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\wpl\controls\listview_core.h">

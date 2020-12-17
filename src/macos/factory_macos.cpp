@@ -47,24 +47,6 @@ namespace wpl
 	
 	}
 	
-	shared_ptr<factory> factory::create_default(const shared_ptr<stylesheet> &stylesheet_)
-	{
-		const auto tec = make_shared<text_engine_composite>();
-		shared_ptr<gcontext::text_engine_type> text_engine(tec, &tec->text_engine);
-	
-		factory_context context = {
-			shared_ptr<gcontext::surface_type>(new gcontext::surface_type(1, 1, 16)),
-			shared_ptr<gcontext::renderer_type>(new gcontext::renderer_type(2)),
-			text_engine,
-			stylesheet_,
-			nullptr,
-			[] {	return timestamp();	},
-			[] (const function<void ()> &, timespan) -> bool {	return false;	},
-		};
-
-		return create_default(context);
-	}
-
 	void factory::setup_default(factory &factory_)
 	{
 		factory_.register_form([] (const form_context &context_) {

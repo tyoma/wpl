@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cmath>
+#include <wpl/queue.h>
 
 namespace wpl
 {
@@ -9,14 +10,14 @@ namespace wpl
 	public:
 		animation_line(float initial_value = 0.0f);
 
-		void run(float destination_value, unsigned duration);
+		void run(float destination_value, timespan duration, timestamp start);
 		float get_value() const;
-		bool update(unsigned time);
+		bool update(timestamp time);
 
 	private:
 		float _value, _start_value, _destination_value;
-		unsigned _duration;
-		unsigned _start_time;
+		timespan _duration;
+		timestamp _start_time;
 		bool _done;
 	};
 
@@ -24,10 +25,11 @@ namespace wpl
 		: _value(initial_value), _done(true)
 	{	}
 
-	inline void animation_line::run(float destination_value, unsigned duration)
+	inline void animation_line::run(float destination_value, timespan duration, timestamp start)
 	{
 		_start_time = 0;
 		_duration = duration;
+		_start_time = start;
 		_start_value = _value;
 		_destination_value = destination_value;
 		_done = false;
@@ -36,12 +38,10 @@ namespace wpl
 	inline float animation_line::get_value() const
 	{	return _value;	}
 
-	inline bool animation_line::update(unsigned time)
+	inline bool animation_line::update(timestamp time)
 	{
 		if (_done)
 			return false;
-		if (!_start_time)
-			_start_time = time;
 		float timed = (time - _start_time) / float(_duration);
 
 		if (timed >= 1.0f)

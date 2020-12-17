@@ -1,6 +1,4 @@
 #include <samples/common/application.h>
-#include <samples/common/stylesheet.h>
-#include <samples/common/timer.h>
 #include <wpl/controls.h>
 #include <wpl/factory.h>
 #include <wpl/form.h>
@@ -39,13 +37,21 @@ namespace
 	class my_model : public table_model
 	{
 	public:
-		my_model()
-			: _n(0)
+		my_model(const queue &queue_)
+			: _queue(queue_), _n(0), _alive(make_shared<bool>(true))
+		{	on_timer(_alive);	}
+
+		~my_model()
+		{	*_alive = false;	}
+
+		void on_timer(const shared_ptr<bool> &alive)
 		{
-			_timer = create_timer(20, [this] (unsigned) {
+			if (*alive)
+			{
 				_n++;
 				invalidate(100);
-			});
+				_queue([this, alive] {	on_timer(alive);	}, 10);
+			}
 		}
 
 		virtual index_type get_count() const throw() override
@@ -78,22 +84,21 @@ namespace
 		};
 
 	private:
+		queue _queue;
 		double _n;
-		shared_ptr<void> _timer;
+		shared_ptr<bool> _alive;
 	};
 }
 
 int main()
 {
 	application app;
-
-	const auto ss = create_sample_stylesheet();
-	const auto fct = factory::create_default(ss);
+	const auto fct = app.create_default_factory();
 	const view_location l = { 100, 100, 300, 200 };
 	const auto f = fct->create_form();
 	const auto conn = f->close += [&app] {	app.exit();	};
 	shared_ptr<my_columns> cm(new my_columns);
-	shared_ptr<my_model> m(new my_model);
+	shared_ptr<my_model> m(new my_model(app.get_application_queue()));
 
 	const auto root = make_shared<overlay>();
 		root->add(fct->create_control<control>("background"));

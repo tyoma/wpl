@@ -23,29 +23,49 @@
 #include "../visual.h"
 
 #include <agge.text/text_engine.h>
+#include <unordered_map>
 
-typedef struct FT_FaceRec_ *FT_Face;
+typedef struct FT_FaceRec_ FT_FaceRec;
+typedef struct FT_LibraryRec_ FT_LibraryRec;
 typedef struct FT_LibraryRec_ *FT_Library;
 
 namespace wpl
 {
+	std::shared_ptr<gcontext::text_engine_type> create_text_engine();
+
 	class font_loader : public gcontext::text_engine_type::loader, noncopyable
 	{
 	public:
+		struct font_key_hasher
+		{
+			size_t operator ()(const agge::font::key &key) const;
+		};
+
+		typedef std::unordered_map<agge::font::key, std::pair<std::string, unsigned>, font_key_hasher> key_to_file_t;
+
+	public:
 		font_loader();
 
-		virtual agge::font::accessor_ptr load(const wchar_t *family_filename, int height, bool bold, bool italic,
+		virtual agge::font::accessor_ptr load(const wchar_t *family, int height, bool bold, bool italic,
 			agge::font::key::grid_fit grid_fit) override;
 
 	private:
-		std::shared_ptr<FT_Library> _freetype;
+		typedef std::function<bool (std::string &path)> enum_font_files_cb;
+
+	private:
+		static enum_font_files_cb create_fonts_enumerator();
+		void build_index();
+
+	private:
+		std::shared_ptr<FT_LibraryRec_> _freetype;
+		key_to_file_t _mapping;
 	};
 
 	class font_accessor : public agge::font::accessor
 	{
 	public:
-		font_accessor(std::shared_ptr<FT_Library> freetype_, const wchar_t *font_family, int height, bool bold,
-			bool italic, agge::font::key::grid_fit grid_fit);
+		font_accessor(FT_Library freetype_, const std::string &path, unsigned index, int height,
+			agge::font::key::grid_fit grid_fit);
 
 	private:
 		virtual agge::font::metrics get_metrics() const override;
@@ -56,7 +76,7 @@ namespace wpl
 		static agge::real_t scale_y(int value);
 
 	private:
-		std::shared_ptr<FT_Face> _face;
+		std::shared_ptr<FT_FaceRec> _face;
 		agge::real_t _overscale;
 		bool _hint;
 	};

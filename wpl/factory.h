@@ -32,7 +32,6 @@ namespace wpl
 {
 	struct control;
 	struct form;
-	struct stylesheet;
 
 	class factory : noncopyable
 	{
@@ -50,7 +49,6 @@ namespace wpl
 		std::shared_ptr<control> create_control(const char *type) const;
 		template <typename T> std::shared_ptr<T> create_control(const char *type) const;
 
-		static std::shared_ptr<factory> create_default(const std::shared_ptr<stylesheet> &stylesheet_);
 		static std::shared_ptr<factory> create_default(const form_context &context_);
 		static void setup_default(factory &factory_);
 

@@ -1,7 +1,5 @@
 #include "piechart.h"
 
-#include <samples/common/timer.h>
-
 #include <agge/blenders.h>
 #include <agge/blenders_simd.h>
 #include <agge/curves.h>
@@ -13,7 +11,6 @@
 
 using namespace agge;
 using namespace std;
-using namespace placeholders;
 
 namespace wpl
 {
@@ -31,8 +28,8 @@ namespace wpl
 		return c;
 	}
 
-	piechart::piechart()
-		: _base_radius(200), _hover_index(-1)
+	piechart::piechart(const control_context &ctx)
+		: _base_radius(200), _hover_index(-1), _clock(ctx.clock_), _animation_queue(ctx.queue_)
 	{
 		segment s;
 
@@ -99,11 +96,11 @@ namespace wpl
 			for (segments_t::iterator i = _segments.begin(); i != _segments.end(); ++i, ++index2)
 			{
 				if (index == index2)
-					i->aline.run(0.1f, 200);
+					i->aline.run(0.1f, 200, _clock());
 				else
-					i->aline.run(-0.05f, 600);
+					i->aline.run(-0.05f, 600, _clock());
 			}
-			_animation_timer = create_timer(15, bind(&piechart::update_animation, this, _1));
+			_animation_queue([this] {	update_animation();	}, 10);
 			_hover_index = index;
 		}
 	}
@@ -111,19 +108,20 @@ namespace wpl
 	void piechart::mouse_leave()
 	{
 		for (segments_t::iterator i = _segments.begin(); i != _segments.end(); ++i)
-			i->aline.run(0.0f, 200);
-		_animation_timer = create_timer(15, bind(&piechart::update_animation, this, _1));
+			i->aline.run(0.0f, 200, _clock());
+		_animation_queue([this] {	update_animation();	}, 10);
 		_hover_index = -1;
 	}
 
-	void piechart::update_animation(unsigned elapsed)
+	void piechart::update_animation()
 	{
 		bool keep_going = false;
+		auto t = _clock();
 
 		for (segments_t::iterator i = _segments.begin(); i != _segments.end(); ++i)
-			keep_going = i->aline.update(elapsed) || keep_going;
-		if (!keep_going)
-			_animation_timer.reset();
+			keep_going = i->aline.update(t) || keep_going;
+		if (keep_going)
+			_animation_queue([this] {	update_animation();	}, 10);
 		invalidate(0);
 	}
 }

@@ -79,22 +79,6 @@ namespace wpl
 		}
 	}
 
-	shared_ptr<factory> factory::create_default(const shared_ptr<stylesheet> &stylesheet_)
-	{
-		shared_ptr<text_engine_composite> tec(new text_engine_composite);
-		factory_context context = {
-			shared_ptr<gcontext::surface_type>(new gcontext::surface_type(1, 1, 16)),
-			shared_ptr<gcontext::renderer_type>(new gcontext::renderer_type(2)),
-			shared_ptr<gcontext::text_engine_type>(tec, &tec->text_engine),
-			stylesheet_,
-			make_shared<win32::cursor_manager>(),
-			win32::clock,
-			win32::queue(),
-		};
-
-		return create_default(context);
-	}
-
 	void factory::setup_default(factory &factory_)
 	{
 		const auto font_manager = make_shared<win32::font_manager>();

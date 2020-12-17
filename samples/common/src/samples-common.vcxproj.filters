@@ -7,12 +7,6 @@
     <ClCompile Include="stylesheet.cpp">
       <Filter>src</Filter>
     </ClCompile>
-    <ClCompile Include="text_engine_win32.cpp">
-      <Filter>src</Filter>
-    </ClCompile>
-    <ClCompile Include="timer_win32.cpp">
-      <Filter>src</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="src">
@@ -22,7 +16,5 @@
   <ItemGroup>
     <ClInclude Include="..\application.h" />
     <ClInclude Include="..\stylesheet.h" />
-    <ClInclude Include="..\text_engine.h" />
-    <ClInclude Include="..\timer.h" />
   </ItemGroup>
 </Project>
