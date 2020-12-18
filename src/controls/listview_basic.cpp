@@ -38,7 +38,7 @@ namespace wpl
 	{
 		namespace
 		{
-			typedef blender_solid_color<simd::blender_solid_color, order_bgra> blender;
+			typedef blender_solid_color<simd::blender_solid_color, platform_pixel_order> blender;
 		}
 
 		void listview_basic::apply_styles(const stylesheet &ss)

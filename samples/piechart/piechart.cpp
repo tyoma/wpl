@@ -20,7 +20,7 @@ namespace wpl
 		{	return join(arc(cx, cy, outer_r, start, end), arc(cx, cy, inner_r, end, start));	}
 	}
 
-	typedef blender_solid_color<simd::blender_solid_color, order_bgra> blender_t;
+	typedef blender_solid_color<simd::blender_solid_color, platform_pixel_order> blender_t;
 
 	color make_color(unsigned char r, unsigned char g, unsigned char b)
 	{

@@ -127,7 +127,7 @@ namespace wpl
 
 		void scroller::draw(gcontext &ctx, gcontext::rasterizer_ptr &rasterizer_) const
 		{
-			typedef blender_solid_color<simd::blender_solid_color, order_bgra> blender_t;
+			typedef blender_solid_color<simd::blender_solid_color, platform_pixel_order> blender_t;
 
 			const thumb t = get_thumb();
 

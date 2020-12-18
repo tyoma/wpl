@@ -39,7 +39,7 @@ namespace wpl
 	{
 		namespace
 		{
-			typedef blender_solid_color<simd::blender_solid_color, order_bgra> blender;
+			typedef blender_solid_color<simd::blender_solid_color, platform_pixel_order> blender;
 		}
 
 		header_basic::header_basic(shared_ptr<cursor_manager> cursor_manager_)
