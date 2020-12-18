@@ -13,6 +13,7 @@ set(WPL_TEST_SOURCES
 	ListViewCoreTests.cpp
 	MouseRouterTests.cpp
 	ScrollerTests.cpp
+	SignalBaseTests.cpp
 	SignalTests.cpp
 	StylesheetTests.cpp
 	VisualRouterTests.cpp

@@ -20,7 +20,7 @@
 
 #pragma once
 
-#include "signals.h"
+#include "signal.h"
 
 #include <agge/color.h>
 #include <agge.text/font.h>

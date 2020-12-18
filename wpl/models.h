@@ -21,7 +21,7 @@
 #pragma once
 
 #include "concepts.h"
-#include "signals.h"
+#include "signal.h"
 
 #include <memory>
 #include <string>

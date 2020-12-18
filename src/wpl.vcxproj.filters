@@ -148,7 +148,6 @@
     <ClInclude Include="..\wpl\input.h" />
     <ClInclude Include="..\wpl\layout.h" />
     <ClInclude Include="..\wpl\models.h" />
-    <ClInclude Include="..\wpl\signals.h" />
     <ClInclude Include="..\wpl\types.h" />
     <ClInclude Include="..\wpl\view.h" />
     <ClInclude Include="..\wpl\view_host.h" />
@@ -215,5 +214,6 @@
     <ClInclude Include="..\wpl\freetype2\font_loader.h">
       <Filter>freetype2</Filter>
     </ClInclude>
+    <ClInclude Include="..\wpl\signal.h" />
   </ItemGroup>
 </Project>

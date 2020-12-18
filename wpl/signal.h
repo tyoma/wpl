@@ -68,7 +68,8 @@ namespace wpl
 		function_list();
 
 		std::list<F> functions;
-		bool traversing, require_cleanup;
+		unsigned traversing;
+		bool require_cleanup;
 	};
 
 
@@ -118,17 +119,16 @@ namespace wpl
 	template <typename F>
 	inline signal<F>::cleanup_lock::cleanup_lock(const std::shared_ptr<function_list> &list_)
 		: list(list_)
-	{	list->traversing = true;	}
+	{	list->traversing++;	}
 
 	template <typename F>
 	inline signal<F>::cleanup_lock::~cleanup_lock()
 	{
-		if (list->require_cleanup)
+		if (!--list->traversing && list->require_cleanup)
 		{
-			list->functions.remove_if([] (const function_t &f) {	return !!f;	});
+			list->functions.remove_if([] (const function_t &f) {	return !f;	});
 			list->require_cleanup = false;
 		}
-		list->traversing = false;
 	}
 
 

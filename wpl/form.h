@@ -20,7 +20,6 @@
 
 #pragma once
 
-#include "signals.h"
 #include "view_host.h"
 #include "visual.h"
 

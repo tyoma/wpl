@@ -20,7 +20,7 @@
 
 #pragma once
 
-#include "signals.h"
+#include "signal.h"
 #include "types.h"
 
 #include <agge/bitmap.h>

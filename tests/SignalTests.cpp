@@ -1,4 +1,4 @@
-#include <wpl/signals.h>
+#include <wpl/signal.h>
 
 #include <string>
 #include <ut/assert.h>

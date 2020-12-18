@@ -22,7 +22,6 @@
 
 #include "control.h"
 #include "models.h"
-#include "signals.h"
 
 #include <string>
 
