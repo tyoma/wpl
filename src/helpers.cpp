@@ -34,7 +34,7 @@ namespace wpl
 			const auto gm = font_.get_metrics();
 			const auto fh = gm.ascent + gm.descent;
 
-			return 0.5f * wpl::height(box_) + fh - gm.descent;
+			return box_.y1 + 0.5f * wpl::height(box_) + 0.5f * fh - gm.descent;
 		};
 		const auto y = valign_ == va_top ? box_.y1 + font_.get_metrics().ascent : valign_ == va_bottom
 			? box_.y2 - font_.get_metrics().descent : align_vcenter();
