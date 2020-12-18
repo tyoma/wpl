@@ -100,7 +100,7 @@ namespace wpl
 		{
 			rect_r b(b_);
 
-			inflate(b, -0.5f * _padding, -0.5f * _padding);
+			inflate(b, -_padding, -_padding);
 			render_string(*ras, text, ctx.text_engine, *_font, b, layout::near_, va_center);
 			ras->sort(true);
 			ctx(ras, blender(state & selected ? _fg_selected : _fg_normal), winding<>());
