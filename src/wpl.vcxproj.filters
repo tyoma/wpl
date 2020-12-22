@@ -23,6 +23,12 @@
     <Filter Include="src\freetype2">
       <UniqueIdentifier>{50a95ee8-f1cd-4264-a44a-b60078dc932e}</UniqueIdentifier>
     </Filter>
+    <Filter Include="src\macos">
+      <UniqueIdentifier>{c1192476-08bf-4687-84f2-9ba47401482d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="macos">
+      <UniqueIdentifier>{f5a59500-6246-41f9-9c12-0cf177e1b5e7}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="layout.cpp">
@@ -121,6 +127,12 @@
     <ClCompile Include="win32\font_loader_freetype_win32.cpp">
       <Filter>src\win32</Filter>
     </ClCompile>
+    <ClCompile Include="macos\factory_macos.cpp">
+      <Filter>src\macos</Filter>
+    </ClCompile>
+    <ClCompile Include="macos\font_loader_freetype_unix.cpp">
+      <Filter>src\macos</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\wpl\controls\listview_core.h">
@@ -215,5 +227,19 @@
       <Filter>freetype2</Filter>
     </ClInclude>
     <ClInclude Include="..\wpl\signal.h" />
+    <ClInclude Include="..\wpl\macos\form.h">
+      <Filter>macos</Filter>
+    </ClInclude>
+    <ClInclude Include="..\wpl\macos\cursor_manager.h">
+      <Filter>macos</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="macos\form.mm">
+      <Filter>src\macos</Filter>
+    </None>
+    <None Include="macos\cursor_manager.mm">
+      <Filter>src\macos</Filter>
+    </None>
   </ItemGroup>
 </Project>
