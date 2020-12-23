@@ -20,9 +20,21 @@
 
 #pragma once
 
+#include "../cursor.h"
+
 namespace wpl
 {
 	namespace macos
 	{
+		class cursor_manager : public wpl::cursor_manager
+		{
+		public:
+			virtual std::shared_ptr<const cursor> get(standard_cursor id) const override;
+			virtual void set(std::shared_ptr<const cursor> cursor_) override;
+			virtual void push(std::shared_ptr<const cursor> cursor_) override;
+			virtual void pop() override;
+		
+		private:
+		};
 	}
 }

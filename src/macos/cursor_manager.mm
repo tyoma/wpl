@@ -20,9 +20,30 @@
 
 #include <wpl/macos/cursor_manager.h>
 
+using namespace std;
+
 namespace wpl
 {
 	namespace macos
 	{
+		shared_ptr<const cursor> cursor_manager::get(standard_cursor /*id*/) const
+		{
+			return nullptr;
+		}
+		
+		void cursor_manager::set(shared_ptr<const cursor> /*cursor_*/)
+		{
+		
+		}
+		
+		void cursor_manager::push(shared_ptr<const cursor> /*cursor_*/)
+		{
+		
+		}
+		
+		void cursor_manager::pop()
+		{
+		
+		}
 	}
 }

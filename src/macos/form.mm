@@ -83,7 +83,7 @@ namespace wpl
 //				{	static_cast<double>(area_.x1), static_cast<double>(area_.y1)	},
 //				{	static_cast<double>(wpl::width(area_)), static_cast<double>(wpl::height(area_))	},
 //			};
-			[_native_view  setNeedsDisplay:true];
+			[_native_view  setNeedsDisplay:YES];
 		}
 	
 	
@@ -157,7 +157,10 @@ namespace wpl
 
 @implementation form_macos
 	- (void) setFormContext:(wpl::form_context)context
-	{	_context = context;	}
+	{
+		_context = context;
+		_context.backbuffer->resize(800, 700);
+	}
 
 	- (void) setRoot:(shared_ptr<wpl::control>)root
 	{
@@ -198,8 +201,13 @@ namespace wpl
 		_mouse_router.reset(new wpl::mouse_router(_views, *_routers_host));
 		_visual_router.reset(new wpl::visual_router(_views, *_routers_host));
 	
-		self = [super initWithFrame:frameRect];
-		return self;
+		const auto options = NSTrackingActiveAlways | NSTrackingInVisibleRect |NSTrackingMouseEnteredAndExited | NSTrackingMouseMoved;
+		auto ta = [[NSTrackingArea alloc] initWithRect:[self bounds] options:options owner:self userInfo:nil];
+
+		[super initWithFrame:frameRect];
+		[self addTrackingArea:ta];
+	
+		return [super initWithFrame:frameRect];
 	}
 
 	- (void) setFrameSize:(NSSize)newSize
@@ -212,9 +220,65 @@ namespace wpl
 	{
 		const vector_i offset = {};
 		gcontext ctx(*_context.backbuffer, *_context.renderer, *_context.text_engine, offset);
+		const auto context = [[NSGraphicsContext currentContext] CGContext];
 		
 		_visual_router->draw(ctx, _rasterizer);
-		_context.backbuffer->blit([[NSGraphicsContext currentContext]CGContext], 0, 0,
-			_context.backbuffer->width(), _context.backbuffer->height());
+		_context.backbuffer->blit(context, 0, 0, _context.backbuffer->width(), _context.backbuffer->height());
 	}
+	
+	- (void) mouseEvent:(NSEvent *)event
+	{
+		const auto p = [event locationInWindow];
+		const agge::point<int> point = {	static_cast<int>(p.x), static_cast<int>([self frame].size.height - p.y)	};
+		void (mouse_input::*method)(mouse_input::mouse_buttons, int, int, int) = nullptr;
+		mouse_input::mouse_buttons button;
+		
+		switch (event.type)
+		{
+		case NSEventTypeLeftMouseDown: case NSEventTypeRightMouseDown:
+			method = &mouse_input::mouse_down;
+			break;
+			
+		case NSEventTypeLeftMouseUp: case NSEventTypeRightMouseUp:
+			method = event.clickCount == 2 ? &mouse_input::mouse_double_click: &mouse_input::mouse_up;
+			break;
+			
+		case NSEventTypeMouseMoved: case NSEventTypeLeftMouseDragged: case NSEventTypeRightMouseDragged:
+			_mouse_router->mouse_move(0, point);
+			
+		default:
+			return;
+		}
+		switch (event.type)
+		{
+		case NSEventTypeLeftMouseDown: case NSEventTypeLeftMouseUp:
+			button = mouse_input::left;
+			break;
+			
+		case NSEventTypeRightMouseDown: case NSEventTypeRightMouseUp:
+			button = mouse_input::right;
+			break;
+			
+		default:
+			break;
+		}
+	
+		if (method)
+			_mouse_router->mouse_click(method, button, 0, point);
+	}
+	
+	- (void) mouseDown:(NSEvent *)event
+	{	[self mouseEvent:event];	}
+
+	- (void) mouseUp:(NSEvent *)event
+	{	[self mouseEvent:event];	}
+
+	- (void) mouseMoved:(NSEvent *)event
+	{	[self mouseEvent:event];	}
+
+	- (void) mouseDragged:(NSEvent *)event
+	{	[self mouseEvent:event];	}
+
+	- (void) mouseExited:(NSEvent *)event
+	{	_mouse_router->mouse_leave();	}
 @end

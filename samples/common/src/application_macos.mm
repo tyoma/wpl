@@ -2,6 +2,7 @@
 
 #include "../stylesheet.h"
 
+#include <wpl/macos/cursor_manager.h>
 #include <wpl/factory.h>
 #include <wpl/freetype2/font_loader.h>
 #include <Cocoa/Cocoa.h>
@@ -52,7 +53,7 @@ namespace wpl
 			shared_ptr<gcontext::renderer_type>(new gcontext::renderer_type(2)),
 			text_engine,
 			stylesheet_,
-			nullptr,
+			make_shared<macos::cursor_manager>(),
 			[] {	return timestamp();	},
 			_queue,
 		};
