@@ -48,6 +48,8 @@ namespace wpl
 				gcontext::surface_type s(8, 8, 0);
 				gcontext ctx(s, *renderer, *text_engine, agge::zero());
 
+				reset(s, o);
+
 				// ACT
 				rectangle(ctx, color_x, 0, 0, 3, 3);
 				rectangle(ctx, color_x, 6, 4, 8, 6);
@@ -93,6 +95,8 @@ namespace wpl
 				// INIT
 				gcontext::surface_type s(5, 5, 0);
 				gcontext ctx(s, *renderer, *text_engine, agge::zero());
+
+				reset(s, o);
 
 				// ACT
 				gcontext ctx2 = ctx.translate(2, 1);
@@ -210,6 +214,8 @@ namespace wpl
 				// INIT
 				gcontext::surface_type s(8, 8, 0);
 				gcontext ctx(s, *renderer, *text_engine, agge::zero());
+
+				reset(s, o);
 
 				// ACT
 				gcontext ctx2 = ctx.window(1, 2, 7, 8);
