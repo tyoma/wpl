@@ -43,6 +43,8 @@ namespace wpl
 	typedef agge::order_bgra platform_pixel_order;
 #elif defined(AGGE_PLATFORM_APPLE)
 	typedef agge::order_argb platform_pixel_order;
+#else
+	typedef agge::order_bgra platform_pixel_order;
 #endif
 
 	struct cursor_manager;
