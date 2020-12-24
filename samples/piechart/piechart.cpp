@@ -22,24 +22,18 @@ namespace wpl
 
 	typedef blender_solid_color<simd::blender_solid_color, platform_pixel_order> blender_t;
 
-	color make_color(unsigned char r, unsigned char g, unsigned char b)
-	{
-		color c = { r, g, b, 255 };
-		return c;
-	}
-
 	piechart::piechart(const control_context &ctx)
 		: _base_radius(200), _hover_index(-1), _clock(ctx.clock_), _animation_queue(ctx.queue_)
 	{
 		segment s;
 
-		s.clr = make_color(200, 40, 40);
+		s.clr = color::make(200, 40, 40);
 		s.value = 100;
 		_segments.push_back(s);
-		s.clr = make_color(40, 200, 40);
+		s.clr = color::make(40, 200, 40);
 		s.value = 50;
 		_segments.push_back(s);
-		s.clr = make_color(40, 40, 200);
+		s.clr = color::make(40, 40, 200);
 		s.value = 20;
 		_segments.push_back(s);
 	}

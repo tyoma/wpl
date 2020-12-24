@@ -20,10 +20,10 @@
 
 #pragma once
 
+#include <agge/types.h>
+
 namespace wpl
 {
-	struct view_location
-	{
-		int left, top, width, height;
-	};
+	typedef agge::rect<int> rect_i;
+	typedef agge::rect<agge::real_t> rect_r;
 }

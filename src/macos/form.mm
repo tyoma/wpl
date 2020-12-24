@@ -113,10 +113,10 @@ namespace wpl
 		void form::set_root(shared_ptr<control> root)
 		{	[_view setRoot:root];	}
 			
-		view_location form::get_location() const
+		wpl::rect_i form::get_location() const
 		{	throw 0;	}
 			
-		void form::set_location(const view_location &location)
+		void form::set_location(const wpl::rect_i &location)
 		{	}
 			
 		void form::set_visible(bool value)

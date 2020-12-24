@@ -218,7 +218,7 @@ namespace wpl
 				paint_sequence ps(_window->hwnd());
 				const vector_i offset = { ps.rcPaint.left, ps.rcPaint.top };
 				gcontext ctx(*context.backbuffer, *context.renderer, *context.text_engine, offset,
-					make_rect<int>(ps.rcPaint.left, ps.rcPaint.top, ps.rcPaint.right, ps.rcPaint.bottom));
+					create_rect<int>(ps.rcPaint.left, ps.rcPaint.top, ps.rcPaint.right, ps.rcPaint.bottom));
 
 				context.backbuffer->resize(ps.width(), ps.height());
 				_rasterizer->reset();

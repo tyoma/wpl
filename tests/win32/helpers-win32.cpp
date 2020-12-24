@@ -71,7 +71,7 @@ namespace wpl
 			control_->layout(make_appender(v), b);
 			assert_equal(1u, v.size());
 			assert_not_null(v[0].native);
-			assert_equal(make_rect(0, 0, cx, cy), v[0].location);
+			assert_equal(create_rect(0, 0, cx, cy), v[0].location);
 
 			HWND hwnd = v[0].native->get_window(hparent);
 

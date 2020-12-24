@@ -4,18 +4,11 @@
 #include <wpl/form.h>
 #include <wpl/layout.h>
 
-using namespace agge;
 using namespace std;
 using namespace wpl;
 
 namespace
 {
-	color make_color(unsigned char r, unsigned char g, unsigned char b)
-	{
-		color c = { r, g, b, 255 };
-		return c;
-	}
-
 	struct my_model : list_model<wstring>
 	{
 		my_model(const queue &queue_)
@@ -104,7 +97,7 @@ int main()
 {
 	application app;
 	const auto fct = app.create_default_factory();
-	view_location l = { 100, 100, 300, 200 };
+	const rect_i l = { 100, 100, 400, 300 };
 	shared_ptr<form> f = fct->create_form();
 	slot_connection c = f->close += [&app] {	app.exit();	};
 	shared_ptr<my_scroll_model> scrl_model(new my_scroll_model);

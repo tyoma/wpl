@@ -20,6 +20,7 @@
 
 #pragma once
 
+#include "types.h"
 #include "view_host.h"
 #include "visual.h"
 
@@ -35,8 +36,8 @@ namespace wpl
 			maximizable = 1 << 2,
 		};
 
-		virtual view_location get_location() const = 0;
-		virtual void set_location(const view_location &location) = 0;
+		virtual rect_i get_location() const = 0;
+		virtual void set_location(const rect_i &location) = 0;
 		virtual void set_visible(bool value) = 0;
 		virtual void set_caption(const std::wstring &caption) = 0;
 		virtual void set_caption_icon(const gcontext::surface_type &icon) = 0;

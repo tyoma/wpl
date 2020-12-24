@@ -82,7 +82,7 @@ namespace wpl
 		glyph build_glyph(const path_storage_t &from, real_t stroke_width)
 		{
 			stroke s;
-			auto r = make_rect<real_t>(30000.0f, 30000.0f, -30000.0f, -30000.0f);
+			auto r = create_rect<real_t>(30000.0f, 30000.0f, -30000.0f, -30000.0f);
 			glyph src(from, r);
 			path_storage_t dest;
 			glyph_writer w(dest, r);

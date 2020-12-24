@@ -23,8 +23,8 @@ namespace wpl
 			private:
 				virtual void set_root(shared_ptr<wpl::control> /*root*/) override { throw 0; }
 
-				virtual view_location get_location() const override { throw 0; }
-				virtual void set_location(const view_location &/*location*/) override { throw 0; };
+				virtual rect_i get_location() const override { throw 0; }
+				virtual void set_location(const rect_i &/*location*/) override { throw 0; };
 				virtual void set_visible(bool /*value*/) override { throw 0; };
 				virtual void set_caption(const wstring &/*caption*/) override { throw 0; };
 				virtual void set_caption_icon(const gcontext::surface_type &/*icon*/) override { throw 0; };

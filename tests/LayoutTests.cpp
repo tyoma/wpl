@@ -92,7 +92,7 @@ namespace wpl
 				// INIT
 				auto c = make_shared<mocks::control>();
 				vector<placed_view> v;
-				placed_view pv = {	make_shared<view>(), nullptr_nv, make_rect(1, 2, 3, 4), 1,	};
+				placed_view pv = {	make_shared<view>(), nullptr_nv, create_rect(1, 2, 3, 4), 1,	};
 
 				c->views.push_back(pv);
 
@@ -109,8 +109,8 @@ namespace wpl
 
 				// ASSERT
 				placed_view reference1_views[] = {
-					{ pv.regular, nullptr_nv, make_rect(1, 2, 3, 4), 190 },
-					{ pv.regular, nullptr_nv, make_rect(1, 2, 3, 4), 11 },
+					{ pv.regular, nullptr_nv, create_rect(1, 2, 3, 4), 190 },
+					{ pv.regular, nullptr_nv, create_rect(1, 2, 3, 4), 11 },
 				};
 				agge::box<int> reference1_box[] = {
 					{ 17, 100 },
@@ -137,8 +137,8 @@ namespace wpl
 
 				// ASSERT
 				placed_view reference2_views[] = {
-					{ pv.regular, nullptr_nv, make_rect(1, 2, 3, 4), 1 },
-					{ pv.regular, nullptr_nv, make_rect(1, 2, 3, 4), 2 },
+					{ pv.regular, nullptr_nv, create_rect(1, 2, 3, 4), 1 },
+					{ pv.regular, nullptr_nv, create_rect(1, 2, 3, 4), 2 },
 				};
 				agge::box<int> reference2_box[] = {
 					{ 170, 1000 },
@@ -160,9 +160,9 @@ namespace wpl
 				};
 				vector<placed_view> v;
 				placed_view pv[] = {
-					{	make_shared<view>(), nullptr_nv, make_rect(0, 0, 30, 30), 1,	},
-					{	make_shared<view>(), nullptr_nv, make_rect(1, 2, 10, 15), 1,	},
-					{	make_shared<view>(), nullptr_nv, make_rect(3, 5, 30, 20), 1,	},
+					{	make_shared<view>(), nullptr_nv, create_rect(0, 0, 30, 30), 1,	},
+					{	make_shared<view>(), nullptr_nv, create_rect(1, 2, 10, 15), 1,	},
+					{	make_shared<view>(), nullptr_nv, create_rect(3, 5, 30, 20), 1,	},
 				};
 				stack sh(0, true);
 
@@ -178,8 +178,8 @@ namespace wpl
 
 				// ASSERT
 				placed_view reference1_views[] = {
-					{ pv[0].regular, nullptr_nv, make_rect(0, 0, 30, 30), 1 },
-					{ pv[1].regular, nullptr_nv, make_rect(1 + 17, 2, 10 + 17, 15), 2 },
+					{ pv[0].regular, nullptr_nv, create_rect(0, 0, 30, 30), 1 },
+					{ pv[1].regular, nullptr_nv, create_rect(1 + 17, 2, 10 + 17, 15), 2 },
 				};
 				agge::box<int> reference10_box[] = {	{ 17, 100 },	};
 				agge::box<int> reference11_box[] = {	{ 23, 100 },	};
@@ -203,9 +203,9 @@ namespace wpl
 				sv.layout(make_appender(v), make_box(10, 250));
 
 				placed_view reference2_views[] = {
-					{ pv[0].regular, nullptr_nv, make_rect(0, 0, 30, 30), 10 },
-					{ pv[1].regular, nullptr_nv, make_rect(1, 2 + 90, 10, 15 + 90), 11 },
-					{ pv[2].regular, nullptr_nv, make_rect(3, 5 + 170, 30, 20 + 170), 12 },
+					{ pv[0].regular, nullptr_nv, create_rect(0, 0, 30, 30), 10 },
+					{ pv[1].regular, nullptr_nv, create_rect(1, 2 + 90, 10, 15 + 90), 11 },
+					{ pv[2].regular, nullptr_nv, create_rect(3, 5 + 170, 30, 20 + 170), 12 },
 				};
 				agge::box<int> reference20_box[] = {	{ 10, 90 },	};
 				agge::box<int> reference21_box[] = {	{ 10, 80 },	};
@@ -228,9 +228,9 @@ namespace wpl
 				};
 				vector<placed_view> v;
 				placed_view pv[] = {
-					{	make_shared<view>(), nullptr_nv, make_rect(0, 0, 30, 30), 3,	},
-					{	make_shared<view>(), nullptr_nv, make_rect(1, 2, 10, 15), 10,	},
-					{	make_shared<view>(), nullptr_nv, make_rect(3, 5, 30, 20), 191,	},
+					{	make_shared<view>(), nullptr_nv, create_rect(0, 0, 30, 30), 3,	},
+					{	make_shared<view>(), nullptr_nv, create_rect(1, 2, 10, 15), 10,	},
+					{	make_shared<view>(), nullptr_nv, create_rect(3, 5, 30, 20), 191,	},
 				};
 				stack sh(3, true);
 
@@ -247,9 +247,9 @@ namespace wpl
 
 				// ASSERT
 				placed_view reference1_views[] = {
-					{ pv[0].regular, nullptr_nv, make_rect(0, 0, 30, 30), 3 },
-					{ pv[1].regular, nullptr_nv, make_rect(1 + 17 + 3, 2, 10 + 17 + 3, 15), 10 },
-					{ pv[2].regular, nullptr_nv, make_rect(3 + 17 + 3 + 23 + 3, 5, 30 + 17 + 3 + 23 + 3, 20), 191 },
+					{ pv[0].regular, nullptr_nv, create_rect(0, 0, 30, 30), 3 },
+					{ pv[1].regular, nullptr_nv, create_rect(1 + 17 + 3, 2, 10 + 17 + 3, 15), 10 },
+					{ pv[2].regular, nullptr_nv, create_rect(3 + 17 + 3 + 23 + 3, 5, 30 + 17 + 3 + 23 + 3, 20), 191 },
 				};
 				agge::box<int> reference10_box[] = {	{ 17, 77 },	};
 				agge::box<int> reference11_box[] = {	{ 23, 77 },	};
@@ -274,11 +274,11 @@ namespace wpl
 				};
 				vector<placed_view> v;
 				placed_view pv[] = {
-					{	make_shared<view>(), nullptr_nv, make_rect(0, 0, 30, 30), 1,	},
-					{	make_shared<view>(), nullptr_nv, make_rect(1, 2, 10, 15), 2,	},
-					{	make_shared<view>(), nullptr_nv, make_rect(3, 5, 30, 20), 3,	},
-					{	make_shared<view>(), nullptr_nv, make_rect(3, 5, 30, 20), 4,	},
-					{	make_shared<view>(), nullptr_nv, make_rect(3, 5, 30, 20), 4,	},
+					{	make_shared<view>(), nullptr_nv, create_rect(0, 0, 30, 30), 1,	},
+					{	make_shared<view>(), nullptr_nv, create_rect(1, 2, 10, 15), 2,	},
+					{	make_shared<view>(), nullptr_nv, create_rect(3, 5, 30, 20), 3,	},
+					{	make_shared<view>(), nullptr_nv, create_rect(3, 5, 30, 20), 4,	},
+					{	make_shared<view>(), nullptr_nv, create_rect(3, 5, 30, 20), 4,	},
 				};
 				stack sh(3, true);
 
@@ -298,10 +298,10 @@ namespace wpl
 
 				// ASSERT
 				placed_view reference1_views[] = {
-					{ pv[0].regular, nullptr_nv, make_rect(0, 0, 30, 30), 1 },
-					{ pv[1].regular, nullptr_nv, make_rect(1 + 17 + 3, 2, 10 + 17 + 3, 15), 2 },
-					{ pv[2].regular, nullptr_nv, make_rect(3 + 17 + 3 + 15 + 3, 5, 30 + 17 + 3 + 15 + 3, 20), 3 },
-					{ pv[3].regular, nullptr_nv, make_rect(3 + 17 + 3 + 15 + 3 + 13 + 3, 5, 30 + 17 + 3 + 15 + 3 + 13 + 3, 20), 4 },
+					{ pv[0].regular, nullptr_nv, create_rect(0, 0, 30, 30), 1 },
+					{ pv[1].regular, nullptr_nv, create_rect(1 + 17 + 3, 2, 10 + 17 + 3, 15), 2 },
+					{ pv[2].regular, nullptr_nv, create_rect(3 + 17 + 3 + 15 + 3, 5, 30 + 17 + 3 + 15 + 3, 20), 3 },
+					{ pv[3].regular, nullptr_nv, create_rect(3 + 17 + 3 + 15 + 3 + 13 + 3, 5, 30 + 17 + 3 + 15 + 3 + 13 + 3, 20), 4 },
 				};
 				agge::box<int> reference10_box[] = {	{ 17, 20 },	};
 				agge::box<int> reference11_box[] = {	{ 15, 20 },	};
@@ -357,11 +357,11 @@ namespace wpl
 				};
 				vector<placed_view> v;
 				placed_view pv[] = {
-					{	make_shared<view>(), nullptr_nv, make_rect(0, 0, 10, 10), 1,	},
-					{	make_shared<view>(), nullptr_nv, make_rect(10, 10, 30, 20), 2,	},
-					{	make_shared<view>(), nullptr_nv, make_rect(0, 0, 30, 30), 3,	},
-					{	make_shared<view>(), nullptr_nv, make_rect(3, 5, 30, 20), 4,	},
-					{	make_shared<view>(), nullptr_nv, make_rect(7, 10, 30, 20), 4,	},
+					{	make_shared<view>(), nullptr_nv, create_rect(0, 0, 10, 10), 1,	},
+					{	make_shared<view>(), nullptr_nv, create_rect(10, 10, 30, 20), 2,	},
+					{	make_shared<view>(), nullptr_nv, create_rect(0, 0, 30, 30), 3,	},
+					{	make_shared<view>(), nullptr_nv, create_rect(3, 5, 30, 20), 4,	},
+					{	make_shared<view>(), nullptr_nv, create_rect(7, 10, 30, 20), 4,	},
 				};
 				stack sh(5, true);
 
@@ -379,11 +379,11 @@ namespace wpl
 
 				// ASSERT
 				placed_view reference[] = {
-					{ pv[0].regular, nullptr_nv, make_rect(0, 0, 10, 10), 100 },
-					{ pv[1].regular, nullptr_nv, make_rect(10, 10, 30, 20), 100 },
-					{ pv[2].regular, nullptr_nv, make_rect(35, 0, 65, 30), 3 },
-					{ pv[3].regular, nullptr_nv, make_rect(38, 5, 65, 20), 4 },
-					{ pv[4].regular, nullptr_nv, make_rect(42, 10, 65, 20), 4 },
+					{ pv[0].regular, nullptr_nv, create_rect(0, 0, 10, 10), 100 },
+					{ pv[1].regular, nullptr_nv, create_rect(10, 10, 30, 20), 100 },
+					{ pv[2].regular, nullptr_nv, create_rect(35, 0, 65, 30), 3 },
+					{ pv[3].regular, nullptr_nv, create_rect(38, 5, 65, 20), 4 },
+					{ pv[4].regular, nullptr_nv, create_rect(42, 10, 65, 20), 4 },
 				};
 
 				assert_equal(reference, v);
@@ -494,8 +494,8 @@ namespace wpl
 				shared_ptr<mocks::control> c = make_shared<mocks::control>();
 				vector<placed_view> v;
 				placed_view pv[] = {
-					{	make_shared<view>(), nullptr_nv, make_rect(7, 13, 15, 30), 1,	},
-					{	make_shared<view>(), nullptr_nv, make_rect(10, 20, 30, 200), 2,	},
+					{	make_shared<view>(), nullptr_nv, create_rect(7, 13, 15, 30), 1,	},
+					{	make_shared<view>(), nullptr_nv, create_rect(10, 20, 30, 200), 2,	},
 				};
 
 				c->views.push_back(pv[0]);
@@ -509,8 +509,8 @@ namespace wpl
 
 				// ASSERT
 				placed_view reference1[] = {
-					{ pv[0].regular, nullptr_nv, make_rect(8, 14, 16, 31), 1 },
-					{ pv[1].regular, nullptr_nv, make_rect(11, 21, 31, 201), 2 },
+					{ pv[0].regular, nullptr_nv, create_rect(8, 14, 16, 31), 1 },
+					{ pv[1].regular, nullptr_nv, create_rect(11, 21, 31, 201), 2 },
 				};
 
 				assert_equal(reference1, v);
@@ -524,8 +524,8 @@ namespace wpl
 
 				// ASSERT
 				placed_view reference2[] = {
-					{ pv[0].regular, nullptr_nv, make_rect(10, 18, 18, 35), 1 },
-					{ pv[1].regular, nullptr_nv, make_rect(13, 25, 33, 205), 2 },
+					{ pv[0].regular, nullptr_nv, create_rect(10, 18, 18, 35), 1 },
+					{ pv[1].regular, nullptr_nv, create_rect(13, 25, 33, 205), 2 },
 				};
 
 				assert_equal(reference2, v);
@@ -636,9 +636,9 @@ namespace wpl
 					make_shared<mocks::control>(), make_shared<mocks::control>(),
 				};
 				placed_view pv[] = {
-					{	make_shared<view>(), nullptr_nv, make_rect(7, 13, 15, 30), 1,	},
-					{	make_shared<view>(), nullptr_nv, make_rect(10, 20, 30, 200), 3,	},
-					{	make_shared<view>(), nullptr_nv, make_rect(10, 20, 30, 200), 2,	},
+					{	make_shared<view>(), nullptr_nv, create_rect(7, 13, 15, 30), 1,	},
+					{	make_shared<view>(), nullptr_nv, create_rect(10, 20, 30, 200), 3,	},
+					{	make_shared<view>(), nullptr_nv, create_rect(10, 20, 30, 200), 2,	},
 				};
 				overlay o;
 				vector<placed_view> v;
@@ -656,9 +656,9 @@ namespace wpl
 
 				// ASSERT
 				placed_view reference[] = {
-					{ pv[0].regular, nullptr_nv, make_rect(7, 13, 15, 30), 1 },
-					{ pv[1].regular, nullptr_nv, make_rect(10, 20, 30, 200), 3 },
-					{ pv[2].regular, nullptr_nv, make_rect(10, 20, 30, 200), 2 },
+					{ pv[0].regular, nullptr_nv, create_rect(7, 13, 15, 30), 1 },
+					{ pv[1].regular, nullptr_nv, create_rect(10, 20, 30, 200), 3 },
+					{ pv[2].regular, nullptr_nv, create_rect(10, 20, 30, 200), 2 },
 				};
 
 				assert_equal(reference, v);

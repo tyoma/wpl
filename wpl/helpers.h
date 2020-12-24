@@ -22,6 +22,7 @@
 
 #include "visual.h"
 
+#include <agge/tools.h>
 #include <agge/types.h>
 #include <agge.text/layout.h>
 
@@ -30,13 +31,10 @@ namespace wpl
 	enum valign {	va_top, va_bottom, va_center,	};
 
 
-	template <typename T>
-	inline T width(const agge::rect<T> &rect_)
-	{	return rect_.x2 - rect_.x1;	}
-
-	template <typename T>
-	inline T height(const agge::rect<T> &rect_)
-	{	return rect_.y2 - rect_.y1;	}
+	using agge::create_point;
+	using agge::create_rect;
+	using agge::width;
+	using agge::height;
 
 	template <typename T>
 	inline void inflate(agge::rect<T> &rect_, T dx, T dy)
@@ -45,10 +43,6 @@ namespace wpl
 	template <typename T>
 	inline void offset(agge::rect<T> &rect_, T dx, T dy)
 	{	rect_.x1 += dx, rect_.y1 += dy, rect_.x2 += dx, rect_.y2 += dy;	}
-
-	template <typename T>
-	inline agge::rect<T> make_rect(T x1, T y1, T x2, T y2)
-	{	agge::rect<T> r = {	x1, y1, x2, y2	}; return r;	}
 
 	void render_string(gcontext::rasterizer_type &target, const std::wstring &text,
 		gcontext::text_engine_type &text_engine, const agge::font &font, const agge::rect_r &box,

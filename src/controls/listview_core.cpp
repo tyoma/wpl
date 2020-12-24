@@ -263,7 +263,7 @@ namespace wpl
 			const index_type focused_item = _focused ? _focused->index() : npos();
 			real_t total_width = 0.0f;
 			index_type r = (max)(0, static_cast<int>(_offset.dy));
-			auto box = make_rect(real_t(), item_height * static_cast<real_t>(r - _offset.dy), real_t(), real_t());
+			auto box = create_rect(real_t(), item_height * static_cast<real_t>(r - _offset.dy), real_t(), real_t());
 
 			_widths.clear();
 			for (columns_model::index_type c = 0; c != columns; ++c)

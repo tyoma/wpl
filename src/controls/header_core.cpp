@@ -115,7 +115,7 @@ namespace wpl
 		{
 			if (_model)
 			{
-				auto rc = make_rect(real_t(), real_t(), -_offset, get_last_size().h);
+				auto rc = create_rect(real_t(), real_t(), -_offset, get_last_size().h);
 				columns_model::column c;
 
 				for (index_type i = 0, n = _model->get_count(); i != n; ++i)

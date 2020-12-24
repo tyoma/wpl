@@ -5,7 +5,6 @@
 #include <wpl/layout.h>
 #include <wpl/stylesheet_helpers.h>
 
-using namespace agge;
 using namespace std;
 using namespace wpl;
 
@@ -94,7 +93,7 @@ int main()
 {
 	application app;
 	const auto fct = app.create_default_factory();
-	const view_location l = { 100, 100, 300, 200 };
+	const rect_i l = { 100, 100, 400, 300 };
 	const auto f = fct->create_form();
 	const auto conn = f->close += [&app] {	app.exit();	};
 	shared_ptr<my_columns> cm(new my_columns);

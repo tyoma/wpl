@@ -43,8 +43,8 @@ namespace wpl
 			virtual void set_root(std::shared_ptr<control> root) override;
 
 			// form methods
-			virtual view_location get_location() const override;
-			virtual void set_location(const view_location &location) override;
+			virtual rect_i get_location() const override;
+			virtual void set_location(const rect_i &location) override;
 			virtual void set_visible(bool value) override;
 			virtual void set_caption(const std::wstring &caption) override;
 			virtual void set_caption_icon(const gcontext::surface_type &icon) override;

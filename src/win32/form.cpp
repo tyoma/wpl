@@ -21,6 +21,7 @@
 #include <wpl/win32/form.h>
 
 #include <tchar.h>
+#include <wpl/helpers.h>
 #include <wpl/win32/view_host.h>
 
 using namespace std;
@@ -63,17 +64,17 @@ namespace wpl
 		void form::set_root(shared_ptr<control> root)
 		{	_host->set_root(root);	}
 
-		view_location form::get_location() const
+		rect_i form::get_location() const
 		{
 			RECT rc;
 
 			::GetWindowRect(_hwnd, &rc);
-			view_location l = { rc.left, rc.top, rc.right - rc.left, rc.bottom - rc.top };
+			rect_i l = { rc.left, rc.top, rc.right, rc.bottom };
 			return l;
 		}
 
-		void form::set_location(const view_location &location)
-		{	::MoveWindow(_hwnd, location.left, location.top, location. width, location.height, TRUE);	}
+		void form::set_location(const rect_i &location)
+		{	::MoveWindow(_hwnd, location.x1, location.y1, width(location), height(location), TRUE);	}
 
 		void form::set_visible(bool value)
 		{

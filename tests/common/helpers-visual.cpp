@@ -29,12 +29,6 @@ namespace wpl
 			};
 		}
 
-		view_location make_position(int x, int y, int width, int height)
-		{
-			view_location p = { x, y, width, height };
-			return p;
-		}
-
 		gcontext::pixel_type make_pixel(const color &color_)
 		{
 			gcontext::pixel_type p;

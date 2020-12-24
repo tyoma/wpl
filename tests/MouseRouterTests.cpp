@@ -50,17 +50,17 @@ namespace wpl
 				assert_null(mr.from(point(9, 14)));
 
 				assert_equal(v[0], mr.from(point(10, 10)));
-				assert_equal(make_point(0, 0), pt);
+				assert_equal(create_point(0, 0), pt);
 				assert_equal(v[0], mr.from(point(19, 10)));
-				assert_equal(make_point(9, 0), pt);
+				assert_equal(create_point(9, 0), pt);
 				assert_equal(v[0], mr.from(point(19, 14)));
-				assert_equal(make_point(9, 4), pt);
+				assert_equal(create_point(9, 4), pt);
 
 				assert_equal(v[1], mr.from(point(32, 50)));
-				assert_equal(make_point(1, 0), pt);
+				assert_equal(create_point(1, 0), pt);
 
 				assert_equal(v[2], mr.from(point(141, 51)));
-				assert_equal(make_point(0, 1), pt);
+				assert_equal(create_point(0, 1), pt);
 			}
 
 
@@ -83,11 +83,11 @@ namespace wpl
 
 				// ACT / ASSERT
 				assert_equal(v[1], mr.from(point(15, 15)));
-				assert_equal(make_point(0, 0), pt);
+				assert_equal(create_point(0, 0), pt);
 				assert_equal(v[0], mr.from(point(14, 15)));
-				assert_equal(make_point(4, 5), pt);
+				assert_equal(create_point(4, 5), pt);
 				assert_equal(v[0], mr.from(point(15, 14)));
-				assert_equal(make_point(5, 4), pt);
+				assert_equal(create_point(5, 4), pt);
 			}
 
 
@@ -107,10 +107,10 @@ namespace wpl
 				views.assign(begin(pv), end(pv));
 
 				// ACT
-				mr.mouse_move(mouse_input::left, make_point(14, 19));
-				mr.mouse_move(mouse_input::right, make_point(40, 37));
-				mr.mouse_move(mouse_input::middle, make_point(100, 50));
-				mr.mouse_move(mouse_input::left, make_point(150, 140));
+				mr.mouse_move(mouse_input::left, create_point(14, 19));
+				mr.mouse_move(mouse_input::right, create_point(40, 37));
+				mr.mouse_move(mouse_input::middle, create_point(100, 50));
+				mr.mouse_move(mouse_input::left, create_point(150, 140));
 
 				// ASSERT
 				mocks::mouse_event reference1[] = {
@@ -133,10 +133,10 @@ namespace wpl
 				v[1]->events_log.clear();
 
 				// ACT
-				mr.mouse_click(&mouse_input::mouse_down, mouse_input::left, mouse_input::middle | mouse_input::right, make_point(14, 19));
-				mr.mouse_click(&mouse_input::mouse_down, mouse_input::right, mouse_input::middle, make_point(17, 20));
-				mr.mouse_click(&mouse_input::mouse_down, mouse_input::left, mouse_input::middle | mouse_input::right, make_point(101, 51));
-				mr.mouse_click(&mouse_input::mouse_down, mouse_input::right, mouse_input::middle, make_point(110, 53));
+				mr.mouse_click(&mouse_input::mouse_down, mouse_input::left, mouse_input::middle | mouse_input::right, create_point(14, 19));
+				mr.mouse_click(&mouse_input::mouse_down, mouse_input::right, mouse_input::middle, create_point(17, 20));
+				mr.mouse_click(&mouse_input::mouse_down, mouse_input::left, mouse_input::middle | mouse_input::right, create_point(101, 51));
+				mr.mouse_click(&mouse_input::mouse_down, mouse_input::right, mouse_input::middle, create_point(110, 53));
 
 				// ASSERT
 				mocks::mouse_event reference3[] = {
@@ -160,10 +160,10 @@ namespace wpl
 				v[1]->events_log.clear();
 
 				// ACT
-				mr.mouse_click(&mouse_input::mouse_up, mouse_input::left, mouse_input::middle | mouse_input::right, make_point(14, 19));
-				mr.mouse_click(&mouse_input::mouse_up, mouse_input::right, mouse_input::middle, make_point(17, 20));
-				mr.mouse_click(&mouse_input::mouse_up, mouse_input::left, mouse_input::middle | mouse_input::right, make_point(101, 51));
-				mr.mouse_click(&mouse_input::mouse_up, mouse_input::right, mouse_input::middle, make_point(110, 53));
+				mr.mouse_click(&mouse_input::mouse_up, mouse_input::left, mouse_input::middle | mouse_input::right, create_point(14, 19));
+				mr.mouse_click(&mouse_input::mouse_up, mouse_input::right, mouse_input::middle, create_point(17, 20));
+				mr.mouse_click(&mouse_input::mouse_up, mouse_input::left, mouse_input::middle | mouse_input::right, create_point(101, 51));
+				mr.mouse_click(&mouse_input::mouse_up, mouse_input::right, mouse_input::middle, create_point(110, 53));
 
 				// ASSERT
 				mocks::mouse_event reference5[] = {
@@ -187,10 +187,10 @@ namespace wpl
 				v[1]->events_log.clear();
 
 				// ACT
-				mr.mouse_click(&mouse_input::mouse_double_click, mouse_input::left, mouse_input::middle | mouse_input::right, make_point(14, 19));
-				mr.mouse_click(&mouse_input::mouse_double_click, mouse_input::right, mouse_input::middle, make_point(17, 20));
-				mr.mouse_click(&mouse_input::mouse_double_click, mouse_input::left, mouse_input::middle | mouse_input::right, make_point(101, 51));
-				mr.mouse_click(&mouse_input::mouse_double_click, mouse_input::right, mouse_input::middle, make_point(110, 53));
+				mr.mouse_click(&mouse_input::mouse_double_click, mouse_input::left, mouse_input::middle | mouse_input::right, create_point(14, 19));
+				mr.mouse_click(&mouse_input::mouse_double_click, mouse_input::right, mouse_input::middle, create_point(17, 20));
+				mr.mouse_click(&mouse_input::mouse_double_click, mouse_input::left, mouse_input::middle | mouse_input::right, create_point(101, 51));
+				mr.mouse_click(&mouse_input::mouse_double_click, mouse_input::right, mouse_input::middle, create_point(110, 53));
 
 				// ASSERT
 				mocks::mouse_event reference7[] = {
@@ -214,10 +214,10 @@ namespace wpl
 				v[1]->events_log.clear();
 
 				// ACT
-				mr.mouse_scroll(mouse_input::middle | mouse_input::right, make_point(14, 19), 1, 2);
-				mr.mouse_scroll(mouse_input::middle, make_point(17, 20), 0, 4);
-				mr.mouse_scroll(mouse_input::middle | mouse_input::right, make_point(101, 51), 7, 0);
-				mr.mouse_scroll(keyboard_input::control, make_point(110, 53), 0, 9);
+				mr.mouse_scroll(mouse_input::middle | mouse_input::right, create_point(14, 19), 1, 2);
+				mr.mouse_scroll(mouse_input::middle, create_point(17, 20), 0, 4);
+				mr.mouse_scroll(mouse_input::middle | mouse_input::right, create_point(101, 51), 7, 0);
+				mr.mouse_scroll(keyboard_input::control, create_point(110, 53), 0, 9);
 
 				// ASSERT
 				mocks::mouse_event reference9[] = {
@@ -253,7 +253,7 @@ namespace wpl
 
 				views.assign(begin(pv), end(pv));
 
-				mr.mouse_move(0, make_point(14, 19));
+				mr.mouse_move(0, create_point(14, 19));
 
 				// ACT
 				mr.mouse_leave();
@@ -266,7 +266,7 @@ namespace wpl
 
 				// INIT
 				v[0]->events_log.clear();
-				mr.mouse_move(0, make_point(91, 45));
+				mr.mouse_move(0, create_point(91, 45));
 
 				// ACT
 				mr.mouse_leave();
@@ -347,7 +347,7 @@ namespace wpl
 
 				// ACT (point of all-intersection)
 				v[0]->capture(capture_handle);
-				mr.mouse_click(&mouse_input::mouse_down, mouse_input::left, mouse_input::right, make_point(90, 35));
+				mr.mouse_click(&mouse_input::mouse_down, mouse_input::left, mouse_input::right, create_point(90, 35));
 
 				// ASSERT
 				mocks::mouse_event reference1[] = {
@@ -360,7 +360,7 @@ namespace wpl
 				assert_is_empty(v[2]->events_log);
 
 				// ACT
-				mr.mouse_move(mouse_input::left | mouse_input::right, make_point(110, 60));
+				mr.mouse_move(mouse_input::left | mouse_input::right, create_point(110, 60));
 
 				// ASSERT
 				mocks::mouse_event reference2[] = {
@@ -374,7 +374,7 @@ namespace wpl
 				assert_is_empty(v[2]->events_log);
 
 				// ACT
-				mr.mouse_move(mouse_input::right, make_point(10, -60));
+				mr.mouse_move(mouse_input::right, create_point(10, -60));
 
 				// ASSERT
 				mocks::mouse_event reference3[] = {
@@ -397,7 +397,7 @@ namespace wpl
 				assert_is_empty(v[2]->events_log);
 
 				// ACT
-				mr.mouse_move(mouse_input::right, make_point(9, -10));
+				mr.mouse_move(mouse_input::right, create_point(9, -10));
 
 				// ASSERT
 				mocks::mouse_event reference4[] = {
@@ -414,7 +414,7 @@ namespace wpl
 
 				// ACT
 				v[1]->capture(capture_handle);
-				mr.mouse_move(mouse_input::middle, make_point(9, -10));
+				mr.mouse_move(mouse_input::middle, create_point(9, -10));
 
 				// ASSERT
 				mocks::mouse_event reference5[] = {
@@ -501,7 +501,7 @@ namespace wpl
 				mrhost.on_request_focus = [&] (shared_ptr<keyboard_input> v) {	log.push_back(v);	};
 
 				// ACT
-				mr.mouse_click(&mouse_input::mouse_down, mouse_input::left, 0, make_point(10, 2));
+				mr.mouse_click(&mouse_input::mouse_down, mouse_input::left, 0, create_point(10, 2));
 
 				// ASSERT
 				shared_ptr<keyboard_input> reference1[] = { v[0], };
@@ -509,7 +509,7 @@ namespace wpl
 				assert_equal(reference1, log);
 
 				// ACT
-				mr.mouse_click(&mouse_input::mouse_double_click, mouse_input::right, 0, make_point(31, 62));
+				mr.mouse_click(&mouse_input::mouse_double_click, mouse_input::right, 0, create_point(31, 62));
 
 				// ASSERT
 				shared_ptr<keyboard_input> reference2[] = { v[0], v[2], };
@@ -517,7 +517,7 @@ namespace wpl
 				assert_equal(reference2, log);
 
 				// ACT
-				mr.mouse_click(&mouse_input::mouse_up, mouse_input::middle, 0, make_point(75, 59));
+				mr.mouse_click(&mouse_input::mouse_up, mouse_input::middle, 0, create_point(75, 59));
 
 				// ASSERT
 				shared_ptr<keyboard_input> reference3[] = { v[0], v[2], v[1], };

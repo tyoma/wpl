@@ -239,8 +239,8 @@ namespace wpl
 
 				// ASSERT
 				tracking_header::drawing_event reference[] = {
-					tracking_header::drawing_event(item_background, *ctx, ras, make_rect(0, 0, 123, 50), 0, 0),
-					tracking_header::drawing_event(item_self, *ctx, ras, make_rect(0, 0, 123, 50), 0, 0, L"abc"),
+					tracking_header::drawing_event(item_background, *ctx, ras, create_rect(0, 0, 123, 50), 0, 0),
+					tracking_header::drawing_event(item_self, *ctx, ras, create_rect(0, 0, 123, 50), 0, 0, L"abc"),
 				};
 
 				assert_equal_pred(reference, hdr.events, rect_eq());
@@ -261,12 +261,12 @@ namespace wpl
 
 				// ASSERT
 				tracking_header::drawing_event reference1[] = {
-					tracking_header::drawing_event(item_background, *ctx, ras, make_rect(0, 0, 10, 33), 0, 0),
-					tracking_header::drawing_event(item_self, *ctx, ras, make_rect(0, 0, 10, 33), 0, 0, L"abc"),
-					tracking_header::drawing_event(item_background, *ctx, ras, make_rect(10, 0, 27, 33), 1, 0),
-					tracking_header::drawing_event(item_self, *ctx, ras, make_rect(10, 0, 27, 33), 1, 0, L"abc zyx"),
-					tracking_header::drawing_event(item_background, *ctx, ras, make_rect(27, 0, 52, 33), 2, 0),
-					tracking_header::drawing_event(item_self, *ctx, ras, make_rect(27, 0, 52, 33), 2, 0, L"AA bbb Z"),
+					tracking_header::drawing_event(item_background, *ctx, ras, create_rect(0, 0, 10, 33), 0, 0),
+					tracking_header::drawing_event(item_self, *ctx, ras, create_rect(0, 0, 10, 33), 0, 0, L"abc"),
+					tracking_header::drawing_event(item_background, *ctx, ras, create_rect(10, 0, 27, 33), 1, 0),
+					tracking_header::drawing_event(item_self, *ctx, ras, create_rect(10, 0, 27, 33), 1, 0, L"abc zyx"),
+					tracking_header::drawing_event(item_background, *ctx, ras, create_rect(27, 0, 52, 33), 2, 0),
+					tracking_header::drawing_event(item_self, *ctx, ras, create_rect(27, 0, 52, 33), 2, 0, L"AA bbb Z"),
 				};
 
 				assert_equal_pred(reference1, hdr.events, rect_eq());
@@ -283,10 +283,10 @@ namespace wpl
 
 				// ASSERT
 				tracking_header::drawing_event reference2[] = {
-					tracking_header::drawing_event(item_background, *ctx, ras, make_rect(0, 0, 100, 13), 0, 0),
-					tracking_header::drawing_event(item_self, *ctx, ras, make_rect(0, 0, 100, 13), 0, 0, L"lorem"),
-					tracking_header::drawing_event(item_background, *ctx, ras, make_rect(100, 0, 117, 13), 1, 0),
-					tracking_header::drawing_event(item_self, *ctx, ras, make_rect(100, 0, 117, 13), 1, 0, L"ipsum"),
+					tracking_header::drawing_event(item_background, *ctx, ras, create_rect(0, 0, 100, 13), 0, 0),
+					tracking_header::drawing_event(item_self, *ctx, ras, create_rect(0, 0, 100, 13), 0, 0, L"lorem"),
+					tracking_header::drawing_event(item_background, *ctx, ras, create_rect(100, 0, 117, 13), 1, 0),
+					tracking_header::drawing_event(item_self, *ctx, ras, create_rect(100, 0, 117, 13), 1, 0, L"ipsum"),
 				};
 
 				assert_equal_pred(reference2, hdr.events, rect_eq());
@@ -575,13 +575,13 @@ namespace wpl
 
 				// ASSERT
 				tracking_header::drawing_event reference1[] = {
-					tracking_header::drawing_event(item_background, *ctx, ras, make_rect(0, 0, 10, 33), 0, 0),
-					tracking_header::drawing_event(item_self, *ctx, ras, make_rect(0, 0, 10, 33), 0, 0, L"a"),
-					tracking_header::drawing_event(item_background, *ctx, ras, make_rect(10, 0, 23, 33), 1, 0),
-					tracking_header::drawing_event(item_self, *ctx, ras, make_rect(10, 0, 23, 33), 1, 0, L"b"),
-					tracking_header::drawing_event(item_background, *ctx, ras, make_rect(23, 0, 40, 33), 2,
+					tracking_header::drawing_event(item_background, *ctx, ras, create_rect(0, 0, 10, 33), 0, 0),
+					tracking_header::drawing_event(item_self, *ctx, ras, create_rect(0, 0, 10, 33), 0, 0, L"a"),
+					tracking_header::drawing_event(item_background, *ctx, ras, create_rect(10, 0, 23, 33), 1, 0),
+					tracking_header::drawing_event(item_self, *ctx, ras, create_rect(10, 0, 23, 33), 1, 0, L"b"),
+					tracking_header::drawing_event(item_background, *ctx, ras, create_rect(23, 0, 40, 33), 2,
 						controls::header_core::ascending | controls::header_core::sorted),
-					tracking_header::drawing_event(item_self, *ctx, ras, make_rect(23, 0, 40, 33), 2,
+					tracking_header::drawing_event(item_self, *ctx, ras, create_rect(23, 0, 40, 33), 2,
 						controls::header_core::ascending | controls::header_core::sorted, L"Z A"),
 				};
 
@@ -596,12 +596,12 @@ namespace wpl
 
 				// ASSERT
 				tracking_header::drawing_event reference2[] = {
-					tracking_header::drawing_event(item_background, *ctx, ras, make_rect(0, 0, 10, 33), 0, controls::header_core::sorted),
-					tracking_header::drawing_event(item_self, *ctx, ras, make_rect(0, 0, 10, 33), 0, controls::header_core::sorted, L"a"),
-					tracking_header::drawing_event(item_background, *ctx, ras, make_rect(10, 0, 23, 33), 1, 0),
-					tracking_header::drawing_event(item_self, *ctx, ras, make_rect(10, 0, 23, 33), 1, 0, L"b"),
-					tracking_header::drawing_event(item_background, *ctx, ras, make_rect(23, 0, 40, 33), 2, 0),
-					tracking_header::drawing_event(item_self, *ctx, ras, make_rect(23, 0, 40, 33), 2, 0, L"Z A"),
+					tracking_header::drawing_event(item_background, *ctx, ras, create_rect(0, 0, 10, 33), 0, controls::header_core::sorted),
+					tracking_header::drawing_event(item_self, *ctx, ras, create_rect(0, 0, 10, 33), 0, controls::header_core::sorted, L"a"),
+					tracking_header::drawing_event(item_background, *ctx, ras, create_rect(10, 0, 23, 33), 1, 0),
+					tracking_header::drawing_event(item_self, *ctx, ras, create_rect(10, 0, 23, 33), 1, 0, L"b"),
+					tracking_header::drawing_event(item_background, *ctx, ras, create_rect(23, 0, 40, 33), 2, 0),
+					tracking_header::drawing_event(item_self, *ctx, ras, create_rect(23, 0, 40, 33), 2, 0, L"Z A"),
 				};
 
 				assert_equal_pred(reference2, hdr.events, rect_eq());
@@ -652,13 +652,13 @@ namespace wpl
 
 				// ASSERT
 				tracking_header::drawing_event reference1[] = {
-					tracking_header::drawing_event(item_background, *ctx, ras, make_rect(-13.7, 0.0, -3.7, 33.0), 0, 0),
-					tracking_header::drawing_event(item_self, *ctx, ras, make_rect(-13.7, 0.0, -3.7, 33.0), 0, 0, L"a"),
-					tracking_header::drawing_event(item_background, *ctx, ras, make_rect(-3.7, 0.0, 9.3, 33.0), 1, 0),
-					tracking_header::drawing_event(item_self, *ctx, ras, make_rect(-3.7, 0.0, 9.3, 33.0), 1, 0, L"b"),
-					tracking_header::drawing_event(item_background, *ctx, ras, make_rect(9.3, 0.0, 26.3, 33.0), 2,
+					tracking_header::drawing_event(item_background, *ctx, ras, create_rect(-13.7, 0.0, -3.7, 33.0), 0, 0),
+					tracking_header::drawing_event(item_self, *ctx, ras, create_rect(-13.7, 0.0, -3.7, 33.0), 0, 0, L"a"),
+					tracking_header::drawing_event(item_background, *ctx, ras, create_rect(-3.7, 0.0, 9.3, 33.0), 1, 0),
+					tracking_header::drawing_event(item_self, *ctx, ras, create_rect(-3.7, 0.0, 9.3, 33.0), 1, 0, L"b"),
+					tracking_header::drawing_event(item_background, *ctx, ras, create_rect(9.3, 0.0, 26.3, 33.0), 2,
 						controls::header_core::ascending | controls::header_core::sorted),
-					tracking_header::drawing_event(item_self, *ctx, ras, make_rect(9.3, 0.0, 26.3, 33.0), 2,
+					tracking_header::drawing_event(item_self, *ctx, ras, create_rect(9.3, 0.0, 26.3, 33.0), 2,
 						controls::header_core::ascending | controls::header_core::sorted, L"Z A"),
 				};
 
@@ -673,13 +673,13 @@ namespace wpl
 
 				// ASSERT
 				tracking_header::drawing_event reference2[] = {
-					tracking_header::drawing_event(item_background, *ctx, ras, make_rect(1, 0, 11, 33), 0, 0),
-					tracking_header::drawing_event(item_self, *ctx, ras, make_rect(1, 0, 11, 33), 0, 0, L"a"),
-					tracking_header::drawing_event(item_background, *ctx, ras, make_rect(11, 0, 24, 33), 1, 0),
-					tracking_header::drawing_event(item_self, *ctx, ras, make_rect(11, 0, 24, 33), 1, 0, L"b"),
-					tracking_header::drawing_event(item_background, *ctx, ras, make_rect(24, 0, 41, 33), 2,
+					tracking_header::drawing_event(item_background, *ctx, ras, create_rect(1, 0, 11, 33), 0, 0),
+					tracking_header::drawing_event(item_self, *ctx, ras, create_rect(1, 0, 11, 33), 0, 0, L"a"),
+					tracking_header::drawing_event(item_background, *ctx, ras, create_rect(11, 0, 24, 33), 1, 0),
+					tracking_header::drawing_event(item_self, *ctx, ras, create_rect(11, 0, 24, 33), 1, 0, L"b"),
+					tracking_header::drawing_event(item_background, *ctx, ras, create_rect(24, 0, 41, 33), 2,
 						controls::header_core::ascending | controls::header_core::sorted),
-					tracking_header::drawing_event(item_self, *ctx, ras, make_rect(24, 0, 41, 33), 2,
+					tracking_header::drawing_event(item_self, *ctx, ras, create_rect(24, 0, 41, 33), 2,
 						controls::header_core::ascending | controls::header_core::sorted, L"Z A"),
 				};
 

@@ -27,13 +27,6 @@ namespace wpl
 		};
 
 		template <typename T>
-		inline agge::point<T> make_point(T w, T h)
-		{
-			agge::point<T> b = { w, h };
-			return b;
-		}
-
-		template <typename T>
 		inline agge::box<T> make_box(T w, T h)
 		{
 			agge::box<T> b = { w, h };
@@ -47,7 +40,6 @@ namespace wpl
 			return v;
 		}
 
-		view_location make_position(int x, int y, int width, int height);
 		gcontext::pixel_type make_pixel(const agge::color& color);
 		gcontext::pixel_type make_pixel_real(const agge::color& color);
 		void reset(gcontext::surface_type &surface, gcontext::pixel_type ref_pixel);

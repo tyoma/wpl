@@ -25,7 +25,7 @@ namespace wpl
 				RECT rc;
 
 				::GetClientRect(hwnd, &rc);
-				return make_rect<int>(rc.left, rc.top, rc.right, rc.bottom);
+				return create_rect<int>(rc.left, rc.top, rc.right, rc.bottom);
 			}
 
 			rect_i get_update_rect(HWND hwnd)
@@ -33,7 +33,7 @@ namespace wpl
 				RECT rc;
 
 				assert_is_true(!!::GetUpdateRect(hwnd, &rc, FALSE));
-				return make_rect<int>(rc.left, rc.top, rc.right, rc.bottom);
+				return create_rect<int>(rc.left, rc.top, rc.right, rc.bottom);
 			}
 		}
 
@@ -116,7 +116,7 @@ namespace wpl
 			{
 				// INIT
 				const auto v = make_shared< mocks::logging_visual<view> >();
-				const placed_view pv = {	v, nullptr, make_rect(0, 0, 1000, 1000)	};
+				const placed_view pv = {	v, nullptr, create_rect(0, 0, 1000, 1000)	};
 				const auto ctl = make_shared<mocks::control>();
 				const auto hwnd = create_window(true, 1000, 1000);
 				win32::view_host vh(hwnd, context);
@@ -167,7 +167,7 @@ namespace wpl
 			{
 				// INIT
 				const auto v = make_shared< mocks::logging_visual<view> >();
-				const placed_view pv = {	v, nullptr, make_rect(0, 0, 1000, 1000)	};
+				const placed_view pv = {	v, nullptr, create_rect(0, 0, 1000, 1000)	};
 				const auto ctl = make_shared<mocks::control>();
 				const auto hwnd = create_window(true, 1000, 1000);
 				win32::view_host vh(hwnd, context);
@@ -184,7 +184,7 @@ namespace wpl
 
 				// ASSERT
 				assert_equal(1u, v->update_area_log.size());
-				assert_equal(make_rect(11, 17, 100, 60), v->update_area_log[0]);
+				assert_equal(create_rect(11, 17, 100, 60), v->update_area_log[0]);
 
 				// INIT
 				RECT rc2 = { 101, 107, 150, 260 };
@@ -194,7 +194,7 @@ namespace wpl
 
 				// ASSERT
 				assert_equal(2u, v->update_area_log.size());
-				assert_equal(make_rect(101, 107, 150, 260), v->update_area_log[1]);
+				assert_equal(create_rect(101, 107, 150, 260), v->update_area_log[1]);
 			}
 
 
@@ -202,7 +202,7 @@ namespace wpl
 			{
 				// INIT
 				const auto v = make_shared< mocks::logging_visual<view> >();
-				const placed_view pv = {	v, nullptr, make_rect(0, 0, 100, 100)	};
+				const placed_view pv = {	v, nullptr, create_rect(0, 0, 100, 100)	};
 				const auto ctl = make_shared<mocks::control>();
 				const auto hwnd = create_window(true, 100, 100);
 				win32::view_host vh(hwnd, context);
@@ -226,7 +226,7 @@ namespace wpl
 			{
 				// INIT
 				const auto v = make_shared< mocks::logging_visual<view> >();
-				const placed_view pv = {	v, nullptr, make_rect(0, 0, 100, 100)	};
+				const placed_view pv = {	v, nullptr, create_rect(0, 0, 100, 100)	};
 				const auto ctl = make_shared<mocks::control>();
 				const auto hwnd = create_window(true, 100, 100);
 				win32::view_host vh(hwnd, context);
@@ -247,7 +247,7 @@ namespace wpl
 				const auto hwnd = create_window(true, 1000, 1000);
 				win32::view_host vh(hwnd, context);
 				visual_router_host &vrhost = vh;
-				const auto rc1 = make_rect(10, 100, 50, 120);
+				const auto rc1 = create_rect(10, 100, 50, 120);
 				RECT invalid;
 
 				::ValidateRect(hwnd, NULL);
@@ -260,7 +260,7 @@ namespace wpl
 				assert_equal(rc1, invalid);
 
 				// INIT
-				const auto rc2 = make_rect(10, 13, 131, 251);
+				const auto rc2 = create_rect(10, 13, 131, 251);
 				::ValidateRect(hwnd, NULL);
 
 				// ACT
@@ -338,9 +338,9 @@ namespace wpl
 					make_shared<view>(), make_shared<view>(), make_shared<view>(),
 				};
 				const placed_view pv[] = {
-					{ v[0], nullptr, make_rect(1, 7, 30, 25), 1 },
-					{ v[1], nullptr, make_rect(1, 7, 100, 100), 2 },
-					{ v[2], nullptr, make_rect(50, 40, 75, 100), 3 },
+					{ v[0], nullptr, create_rect(1, 7, 30, 25), 1 },
+					{ v[1], nullptr, create_rect(1, 7, 100, 100), 2 },
+					{ v[2], nullptr, create_rect(50, 40, 75, 100), 3 },
 				};
 				auto ctl = make_shared<mocks::control>();
 				const auto hwnd = create_window(true, 100, 100);
@@ -366,7 +366,7 @@ namespace wpl
 			{
 				// INIT
 				const auto v = make_shared<view>();
-				placed_view pv = { v, nullptr, make_rect(1, 7, 100, 100), };
+				placed_view pv = { v, nullptr, create_rect(1, 7, 100, 100), };
 				const auto ctl = make_shared<mocks::control>();
 				const auto hwnd = create_window(true, 1000, 1000);
 				win32::view_host vh(hwnd, context);
@@ -381,7 +381,7 @@ namespace wpl
 
 				// ASSERT
 				assert_is_true(!!::GetUpdateRect(hwnd, &invalid, FALSE));
-				assert_equal(make_rect(1, 7, 100, 100), invalid);
+				assert_equal(create_rect(1, 7, 100, 100), invalid);
 			}
 
 
@@ -389,7 +389,7 @@ namespace wpl
 			{
 				// INIT
 				const auto v = make_shared< mocks::logging_key_input<view> >();
-				placed_view pv = {	v, nullptr, make_rect(10, 15, 40, 50), 1	};
+				placed_view pv = {	v, nullptr, create_rect(10, 15, 40, 50), 1	};
 				const auto hwnd = create_window(true);
 				win32::view_host vh(hwnd, context);
 				const auto ctl = make_shared<mocks::control>();
@@ -415,7 +415,7 @@ namespace wpl
 			{
 				// INIT
 				const auto v = make_shared< mocks::logging_key_input<view> >();
-				placed_view pv = {	v, nullptr, make_rect(10, 15, 40, 50), 1	};
+				placed_view pv = {	v, nullptr, create_rect(10, 15, 40, 50), 1	};
 				const auto hwnd = create_window(true);
 				win32::view_host vh(hwnd, context);
 				const auto ctl = make_shared<mocks::control>();
@@ -443,7 +443,7 @@ namespace wpl
 
 				// ASSERT
 				assert_not_null(capture_handle);
-				assert_equal(make_rect(10, 15, 40, 50), get_update_rect(hwnd));
+				assert_equal(create_rect(10, 15, 40, 50), get_update_rect(hwnd));
 			}
 
 
@@ -451,7 +451,7 @@ namespace wpl
 			{
 				// INIT
 				const auto v = make_shared< mocks::logging_mouse_input<view> >();
-				const placed_view pv = {	v, nullptr, make_rect(0, 0, 100, 100)	};
+				const placed_view pv = {	v, nullptr, create_rect(0, 0, 100, 100)	};
 				const auto ctl = make_shared<mocks::control>();
 				const auto hwnd = create_window(true, 100, 100);
 				win32::view_host vh(hwnd, context);
@@ -534,7 +534,7 @@ namespace wpl
 			{
 				// INIT
 				const auto v = make_shared< mocks::logging_mouse_input<view> >();
-				const placed_view pv = {	v, nullptr, make_rect(0, 0, 100, 50)	};
+				const placed_view pv = {	v, nullptr, create_rect(0, 0, 100, 50)	};
 				const auto ctl = make_shared<mocks::control>();
 				const auto hwnd = create_window(true, 100, 100);
 				win32::view_host vh(hwnd, context);
@@ -579,7 +579,7 @@ namespace wpl
 			{
 				// INIT
 				const auto v = make_shared< mocks::logging_mouse_input<view> >();
-				const placed_view pv = {	v, nullptr, make_rect(0, 0, 100, 50)	};
+				const placed_view pv = {	v, nullptr, create_rect(0, 0, 100, 50)	};
 				const auto ctl = make_shared<mocks::control>();
 				const auto hwnd = create_window(true, 100, 100);
 				win32::view_host vh(hwnd, context);
@@ -688,7 +688,7 @@ namespace wpl
 			{
 				// INIT
 				const auto v = make_shared<view>();
-				placed_view pv = { v, nullptr, make_rect(0, 0, 100, 100), };
+				placed_view pv = { v, nullptr, create_rect(0, 0, 100, 100), };
 				const auto ctl = make_shared<mocks::control>();
 				const auto hwnd = create_window(true, 100, 100);
 				win32::view_host vh(hwnd, context);
@@ -709,7 +709,7 @@ namespace wpl
 			{
 				// INIT
 				const auto v = make_shared< mocks::logging_mouse_input<view> >();
-				const placed_view pv = {	v, nullptr, make_rect(0, 0, 100, 50)	};
+				const placed_view pv = {	v, nullptr, create_rect(0, 0, 100, 50)	};
 				const auto ctl = make_shared<mocks::control>();
 				const auto hwnd = create_window(true, 100, 100);
 				win32::view_host vh(hwnd, context);
@@ -746,7 +746,7 @@ namespace wpl
 			{
 				// INIT
 				const auto v = make_shared< mocks::logging_mouse_input<view> >();
-				const placed_view pv = {	v, nullptr, make_rect(0, 0, 100, 50)	};
+				const placed_view pv = {	v, nullptr, create_rect(0, 0, 100, 50)	};
 				const auto ctl = make_shared<mocks::control>();
 				const auto hwnd = create_window(true, 100, 100);
 				win32::view_host vh(hwnd, context);
@@ -774,7 +774,7 @@ namespace wpl
 			{
 				// INIT
 				const auto v = make_shared< mocks::logging_mouse_input<view> >();
-				const placed_view pv = {	v, nullptr, make_rect(0, 0, 100, 50)	};
+				const placed_view pv = {	v, nullptr, create_rect(0, 0, 100, 50)	};
 				const auto ctl = make_shared<mocks::control>();
 				const auto hwnd = create_window(true, 100, 100);
 				win32::view_host vh(hwnd, context);
@@ -805,7 +805,7 @@ namespace wpl
 			{
 				// INIT
 				const auto v = make_shared< mocks::logging_key_input<view> >();
-				const placed_view pv = {	v, nullptr, make_rect(0, 0, 100, 50), 1	};
+				const placed_view pv = {	v, nullptr, create_rect(0, 0, 100, 50), 1	};
 				const auto ctl = make_shared<mocks::control>();
 				const auto hwnd = create_window(true);
 				win32::view_host vh(hwnd, context);
@@ -863,7 +863,7 @@ namespace wpl
 			{
 				// INIT
 				const auto v = make_shared< mocks::logging_key_input<view> >();
-				const placed_view pv = {	v, nullptr, make_rect(0, 0, 100, 50), 1	};
+				const placed_view pv = {	v, nullptr, create_rect(0, 0, 100, 50), 1	};
 				const auto ctl = make_shared<mocks::control>();
 				const auto hwnd = create_window(true);
 				win32::view_host vh(hwnd, context);
@@ -885,7 +885,7 @@ namespace wpl
 			{
 				// INIT
 				const auto v = make_shared< mocks::logging_key_input<view> >();
-				const placed_view pv = {	v, nullptr, make_rect(0, 0, 100, 50), 1	};
+				const placed_view pv = {	v, nullptr, create_rect(0, 0, 100, 50), 1	};
 				const auto ctl = make_shared<mocks::control>();
 				const auto hwnd = create_window(true);
 				win32::view_host vh(hwnd, context);
@@ -928,7 +928,7 @@ namespace wpl
 			{
 				// INIT
 				const auto v = make_shared< mocks::logging_key_input<view> >();
-				const placed_view pv = {	v, nullptr, make_rect(0, 0, 100, 50), 1	};
+				const placed_view pv = {	v, nullptr, create_rect(0, 0, 100, 50), 1	};
 				const auto ctl = make_shared<mocks::control>();
 				const auto hwnd = create_window(true);
 				win32::view_host vh(hwnd, context);
@@ -974,8 +974,8 @@ namespace wpl
 			{
 				// INIT
 				const placed_view pv[] = {
-					{	nullptr, make_shared<mocks::native_view_window>(), make_rect(0, 0, 20, 50)	},
-					{	nullptr, make_shared<mocks::native_view_window>(), make_rect(15, 30, 70, 50)	},
+					{	nullptr, make_shared<mocks::native_view_window>(), create_rect(0, 0, 20, 50)	},
+					{	nullptr, make_shared<mocks::native_view_window>(), create_rect(15, 30, 70, 50)	},
 				};
 				const auto ctl = make_shared<mocks::control>();
 				const auto hwnd1 = create_window(true, 100, 100);
@@ -1007,9 +1007,9 @@ namespace wpl
 			{
 				// INIT
 				placed_view pv[] = {
-					{	nullptr, make_shared<mocks::native_view_window>(), make_rect(10, 17, 110, 151)	},
-					{	nullptr, make_shared<mocks::native_view_window>(), make_rect(100, 1, 191, 201)	},
-					{	nullptr, make_shared<mocks::native_view_window>(), make_rect(10, 10, 110, 210)	},
+					{	nullptr, make_shared<mocks::native_view_window>(), create_rect(10, 17, 110, 151)	},
+					{	nullptr, make_shared<mocks::native_view_window>(), create_rect(100, 1, 191, 201)	},
+					{	nullptr, make_shared<mocks::native_view_window>(), create_rect(10, 10, 110, 210)	},
 				};
 				const auto ctl = make_shared<mocks::control>();
 				const auto hwnd = create_window(true, 100, 100);
@@ -1026,7 +1026,7 @@ namespace wpl
 				assert_equal(rect(10, 10, 100, 200), get_window_rect(pv[2].native->get_window()));
 
 				// INIT
-				ctl->views[0].location = make_rect(0, 0, 100, 30);
+				ctl->views[0].location = create_rect(0, 0, 100, 30);
 
 				// ACT
 				::MoveWindow(hwnd, 0, 0, 200, 200, FALSE);
@@ -1070,9 +1070,9 @@ namespace wpl
 					make_shared< mocks::logging_key_input<view> >(),
 				};
 				const placed_view pv[] = {
-					{	v[0], nullptr, make_rect(10, 17, 110, 151), 2	},
-					{	v[1], nullptr, make_rect(100, 1, 191, 201), 1	},
-					{	v[2], nullptr, make_rect(10, 10, 110, 210), 3	},
+					{	v[0], nullptr, create_rect(10, 17, 110, 151), 2	},
+					{	v[1], nullptr, create_rect(100, 1, 191, 201), 1	},
+					{	v[2], nullptr, create_rect(10, 10, 110, 210), 3	},
 				};
 				const auto ctl = make_shared<mocks::control>();
 				const auto hwnd = create_window(true, 100, 100);
@@ -1124,9 +1124,9 @@ namespace wpl
 					make_shared< mocks::logging_key_input<view> >(),
 				};
 				const placed_view pv[] = {
-					{	v[0], nullptr, make_rect(10, 17, 110, 151), 2	},
-					{	v[1], nullptr, make_rect(100, 1, 191, 201), 1	},
-					{	v[2], nullptr, make_rect(10, 10, 110, 210), 3	},
+					{	v[0], nullptr, create_rect(10, 17, 110, 151), 2	},
+					{	v[1], nullptr, create_rect(100, 1, 191, 201), 1	},
+					{	v[2], nullptr, create_rect(10, 10, 110, 210), 3	},
 				};
 				const auto ctl = make_shared<mocks::control>();
 				const auto hwnd = create_window(true, 100, 100);
@@ -1173,8 +1173,8 @@ namespace wpl
 				// INIT
 				const auto v = make_shared<view>();
 				const placed_view pv[] = {
-					{	v, nullptr, make_rect(100, 1, 191, 201), 1	},
-					{	nullptr, make_shared<mocks::native_view_window>(), make_rect(1, 1, 191, 201), 2	},
+					{	v, nullptr, create_rect(100, 1, 191, 201), 1	},
+					{	nullptr, make_shared<mocks::native_view_window>(), create_rect(1, 1, 191, 201), 2	},
 				};
 				const auto ctl = make_shared<mocks::control>();
 				const auto hwnd = create_window(true, 100, 100);
@@ -1198,7 +1198,7 @@ namespace wpl
 				// INIT
 				const auto v = make_shared<view>();
 				const placed_view pv[] = {
-					{	nullptr, make_shared<mocks::native_view_window>(), make_rect(1, 1, 191, 201)	},
+					{	nullptr, make_shared<mocks::native_view_window>(), create_rect(1, 1, 191, 201)	},
 				};
 				const auto ctl = make_shared<mocks::control>();
 				const auto hwnd = create_window(true, 100, 100);
@@ -1234,7 +1234,7 @@ namespace wpl
 				// INIT
 				const auto v = make_shared<view>();
 				const placed_view pv[] = {
-					{	nullptr, make_shared<mocks::native_view_window>(), make_rect(1, 1, 191, 201)	},
+					{	nullptr, make_shared<mocks::native_view_window>(), create_rect(1, 1, 191, 201)	},
 				};
 				const auto ctl = make_shared<mocks::control>();
 				const auto hwnd = create_window(true, 100, 100);
@@ -1290,7 +1290,7 @@ namespace wpl
 				const auto nv = make_shared<mocks::native_view_window>();
 				const placed_view pv[] = {
 					{	v, nullptr, {}, 1	},
-					{	nullptr, nv, make_rect(10, 17, 110, 151), 2	},
+					{	nullptr, nv, create_rect(10, 17, 110, 151), 2	},
 				};
 				const auto ctl = make_shared<mocks::control>();
 				const auto hwnd = create_window(true, 100, 100);

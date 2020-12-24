@@ -388,14 +388,14 @@ namespace wpl
 
 				// ASSERT
 				assert_equal(1u, invalidation_log.size());
-				assert_equal(make_rect(13, 17, 44, 40), invalidation_log[0]);
+				assert_equal(create_rect(13, 17, 44, 40), invalidation_log[0]);
 
 				// ACT
 				v[1]->invalidate(nullptr);
 
 				// ASSERT
 				assert_equal(2u, invalidation_log.size());
-				assert_equal(make_rect(91, 45, 1091, 1045), invalidation_log[1]);
+				assert_equal(create_rect(91, 45, 1091, 1045), invalidation_log[1]);
 			}
 
 
@@ -421,21 +421,21 @@ namespace wpl
 
 				// ASSERT
 				assert_equal(1u, invalidation_log.size());
-				assert_equal(make_rect(23, 28, 33, 39), invalidation_log.back());
+				assert_equal(create_rect(23, 28, 33, 39), invalidation_log.back());
 
 				// ACT
 				v[1]->invalidate(&a1);
 
 				// ASSERT
 				assert_equal(2u, invalidation_log.size());
-				assert_equal(make_rect(101, 56, 111, 67), invalidation_log.back());
+				assert_equal(create_rect(101, 56, 111, 67), invalidation_log.back());
 
 				// ACT
 				v[0]->invalidate(&a2);
 
 				// ASSERT
 				assert_equal(3u, invalidation_log.size());
-				assert_equal(make_rect(3, 16, 30, 37), invalidation_log.back());
+				assert_equal(create_rect(3, 16, 30, 37), invalidation_log.back());
 			}
 
 
@@ -465,7 +465,7 @@ namespace wpl
 				v[1]->invalidate(nullptr);
 
 				// ASSERT
-				assert_equal(make_rect(10, 10, 100, 100), invalidation_log.back());
+				assert_equal(create_rect(10, 10, 100, 100), invalidation_log.back());
 			}
 
 
@@ -488,7 +488,7 @@ namespace wpl
 				v->invalidate(nullptr);
 
 				// ASSERT
-				assert_equal(make_rect(0, 0, 100, 55), invalidation_log.back());
+				assert_equal(create_rect(0, 0, 100, 55), invalidation_log.back());
 			}
 
 
