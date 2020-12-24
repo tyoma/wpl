@@ -115,7 +115,7 @@ namespace wpl
 		{
 			if (_model)
 			{
-				auto rc = make_rect(real_t(), real_t(), -_offset, _size.h);
+				auto rc = make_rect(real_t(), real_t(), -_offset, get_last_size().h);
 				columns_model::column c;
 
 				for (index_type i = 0, n = _model->get_count(); i != n; ++i)
@@ -130,12 +130,6 @@ namespace wpl
 					draw_item(ctx, rasterizer_, rc, i, state, c.caption );
 				}
 			}
-		}
-
-		void header_core::layout(const placed_view_appender &append_view, const agge::box<int> &box_)
-		{
-			_size.w = static_cast<real_t>(box_.w), _size.h = static_cast<real_t>(box_.h);
-			integrated_control<wpl::header>::layout(append_view, box_);
 		}
 
 		short header_core::measure_column(columns_model &/*model*/, index_type /*index*/) const

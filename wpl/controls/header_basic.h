@@ -54,7 +54,7 @@ namespace wpl
 		private:
 			agge::real_t _padding, _baseline_offset, _separator_width;
 			agge::font::ptr _font;
-			agge::color _bg, _bg_sorted, _fg_normal, _fg_sorted, _fg_separator;
+			agge::color _bg, _bg_sorted, _fg_normal, _fg_sorted, _fg_separator, _fg_indicator;
 			std::unique_ptr<glyph> _up, _down;
 		};
 	}

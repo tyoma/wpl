@@ -57,13 +57,14 @@ namespace wpl
 			_bg_sorted = ss.get_color("background.header.sorted");
 			_fg_normal = ss.get_color("text.header");
 			_fg_sorted = ss.get_color("text.header.sorted");
-			_fg_separator = ss.get_color("border.header.separator");
+			_fg_separator = ss.get_color("separator.header");
+			_fg_indicator = ss.get_color("text.header.indicator");
 
 			agge::font::metrics m = _font->get_metrics();
 
 			_padding = ss.get_value("padding.header");
 			_baseline_offset = _padding + m.ascent;
-			_separator_width = ss.get_value("border.header.separator");
+			_separator_width = ss.get_value("separator.header");
 
 			_up.reset(new glyph(glyphs::up(_font->get_key().height)));
 			_down.reset(new glyph(glyphs::down(_font->get_key().height)));
@@ -82,9 +83,10 @@ namespace wpl
 			}
 
 			header_core::draw(ctx, ras);
+			const auto &size = get_last_size();
 
-			add_path(*ras, rectangle(0.0f, _size.h - _separator_width, _size.w, _size.h));
-			ctx(ras, blender(_fg_normal), winding<>());
+			add_path(*ras, rectangle(0.0f, size.h - _separator_width, size.w, size.h));
+			ctx(ras, blender(_fg_separator), winding<>());
 		}
 
 		void header_basic::draw_item_background(gcontext &ctx, gcontext::rasterizer_ptr &ras, const agge::rect_r &b,
@@ -116,7 +118,7 @@ namespace wpl
 					add_path(*ras, offset(*g, box.x1 - gbox.x1, box.y1 - gbox.y1)), box.x1 += wpl::width(gbox) + _padding;
 				else
 					add_path(*ras, offset(*g, box.x2 - gbox.x2, box.y1 - gbox.y1)), box.x2 -= wpl::width(gbox) + _padding;
-				ctx(ras, blender(_fg_normal), winding<>());
+				ctx(ras, blender(_fg_indicator), winding<>());
 			}
 
 			// 2. Draw text.
@@ -125,7 +127,7 @@ namespace wpl
 
 			// 3. Draw right separator.
 			add_path(*ras, rectangle(b.x2 - _separator_width, box.y1, b.x2, box.y2));
-			ctx(ras, blender(_fg_normal), winding<>());
+			ctx(ras, blender(_fg_separator), winding<>());
 		}
 	}
 }

@@ -40,6 +40,8 @@ namespace wpl
 			void apply_styles(const stylesheet &stylesheet_);
 
 		protected:
+			virtual void draw(gcontext &ctx, gcontext::rasterizer_ptr &rasterizer) const override;
+
 			virtual agge::real_t get_minimal_item_height() const override;
 			virtual void draw_item_background(wpl::gcontext &ctx, wpl::gcontext::rasterizer_ptr &rasterizer,
 				const agge::rect_r &box, index_type item, unsigned state) const override;
@@ -52,7 +54,7 @@ namespace wpl
 		private:
 			agge::real_t _item_height, _padding, _baseline_offset;
 			agge::font::ptr _font;
-			agge::color _bg_even, _bg_odd, _bg_selected, _fg_normal, _fg_selected, _fg_focus, _fg_focus_selected;
+			agge::color _bg, _bg_even, _bg_odd, _bg_selected, _fg_normal, _fg_selected, _fg_focus, _fg_focus_selected;
 			mutable agge::stroke _stroke;
 			mutable agge::dash _dash;
 		};

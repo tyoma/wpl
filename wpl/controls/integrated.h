@@ -41,14 +41,20 @@ namespace wpl
 			virtual void layout(const placed_view_appender &append_view, const agge::box<int> &box) override;
 
 		protected:
+			const agge::box_r &get_last_size() const;
+
+		protected:
 			bool tab_stop;
+
+		private:
+			agge::box_r _last_size;
 		};
 
 
 
 		template <typename ControlT>
 		inline integrated_control<ControlT>::integrated_control()
-			: tab_stop(false)
+			: tab_stop(false), _last_size(agge::zero())
 		{	}
 
 		template <typename ControlT>
@@ -61,7 +67,12 @@ namespace wpl
 				!!tab_stop,
 			};
 
+			_last_size.w = static_cast<agge::real_t>(box_.w), _last_size.h = static_cast<agge::real_t>(box_.h);
 			append_view(v);
 		}
+
+		template <typename ControlT>
+		inline const agge::box_r &integrated_control<ControlT>::get_last_size() const
+		{	return _last_size;	}
 	}
 }

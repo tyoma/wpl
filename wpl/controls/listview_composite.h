@@ -61,7 +61,7 @@ namespace wpl
 				
 				_header_height = static_cast<int>(2.0f * ss.get_value("padding.header")
 					+ header_font_metrics.ascent + header_font_metrics.descent
-					+ ss.get_value("border.header"));
+					+ ss.get_value("separator.header"));
 				BaseControlT::apply_styles(ss);
 				this->layout_changed(false);
 			}

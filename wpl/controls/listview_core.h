@@ -107,7 +107,6 @@ namespace wpl
 			std::shared_ptr<vertical_scroll_model> _vsmodel;
 			std::shared_ptr<horizontal_scroll_model> _hsmodel;
 			slot_connection _model_invalidation, _cmodel_invalidation;
-			agge::box_r _size;
 			agge::agge_vector<double> _offset;
 			mutable std::vector<agge::real_t> _widths;
 			mutable std::wstring _text_buffer;

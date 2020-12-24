@@ -45,6 +45,7 @@ namespace wpl
 		{
 			_font = ss.get_font("text.listview");
 
+			_bg = ss.get_color("background.listview");
 			_bg_even = ss.get_color("background.listview.even");
 			_bg_odd = ss.get_color("background.listview.odd");
 			_bg_selected = ss.get_color("background.selected.listview");
@@ -65,6 +66,19 @@ namespace wpl
 			_dash.add_dash(1.0f, 1.0f);
 			_dash.dash_start(0.5f);
 			invalidate(nullptr);
+		}
+
+		void listview_basic::draw(gcontext &ctx, gcontext::rasterizer_ptr &ras) const
+		{
+			if (_bg.a)
+			{
+				const auto ua = ctx.update_area();
+
+				add_path(*ras, rectangle(static_cast<real_t>(ua.x1), static_cast<real_t>(ua.y1),
+					static_cast<real_t>(ua.x2), static_cast<real_t>(ua.y2)));
+				ctx(ras, blender(_bg), winding<>());
+			}
+			listview_core::draw(ctx, ras);
 		}
 
 		real_t listview_basic::get_minimal_item_height() const

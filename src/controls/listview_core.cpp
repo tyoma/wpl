@@ -82,7 +82,7 @@ namespace wpl
 			virtual range get_window() const override
 			{
 				return owner && owner->get_minimal_item_height()
-					? range(owner->_offset.dy, owner->_size.h / owner->get_minimal_item_height()) : range(0, 0);
+					? range(owner->_offset.dy, owner->get_last_size().h / owner->get_minimal_item_height()) : range(0, 0);
 			}
 
 			virtual double get_increment() const override
@@ -104,7 +104,7 @@ namespace wpl
 		struct listview_core::horizontal_scroll_model : base_scroll_model
 		{
 			virtual range get_window() const override
-			{	return owner ? range(owner->_offset.dx, owner->_size.w) : range(0, 0);	}
+			{	return owner ? range(owner->_offset.dx, owner->get_last_size().w) : range(0, 0);	}
 
 			virtual double get_increment() const override
 			{	return 5;	}
@@ -139,7 +139,6 @@ namespace wpl
 		{
 			tab_stop = true;
 			_offset.dx = 0, _offset.dy = 0;
-			_size.w = 0, _size.h = 0;
 			_vsmodel->owner = this;
 			_hsmodel->owner = this;
 		}
@@ -160,7 +159,7 @@ namespace wpl
 		{
 			if (is_visible(item) | _state_vscrolling | (npos() == item))
 				return;
-			_offset.dy = static_cast<double>(item < _offset.dy ? item : item - _size.h / get_minimal_item_height() + 1);
+			_offset.dy = static_cast<double>(item < _offset.dy ? item : item - get_last_size().h / get_minimal_item_height() + 1);
 			_vsmodel->invalidate();
 			invalidate_();
 		}
@@ -170,7 +169,7 @@ namespace wpl
 			if (const index_type item_count = _model ? _model->get_count() : index_type())
 			{
 				index_type focused = _focused ? _focused->index() : npos();
-				const index_type scroll_size = agge::iround(_size.h / get_minimal_item_height());
+				const index_type scroll_size = agge::iround(get_last_size().h / get_minimal_item_height());
 				const index_type last = item_count - 1;
 				const index_type first_visible = first_partially_visible();
 				const index_type last_visible = last_partially_visible();
@@ -257,6 +256,7 @@ namespace wpl
 			if (!_model | !_cmodel)
 				return;
 
+			const auto &size = get_last_size();
 			const index_type item_count = _model->get_count();
 			const columns_model::index_type columns = _cmodel->get_count();
 			const real_t item_height = get_minimal_item_height();
@@ -274,7 +274,7 @@ namespace wpl
 				_widths.push_back(width);
 				total_width += width;
 			}
-			for (; box.y2 = box.y1 + item_height, r < item_count && box.y1 < _size.h; ++r, box.y1 = box.y2)
+			for (; box.y2 = box.y1 + item_height, r < item_count && box.y1 < size.h; ++r, box.y1 = box.y2)
 			{
 				const unsigned state = (is_selected(r) ? selected : 0) | (focused_item == r ? focused : 0);
 
@@ -283,7 +283,7 @@ namespace wpl
 				for (columns_model::index_type c = 0; c != columns; box.x1 = box.x2, ++c)
 				{
 					box.x2 = box.x1 + _widths[c];
-					if (box.x2 < 0.0 || box.x1 >= _size.w - c_tolerance)
+					if (box.x2 < 0.0 || box.x1 >= size.w - c_tolerance)
 						continue;
 					draw_subitem_background(ctx, ras, box, r, state, c);
 				}
@@ -292,7 +292,7 @@ namespace wpl
 				for (columns_model::index_type c = 0; c != columns; box.x1 = box.x2, ++c)
 				{
 					box.x2 = box.x1 + _widths[c];
-					if (box.x2 < 0.0 || box.x1 >= _size.w - c_tolerance)
+					if (box.x2 < 0.0 || box.x1 >= size.w - c_tolerance)
 						continue;
 					_model->get_text(r, c, _text_buffer);
 					draw_subitem(ctx, ras, box, r, state, c, _text_buffer);
@@ -302,11 +302,9 @@ namespace wpl
 
 		void listview_core::layout(const placed_view_appender &append_view, const agge::box<int> &box_)
 		{
-			_size.w = static_cast<real_t>(box_.w);
-			_size.h = static_cast<real_t>(box_.h);
+			integrated_control<wpl::listview>::layout(append_view, box_);
 			_vsmodel->invalidate();
 			_hsmodel->invalidate();
-			integrated_control<wpl::listview>::layout(append_view, box_);
 		}
 
 		void listview_core::set_columns_model(shared_ptr<columns_model> cmodel)
@@ -395,7 +393,7 @@ namespace wpl
 		{	return _offset.dy >= 0.0f ? static_cast<index_type>(_offset.dy) : npos();	}
 
 		listview_core::index_type listview_core::last_partially_visible() const
-		{	return get_item(static_cast<int>(_size.h - 1));	}
+		{	return get_item(static_cast<int>(get_last_size().h - 1));	}
 
 		listview_core::index_type listview_core::get_item(int y) const
 		{
@@ -413,7 +411,7 @@ namespace wpl
 			const real_t item_height = get_minimal_item_height();
 			const real_t lower = item_height * static_cast<real_t>(item - _offset.dy), upper = lower + item_height;
 
-			return (-c_tolerance < lower) & (upper < _size.h + c_tolerance);
+			return (-c_tolerance < lower) & (upper < get_last_size().h + c_tolerance);
 		}
 	}
 }
