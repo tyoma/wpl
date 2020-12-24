@@ -22,6 +22,9 @@
 
 #include "../cursor.h"
 
+#include <map>
+#include <unordered_map>
+
 namespace wpl
 {
 	namespace macos
@@ -29,12 +32,25 @@ namespace wpl
 		class cursor_manager : public wpl::cursor_manager
 		{
 		public:
+			cursor_manager();
+			~cursor_manager();
+
 			virtual std::shared_ptr<const cursor> get(standard_cursor id) const override;
 			virtual void set(std::shared_ptr<const cursor> cursor_) override;
 			virtual void push(std::shared_ptr<const cursor> cursor_) override;
 			virtual void pop() override;
 		
 		private:
+			typedef std::map<const cursor *, std::shared_ptr<void> /*NSCursor*/> cached_cursors;
+			typedef std::shared_ptr<cached_cursors> cached_cursors_ptr;
+
+		private:
+			std::shared_ptr<const cursor> associate(std::shared_ptr<void> hcursor) const;
+			static std::shared_ptr<void> get_cursor(cursor_manager::standard_cursor id);
+
+		private:
+			mutable std::unordered_map< int, std::shared_ptr<const cursor> > _standard_cursors;
+			cached_cursors_ptr _cursors;
 		};
 	}
 }

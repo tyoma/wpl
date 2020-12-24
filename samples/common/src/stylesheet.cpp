@@ -25,9 +25,11 @@ namespace wpl
 		ss->set_color("text", agge::color::make(192, 192, 192));
 		ss->set_color("text.selected", agge::color::make(16, 16, 16));
 		ss->set_color("border", agge::color::make(64, 64, 96));
+		ss->set_color("separator", agge::color::make(42, 43, 44));
 
 		ss->set_value("padding", 3);
 		ss->set_value("border", 1);
+		ss->set_value("separator", 1);
 		return ss;
 	}
 }

@@ -20,30 +20,86 @@
 
 #include <wpl/macos/cursor_manager.h>
 
+#include <Cocoa/Cocoa.h>
+
 using namespace std;
 
 namespace wpl
 {
 	namespace macos
 	{
-		shared_ptr<const cursor> cursor_manager::get(standard_cursor /*id*/) const
+		cursor_manager::cursor_manager()
+			: _cursors(new cached_cursors)
+		{	}
+
+		cursor_manager::~cursor_manager()
+		{	}
+
+		shared_ptr<const cursor> cursor_manager::get(standard_cursor id) const
 		{
-			return nullptr;
+			auto i = _standard_cursors.find(id);
+
+			if (_standard_cursors.end() == i)
+			{
+				auto c = associate(get_cursor(id));
+
+				i = _standard_cursors.insert(make_pair(id, c)).first;
+			}
+			return i->second;
 		}
-		
-		void cursor_manager::set(shared_ptr<const cursor> /*cursor_*/)
+
+		void cursor_manager::set(shared_ptr<const cursor> cursor_)
 		{
-		
+			auto i = _cursors->find(cursor_.get());
+
+			if (_cursors->end() != i)
+				[static_cast<NSCursor *>(i->second.get()) set];
 		}
-		
-		void cursor_manager::push(shared_ptr<const cursor> /*cursor_*/)
+
+		void cursor_manager::push(std::shared_ptr<const cursor> cursor_)
 		{
-		
+			auto i = _cursors->find(cursor_.get());
+
+			if (_cursors->end() != i)
+				[static_cast<NSCursor *>(i->second.get()) push];
 		}
-		
+
 		void cursor_manager::pop()
 		{
-		
+			[NSCursor pop];
+		}
+
+		shared_ptr<const cursor> cursor_manager::associate(shared_ptr<void> hcursor) const
+		{
+			const auto m = _cursors;
+			unique_ptr<cursor> c(new cursor(1, 1, 0, 0));
+			auto i = m->insert(make_pair(c.get(), hcursor)).first;
+
+			return shared_ptr<const cursor>(c.release(), [m, i] (const cursor *p) {
+				m->erase(i);
+				delete p;
+			});
+		}
+
+		shared_ptr<void> cursor_manager::get_cursor(cursor_manager::standard_cursor id_)
+		{
+			NSCursor *cursor_;
+
+			switch (id_)
+			{
+			case cursor_manager::arrow:	cursor_ = [NSCursor arrowCursor];	break;
+			case cursor_manager::i_beam:	cursor_ = [NSCursor IBeamCursor];	break;
+			case cursor_manager::hand:	cursor_ = [NSCursor pointingHandCursor];	break;
+			case cursor_manager::crosshair:	cursor_ = [NSCursor crosshairCursor];	break;
+			case cursor_manager::h_resize:	cursor_ = [NSCursor resizeLeftRightCursor];	break;
+			case cursor_manager::l_resize:	cursor_ = [NSCursor resizeLeftCursor];	break;
+			case cursor_manager::r_resize:	cursor_ = [NSCursor resizeRightCursor];	break;
+			case cursor_manager::v_resize:	cursor_ = [NSCursor resizeUpDownCursor];	break;
+			case cursor_manager::t_resize:	cursor_ = [NSCursor resizeUpCursor];	break;
+			case cursor_manager::b_resize:	cursor_ = [NSCursor resizeDownCursor];	break;
+			default:	return shared_ptr<void>();
+			}
+			return shared_ptr<void>([cursor_ retain], [] (NSCursor *p) {	[p release];	});
 		}
 	}
 }
