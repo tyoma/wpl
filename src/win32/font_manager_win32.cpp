@@ -31,21 +31,21 @@ namespace wpl
 	{
 		namespace
 		{
-			HFONT create_font(const font::key &key)
+			HFONT create_font(const font_descriptor &key)
 			{
-				return ::CreateFontW(-key.height, 0, 0, 0, key.bold ? FW_BOLD : FW_NORMAL, key.italic, FALSE, FALSE,
+				return ::CreateFontA(-key.height, 0, 0, 0, key.bold ? FW_BOLD : FW_NORMAL, key.italic, FALSE, FALSE,
 					DEFAULT_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH,
-					key.typeface.c_str());
+					key.family.c_str());
 			}
 		}
 
 
-		bool font_manager::key_less::operator ()(const agge::font::key &lhs, const agge::font::key &rhs) const
+		bool font_manager::key_less::operator ()(const agge::font_descriptor &lhs, const agge::font_descriptor &rhs) const
 		{
 			return lhs.height < rhs.height ? true : rhs.height < lhs.height ? false :
 				lhs.bold < rhs.bold ? true : rhs.bold < lhs.bold ? false :
 				lhs.italic < rhs.italic ? true : rhs.italic < lhs.italic ? false :
-				lhs.typeface < rhs.typeface;
+				lhs.family < rhs.family;
 
 		}
 
@@ -53,7 +53,7 @@ namespace wpl
 			: _font_cache(make_shared<font_cache>())
 		{	}
 
-		shared_ptr<void> font_manager::get_font(const font::key &key)
+		shared_ptr<void> font_manager::get_font(const font_descriptor &key)
 		{
 			auto i = _font_cache->find(key);
 

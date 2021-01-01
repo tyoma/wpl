@@ -38,16 +38,15 @@ namespace wpl
 	public:
 		struct font_key_hasher
 		{
-			size_t operator ()(const agge::font::key &key) const;
+			size_t operator ()(const agge::font_descriptor &key) const;
 		};
 
-		typedef std::unordered_map<agge::font::key, std::pair<std::string, unsigned>, font_key_hasher> key_to_file_t;
+		typedef std::unordered_map<agge::font_descriptor, std::pair<std::string, unsigned>, font_key_hasher> key_to_file_t;
 
 	public:
 		font_loader();
 
-		virtual agge::font::accessor_ptr load(const wchar_t *family, int height, bool bold, bool italic,
-			agge::font::key::grid_fit grid_fit) override;
+		virtual agge::font::accessor_ptr load(const agge::font_descriptor &descriptor) override;
 
 	private:
 		typedef std::function<bool (std::string &path)> enum_font_files_cb;
@@ -65,10 +64,10 @@ namespace wpl
 	{
 	public:
 		font_accessor(FT_Library freetype_, const std::string &path, unsigned index, int height,
-			agge::font::key::grid_fit grid_fit);
+			agge::font_hinting hinting);
 
 	private:
-		virtual agge::font::metrics get_metrics() const override;
+		virtual agge::font_metrics get_metrics() const override;
 		virtual agge::uint16_t get_glyph_index(wchar_t character) const override;
 		virtual agge::glyph::outline_ptr load_glyph(agge::uint16_t index, agge::glyph::glyph_metrics &m) const override;
 

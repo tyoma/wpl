@@ -94,7 +94,7 @@ namespace wpl
 
 			struct font_loader : gcontext::text_engine_type::loader
 			{
-				virtual agge::font::accessor_ptr load(const wchar_t *, int, bool, bool, agge::font::key::grid_fit) override
+				virtual agge::font::accessor_ptr load(const agge::font_descriptor &) override
 				{	return agge::font::accessor_ptr();	}
 			};
 

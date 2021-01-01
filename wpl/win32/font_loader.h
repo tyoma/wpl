@@ -32,25 +32,23 @@ namespace wpl
 		class font_accessor : public agge::font::accessor
 		{
 		public:
-			font_accessor(int height, const wchar_t *typeface, bool bold, bool italic,
-				agge::font::key::grid_fit grid_fit);
+			font_accessor(int height, const char *typeface, bool bold, bool italic, agge::font_hinting hinting);
 
 			HFONT native() const;
 
 		private:
-			virtual agge::font::metrics get_metrics() const override;
+			virtual agge::font_metrics get_metrics() const override;
 			virtual agge::uint16_t get_glyph_index(wchar_t character) const override;
 			virtual agge::glyph::outline_ptr load_glyph(agge::uint16_t index, agge::glyph::glyph_metrics &m) const override;
 
 		private:
 			agge::shared_ptr<void> _native;
-			agge::font::key::grid_fit _grid_fit;
+			agge::font_hinting _hinting;
 		};
 
 		class font_loader : public agge::text_engine_base::loader
 		{
-			virtual agge::font::accessor_ptr load(const wchar_t *typeface, int height, bool bold, bool italic,
-				agge::font::key::grid_fit grid_fit) override;
+			virtual agge::font::accessor_ptr load(const agge::font_descriptor &descriptor) override;
 		};
 	}
 }

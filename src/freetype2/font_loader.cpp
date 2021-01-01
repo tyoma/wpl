@@ -117,14 +117,14 @@ namespace wpl
 	}
 
 	font_accessor::font_accessor(FT_Library freetype_, const string &path, unsigned index, int height,
-			font::key::grid_fit grid_fit)
-		: _overscale(font::key::gf_vertical == grid_fit ? 1.0f / static_cast<real_t>(c_overscale) : 1.0f),
-			_hint(font::key::gf_none != grid_fit), _face(open_face(freetype_, path, index))
+			font_hinting hinting)
+		: _overscale(hint_vertical == hinting ? 1.0f / static_cast<real_t>(c_overscale) : 1.0f),
+			_hint(hint_none != hinting), _face(open_face(freetype_, path, index))
 	{	FT_Set_Pixel_Sizes(_face.get(), static_cast<int>(height / _overscale), height);	}
 
-	font::metrics font_accessor::get_metrics() const
+	font_metrics font_accessor::get_metrics() const
 	{
-		font::metrics m = {
+		font_metrics m = {
 			-scale_y(_face->size->metrics.ascender),
 			scale_y(_face->size->metrics.descender),
 			0.0f,
@@ -303,27 +303,30 @@ Do_Conic:
 	{	return static_cast<real_t>(-value) * c_26x6_unit;	}
 
 
-	size_t font_loader::font_key_hasher::operator ()(const font::key &/*key*/) const
+	size_t font_loader::font_key_hasher::operator ()(const font_descriptor &/*key*/) const
 	{	return 1;	}
 
 	font_loader::font_loader()
 		: _freetype(create_freetype())
 	{	build_index();	}
 
-	font::accessor_ptr font_loader::load(const wchar_t *family, int height, bool bold, bool italic,
-		font::key::grid_fit grid_fit)
+	font::accessor_ptr font_loader::load(const agge::font_descriptor &descriptor_)
 	{
-		const auto m = _mapping.find(font::key(family, 0, bold, italic, font::key::gf_none));
+		auto descriptor = descriptor_;
+		const auto m = _mapping.find((descriptor.height = 0, descriptor.hinting = hint_none, descriptor));
 
 		if (m != _mapping.end())
-			return make_shared<font_accessor>(_freetype.get(), m->second.first.c_str(), m->second.second, height, grid_fit);
+		{
+			return make_shared<wpl::font_accessor>(_freetype.get(), m->second.first.c_str(), m->second.second,
+				descriptor_.height, descriptor_.hinting);
+		}
 		return nullptr;
 	}
 
 	void font_loader::build_index()
 	{
 		string family;
-		font::key key(L"", 0);
+		font_descriptor key = {};
 		string path;
 
 		for (const auto e = create_fonts_enumerator(); e(path); )
@@ -336,8 +339,7 @@ Do_Conic:
 				const auto face = open_face(_freetype.get(), path, index);
 
 				faces = face->num_faces;
-				family = face->family_name;
-				key.typeface.assign(family.begin(), family.end());
+				key.family = face->family_name;
 				key.bold = !!(FT_STYLE_FLAG_BOLD & face->style_flags);
 				key.italic = !!(FT_STYLE_FLAG_ITALIC & face->style_flags);
 				_mapping[key] = make_pair(path, index);

@@ -22,7 +22,7 @@ namespace wpl
 					: text_engine_(*this)
 				{	}
 
-				virtual font::accessor_ptr load(const wchar_t *, int, bool, bool, font::key::grid_fit) override
+				virtual font::accessor_ptr load(const font_descriptor &/*descriptor*/) override
 				{	throw 0;	}
 
 				gcontext::text_engine_type text_engine_;

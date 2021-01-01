@@ -28,7 +28,7 @@ using namespace std;
 namespace wpl
 {
 	void render_string(gcontext::rasterizer_type &target, const wstring &text, gcontext::text_engine_type &text_engine_,
-		const font &font_, const rect_r &box_, layout::halign halign, valign valign_)
+		const font &font_, const rect_r &box_, text_alignment halign, text_alignment valign_)
 	{
 		const auto align_vcenter = [&] () -> real_t {
 			const auto gm = font_.get_metrics();
@@ -36,9 +36,9 @@ namespace wpl
 
 			return box_.y1 + 0.5f * wpl::height(box_) + 0.5f * fh - gm.descent;
 		};
-		const auto y = valign_ == va_top ? box_.y1 + font_.get_metrics().ascent : valign_ == va_bottom
+		const auto y = valign_ == align_near ? box_.y1 + font_.get_metrics().ascent : valign_ == align_far
 			? box_.y2 - font_.get_metrics().descent : align_vcenter();
-		const auto x = halign == layout::near_ ? box_.x1 : halign == layout::far_
+		const auto x = halign == align_near ? box_.x1 : halign == align_far
 			? box_.x2 : box_.x1 + 0.5f * wpl::width(box_);
 
 		text_engine_.render_string(target, font_, text.c_str(), halign, x, y, wpl::width(box_));

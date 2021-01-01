@@ -23,14 +23,11 @@
 #include "visual.h"
 
 #include <agge/tools.h>
-#include <agge/types.h>
-#include <agge.text/layout.h>
+#include <agge.text/font.h>
+#include <agge.text/types.h>
 
 namespace wpl
 {
-	enum valign {	va_top, va_bottom, va_center,	};
-
-
 	using agge::create_point;
 	using agge::create_rect;
 	using agge::width;
@@ -46,5 +43,5 @@ namespace wpl
 
 	void render_string(gcontext::rasterizer_type &target, const std::wstring &text,
 		gcontext::text_engine_type &text_engine, const agge::font &font, const agge::rect_r &box,
-		agge::layout::halign halign, valign valign_);
+		agge::text_alignment halign, agge::text_alignment valign_);
 }

@@ -54,7 +54,7 @@ namespace wpl
 			_fg_selected = ss.get_color("text.selected.listview");
 			_fg_focus_selected = ss.get_color("text.selected.listview");
 
-			agge::font::metrics m = _font->get_metrics();
+			auto m = _font->get_metrics();
 
 			_padding = ss.get_value("padding");
 			_baseline_offset = _padding + m.ascent;
@@ -115,7 +115,7 @@ namespace wpl
 			rect_r b(b_);
 
 			inflate(b, -_padding, -_padding);
-			render_string(*ras, text, ctx.text_engine, *_font, b, layout::near_, va_center);
+			render_string(*ras, text, ctx.text_engine, *_font, b, align_near, align_center);
 			ras->sort(true);
 			ctx(ras, blender(state & selected ? _fg_selected : _fg_normal), winding<>());
 		}

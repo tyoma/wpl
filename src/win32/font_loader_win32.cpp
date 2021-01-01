@@ -86,20 +86,20 @@ namespace wpl
 			}
 		}
 
-		font_accessor::font_accessor(int height, const wchar_t *typeface, bool bold, bool italic,
-				agge::font::key::grid_fit grid_fit)
-			: _native(::CreateFontW(-height, 0, 0, 0, bold ? FW_BOLD : FW_NORMAL, !!italic, FALSE, FALSE, 0,
-				0, 0, ANTIALIASED_QUALITY, 0, typeface), &::DeleteObject), _grid_fit(grid_fit)
+		font_accessor::font_accessor(int height, const char *typeface, bool bold, bool italic,
+				font_hinting hinting)
+			: _native(::CreateFontA(-height, 0, 0, 0, bold ? FW_BOLD : FW_NORMAL, !!italic, FALSE, FALSE, 0,
+				0, 0, ANTIALIASED_QUALITY, 0, typeface), &::DeleteObject), _hinting(hinting)
 		{	}
 
 		HFONT font_accessor::native() const
 		{	return static_cast<HFONT>(_native.get());	}
 
-		font::metrics font_accessor::get_metrics() const
+		font_metrics font_accessor::get_metrics() const
 		{
 			dc ctx;
 			dc::handle h(ctx.select(static_cast<HFONT>(_native.get())));
-			font::metrics m;
+			font_metrics m;
 			TEXTMETRIC tm;
 
 			::GetTextMetrics(ctx, &tm);
@@ -124,8 +124,8 @@ namespace wpl
 			typedef const void *pvoid;
 
 			const UINT format = GGO_GLYPH_INDEX | GGO_NATIVE | GGO_METRICS
-				| (font::key::gf_none == _grid_fit ? GGO_UNHINTED : 0);
-			const int xfactor = font::key::gf_vertical == _grid_fit ? 48 : 1;
+				| (hint_none == _hinting ? GGO_UNHINTED : 0);
+			const int xfactor = hint_vertical == _hinting ? 48 : 1;
 			const MAT2 c_identity = { { 0, (short)xfactor }, { 0, 0 }, { 0, 0 }, { 0, -1 }, };
 
 			GLYPHMETRICS gm;
@@ -137,7 +137,7 @@ namespace wpl
 			if (size == GDI_ERROR)
 				return o;
 
-			if (_grid_fit == font::key::gf_strong)
+			if (_hinting == hint_strong)
 			{
 				ABC abc;
 
@@ -202,8 +202,7 @@ namespace wpl
 			return o;
 		}
 
-		font::accessor_ptr font_loader::load(const wchar_t *typeface, int height, bool bold, bool italic,
-			font::key::grid_fit grid_fit)
-		{	return font::accessor_ptr(new font_accessor(height, typeface, bold, italic, grid_fit));	}
+		font::accessor_ptr font_loader::load(const font_descriptor &d)
+		{	return font::accessor_ptr(new font_accessor(d.height, d.family.c_str(), d.bold, d.italic, d.hinting));	}
 	}
 }

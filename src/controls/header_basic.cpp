@@ -60,7 +60,7 @@ namespace wpl
 			_fg_separator = ss.get_color("separator.header");
 			_fg_indicator = ss.get_color("text.header.indicator");
 
-			agge::font::metrics m = _font->get_metrics();
+			auto m = _font->get_metrics();
 
 			_padding = ss.get_value("padding.header");
 			_baseline_offset = _padding + m.ascent;
@@ -102,7 +102,7 @@ namespace wpl
 		void header_basic::draw_item(gcontext &ctx, gcontext::rasterizer_ptr &ras, const agge::rect_r &b, index_type /*item*/,
 			unsigned /*item_state_flags*/ state, const wstring &text) const
 		{
-			auto halign_ = /*item ? layout::far_ :*/ layout::near_;
+			auto halign_ = /*item ? align_far :*/ align_near;
 			auto box = b;
 
 			box.x2 -= _separator_width;
@@ -114,7 +114,7 @@ namespace wpl
 			{
 				const auto gbox = g->bounds();
 
-				if (halign_ == layout::far_)
+				if (halign_ == align_far)
 					add_path(*ras, offset(*g, box.x1 - gbox.x1, box.y1 - gbox.y1)), box.x1 += wpl::width(gbox) + _padding;
 				else
 					add_path(*ras, offset(*g, box.x2 - gbox.x2, box.y1 - gbox.y1)), box.x2 -= wpl::width(gbox) + _padding;
@@ -122,7 +122,7 @@ namespace wpl
 			}
 
 			// 2. Draw text.
-			render_string(*ras, text, ctx.text_engine, *_font, box, halign_, va_bottom);
+			render_string(*ras, text, ctx.text_engine, *_font, box, halign_, align_far);
 			ctx(ras, blender(state & sorted ? _fg_sorted : _fg_normal), winding<>());
 
 			// 3. Draw right separator.

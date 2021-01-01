@@ -35,15 +35,15 @@ namespace wpl
 		public:
 			font_manager();
 
-			std::shared_ptr<void> /*HFONT*/ get_font(const agge::font::key &font_key);
+			std::shared_ptr<void> /*HFONT*/ get_font(const agge::font_descriptor &font_key);
 
 		private:
 			struct key_less
 			{
-				bool operator ()(const agge::font::key &lhs, const agge::font::key &rhs) const;
+				bool operator ()(const agge::font_descriptor &lhs, const agge::font_descriptor &rhs) const;
 			};
 
-			typedef std::map<agge::font::key, std::weak_ptr<void> /*HFONT*/, key_less> font_cache;
+			typedef std::map<agge::font_descriptor, std::weak_ptr<void> /*HFONT*/, key_less> font_cache;
 
 		private:
 			std::shared_ptr<font_cache> _font_cache;

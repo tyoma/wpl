@@ -157,9 +157,9 @@ namespace wpl
 					shared_ptr<mocks::windowed_view>(new mocks::windowed_view("text")),
 				};
 
-				ss.set_font("text.static", text_engine->create_font(L"Arial", 10, false, false, agge::font::key::gf_none));
-				ss.set_font("text.edit", text_engine->create_font(L"Tahoma", -12, false, false, agge::font::key::gf_none));
-				ss.set_font("text", text_engine->create_font(L"Tahoma", 13, true, false, agge::font::key::gf_none));
+				ss.set_font("text.static", text_engine->create_font(agge::font_descriptor::create("Arial", 10, false, false, agge::hint_none)));
+				ss.set_font("text.edit", text_engine->create_font(agge::font_descriptor::create("Tahoma", -12, false, false, agge::hint_none)));
+				ss.set_font("text", text_engine->create_font(agge::font_descriptor::create("Tahoma", 13, true, false, agge::hint_none)));
 
 				// ACT
 				wv[0]->apply_styles(ss, fm);
@@ -171,11 +171,11 @@ namespace wpl
 				static_cast<native_view &>(*wv[2]).get_window(parent);
 
 				// ASSERT
-				assert_equal(fm.get_font(agge::font::key(L"Arial", 10)).get(),
+				assert_equal(fm.get_font(agge::font_descriptor::create("Arial", 10)).get(),
 					(void *)SendMessage(wv[0]->get_window(), WM_GETFONT, 0, 0));
-				assert_equal(fm.get_font(agge::font::key(L"Tahoma", -12)).get(),
+				assert_equal(fm.get_font(agge::font_descriptor::create("Tahoma", -12)).get(),
 					(void *)SendMessage(wv[1]->get_window(), WM_GETFONT, 0, 0));
-				assert_equal(fm.get_font(agge::font::key(L"Tahoma", 13, true)).get(),
+				assert_equal(fm.get_font(agge::font_descriptor::create("Tahoma", 13, true)).get(),
 					(void *)SendMessage(wv[2]->get_window(), WM_GETFONT, 0, 0));
 			}
 
@@ -187,22 +187,22 @@ namespace wpl
 				win32::font_manager fm;
 				mocks::windowed_view wv("text.static");
 
-				ss.set_font("text.static", text_engine->create_font(L"Arial", 10, false, false, agge::font::key::gf_none));
+				ss.set_font("text.static", text_engine->create_font(agge::font_descriptor::create("Arial", 10, false, false, agge::hint_none)));
 				wv.apply_styles(ss, fm);
 				static_cast<native_view &>(wv).get_window(parent);
 
 				// ACT
-				ss.set_font("text.static", text_engine->create_font(L"Tahoma", 18, false, false, agge::font::key::gf_none));
+				ss.set_font("text.static", text_engine->create_font(agge::font_descriptor::create("Tahoma", 18, false, false, agge::hint_none)));
 
 				// ASSERT
-				assert_equal(fm.get_font(agge::font::key(L"Arial", 10)).get(),
+				assert_equal(fm.get_font(agge::font_descriptor::create("Arial", 10)).get(),
 					(void *)SendMessage(wv.get_window(), WM_GETFONT, 0, 0));
 
 				// ACT
 				wv.apply_styles(ss, fm);
 
 				// ASSERT
-				assert_equal(fm.get_font(agge::font::key(L"Tahoma", 18)).get(),
+				assert_equal(fm.get_font(agge::font_descriptor::create("Tahoma", 18)).get(),
 					(void *)SendMessage(wv.get_window(), WM_GETFONT, 0, 0));
 			}
 
