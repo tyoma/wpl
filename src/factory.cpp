@@ -27,6 +27,7 @@ namespace wpl
 	{
 		auto i = _control_constructors.find(type);
 		control_context context_ = {
+			context.text_engine,
 			context.stylesheet_,
 			context.cursor_manager_,
 			context.clock_,

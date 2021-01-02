@@ -124,14 +124,9 @@ namespace wpl
 
 	font_descriptor font_accessor::get_descriptor() const
 	{
-		font_descriptor d= {
-			_face->family_name,
-			_height,
-			!!(FT_STYLE_FLAG_BOLD & _face->style_flags),
-			!!(FT_STYLE_FLAG_ITALIC & _face->style_flags),
-			_hinting,
-		};
-		return d;
+		return font_descriptor::create(_face->family_name, _height,
+			!!(FT_STYLE_FLAG_BOLD & _face->style_flags), !!(FT_STYLE_FLAG_ITALIC & _face->style_flags),
+			_hinting);
 	}
 
 	font_metrics font_accessor::get_metrics() const

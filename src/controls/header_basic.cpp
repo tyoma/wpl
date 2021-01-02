@@ -42,8 +42,9 @@ namespace wpl
 			typedef blender_solid_color<simd::blender_solid_color, platform_pixel_order> blender;
 		}
 
-		header_basic::header_basic(shared_ptr<cursor_manager> cursor_manager_)
-			: header_core(cursor_manager_)
+		header_basic::header_basic(shared_ptr<gcontext::text_engine_type> text_services,
+				shared_ptr<cursor_manager> cursor_manager_)
+			: header_core(cursor_manager_), _text_services(text_services)
 		{	}
 
 		header_basic::~header_basic()
@@ -51,7 +52,7 @@ namespace wpl
 
 		void header_basic::apply_styles(const stylesheet &ss)
 		{
-			_font = ss.get_font("text.header");
+			const font_style_annotation base_style = {	ss.get_font("text.header")->get_key(),	};
 
 			_bg = ss.get_color("background.header");
 			_bg_sorted = ss.get_color("background.header.sorted");
@@ -60,14 +61,13 @@ namespace wpl
 			_fg_separator = ss.get_color("separator.header");
 			_fg_indicator = ss.get_color("text.header.indicator");
 
-			auto m = _font->get_metrics();
-
 			_padding = ss.get_value("padding.header");
-			_baseline_offset = _padding + m.ascent;
 			_separator_width = ss.get_value("separator.header");
 
-			_up.reset(new glyph(glyphs::up(_font->get_key().height)));
-			_down.reset(new glyph(glyphs::down(_font->get_key().height)));
+			_up.reset(new glyph(glyphs::up(base_style.basic.height)));
+			_down.reset(new glyph(glyphs::down(base_style.basic.height)));
+
+			_caption_buffer.set_base_annotation(base_style);
 
 			invalidate(nullptr);
 		}
@@ -89,21 +89,33 @@ namespace wpl
 			ctx(ras, blender(_fg_separator), winding<>());
 		}
 
-		void header_basic::draw_item_background(gcontext &ctx, gcontext::rasterizer_ptr &ras, const agge::rect_r &b,
-			index_type /*item*/, unsigned /*item_state_flags*/ state) const
+		box<int> header_basic::measure_item(const columns_model &model, index_type item) const
 		{
+			_caption_buffer.clear();
+			model.get_caption(item, _caption_buffer);
+
+			box_r bounds = _text_services->measure(_caption_buffer);
+
+			bounds.w += _separator_width + 3.0f * _padding;
+			bounds.w += (max)(_up ? wpl::width(_up->bounds()) : 0.0f, _down ? wpl::width(_down->bounds()) : 0.0f);
+			bounds.h = (max)(bounds.h, _up ? wpl::width(_up->bounds()) : 0.0f);
+			bounds.h = (max)(bounds.h, _down ? wpl::width(_down->bounds()) : 0.0f);
+			bounds.h += _separator_width;
+			bounds.h += 2.0f * _padding;
+			return create_box(static_cast<int>(bounds.w + 0.999f), static_cast<int>(bounds.h + 0.999f));
+		}
+
+		void header_basic::draw_item(gcontext &ctx, gcontext::rasterizer_ptr &ras, const rect_r &b,
+			const columns_model &model, index_type item, unsigned /*item_state_flags*/ state) const
+		{
+			auto halign_ = /*item ? align_far :*/ align_near;
+			auto box = b;
+
 			if ((state & sorted) && _bg_sorted.a)
 			{
 				add_path(*ras, rectangle(b.x1, b.y1, b.x2, b.y2));
 				ctx(ras, blender(_bg_sorted), winding<>());
 			}
-		}
-
-		void header_basic::draw_item(gcontext &ctx, gcontext::rasterizer_ptr &ras, const agge::rect_r &b, index_type /*item*/,
-			unsigned /*item_state_flags*/ state, const wstring &text) const
-		{
-			auto halign_ = /*item ? align_far :*/ align_near;
-			auto box = b;
 
 			box.x2 -= _separator_width;
 			box.y2 -= _separator_width;
@@ -122,7 +134,9 @@ namespace wpl
 			}
 
 			// 2. Draw text.
-			render_string(*ras, text, ctx.text_engine, *_font, box, halign_, align_far);
+			_caption_buffer.clear();
+			model.get_caption(item, _caption_buffer);
+			ctx.text_engine.render(*ras, _caption_buffer, halign_, align_near, box);
 			ctx(ras, blender(state & sorted ? _fg_sorted : _fg_normal), winding<>());
 
 			// 3. Draw right separator.

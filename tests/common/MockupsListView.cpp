@@ -17,14 +17,22 @@ namespace wpl
 			}
 
 
+			columns_model::column::column()
+				: width(0)
+			{	}
+
+			columns_model::column::column(const std::wstring &caption_, short int width_)
+				: caption(caption_), width(width_)
+			{	}
+
 			columns_model::index_type columns_model::get_count() const throw()
 			{	return static_cast<index_type>(columns.size());	}
 
 			void columns_model::get_value(index_type index, short int &width) const
 			{	width = columns[index].width;	}
 
-			void columns_model::get_column(index_type index, column &column) const
-			{	column = columns[index];	}
+			void columns_model::get_caption(index_type index, agge::richtext_t &column) const
+			{	column = columns[index].caption.c_str();	}
 
 			void columns_model::update_column(index_type index, short int width)
 			{	columns[index].width = width;	}
@@ -37,10 +45,13 @@ namespace wpl
 
 			shared_ptr<columns_model> columns_model::create(const wstring &caption, short int width)
 			{
-				column columns[] = { column(caption, width), };
+				column columns[] = { column(caption.c_str(), width), };
 
 				return create(columns, npos(), false);
 			}
+
+			shared_ptr<columns_model> columns_model::create()
+			{	return shared_ptr<columns_model>(new columns_model);	}
 
 			void columns_model::set_sort_order(index_type column, bool ascending)
 			{

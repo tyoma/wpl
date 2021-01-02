@@ -44,6 +44,15 @@ namespace wpl
 			invalidate(nullptr);
 		}
 
+		int header_core::min_height(int /*for_width*/) const
+		{
+			int h = 0;
+
+			for (index_type i = 0, n = _model ? _model->get_count() : 0; i != n; ++i)
+				h = (max)(h, measure_item(*_model, i).h);
+			return h;
+		}
+
 		void header_core::set_model(shared_ptr<columns_model> model)
 		{
 			if (model)
@@ -93,7 +102,7 @@ namespace wpl
 
 				_model->get_value(h.first, initial_width);
 				_resize.start([this, index, initial_width] (int dx, int) {
-					auto w = (max<int>)(initial_width + dx, measure_column(*_model, index));
+					auto w = (max<int>)(initial_width + dx, measure_item(*_model, index).w);
 
 					_model->update_column(index, static_cast<short>(w));
 				}, capture, button_, x, y);
@@ -116,28 +125,23 @@ namespace wpl
 			if (_model)
 			{
 				auto rc = create_rect(real_t(), real_t(), -_offset, get_last_size().h);
-				columns_model::column c;
 
 				for (index_type i = 0, n = _model->get_count(); i != n; ++i)
 				{
 					auto state = i == _sorted_column.first ? sorted | (_sorted_column.second ? ascending : 0) : 0;
+					short width = 0;
 
-					_model->get_column(i, c);
+					_model->get_value(i, width);
 					rc.x1 = rc.x2;
-					rc.x2 += c.width;
+					rc.x2 += width;
 
-					draw_item_background(ctx, rasterizer_, rc, i, state);
-					draw_item(ctx, rasterizer_, rc, i, state, c.caption );
+					draw_item(ctx, rasterizer_, rc, *_model, i, state);
 				}
 			}
 		}
 
-		short header_core::measure_column(columns_model &/*model*/, index_type /*index*/) const
-		{	return 0;	}
-
-		void header_core::draw_item_background(gcontext &/*ctx*/, gcontext::rasterizer_ptr &/*rasterizer*/,
-			const rect_r &/*box*/, index_type /*item*/, unsigned /*item_state_flags*/ /*state*/) const
-		{	}
+		box<int> header_core::measure_item(const columns_model &/*model*/, index_type /*index*/) const
+		{	return zero();	}
 
 		pair<header_core::index_type, header_core::handle_type> header_core::handle_from_point(int x) const
 		{

@@ -16,5 +16,6 @@
   <ItemGroup>
     <ClInclude Include="..\application.h" />
     <ClInclude Include="..\stylesheet.h" />
+    <ClInclude Include="..\richtext.h" />
   </ItemGroup>
 </Project>

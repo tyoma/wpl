@@ -26,8 +26,6 @@
 #include "../controls.h"
 #include "../factory.h"
 #include "../helpers.h"
-#include "../layout.h"
-#include "../stylesheet.h"
 
 namespace wpl
 {
@@ -57,11 +55,6 @@ namespace wpl
 
 			void apply_styles(const stylesheet &ss)
 			{
-				const auto header_font_metrics = ss.get_font("text.header")->get_metrics();
-				
-				_header_height = static_cast<int>(2.0f * ss.get_value("padding.header")
-					+ header_font_metrics.ascent + header_font_metrics.descent
-					+ ss.get_value("separator.header"));
 				BaseControlT::apply_styles(ss);
 				this->layout_changed(false);
 			}
@@ -76,15 +69,16 @@ namespace wpl
 			virtual void layout(const placed_view_appender &append_view, const agge::box<int> &box) override
 			{
 				const int scroller_width = 15;
-				const int height2 = box.h - _header_height;
+				const int header_height = _header->min_height(box.w);
+				const int height2 = box.h - header_height;
 
 				_scrollers_views.clear();
-				BaseControlT::layout(offset(append_view, 0, _header_height), make_box(box.w, height2));
+				BaseControlT::layout(offset(append_view, 0, header_height), agge::create_box(box.w, height2));
 				_hscroller->layout(offset(collect(append_view, _scrollers_views), 0, box.h - scroller_width),
-					make_box(box.w, scroller_width));
-				_vscroller->layout(offset(collect(append_view, _scrollers_views), box.w - scroller_width, _header_height),
-					make_box(scroller_width, height2));
-				_header->layout(append_view, make_box(box.w, _header_height));
+					agge::create_box(box.w, scroller_width));
+				_vscroller->layout(offset(collect(append_view, _scrollers_views), box.w - scroller_width, header_height),
+					agge::create_box(scroller_width, height2));
+				_header->layout(append_view, agge::create_box(box.w, header_height));
 			}
 
 			virtual void mouse_scroll(int depressed, int x, int y, int delta_x, int delta_y) override
@@ -111,16 +105,9 @@ namespace wpl
 				};
 			}
 
-			static agge::box<int> make_box(int width, int height)
-			{
-				agge::box<int> b = { width, height };
-				return b;
-			}
-
 		private:
 			std::shared_ptr<header_basic> _header;
 			std::shared_ptr<wpl::scroller> _hscroller, _vscroller;
-			int _header_height;
 			wpl::slot_connection _scroll_connection;
 			std::vector<placed_view> _scrollers_views;
 		};

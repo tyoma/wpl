@@ -180,10 +180,10 @@ namespace wpl
 			_model->scroll_window(w.first, w.second);
 		}
 
-		real_t scroller::to_screen(const pair<double, double> &range, double c) const
+		real_t scroller::to_screen(const pair<double, double> &range_, double c) const
 		{
 			// TODO: fix division by zero below
-			return static_cast<real_t>((c - range.first) / (range.second * _rextent)) + 0.5f * _width;
+			return static_cast<real_t>((c - range_.first) / (range_.second * _rextent)) + 0.5f * _width;
 		}
 	}
 }

@@ -14,14 +14,25 @@ namespace
 	{
 	public:
 		my_columns()
-			: _columns(20, column(L"test", 60)), _sort_order(npos(), false)
+			: _widths(20, 60), _sort_order(npos(), false)
 		{	}
 
 	private:
-		virtual index_type get_count() const throw() override { return static_cast<index_type>(_columns.size()); }
-		virtual void get_value(index_type index, short int &w) const override { w = _columns[index].width; }
-		virtual void get_column(index_type index, column &column_) const override { column_ = _columns[index]; }
-		virtual void update_column(index_type index, short int width) override { _columns[index].width = width, invalidate(); }
+		virtual index_type get_count() const throw() override { return static_cast<index_type>(_widths.size()); }
+		virtual void get_value(index_type index, short int &w) const override { w = _widths[index]; }
+		virtual void get_caption(index_type index, agge::richtext_t &caption) const override
+		{
+			auto a = caption.current_annotation();
+
+			switch (index)
+			{
+			case 0: caption += L"Total\n(inclusive)"; break;
+			case 1: caption += L"Total\n(exclusive)"; break;
+			case 2: caption += L"Average\n(inclusive)"; break;
+			case 3: caption += L"Average\n(exclusive)"; break;
+			}
+		}
+		virtual void update_column(index_type index, short int width) override { _widths[index] = width, invalidate(); }
 		virtual pair<index_type, bool> get_sort_order() const throw() override { return _sort_order; }
 		virtual void activate_column(index_type index) override {
 			_sort_order.first = index, _sort_order.second = !_sort_order.second;
@@ -29,7 +40,7 @@ namespace
 		}
 
 	private:
-		vector<column> _columns;
+		vector<short> _widths;
 		pair<index_type, bool> _sort_order;
 	};
 

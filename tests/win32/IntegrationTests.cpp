@@ -54,10 +54,10 @@ namespace wpl
 				wt.created.clear();
 				f.first->set_visible(true);
 
-				columns_model::column columns[] = {
-					columns_model::column(L"", 100),
-					columns_model::column(L"", 100),
-					columns_model::column(L"", 50),
+				mocks::columns_model::column columns[] = {
+					mocks::columns_model::column(L"", 100),
+					mocks::columns_model::column(L"", 100),
+					mocks::columns_model::column(L"", 50),
 				};
 				mocks::columns_model_ptr cm(mocks::columns_model::create(columns, columns_model::npos(), false));
 				mocks::model_ptr m(new mocks::listview_model(3, 3));

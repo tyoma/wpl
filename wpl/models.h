@@ -23,6 +23,7 @@
 #include "concepts.h"
 #include "signal.h"
 
+#include <agge.text/richtext.h>
 #include <memory>
 #include <string>
 
@@ -79,19 +80,8 @@ namespace wpl
 
 	struct columns_model : columns_model_base
 	{
-		struct column;
-
-		virtual void get_column(index_type index, column &column) const = 0;
+		virtual void get_caption(index_type index, agge::richtext_t &caption) const = 0;
 		virtual void activate_column(index_type column) = 0;
-	};
-
-	struct columns_model::column
-	{
-		column();
-		explicit column(const std::wstring &caption, short int width = 0);
-
-		std::wstring caption;
-		short int width;
 	};
 
 
@@ -117,14 +107,6 @@ namespace wpl
 	inline std::shared_ptr<const trackable> list_model<ValueT, IndexT>::track(
 		typename index_traits_t<IndexT>::index_type /*row*/) const
 	{	return std::shared_ptr<const trackable>();	}
-
-
-	inline columns_model::column::column()
-	{	}
-
-	inline columns_model::column::column(const std::wstring &caption_, short int width_)
-		: caption(caption_), width(width_)
-	{	}
 
 
 	inline void table_model::precache(index_type /*from*/, index_type /*count*/) const

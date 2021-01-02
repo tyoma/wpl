@@ -44,8 +44,11 @@ namespace wpl
 
 			void set_offset(double offset);
 
+			// control methods
+			virtual int min_height(int for_width) const override;
+
 			// header methods
-			void set_model(std::shared_ptr<columns_model> model) override;
+			virtual void set_model(std::shared_ptr<columns_model> model) override;
 
 			// mouse_input methods
 			virtual void mouse_enter() override;
@@ -61,12 +64,10 @@ namespace wpl
 			enum handle_type { none_handle, column_handle, resize_handle };
 
 		private:
-			virtual short measure_column(columns_model &model, index_type index) const;
-			virtual void draw_item_background(gcontext &ctx, gcontext::rasterizer_ptr &rasterizer,
-				const agge::rect_r &box, index_type item, unsigned /*item_state_flags*/ state) const;
+			virtual agge::box<int> measure_item(const columns_model &model, index_type item) const;
 			virtual void draw_item(gcontext &ctx, gcontext::rasterizer_ptr &rasterizer,
-				const agge::rect_r &box, index_type item, unsigned /*item_state_flags*/ state,
-				const std::wstring &text) const = 0;
+				const agge::rect_r &box, const columns_model &model, index_type item,
+				unsigned /*item_state_flags*/ state) const = 0;
 
 			std::pair<index_type, handle_type> handle_from_point(int x) const;
 

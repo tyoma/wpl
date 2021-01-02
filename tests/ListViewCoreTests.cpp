@@ -18,7 +18,7 @@ namespace wpl
 	{
 		namespace
 		{
-			typedef columns_model::column column_t;
+			typedef mocks::columns_model::column column_t;
 
 			mocks::autotrackable_table_model_ptr create_model(table_model::index_type count,
 				columns_model::index_type columns_count = 1)
@@ -658,8 +658,8 @@ namespace wpl
 				// INIT
 				tracking_listview lv;
 				const auto sm = lv.get_hscroll_model();
-				columns_model::column columns[] = {
-					columns_model::column(L"", 17), columns_model::column(L"", 31),columns_model::column(L"", 23),
+				column_t columns[] = {
+					column_t(L"", 17), column_t(L"", 31),column_t(L"", 23),
 				};
 				auto cm = mocks::columns_model::create(columns, columns_model::npos(), false);
 
@@ -1123,8 +1123,8 @@ namespace wpl
 				auto sinvalidations = 0;
 				tracking_listview lv;
 				const auto sm = lv.get_hscroll_model();
-				columns_model::column columns[] = {
-					columns_model::column(L"#1", 103), columns_model::column(L"#2", 53), columns_model::column(L"#3", 43),
+				column_t columns[] = {
+					column_t(L"#1", 103), column_t(L"#2", 53), column_t(L"#3", 43),
 				};
 				const auto cm = mocks::columns_model::create(columns, columns_model::npos(), false);
 

@@ -23,7 +23,7 @@ namespace wpl
 	{
 		namespace
 		{
-			typedef columns_model::column column_def;
+			typedef mocks::columns_model::column column_t;
 
 			enum sort_direction	{	dir_none, dir_ascending, dir_descending	};
 
@@ -158,10 +158,10 @@ namespace wpl
 			{
 				// INIT
 				auto lv = create_listview();
-				column_def columns[] = {
-					column_def(L"Contract"),
-					column_def(L"Price"),
-					column_def(L"Volume"),
+				column_t columns[] = {
+					column_t(L"Contract"),
+					column_t(L"Price"),
+					column_t(L"Volume"),
 				};
 					
 				// ACT
@@ -179,9 +179,9 @@ namespace wpl
 			{
 				// INIT
 				auto lv = create_listview();
-				column_def columns[] = {
-					column_def(L"Contract"),
-					column_def(L"Price"),
+				column_t columns[] = {
+					column_t(L"Contract"),
+					column_t(L"Price"),
 				};
 					
 				// ACT
@@ -473,10 +473,10 @@ namespace wpl
 			{
 				// INIT
 				auto lv = create_listview();
-				column_def columns[] = {
-					column_def(L"", 10),
-					column_def(L"", 10),
-					column_def(L"", 10),
+				column_t columns[] = {
+					column_t(L"", 10),
+					column_t(L"", 10),
+					column_t(L"", 10),
 				};
 				mocks::model_ptr m(new mocks::listview_model(0));
 
@@ -507,9 +507,9 @@ namespace wpl
 			{
 				// INIT
 				auto lv = create_listview();
-				column_def columns[] = {
-					column_def(L"", 10),
-					column_def(L"", 10),
+				column_t columns[] = {
+					column_t(L"", 10),
+					column_t(L"", 10),
 				};
 				mocks::model_ptr m(new mocks::listview_model(0));
 
@@ -527,10 +527,10 @@ namespace wpl
 			{
 				// INIT
 				auto lv = create_listview();
-				column_def columns[] = {
-					column_def(L"", 10),
-					column_def(L"", 10),
-					column_def(L"", 10),
+				column_t columns[] = {
+					column_t(L"", 10),
+					column_t(L"", 10),
+					column_t(L"", 10),
 				};
 				mocks::model_ptr m(new mocks::listview_model(0));
 				mocks::columns_model_ptr cm(mocks::columns_model::create(columns, columns_model::npos(), false));
@@ -563,10 +563,10 @@ namespace wpl
 			{
 				// INIT
 				auto lv = create_listview();
-				column_def columns[] = {
-					column_def(L"", 10),
-					column_def(L"", 10),
-					column_def(L"", 10),
+				column_t columns[] = {
+					column_t(L"", 10),
+					column_t(L"", 10),
+					column_t(L"", 10),
 				};
 				mocks::columns_model_ptr cm(mocks::columns_model::create(columns, columns_model::npos(), false));
 				mocks::model_ptr m(new mocks::listview_model(0));
@@ -603,9 +603,9 @@ namespace wpl
 			{
 				// INIT
 				auto lv = create_listview();
-				column_def columns[] = {
-					column_def(L"", 10),
-					column_def(L"", 10),
+				column_t columns[] = {
+					column_t(L"", 10),
+					column_t(L"", 10),
 				};
 				mocks::model_ptr m1(new mocks::listview_model(0)), m2(new mocks::listview_model(0));
 				mocks::columns_model_ptr cm(mocks::columns_model::create(columns, 0, true));
@@ -639,9 +639,9 @@ namespace wpl
 			{
 				// INIT
 				auto lv = create_listview();
-				column_def columns[] = {
-					column_def(L"", 10),
-					column_def(L"", 10),
+				column_t columns[] = {
+					column_t(L"", 10),
+					column_t(L"", 10),
 				};
 				mocks::model_ptr m(new mocks::listview_model(0));
 
@@ -657,9 +657,9 @@ namespace wpl
 			{
 				// INIT
 				auto lv = create_listview();
-				column_def columns[] = {
-					column_def(L"", 10),
-					column_def(L"", 10),
+				column_t columns[] = {
+					column_t(L"", 10),
+					column_t(L"", 10),
 				};
 				mocks::columns_model_ptr cm(mocks::columns_model::create(columns, 1, true));
 
@@ -672,9 +672,9 @@ namespace wpl
 			{
 				// INIT
 				auto lv = create_listview();
-				column_def columns[] = {
-					column_def(L"", 10),
-					column_def(L"", 10),
+				column_t columns[] = {
+					column_t(L"", 10),
+					column_t(L"", 10),
 				};
 				mocks::columns_model_ptr cm1(mocks::columns_model::create(columns, columns_model::npos(), false));
 				mocks::columns_model_ptr cm2(mocks::columns_model::create(columns, 0, false));
@@ -707,9 +707,9 @@ namespace wpl
 			{
 				// INIT
 				auto lv = create_listview();
-				column_def columns[] = {
-					column_def(L"", 10),
-					column_def(L"", 10),
+				column_t columns[] = {
+					column_t(L"", 10),
+					column_t(L"", 10),
 				};
 				mocks::columns_model_ptr cm(mocks::columns_model::create(columns, columns_model::npos(), false));
 				mocks::model_ptr m(new mocks::listview_model(0));
@@ -744,9 +744,9 @@ namespace wpl
 			{
 				// INIT
 				auto lv = create_listview();
-				column_def columns[] = {
-					column_def(L"", 10),
-					column_def(L"", 10),
+				column_t columns[] = {
+					column_t(L"", 10),
+					column_t(L"", 10),
 				};
 				mocks::columns_model_ptr cm(mocks::columns_model::create(columns, 1, false));
 
@@ -765,9 +765,9 @@ namespace wpl
 			{
 				// INIT
 				auto lv = create_listview();
-				column_def columns[] = {
-					column_def(L"a", 23),
-					column_def(L"b", 15),
+				column_t columns[] = {
+					column_t(L"a", 23),
+					column_t(L"b", 15),
 				};
 				mocks::columns_model_ptr cm(mocks::columns_model::create(columns, columns_model::npos(), false));
 				mocks::model_ptr m(new mocks::listview_model(1, 4));
@@ -910,14 +910,14 @@ namespace wpl
 				// INIT
 				auto lv1 = create_listview();
 				auto lv2 = create_listview();
-				column_def columns3[] = {
-					column_def(L"_____ww"),
-					column_def(L"_____wwwwww"),
-					column_def(L"_____WW"),
+				column_t columns3[] = {
+					column_t(L"_____ww"),
+					column_t(L"_____wwwwww"),
+					column_t(L"_____WW"),
 				};
-				column_def columns2[] = {
-					column_def(L"_____ii"),
-					column_def(L"_____iiii"),
+				column_t columns2[] = {
+					column_t(L"_____ii"),
+					column_t(L"_____iiii"),
 				};
 
 				lv1.first->set_columns_model(mocks::columns_model::create(columns3, columns_model::npos(), false));
@@ -948,14 +948,14 @@ namespace wpl
 				// INIT
 				auto lv1 = create_listview();
 				auto lv2 = create_listview();
-				column_def columns3[] = {
-					column_def(L"one", 13),
-					column_def(L"two", 17),
-					column_def(L"three", 19),
+				column_t columns3[] = {
+					column_t(L"one", 13),
+					column_t(L"two", 17),
+					column_t(L"three", 19),
 				};
-				column_def columns2[] = {
-					column_def(L"Pears", 23),
-					column_def(L"Apples", 29),
+				column_t columns2[] = {
+					column_t(L"Pears", 23),
+					column_t(L"Apples", 29),
 				};
 
 				lv1.first->set_columns_model(mocks::columns_model::create(columns3, columns_model::npos(), false));
@@ -982,10 +982,10 @@ namespace wpl
 			{
 				// INIT
 				auto lv = create_listview();
-				column_def columns[] = {
-					column_def(L"one", 13),
-					column_def(L"two", 17),
-					column_def(L"three", 19),
+				column_t columns[] = {
+					column_t(L"one", 13),
+					column_t(L"two", 17),
+					column_t(L"three", 19),
 				};
 				mocks::columns_model_ptr cm = mocks::columns_model::create(columns, columns_model::npos(), false);
 				HDITEM item = {
@@ -1022,7 +1022,7 @@ namespace wpl
 			{
 				// INIT
 				auto lv = create_listview();
-				column_def columns[] = { column_def(L"one", 13),	};
+				column_t columns[] = { column_t(L"one", 13),	};
 				mocks::columns_model_ptr cm = mocks::columns_model::create(columns, columns_model::npos(), false);
 				HDITEM item = {
 					HDI_TEXT,
@@ -1935,9 +1935,9 @@ namespace wpl
 				auto lv = create_listview();
 				mocks::model_ptr m(new mocks::listview_model(10, 2));
 				mocks::trackable_ptr t(mocks::listview_trackable::add(m->trackables, 9));
-				column_def columns[] = {
-					column_def(L"iiii"),
-					column_def(L"wwwwwwwwwwwww"),
+				column_t columns[] = {
+					column_t(L"iiii"),
+					column_t(L"wwwwwwwwwwwww"),
 				};
 
 				lv.first->set_columns_model(mocks::columns_model::create(columns, columns_model::npos(), false));
@@ -2091,14 +2091,14 @@ namespace wpl
 				// INIT
 				shared_ptr<listview> lv(new win32::listview);
 				HWND hparent2 = create_parent_window();
-				column_def columns1[] = {
-					column_def(L"iiii", 23),
-					column_def(L"wwwwwwwwwwwww", 100),
+				column_t columns1[] = {
+					column_t(L"iiii", 23),
+					column_t(L"wwwwwwwwwwwww", 100),
 				};
-				column_def columns2[] = {
-					column_def(L"a", 130),
-					column_def(L"w", 100),
-					column_def(L"x", 50),
+				column_t columns2[] = {
+					column_t(L"a", 130),
+					column_t(L"w", 100),
+					column_t(L"x", 50),
 				};
 
 				lv->set_columns_model(mocks::columns_model::create(columns1, columns_model::npos(), false));
@@ -2246,10 +2246,10 @@ namespace wpl
 				wt.checkpoint();
 
 				RECT rc;
-				column_def columns[] = {
-					column_def(L"", 100),
-					column_def(L"", 100),
-					column_def(L"", 50),
+				column_t columns[] = {
+					column_t(L"", 100),
+					column_t(L"", 100),
+					column_t(L"", 50),
 				};
 				mocks::columns_model_ptr cm(mocks::columns_model::create(columns, columns_model::npos(), false));
 				mocks::model_ptr m(new mocks::listview_model(3, 3));

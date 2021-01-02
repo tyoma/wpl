@@ -40,12 +40,24 @@ namespace wpl
 			class columns_model : public wpl::columns_model
 			{
 			public:
+				struct column
+				{
+					column();
+					explicit column(const std::wstring &caption, short int width = 0);
+
+					std::wstring caption;
+					short int width;
+				};
+
+			public:
 				template<size_t n>
 				static std::shared_ptr<columns_model> create(const column (&columns)[n], index_type sort_column,
 					bool ascending)
 				{	return std::shared_ptr<columns_model>(new columns_model(columns, sort_column, ascending));	}
 
 				static std::shared_ptr<columns_model> create(const std::wstring &caption, short int width = 0);
+				static std::shared_ptr<columns_model> create();
+
 				void set_sort_order(index_type column, bool ascending);
 
 			public:
@@ -55,6 +67,10 @@ namespace wpl
 				bool sort_ascending;
 
 			private:
+				columns_model()
+					: sort_column(npos())
+				{	}
+
 				template<size_t n>
 				columns_model(const column (&columns_)[n], index_type sort_column_, bool ascending_)
 					: columns(columns_, columns_ + n), sort_column(sort_column_), sort_ascending(ascending_)
@@ -62,7 +78,7 @@ namespace wpl
 
 				virtual index_type get_count() const throw() override;
 				virtual void get_value(index_type index, short int &width) const override;
-				virtual void get_column(index_type index, column &column) const override;
+				virtual void get_caption(index_type index, agge::richtext_t &column) const override;
 				virtual void update_column(index_type index, short int width) override;
 				virtual std::pair<index_type, bool> get_sort_order() const throw() override;
 				virtual void activate_column(index_type column) override;

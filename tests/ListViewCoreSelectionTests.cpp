@@ -18,7 +18,7 @@ namespace wpl
 	{
 		namespace
 		{
-			typedef columns_model::column column_t;
+			typedef mocks::columns_model::column column_t;
 
 			mocks::autotrackable_table_model_ptr create_model(table_model::index_type count,
 				columns_model::index_type columns_count = 1)

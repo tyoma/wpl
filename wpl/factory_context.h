@@ -43,6 +43,7 @@ namespace wpl
 
 	struct control_context
 	{
+		std::shared_ptr<gcontext::text_engine_type> text_services;
 		std::shared_ptr<stylesheet> stylesheet_;
 		std::shared_ptr<cursor_manager> cursor_manager_;
 		clock clock_;

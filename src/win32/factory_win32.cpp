@@ -100,10 +100,12 @@ namespace wpl
 			return apply_stylesheet(make_shared<win32::combobox>(), *context.stylesheet_, font_manager);
 		});
 		factory_.register_control("header", [] (const factory &, const control_context &context) {
-			return apply_stylesheet(make_shared<controls::header_basic>(context.cursor_manager_), *context.stylesheet_);
+			return apply_stylesheet(make_shared<controls::header_basic>(context.text_services, context.cursor_manager_),
+				*context.stylesheet_);
 		});
 		factory_.register_control("listview", [] (const factory &f, const control_context &context) -> shared_ptr<control> {
-			return apply_stylesheet(make_shared< controls::listview_composite<controls::listview_basic> >(f, context), *context.stylesheet_);
+			return apply_stylesheet(make_shared< controls::listview_composite<controls::listview_basic> >(f, context),
+				*context.stylesheet_);
 		});
 		factory_.register_control("listview.native", [font_manager] (const factory &, const control_context &context) {
 			return apply_stylesheet(make_shared<win32::listview>(), *context.stylesheet_, font_manager);

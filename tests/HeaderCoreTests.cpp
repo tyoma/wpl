@@ -17,8 +17,7 @@ namespace wpl
 	{
 		namespace
 		{
-			typedef columns_model::column column_t;
-			enum drawing_event_type { item_background = 1, item_self = 4, };
+			typedef mocks::columns_model::column column_t;
 
 			class tracking_header : public controls::header_core
 			{
@@ -26,51 +25,37 @@ namespace wpl
 				struct drawing_event
 				{
 					template <typename T>
-					drawing_event(drawing_event_type type_, gcontext &context_,
-							const gcontext::rasterizer_ptr &rasterizer_, const agge::rect<T> &box_, index_type item_,
-							unsigned state_, wstring text_ = L"")
-						: type(type_), context(&context_), rasterizer(rasterizer_.get()), item(item_), state(state_),
-							text(text_)
+					drawing_event(gcontext &context_, const gcontext::rasterizer_ptr &rasterizer_, const agge::rect<T> &box_,
+							const columns_model &model_, index_type item_, unsigned state_)
+						: context(&context_), rasterizer(rasterizer_.get()), model(&model_), item(item_), state(state_)
 					{	box.x1 = box_.x1, box.y1 = box_.y1, box.x2 = box_.x2, box.y2 = box_.y2;	}
 
-					drawing_event_type type;
 					gcontext *context;
 					gcontext::rasterizer_type *rasterizer;
 					agge::rect<double> box;
+					const columns_model *model;
 					index_type item;
 					unsigned state;
-					wstring text;
 				};
 
 				using controls::header_core::item_state_flags;
 
 			public:
 				tracking_header(shared_ptr<cursor_manager> cursor_manager_)
-					: header_core(cursor_manager_), reported_events(item_background | item_self)
+					: header_core(cursor_manager_)
 				{	}
 
 			public:
 				mutable vector<drawing_event> events;
-				unsigned reported_events;
-				function<short (columns_model &model, columns_model::index_type index)> on_measure_column;
+				function<agge::box<int> (const columns_model &model, columns_model::index_type item)> on_measure_item;
 
 			private:
-				virtual short measure_column(columns_model &model, index_type index) const override
-				{	return on_measure_column ? on_measure_column(model, index) : 0;	}
+				virtual agge::box<int> measure_item(const columns_model &model, index_type item) const override
+				{	return on_measure_item ? on_measure_item(model, item) : agge::zero();	}
 
-				virtual void draw_item_background(gcontext &ctx, gcontext::rasterizer_ptr &rasterizer,
-					const agge::rect_r &box, index_type item, unsigned state) const override
-				{
-					if (item_background & reported_events)
-						events.push_back(drawing_event(item_background, ctx, rasterizer, box, item, state));
-				}
-
-				virtual void draw_item(gcontext &ctx, gcontext::rasterizer_ptr &rasterizer,
-					const agge::rect_r &box, index_type item, unsigned state, const wstring &text) const override
-				{
-					if (item_self & reported_events)
-						events.push_back(drawing_event(item_self, ctx, rasterizer, box, item, state, text));
-				}
+				virtual void draw_item(gcontext &ctx, gcontext::rasterizer_ptr &rasterizer, const agge::rect_r &box,
+					const columns_model &model, index_type item, unsigned state) const override
+				{	events.push_back(drawing_event(ctx, rasterizer, box, model, item, state));	}
 			};
 
 			typedef tracking_header::item_state_flags item_state;
@@ -82,9 +67,8 @@ namespace wpl
 				bool operator ()(const tracking_header::drawing_event &lhs,
 					const tracking_header::drawing_event &rhs) const
 				{
-					return lhs.type == rhs.type && lhs.context == rhs.context && lhs.rasterizer == rhs.rasterizer
-						&& (*this)(lhs.box, rhs.box) && lhs.item == rhs.item && lhs.state == rhs.state
-						&& lhs.text == rhs.text;
+					return lhs.context == rhs.context && lhs.rasterizer == rhs.rasterizer
+						&& (*this)(lhs.box, rhs.box) && lhs.item == rhs.item && lhs.state == rhs.state;
 				}
 
 				template <typename T1, typename T2>
@@ -230,17 +214,17 @@ namespace wpl
 			{
 				// INIT
 				tracking_header hdr(cursor_manager_);
+				const auto model = mocks::columns_model::create(L"abc", 123);
 
 				resize(hdr, 400, 50);
-				hdr.set_model(mocks::columns_model::create(L"abc", 123));
+				hdr.set_model(model);
 
 				// ACT
 				hdr.draw(*ctx, ras);
 
 				// ASSERT
 				tracking_header::drawing_event reference[] = {
-					tracking_header::drawing_event(item_background, *ctx, ras, create_rect(0, 0, 123, 50), 0, 0),
-					tracking_header::drawing_event(item_self, *ctx, ras, create_rect(0, 0, 123, 50), 0, 0, L"abc"),
+					tracking_header::drawing_event(*ctx, ras, create_rect(0, 0, 123, 50), *model, 0, 0),
 				};
 
 				assert_equal_pred(reference, hdr.events, rect_eq());
@@ -252,30 +236,29 @@ namespace wpl
 				// INIT
 				tracking_header hdr(cursor_manager_);
 				column_t c1[] = { column_t(L"abc", 10), column_t(L"abc zyx", 17), column_t(L"AA bbb Z", 25), };
+				auto model = mocks::columns_model::create(c1, columns_model::npos(), true);
 
 				resize(hdr, 1000, 33);
-				hdr.set_model(mocks::columns_model::create(c1, columns_model::npos(), true));
+				hdr.set_model(model);
 
 				// ACT
 				hdr.draw(*ctx, ras);
 
 				// ASSERT
 				tracking_header::drawing_event reference1[] = {
-					tracking_header::drawing_event(item_background, *ctx, ras, create_rect(0, 0, 10, 33), 0, 0),
-					tracking_header::drawing_event(item_self, *ctx, ras, create_rect(0, 0, 10, 33), 0, 0, L"abc"),
-					tracking_header::drawing_event(item_background, *ctx, ras, create_rect(10, 0, 27, 33), 1, 0),
-					tracking_header::drawing_event(item_self, *ctx, ras, create_rect(10, 0, 27, 33), 1, 0, L"abc zyx"),
-					tracking_header::drawing_event(item_background, *ctx, ras, create_rect(27, 0, 52, 33), 2, 0),
-					tracking_header::drawing_event(item_self, *ctx, ras, create_rect(27, 0, 52, 33), 2, 0, L"AA bbb Z"),
+					tracking_header::drawing_event(*ctx, ras, create_rect(0, 0, 10, 33), *model, 0, 0),
+					tracking_header::drawing_event(*ctx, ras, create_rect(10, 0, 27, 33), *model, 1, 0),
+					tracking_header::drawing_event(*ctx, ras, create_rect(27, 0, 52, 33), *model, 2, 0),
 				};
 
 				assert_equal_pred(reference1, hdr.events, rect_eq());
 
 				// INIT
 				column_t c2[] = { column_t(L"lorem", 100), column_t(L"ipsum", 17), };
+				model = mocks::columns_model::create(c2, columns_model::npos(), true);
 
 				resize(hdr, 1000, 13);
-				hdr.set_model(mocks::columns_model::create(c2, columns_model::npos(), true));
+				hdr.set_model(model);
 				hdr.events.clear();
 
 				// ACT
@@ -283,10 +266,8 @@ namespace wpl
 
 				// ASSERT
 				tracking_header::drawing_event reference2[] = {
-					tracking_header::drawing_event(item_background, *ctx, ras, create_rect(0, 0, 100, 13), 0, 0),
-					tracking_header::drawing_event(item_self, *ctx, ras, create_rect(0, 0, 100, 13), 0, 0, L"lorem"),
-					tracking_header::drawing_event(item_background, *ctx, ras, create_rect(100, 0, 117, 13), 1, 0),
-					tracking_header::drawing_event(item_self, *ctx, ras, create_rect(100, 0, 117, 13), 1, 0, L"ipsum"),
+					tracking_header::drawing_event(*ctx, ras, create_rect(0, 0, 100, 13), *model, 0, 0),
+					tracking_header::drawing_event(*ctx, ras, create_rect(100, 0, 117, 13), *model, 1, 0),
 				};
 
 				assert_equal_pred(reference2, hdr.events, rect_eq());
@@ -409,10 +390,10 @@ namespace wpl
 				resize(hdr, 1000, 33);
 				hdr.set_model(m);
 
-				hdr.on_measure_column = [&] (columns_model &m_, columns_model::index_type index) -> short {
+				hdr.on_measure_item = [&] (const columns_model &m_, columns_model::index_type index) -> agge::box<int> {
 					assert_equal(m.get(), &m_);
 					assert_equal(0, index);
-					return 11;
+					return agge::create_box(11, 0);
 				};
 
 				// ACT
@@ -430,9 +411,9 @@ namespace wpl
 
 				// INIT
 				hdr.mouse_up(mouse_input::left, 0, 25, 10);
-				hdr.on_measure_column = [&] (columns_model &, columns_model::index_type index) -> short {
+				hdr.on_measure_item = [&] (const columns_model &, columns_model::index_type index) -> agge::box<int> {
 					assert_equal(2, index);
-					return 23;
+					return agge::create_box(23, 0);
 				};
 
 				// ACT
@@ -441,6 +422,65 @@ namespace wpl
 
 				// ASSERT
 				assert_equal(23, m->columns[2].width);
+			}
+
+
+			test( MinimumHeightIsZeroOnMissingOrEmptyModel )
+			{
+				// INIT
+				tracking_header hdr(cursor_manager_);
+				column_t c[] = { column_t(L"", 17), column_t(L"", 13), column_t(L"", 29), };
+				const auto m = mocks::columns_model::create(c, columns_model::npos(), true);
+
+				resize(hdr, 1000, 33);
+
+				// ACT / ASSERT
+				assert_equal(0, hdr.min_height(0));
+
+				// INIT
+				hdr.set_model(mocks::columns_model::create());
+
+				// ACT / ASSERT
+				assert_equal(0, hdr.min_height(0));
+			}
+
+
+			test( MinimumHeightIsMaximumOfAllHeadersHeights )
+			{
+				// INIT
+				tracking_header hdr(cursor_manager_);
+				column_t c[] = { column_t(L"", 17), column_t(L"", 13), column_t(L"", 29), };
+				const auto m = mocks::columns_model::create(c, columns_model::npos(), true);
+
+				resize(hdr, 1000, 33);
+				hdr.set_model(m);
+
+				hdr.on_measure_item = [&] (const columns_model &, columns_model::index_type index) -> agge::box<int> {
+					switch (index)
+					{
+					case 0:	return agge::create_box(10, 5);
+					case 1:	return agge::create_box(10, 15);
+					case 2:	return agge::create_box(10, 7);
+					default:	throw 0;
+					}
+				};
+
+				// ACT / ASSERT
+				assert_equal(15, static_cast<const control &>(hdr).min_height(0));
+
+				// INIT
+				hdr.on_measure_item = [&] (const columns_model &, columns_model::index_type index) -> agge::box<int> {
+					switch (index)
+					{
+					case 0:	return agge::create_box(10, 21);
+					case 1:	return agge::create_box(10, 15);
+					case 2:	return agge::create_box(10, 7);
+					default:	throw 0;
+					}
+				};
+
+				// ACT / ASSERT
+				assert_equal(21, static_cast<const control &>(hdr).min_height(0));
 			}
 
 
@@ -575,14 +615,10 @@ namespace wpl
 
 				// ASSERT
 				tracking_header::drawing_event reference1[] = {
-					tracking_header::drawing_event(item_background, *ctx, ras, create_rect(0, 0, 10, 33), 0, 0),
-					tracking_header::drawing_event(item_self, *ctx, ras, create_rect(0, 0, 10, 33), 0, 0, L"a"),
-					tracking_header::drawing_event(item_background, *ctx, ras, create_rect(10, 0, 23, 33), 1, 0),
-					tracking_header::drawing_event(item_self, *ctx, ras, create_rect(10, 0, 23, 33), 1, 0, L"b"),
-					tracking_header::drawing_event(item_background, *ctx, ras, create_rect(23, 0, 40, 33), 2,
+					tracking_header::drawing_event(*ctx, ras, create_rect(0, 0, 10, 33), *m, 0, 0),
+					tracking_header::drawing_event(*ctx, ras, create_rect(10, 0, 23, 33), *m, 1, 0),
+					tracking_header::drawing_event(*ctx, ras, create_rect(23, 0, 40, 33), *m, 2,
 						controls::header_core::ascending | controls::header_core::sorted),
-					tracking_header::drawing_event(item_self, *ctx, ras, create_rect(23, 0, 40, 33), 2,
-						controls::header_core::ascending | controls::header_core::sorted, L"Z A"),
 				};
 
 				assert_equal_pred(reference1, hdr.events, rect_eq());
@@ -596,12 +632,9 @@ namespace wpl
 
 				// ASSERT
 				tracking_header::drawing_event reference2[] = {
-					tracking_header::drawing_event(item_background, *ctx, ras, create_rect(0, 0, 10, 33), 0, controls::header_core::sorted),
-					tracking_header::drawing_event(item_self, *ctx, ras, create_rect(0, 0, 10, 33), 0, controls::header_core::sorted, L"a"),
-					tracking_header::drawing_event(item_background, *ctx, ras, create_rect(10, 0, 23, 33), 1, 0),
-					tracking_header::drawing_event(item_self, *ctx, ras, create_rect(10, 0, 23, 33), 1, 0, L"b"),
-					tracking_header::drawing_event(item_background, *ctx, ras, create_rect(23, 0, 40, 33), 2, 0),
-					tracking_header::drawing_event(item_self, *ctx, ras, create_rect(23, 0, 40, 33), 2, 0, L"Z A"),
+					tracking_header::drawing_event(*ctx, ras, create_rect(0, 0, 10, 33), *m, 0, controls::header_core::sorted),
+					tracking_header::drawing_event(*ctx, ras, create_rect(10, 0, 23, 33), *m, 1, 0),
+					tracking_header::drawing_event(*ctx, ras, create_rect(23, 0, 40, 33), *m, 2, 0),
 				};
 
 				assert_equal_pred(reference2, hdr.events, rect_eq());
@@ -652,14 +685,10 @@ namespace wpl
 
 				// ASSERT
 				tracking_header::drawing_event reference1[] = {
-					tracking_header::drawing_event(item_background, *ctx, ras, create_rect(-13.7, 0.0, -3.7, 33.0), 0, 0),
-					tracking_header::drawing_event(item_self, *ctx, ras, create_rect(-13.7, 0.0, -3.7, 33.0), 0, 0, L"a"),
-					tracking_header::drawing_event(item_background, *ctx, ras, create_rect(-3.7, 0.0, 9.3, 33.0), 1, 0),
-					tracking_header::drawing_event(item_self, *ctx, ras, create_rect(-3.7, 0.0, 9.3, 33.0), 1, 0, L"b"),
-					tracking_header::drawing_event(item_background, *ctx, ras, create_rect(9.3, 0.0, 26.3, 33.0), 2,
+					tracking_header::drawing_event(*ctx, ras, create_rect(-13.7, 0.0, -3.7, 33.0), *m, 0, 0),
+					tracking_header::drawing_event(*ctx, ras, create_rect(-3.7, 0.0, 9.3, 33.0), *m, 1, 0),
+					tracking_header::drawing_event(*ctx, ras, create_rect(9.3, 0.0, 26.3, 33.0), *m, 2,
 						controls::header_core::ascending | controls::header_core::sorted),
-					tracking_header::drawing_event(item_self, *ctx, ras, create_rect(9.3, 0.0, 26.3, 33.0), 2,
-						controls::header_core::ascending | controls::header_core::sorted, L"Z A"),
 				};
 
 				assert_equal_pred(reference1, hdr.events, rect_eq());
@@ -673,14 +702,10 @@ namespace wpl
 
 				// ASSERT
 				tracking_header::drawing_event reference2[] = {
-					tracking_header::drawing_event(item_background, *ctx, ras, create_rect(1, 0, 11, 33), 0, 0),
-					tracking_header::drawing_event(item_self, *ctx, ras, create_rect(1, 0, 11, 33), 0, 0, L"a"),
-					tracking_header::drawing_event(item_background, *ctx, ras, create_rect(11, 0, 24, 33), 1, 0),
-					tracking_header::drawing_event(item_self, *ctx, ras, create_rect(11, 0, 24, 33), 1, 0, L"b"),
-					tracking_header::drawing_event(item_background, *ctx, ras, create_rect(24, 0, 41, 33), 2,
+					tracking_header::drawing_event(*ctx, ras, create_rect(1, 0, 11, 33), *m, 0, 0),
+					tracking_header::drawing_event(*ctx, ras, create_rect(11, 0, 24, 33), *m, 1, 0),
+					tracking_header::drawing_event(*ctx, ras, create_rect(24, 0, 41, 33), *m, 2,
 						controls::header_core::ascending | controls::header_core::sorted),
-					tracking_header::drawing_event(item_self, *ctx, ras, create_rect(24, 0, 41, 33), 2,
-						controls::header_core::ascending | controls::header_core::sorted, L"Z A"),
 				};
 
 				assert_equal_pred(reference2, hdr.events, rect_eq());
@@ -716,7 +741,6 @@ namespace wpl
 				tracking_header hdr(cursor_manager_);
 				auto invalidations = 0;
 				column_t columns[] = { column_t(L"a", 10), column_t(L"b", 13), column_t(L"Z A", 17), };
-				const auto m = mocks::columns_model::create(columns, 2, true);
 
 				resize(hdr, 1000, 33);
 				hdr.set_model(mocks::columns_model::create(columns, 2, true));
@@ -765,7 +789,6 @@ namespace wpl
 				// INIT
 				tracking_header hdr(cursor_manager_);
 				column_t columns[] = { column_t(L"a", 10), column_t(L"b", 13), column_t(L"Z A", 17), };
-				const auto m = mocks::columns_model::create(columns, 2, true);
 
 				resize(hdr, 1000, 33);
 				hdr.set_model(mocks::columns_model::create(columns, 2, true));

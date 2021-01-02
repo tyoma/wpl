@@ -42,8 +42,12 @@ namespace wpl
 				listview_style = LVS_EX_FULLROWSELECT | LVS_EX_DOUBLEBUFFER,
 			};
 
-			void convert_cp(wstring &to, const wstring &from)
-			{	to = from;	}
+			void convert_cp(wstring &to, const agge::richtext_t &from)
+			{
+				to.clear();
+				for (auto i = from.ranges_begin(); i != from.ranges_end(); ++i)
+					to.insert(to.end(), i->begin(), i->end());
+			}
 
 			void convert_cp(string &to, const wstring &from)
 			{
@@ -230,21 +234,23 @@ namespace wpl
 
 		void listview::setup_columns(HWND hlistview, const columns_model &cm)
 		{
-			tstring caption;
+			short width;
+			agge::richtext_t caption;
+			tstring caption_plain;
 			LVCOLUMN lvcolumn = { };
-			columns_model::column c;
 			pair<columns_model::index_type, bool> sort_order = cm.get_sort_order();
 
 			for (int i = Header_GetItemCount(ListView_GetHeader(hlistview)) - 1; i >= 0; --i)
 				ListView_DeleteColumn(hlistview, i);
 			for (columns_model::index_type i = 0, count = cm.get_count(); i != count; ++i)
 			{
-				cm.get_column(i, c);
-				convert_cp(caption, c.caption);
+				cm.get_value(i, width);
+				cm.get_caption(i, caption);
+				convert_cp(caption_plain, caption);
 				lvcolumn.mask = LVCF_SUBITEM | LVCF_TEXT | LVCF_WIDTH;
-				lvcolumn.pszText = (LPTSTR)caption.c_str();
+				lvcolumn.pszText = (LPTSTR)caption_plain.c_str();
 				lvcolumn.iSubItem = i;
-				lvcolumn.cx = c.width;
+				lvcolumn.cx = width;
 				ListView_InsertColumn(hlistview, i, &lvcolumn);
 			}
 			set_column_direction(hlistview, sort_order.first, sort_order.second ? dir_ascending : dir_descending);

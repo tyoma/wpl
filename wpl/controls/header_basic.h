@@ -36,7 +36,8 @@ namespace wpl
 		class header_basic : public header_core
 		{
 		public:
-			header_basic(std::shared_ptr<cursor_manager> cursor_manager_);
+			header_basic(std::shared_ptr<gcontext::text_engine_type> text_services,
+				std::shared_ptr<cursor_manager> cursor_manager_);
 			~header_basic();
 
 			void apply_styles(const stylesheet &stylesheet_);
@@ -46,16 +47,16 @@ namespace wpl
 			virtual void draw(gcontext &ctx, gcontext::rasterizer_ptr &rasterizer) const override;
 
 			// header_core methods
-			virtual void draw_item_background(gcontext &ctx, gcontext::rasterizer_ptr &rasterizer,
-				const agge::rect_r &box, index_type item, unsigned /*item_state_flags*/ state) const override;
+			virtual agge::box<int> measure_item(const columns_model &model, index_type index) const override;
 			virtual void draw_item(gcontext &ctx, gcontext::rasterizer_ptr &ras, const agge::rect_r &b,
-				index_type item, unsigned /*item_state_flags*/ state, const std::wstring &text) const override;
+				const columns_model &model, index_type item, unsigned /*item_state_flags*/ state) const override;
 
 		private:
-			agge::real_t _padding, _baseline_offset, _separator_width;
-			agge::font::ptr _font;
+			std::shared_ptr<gcontext::text_engine_type> _text_services;
+			agge::real_t _padding, _separator_width;
 			agge::color _bg, _bg_sorted, _fg_normal, _fg_sorted, _fg_separator, _fg_indicator;
 			std::unique_ptr<glyph> _up, _down;
+			mutable agge::richtext_t _caption_buffer;
 		};
 	}
 }

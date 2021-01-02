@@ -173,6 +173,7 @@ namespace wpl
 				assert_equal(&f, passed_context.first);
 				assert_equal(context.stylesheet_, passed_context.second.stylesheet_);
 				assert_equal(context.cursor_manager_, passed_context.second.cursor_manager_);
+				assert_equal(context.text_engine, passed_context.second.text_services);
 				ts = 12345678;
 				assert_equal(ts, passed_context.second.clock_());
 				ts = 912345678;
