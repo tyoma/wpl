@@ -17,6 +17,7 @@ namespace wpl
 
 			struct dummy_accessor_ : agge::font::accessor
 			{
+				virtual agge::font_descriptor get_descriptor() const override {	return agge::zero();	}
 				virtual agge::font_metrics get_metrics() const override {	return agge::zero();	}
 				virtual agge::uint16_t get_glyph_index(wchar_t) const override {	throw 0;	}
 				virtual agge::glyph::outline_ptr load_glyph(agge::uint16_t, agge::glyph::glyph_metrics &) const override {	throw 0;	}
@@ -28,9 +29,9 @@ namespace wpl
 			init( Init )
 			{
 				dummy_accessor.reset(new dummy_accessor_);
-				font1.reset(new agge::font(agge::font_descriptor::create("", 1), dummy_accessor));
-				font2.reset(new agge::font(agge::font_descriptor::create("", 1), dummy_accessor));
-				font3.reset(new agge::font(agge::font_descriptor::create("", 1), dummy_accessor));
+				font1.reset(new agge::font(dummy_accessor));
+				font2.reset(new agge::font(dummy_accessor));
+				font3.reset(new agge::font(dummy_accessor));
 			}
 
 

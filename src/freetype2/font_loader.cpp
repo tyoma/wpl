@@ -119,8 +119,20 @@ namespace wpl
 	font_accessor::font_accessor(FT_Library freetype_, const string &path, unsigned index, int height,
 			font_hinting hinting)
 		: _overscale(hint_vertical == hinting ? 1.0f / static_cast<real_t>(c_overscale) : 1.0f),
-			_hint(hint_none != hinting), _face(open_face(freetype_, path, index))
+			_height(height), _hinting(hinting), _face(open_face(freetype_, path, index))
 	{	FT_Set_Pixel_Sizes(_face.get(), static_cast<int>(height / _overscale), height);	}
+
+	font_descriptor font_accessor::get_descriptor() const
+	{
+		font_descriptor d= {
+			_face->family_name,
+			_height,
+			!!(FT_STYLE_FLAG_BOLD & _face->style_flags),
+			!!(FT_STYLE_FLAG_ITALIC & _face->style_flags),
+			_hinting,
+		};
+		return d;
+	}
 
 	font_metrics font_accessor::get_metrics() const
 	{
@@ -140,7 +152,7 @@ namespace wpl
 	{
 		glyph::outline_ptr path(new glyph::outline_storage);
 
-		if (FT_Error error = FT_Load_Glyph(_face.get(), index, _hint ? FT_LOAD_DEFAULT : FT_LOAD_NO_HINTING))
+		if (FT_Error error = FT_Load_Glyph(_face.get(), index, _hinting ? FT_LOAD_DEFAULT : FT_LOAD_NO_HINTING))
 			return path;
 		m.advance_x = scale_x(_face->glyph->advance.x);
 		m.advance_y = scale_y(_face->glyph->advance.y);

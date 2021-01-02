@@ -86,14 +86,16 @@ namespace wpl
 			}
 		}
 
-		font_accessor::font_accessor(int height, const char *typeface, bool bold, bool italic,
-				font_hinting hinting)
-			: _native(::CreateFontA(-height, 0, 0, 0, bold ? FW_BOLD : FW_NORMAL, !!italic, FALSE, FALSE, 0,
-				0, 0, ANTIALIASED_QUALITY, 0, typeface), &::DeleteObject), _hinting(hinting)
+		font_accessor::font_accessor(const agge::font_descriptor &d)
+			: _native(::CreateFontA(-d.height, 0, 0, 0, d.bold ? FW_BOLD : FW_NORMAL, !!d.italic, FALSE, FALSE, 0,
+				0, 0, ANTIALIASED_QUALITY, 0, d.family.c_str()), &::DeleteObject), _descriptor(d)
 		{	}
 
 		HFONT font_accessor::native() const
 		{	return static_cast<HFONT>(_native.get());	}
+
+		font_descriptor font_accessor::get_descriptor() const
+		{	return _descriptor;	}
 
 		font_metrics font_accessor::get_metrics() const
 		{
@@ -124,8 +126,8 @@ namespace wpl
 			typedef const void *pvoid;
 
 			const UINT format = GGO_GLYPH_INDEX | GGO_NATIVE | GGO_METRICS
-				| (hint_none == _hinting ? GGO_UNHINTED : 0);
-			const int xfactor = hint_vertical == _hinting ? 48 : 1;
+				| (hint_none == _descriptor.hinting ? GGO_UNHINTED : 0);
+			const int xfactor = hint_vertical == _descriptor.hinting ? 48 : 1;
 			const MAT2 c_identity = { { 0, (short)xfactor }, { 0, 0 }, { 0, 0 }, { 0, -1 }, };
 
 			GLYPHMETRICS gm;
@@ -137,7 +139,7 @@ namespace wpl
 			if (size == GDI_ERROR)
 				return o;
 
-			if (_hinting == hint_strong)
+			if (_descriptor.hinting == hint_strong)
 			{
 				ABC abc;
 
@@ -203,6 +205,6 @@ namespace wpl
 		}
 
 		font::accessor_ptr font_loader::load(const font_descriptor &d)
-		{	return font::accessor_ptr(new font_accessor(d.height, d.family.c_str(), d.bold, d.italic, d.hinting));	}
+		{	return font::accessor_ptr(new font_accessor(d));	}
 	}
 }

@@ -67,6 +67,7 @@ namespace wpl
 			agge::font_hinting hinting);
 
 	private:
+		virtual agge::font_descriptor get_descriptor() const override;
 		virtual agge::font_metrics get_metrics() const override;
 		virtual agge::uint16_t get_glyph_index(wchar_t character) const override;
 		virtual agge::glyph::outline_ptr load_glyph(agge::uint16_t index, agge::glyph::glyph_metrics &m) const override;
@@ -77,6 +78,7 @@ namespace wpl
 	private:
 		std::shared_ptr<FT_FaceRec> _face;
 		agge::real_t _overscale;
-		bool _hint;
+		int _height;
+		agge::font_hinting _hinting;
 	};
 }
