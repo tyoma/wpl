@@ -187,6 +187,10 @@ namespace wpl
 				layout_views(LOWORD(lparam), HIWORD(lparam));
 				break;
 
+			case WM_KILLFOCUS:
+				_keyboard_router.set_focus(nullptr);
+				break;
+
 			case WM_KEYDOWN:
 			case WM_KEYUP:
 				dispatch_key(message, wparam, lparam);

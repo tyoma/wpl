@@ -233,6 +233,7 @@
     <ClInclude Include="..\wpl\macos\cursor_manager.h">
       <Filter>macos</Filter>
     </ClInclude>
+    <ClInclude Include="..\wpl\view_helpers.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="macos\form.mm">

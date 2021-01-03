@@ -1,7 +1,8 @@
 #include <wpl/controls/listview_core.h>
 
-#include <tests/common/helpers.h>
 #include "helpers-listview.h"
+
+#include <tests/common/helpers.h>
 #include <tests/common/helpers-visual.h>
 #include <tests/common/Mockups.h>
 #include <tests/common/MockupsListView.h>

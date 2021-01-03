@@ -11,6 +11,7 @@ set(WPL_TEST_SOURCES
 	LayoutTests.cpp
 	ListViewCoreSelectionTests.cpp
 	ListViewCoreTests.cpp
+	MiscTests.cpp
 	MouseRouterTests.cpp
 	ScrollerTests.cpp
 	SignalBaseTests.cpp

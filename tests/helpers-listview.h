@@ -39,7 +39,7 @@ namespace wpl
 		public:
 			tracking_listview()
 				: item_height(0), reported_events(item_background | subitem_background | item_self | subitem_self)
-			{	}
+			{	got_focus();	}
 
 		public:
 			mutable std::vector<drawing_event> events;

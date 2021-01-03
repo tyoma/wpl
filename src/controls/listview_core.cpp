@@ -260,7 +260,7 @@ namespace wpl
 			const index_type item_count = _model->get_count();
 			const columns_model::index_type columns = _cmodel->get_count();
 			const real_t item_height = get_minimal_item_height();
-			const index_type focused_item = _focused ? _focused->index() : npos();
+			const index_type focused_item = has_focus && _focused ? _focused->index() : npos();
 			real_t total_width = 0.0f;
 			index_type r = (max)(0, static_cast<int>(_offset.dy));
 			auto box = create_rect(real_t(), item_height * static_cast<real_t>(r - _offset.dy), real_t(), real_t());

@@ -148,6 +148,7 @@
     <ClInclude Include="..\wpl\stylesheet_helpers.h" />
     <ClInclude Include="..\wpl\types.h" />
     <ClInclude Include="..\wpl\view.h" />
+    <ClInclude Include="..\wpl\view_helpers.h" />
     <ClInclude Include="..\wpl\view_host.h" />
     <ClInclude Include="..\wpl\visual_router.h" />
     <ClInclude Include="..\wpl\visual.h" />

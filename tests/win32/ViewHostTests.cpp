@@ -1193,6 +1193,36 @@ namespace wpl
 			}
 
 
+			test( FocusedViewIsNotifiedOfFocusLostOnWindowFocusLost )
+			{
+				// INIT
+				const auto v = make_shared< mocks::logging_key_input<view> >();
+				const placed_view pv[] = {
+					{	v, nullptr, create_rect(100, 1, 191, 201), 1	},
+					{	nullptr, make_shared<mocks::native_view_window>(), create_rect(1, 1, 191, 201), 2	},
+				};
+				const auto ctl = make_shared<mocks::control>();
+				const auto hwnd = create_window(true, 100, 100);
+				win32::view_host vh(hwnd, context);
+//				mouse_router_host &mrhost = vh;
+
+				ctl->views.assign(begin(pv), end(pv));
+				vh.set_root(ctl);
+
+				v->events.clear();
+
+				// ACT
+				::SetFocus(pv[1].native->get_window());
+
+				// ASSERT
+				mocks::keyboard_event reference[] = {
+					{ mocks::keyboard_event::focusout, 0, 0 },
+				};
+
+				assert_equal(reference, v->events);
+			}
+
+
 			test( WindowDoesNotObtainFocusOnFocusRequestForANonKeyInputView )
 			{
 				// INIT

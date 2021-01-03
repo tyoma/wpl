@@ -43,6 +43,7 @@
     <ClCompile Include="AnimatedModelsTests.cpp" />
     <ClCompile Include="DragHelperTests.cpp" />
     <ClCompile Include="KeyboardRouterTests.cpp" />
+    <ClCompile Include="MiscTests.cpp" />
     <ClCompile Include="MouseRouterTests.cpp" />
     <ClCompile Include="FactoryTests.cpp" />
     <ClCompile Include="ListViewCoreSelectionTests.cpp" />

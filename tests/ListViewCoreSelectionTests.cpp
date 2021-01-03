@@ -300,6 +300,28 @@ namespace wpl
 
 				assert_equal_pred(reference2, lv.events, listview_event_eq());
 				assert_equal(3, invalidate);
+
+				// ACT
+				static_cast<keyboard_input &>(lv).lost_focus();
+
+				// ASSERT
+				assert_equal(4, invalidate);
+
+				// INIT
+				lv.events.clear();
+
+				// ACT
+				lv.draw(*ctx, ras);
+
+				// ASSERT
+				tracking_listview::drawing_event reference3[] = {
+					tracking_listview::drawing_event(tracking_listview::item_self, *ctx, ras, create_rect(0, 0, 1, 1), 0, 0),
+					tracking_listview::drawing_event(tracking_listview::item_self, *ctx, ras, create_rect(0, 1, 1, 2), 1, 0),
+					tracking_listview::drawing_event(tracking_listview::item_self, *ctx, ras, create_rect(0, 2, 1, 3), 2, controls::listview_core::selected),
+					tracking_listview::drawing_event(tracking_listview::item_self, *ctx, ras, create_rect(0, 3, 1, 4), 3, 0),
+				};
+
+				assert_equal_pred(reference3, lv.events, listview_event_eq());
 			}
 
 

@@ -21,6 +21,7 @@
 #pragma once
 
 #include "../controls.h"
+#include "../view_helpers.h"
 #include "integrated.h"
 
 #include <vector>
@@ -29,7 +30,7 @@ namespace wpl
 {
 	namespace controls
 	{
-		class listview_core : public integrated_control<wpl::listview>, public index_traits
+		class listview_core : public on_focus_invalidate< integrated_control<wpl::listview> >, public index_traits
 		{
 		public:
 			enum item_state_flags {
