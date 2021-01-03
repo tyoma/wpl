@@ -47,7 +47,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\application.h" />
-    <ClInclude Include="..\richtext.h" />
     <ClInclude Include="..\stylesheet.h" />
   </ItemGroup>
   <ItemGroup>

@@ -1,5 +1,4 @@
 #include <samples/common/application.h>
-#include <samples/common/richtext.h>
 #include <wpl/controls.h>
 #include <wpl/factory.h>
 #include <wpl/form.h>
@@ -11,6 +10,9 @@ using namespace wpl;
 
 namespace
 {
+	agge::richtext_t &operator <<(agge::richtext_t &lhs, const wchar_t *rhs)
+	{	return lhs += rhs, lhs;	}
+
 	class my_columns : public columns_model
 	{
 	public:
@@ -28,19 +30,19 @@ namespace
 			switch (index)
 			{
 			case 0:
-				caption << L"Total\n" << modify_height(static_cast<int>(0.8 * a.basic.height)) << L"(inclusive)";
+				caption << L"Total\n" << agge::style::height(static_cast<int>(0.8 * a.basic.height)) << L"(inclusive)";
 				break;
 
 			case 1:
-				caption << L"Total\n" << modify_height(static_cast<int>(0.8 * a.basic.height)) << L"(exclusive)";
+				caption << L"Total\n" << agge::style::height(static_cast<int>(0.8 * a.basic.height)) << L"(exclusive)";
 				break;
 
 			case 2:
-				caption << L"Average\n" << modify_height(static_cast<int>(0.8 * a.basic.height)) << L"(inclusive)";
+				caption << L"Average\n" << agge::style::height(static_cast<int>(0.8 * a.basic.height)) << L"(inclusive)";
 				break;
 
 			case 3:
-				caption << L"Average\n" << modify_height(static_cast<int>(0.8 * a.basic.height)) << L"(exclusive)";
+				caption << L"Average\n" << agge::style::height(static_cast<int>(0.8 * a.basic.height)) << L"(exclusive)";
 				break;
 			}
 		}
