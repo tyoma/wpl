@@ -4,6 +4,7 @@
 #include <ut/test.h>
 #include <windows.h>
 
+using namespace agge;
 using namespace std;
 
 namespace wpl
@@ -29,11 +30,11 @@ namespace wpl
 
 				// ACT
 				shared_ptr<void> fonts[] = {
-					m.get_font(agge::font_descriptor::create("Arial", 10, true, false)),
-					m.get_font(agge::font_descriptor::create("Arial", 12, true, false)),
-					m.get_font(agge::font_descriptor::create("Arial", 12, true, true)),
-					m.get_font(agge::font_descriptor::create("Tahoma", 13, true, true)),
-					m.get_font(agge::font_descriptor::create("Times New Roman", 17, false, true)),
+					m.get_font(agge::font_descriptor::create("Arial", 10, bold, false)),
+					m.get_font(agge::font_descriptor::create("Arial", 12, bold, false)),
+					m.get_font(agge::font_descriptor::create("Arial", 12, bold, true)),
+					m.get_font(agge::font_descriptor::create("Tahoma", 13, bold, true)),
+					m.get_font(agge::font_descriptor::create("Times New Roman", 17, regular, true)),
 				};
 
 				// ASSERT
@@ -50,9 +51,9 @@ namespace wpl
 
 				// ACT
 				shared_ptr<void> fonts[] = {
-					m.get_font(agge::font_descriptor::create("Arial", 10, true, false)),
-					m.get_font(agge::font_descriptor::create("Times New Roman", 17, false, false)),
-					m.get_font(agge::font_descriptor::create("Tahoma", 12, false, true)),
+					m.get_font(agge::font_descriptor::create("Arial", 10, bold, false)),
+					m.get_font(agge::font_descriptor::create("Times New Roman", 17, regular, false)),
+					m.get_font(agge::font_descriptor::create("Tahoma", 12, regular, true)),
 				};
 
 				// ASSERT
@@ -82,15 +83,15 @@ namespace wpl
 				// INIT
 				win32::font_manager m;
 				shared_ptr<void> fonts[] = {
-					m.get_font(agge::font_descriptor::create("Arial", 10, true, false)),
-					m.get_font(agge::font_descriptor::create("Times New Roman", 17, false, false)),
-					m.get_font(agge::font_descriptor::create("Tahoma", 12, false, true)),
+					m.get_font(agge::font_descriptor::create("Arial", 10, bold, false)),
+					m.get_font(agge::font_descriptor::create("Times New Roman", 17, regular, false)),
+					m.get_font(agge::font_descriptor::create("Tahoma", 12, regular, true)),
 				};
 
 				// ACT / ASSERT
-				assert_equal(fonts[0], m.get_font(agge::font_descriptor::create("Arial", 10, true, false)));
-				assert_equal(fonts[1], m.get_font(agge::font_descriptor::create("Times New Roman", 17, false, false)));
-				assert_equal(fonts[2], m.get_font(agge::font_descriptor::create("Tahoma", 12, false, true)));
+				assert_equal(fonts[0], m.get_font(agge::font_descriptor::create("Arial", 10, bold, false)));
+				assert_equal(fonts[1], m.get_font(agge::font_descriptor::create("Times New Roman", 17, regular, false)));
+				assert_equal(fonts[2], m.get_font(agge::font_descriptor::create("Tahoma", 12, regular, true)));
 			}
 		end_test_suite
 	}

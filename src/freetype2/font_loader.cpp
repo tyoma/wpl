@@ -21,6 +21,7 @@
 #include <wpl/freetype2/font_loader.h>
 
 #include <agge/curves.h>
+#include <algorithm>
 #include <ft2build.h>
 #include FT_FREETYPE_H
 #include <stdexcept>
@@ -45,6 +46,18 @@ namespace wpl
 
 			font_loader loader;
 			gcontext::text_engine_type text_engine;
+		};
+
+		struct nc_compare
+		{
+			bool operator ()(char lhs, char rhs) const
+			{	return toupper(lhs) < toupper(rhs);	}
+		};
+
+		struct nc_equal
+		{
+			bool operator ()(char lhs, char rhs) const
+			{	return toupper(lhs) == toupper(rhs);	}
 		};
 
 
@@ -114,7 +127,35 @@ namespace wpl
 				FT_Done_Face(p);
 			});
 		}
+
+		font_weight find_weight(string &styles)
+		{
+			for_each(styles.begin(), styles.end(), [] (char &c) {	c = static_cast<char>(toupper(c));	});
+
+			if (string::npos != styles.find("REGULAR")) return regular;
+			if (string::npos != styles.find("SEMIBOLD") || string::npos != styles.find("DEMIBOLD")) return semi_bold;
+			if (string::npos != styles.find("BOLD")) return bold;
+			if (string::npos != styles.find("EXTRALIGHT")) return extra_light;
+			if (string::npos != styles.find("LIGHT")) return light;
+			if (string::npos != styles.find("MEDIUM")) return medium;
+			if (string::npos != styles.find("EXTRABLACK")) return extra_black;
+			if (string::npos != styles.find("BLACK")) return black;
+			return regular;
+		}
 	}
+
+
+	bool font_loader::key_less::operator ()(const agge::font_descriptor &lhs, const agge::font_descriptor &rhs)
+	{
+		const auto compare = [] (const string &l, const string &r) -> bool {
+			return lexicographical_compare(l.begin(), l.end(), r.begin(), r.end(), nc_compare());
+		};
+
+		return compare(lhs.family, rhs.family) ? true : compare(rhs.family, lhs.family) ? false :
+			lhs.italic < rhs.italic ? true : rhs.italic < lhs.italic ? false :
+			lhs.weight < rhs.weight;
+	}
+
 
 	font_accessor::font_accessor(FT_Library freetype_, const string &path, unsigned index, int height,
 			font_hinting hinting)
@@ -125,7 +166,7 @@ namespace wpl
 	font_descriptor font_accessor::get_descriptor() const
 	{
 		return font_descriptor::create(_face->family_name, _height,
-			!!(FT_STYLE_FLAG_BOLD & _face->style_flags), !!(FT_STYLE_FLAG_ITALIC & _face->style_flags),
+			(FT_STYLE_FLAG_BOLD & _face->style_flags) ? bold : regular, !!(FT_STYLE_FLAG_ITALIC & _face->style_flags),
 			_hinting);
 	}
 
@@ -310,31 +351,31 @@ Do_Conic:
 	{	return static_cast<real_t>(-value) * c_26x6_unit;	}
 
 
-	size_t font_loader::font_key_hasher::operator ()(const font_descriptor &/*key*/) const
-	{	return 1;	}
-
 	font_loader::font_loader()
 		: _freetype(create_freetype())
 	{	build_index();	}
 
-	font::accessor_ptr font_loader::load(const agge::font_descriptor &descriptor_)
+	font::accessor_ptr font_loader::load(const agge::font_descriptor &descriptor)
 	{
-		auto descriptor = descriptor_;
-		const auto m = _mapping.find((descriptor.height = 0, descriptor.hinting = hint_none, descriptor));
+		auto m = _mapping.lower_bound(descriptor);
 
 		if (m != _mapping.end())
 		{
+			if (m != _mapping.begin() && (m->first.family.size() != descriptor.family.size()
+				|| !equal(m->first.family.begin(), m->first.family.end(), descriptor.family.begin(), nc_equal())))
+			{
+				--m;
+			}
 			return make_shared<wpl::font_accessor>(_freetype.get(), m->second.first.c_str(), m->second.second,
-				descriptor_.height, descriptor_.hinting);
+				descriptor.height, descriptor.hinting);
 		}
 		return nullptr;
 	}
 
 	void font_loader::build_index()
 	{
-		string family;
+		string family, path, styles;
 		font_descriptor key = {};
-		string path;
 
 		for (const auto e = create_fonts_enumerator(); e(path); )
 		{
@@ -347,9 +388,10 @@ Do_Conic:
 
 				faces = face->num_faces;
 				key.family = face->family_name;
-				key.bold = !!(FT_STYLE_FLAG_BOLD & face->style_flags);
+				key.weight = (styles = face->style_name, find_weight(styles));
 				key.italic = !!(FT_STYLE_FLAG_ITALIC & face->style_flags);
-				_mapping[key] = make_pair(path, index);
+				if (string::npos == styles.find("NARROW"))
+					_mapping[key] = make_pair(path, index);
 			} while (++index < faces);
 		}
 	}

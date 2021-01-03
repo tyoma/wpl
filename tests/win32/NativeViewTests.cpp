@@ -157,9 +157,9 @@ namespace wpl
 					shared_ptr<mocks::windowed_view>(new mocks::windowed_view("text")),
 				};
 
-				ss.set_font("text.static", text_engine->create_font(agge::font_descriptor::create("Arial", 10, false, false, agge::hint_none)));
-				ss.set_font("text.edit", text_engine->create_font(agge::font_descriptor::create("Tahoma", -12, false, false, agge::hint_none)));
-				ss.set_font("text", text_engine->create_font(agge::font_descriptor::create("Tahoma", 13, true, false, agge::hint_none)));
+				ss.set_font("text.static", text_engine->create_font(agge::font_descriptor::create("Arial", 10, agge::regular, false, agge::hint_none)));
+				ss.set_font("text.edit", text_engine->create_font(agge::font_descriptor::create("Tahoma", -12, agge::regular, false, agge::hint_none)));
+				ss.set_font("text", text_engine->create_font(agge::font_descriptor::create("Tahoma", 13, agge::bold, false, agge::hint_none)));
 
 				// ACT
 				wv[0]->apply_styles(ss, fm);
@@ -175,7 +175,7 @@ namespace wpl
 					(void *)SendMessage(wv[0]->get_window(), WM_GETFONT, 0, 0));
 				assert_equal(fm.get_font(agge::font_descriptor::create("Tahoma", -12)).get(),
 					(void *)SendMessage(wv[1]->get_window(), WM_GETFONT, 0, 0));
-				assert_equal(fm.get_font(agge::font_descriptor::create("Tahoma", 13, true)).get(),
+				assert_equal(fm.get_font(agge::font_descriptor::create("Tahoma", 13, agge::bold)).get(),
 					(void *)SendMessage(wv[2]->get_window(), WM_GETFONT, 0, 0));
 			}
 
@@ -187,12 +187,12 @@ namespace wpl
 				win32::font_manager fm;
 				mocks::windowed_view wv("text.static");
 
-				ss.set_font("text.static", text_engine->create_font(agge::font_descriptor::create("Arial", 10, false, false, agge::hint_none)));
+				ss.set_font("text.static", text_engine->create_font(agge::font_descriptor::create("Arial", 10, agge::regular, false, agge::hint_none)));
 				wv.apply_styles(ss, fm);
 				static_cast<native_view &>(wv).get_window(parent);
 
 				// ACT
-				ss.set_font("text.static", text_engine->create_font(agge::font_descriptor::create("Tahoma", 18, false, false, agge::hint_none)));
+				ss.set_font("text.static", text_engine->create_font(agge::font_descriptor::create("Tahoma", 18, agge::regular, false, agge::hint_none)));
 
 				// ASSERT
 				assert_equal(fm.get_font(agge::font_descriptor::create("Arial", 10)).get(),

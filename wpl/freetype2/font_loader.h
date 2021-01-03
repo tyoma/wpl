@@ -23,7 +23,7 @@
 #include "../visual.h"
 
 #include <agge.text/text_engine.h>
-#include <unordered_map>
+#include <map>
 
 typedef struct FT_FaceRec_ FT_FaceRec;
 typedef struct FT_LibraryRec_ FT_LibraryRec;
@@ -36,20 +36,18 @@ namespace wpl
 	class font_loader : public gcontext::text_engine_type::loader, noncopyable
 	{
 	public:
-		struct font_key_hasher
-		{
-			size_t operator ()(const agge::font_descriptor &key) const;
-		};
-
-		typedef std::unordered_map<agge::font_descriptor, std::pair<std::string, unsigned>, font_key_hasher> key_to_file_t;
-
-	public:
 		font_loader();
 
 		virtual agge::font::accessor_ptr load(const agge::font_descriptor &descriptor) override;
 
 	private:
+		struct key_less
+		{
+			bool operator ()(const agge::font_descriptor &lhs, const agge::font_descriptor &rhs);
+		};
+
 		typedef std::function<bool (std::string &path)> enum_font_files_cb;
+		typedef std::map<agge::font_descriptor, std::pair<std::string, unsigned>, key_less> key_to_file_t;
 
 	private:
 		static enum_font_files_cb create_fonts_enumerator();

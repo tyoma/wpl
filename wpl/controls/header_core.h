@@ -43,6 +43,7 @@ namespace wpl
 			~header_core();
 
 			void set_offset(double offset);
+			void adjust_column_widths();
 
 			// control methods
 			virtual int min_height(int for_width) const override;
@@ -65,9 +66,8 @@ namespace wpl
 
 		private:
 			virtual agge::box<int> measure_item(const columns_model &model, index_type item) const;
-			virtual void draw_item(gcontext &ctx, gcontext::rasterizer_ptr &rasterizer,
-				const agge::rect_r &box, const columns_model &model, index_type item,
-				unsigned /*item_state_flags*/ state) const = 0;
+			virtual void draw_item(gcontext &ctx, gcontext::rasterizer_ptr &rasterizer, const agge::rect_r &box,
+				const columns_model &model, index_type item, unsigned /*item_state_flags*/ state) const = 0;
 
 			std::pair<index_type, handle_type> handle_from_point(int x) const;
 

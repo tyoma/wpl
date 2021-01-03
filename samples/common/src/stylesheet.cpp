@@ -7,7 +7,7 @@ using namespace agge;
 using namespace std;
 
 #ifdef _WIN32
-	const auto c_defaultFont = "Segoe UI";
+	const auto c_defaultFont = "segoe ui";
 #else
 	const auto c_defaultFont = "Lucida Grande";
 #endif
@@ -18,8 +18,8 @@ namespace wpl
 	{
 		const auto ss = make_shared<stylesheet_db>();
 
-		ss->set_font("text", text_engine->create_font(font_descriptor::create(c_defaultFont, 13, false, false, agge::hint_strong)));
-		ss->set_font("text.header", text_engine->create_font(font_descriptor::create(c_defaultFont, 13, true, false, agge::hint_strong)));
+		ss->set_font("text", text_engine->create_font(font_descriptor::create(c_defaultFont, 14, regular, false, hint_vertical)));
+		ss->set_font("text.header", text_engine->create_font(font_descriptor::create(c_defaultFont, 15, semi_bold, false, hint_vertical)));
 		ss->set_color("background", agge::color::make(16, 16, 16));
 		ss->set_color("background.selected", agge::color::make(192, 192, 192));
 		ss->set_color("background.listview.odd", agge::color::make(48, 48, 48));

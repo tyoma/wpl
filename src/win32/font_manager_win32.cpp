@@ -33,7 +33,7 @@ namespace wpl
 		{
 			HFONT create_font(const font_descriptor &key)
 			{
-				return ::CreateFontA(-key.height, 0, 0, 0, key.bold ? FW_BOLD : FW_NORMAL, key.italic, FALSE, FALSE,
+				return ::CreateFontA(-key.height, 0, 0, 0, key.weight >= bold ? FW_BOLD : FW_NORMAL, key.italic, FALSE, FALSE,
 					DEFAULT_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH,
 					key.family.c_str());
 			}
@@ -43,7 +43,7 @@ namespace wpl
 		bool font_manager::key_less::operator ()(const agge::font_descriptor &lhs, const agge::font_descriptor &rhs) const
 		{
 			return lhs.height < rhs.height ? true : rhs.height < lhs.height ? false :
-				lhs.bold < rhs.bold ? true : rhs.bold < lhs.bold ? false :
+				lhs.weight < rhs.weight ? true : rhs.weight < lhs.weight ? false :
 				lhs.italic < rhs.italic ? true : rhs.italic < lhs.italic ? false :
 				lhs.family < rhs.family;
 

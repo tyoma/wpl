@@ -87,7 +87,7 @@ namespace wpl
 		}
 
 		font_accessor::font_accessor(const agge::font_descriptor &d)
-			: _native(::CreateFontA(-d.height, 0, 0, 0, d.bold ? FW_BOLD : FW_NORMAL, !!d.italic, FALSE, FALSE, 0,
+			: _native(::CreateFontA(-d.height, 0, 0, 0, d.weight >= bold ? FW_BOLD : FW_NORMAL, !!d.italic, FALSE, FALSE, 0,
 				0, 0, ANTIALIASED_QUALITY, 0, d.family.c_str()), &::DeleteObject), _descriptor(d)
 		{	}
 
