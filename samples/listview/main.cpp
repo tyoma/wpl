@@ -11,7 +11,7 @@ using namespace wpl;
 namespace
 {
 	agge::richtext_t &operator <<(agge::richtext_t &lhs, const wchar_t *rhs)
-	{	return lhs += rhs, lhs;	}
+	{	return lhs.append(rhs, rhs + wcslen(rhs)), lhs;	}
 
 	class my_columns : public columns_model
 	{
