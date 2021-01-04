@@ -26,10 +26,10 @@ namespace
 
 			switch (index)
 			{
-			case 0: caption += L"Total\n(inclusive)"; break;
-			case 1: caption += L"Total\n(exclusive)"; break;
-			case 2: caption += L"Average\n(inclusive)"; break;
-			case 3: caption += L"Average\n(exclusive)"; break;
+			case 0: caption.append(L"Total\n(inclusive)"); break;
+			case 1: caption.append(L"Total\n(exclusive)"); break;
+			case 2: caption.append(L"Average\n(inclusive)"); break;
+			case 3: caption.append(L"Average\n(exclusive)"); break;
 			}
 		}
 		virtual void update_column(index_type index, short int width) override { _widths[index] = width, invalidate(); }
