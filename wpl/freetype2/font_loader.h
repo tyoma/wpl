@@ -43,7 +43,7 @@ namespace wpl
 	private:
 		struct key_less
 		{
-			bool operator ()(const agge::font_descriptor &lhs, const agge::font_descriptor &rhs);
+			bool operator ()(const agge::font_descriptor &lhs, const agge::font_descriptor &rhs) const;
 		};
 
 		typedef std::function<bool (std::string &path)> enum_font_files_cb;

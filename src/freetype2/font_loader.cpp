@@ -145,7 +145,7 @@ namespace wpl
 	}
 
 
-	bool font_loader::key_less::operator ()(const agge::font_descriptor &lhs, const agge::font_descriptor &rhs)
+	bool font_loader::key_less::operator ()(const agge::font_descriptor &lhs, const agge::font_descriptor &rhs) const
 	{
 		const auto compare = [] (const string &l, const string &r) -> bool {
 			return lexicographical_compare(l.begin(), l.end(), r.begin(), r.end(), nc_compare());
