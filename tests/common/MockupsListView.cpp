@@ -17,14 +17,6 @@ namespace wpl
 			}
 
 
-			columns_model::column::column()
-				: width(0)
-			{	}
-
-			columns_model::column::column(const std::wstring &caption_, short int width_)
-				: caption(caption_), width(width_)
-			{	}
-
 			columns_model::index_type columns_model::get_count() const throw()
 			{	return static_cast<index_type>(columns.size());	}
 
@@ -45,7 +37,7 @@ namespace wpl
 
 			shared_ptr<columns_model> columns_model::create(const wstring &caption, short int width)
 			{
-				column columns[] = { column(caption.c_str(), width), };
+				column columns[] = {	{	caption, width	}, };
 
 				return create(columns, npos(), false);
 			}

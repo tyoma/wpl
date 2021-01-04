@@ -42,9 +42,6 @@ namespace wpl
 			public:
 				struct column
 				{
-					column();
-					explicit column(const std::wstring &caption, short int width = 0);
-
 					std::wstring caption;
 					short int width;
 				};

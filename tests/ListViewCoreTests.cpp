@@ -140,7 +140,7 @@ namespace wpl
 				// INIT
 				agge::rect_r z = {};
 				tracking_listview lv;
-				column_t c[] = { column_t(L"", 0), column_t(L"", 0), column_t(L"", 0), };
+				column_t c[] = {	{L"", 0	}, {	L"", 0	}, {	L"", 0	},	};
 
 				resize(lv, 1000, 1000);
 				lv.set_columns_model(mocks::columns_model::create(c, columns_model::npos(), true));
@@ -196,8 +196,8 @@ namespace wpl
 			{
 				// INIT
 				tracking_listview lv;
-				column_t c1[] = { column_t(L"", 10), column_t(L"", 30), };
-				column_t c2[] = { column_t(L"", 10), column_t(L"", 13), column_t(L"", 29), };
+				column_t c1[] = {	{L"", 10	}, {	L"", 30	},	};
+				column_t c2[] = {	{L"", 10	}, {	L"", 13	}, {	L"", 29	},	};
 
 				resize(lv, 1000, 1000);
 				lv.item_height = 3;
@@ -271,7 +271,7 @@ namespace wpl
 			{
 				// INIT
 				tracking_listview lv;
-				column_t c[] = { column_t(L"", 1), column_t(L"", 1), };
+				column_t c[] = {	{L"", 1	}, {	L"", 1	},	};
 				const auto cm = mocks::columns_model::create(c, columns_model::npos(), true);
 				const auto m = create_model(2, 2);
 
@@ -453,7 +453,7 @@ namespace wpl
 				tracking_listview lv;
 				const auto sm = lv.get_hscroll_model();
 				const auto m(create_model(1, 1));
-				column_t columns1[] = { column_t(L"", 19), column_t(L"", 13), column_t(L"", 37), };
+				column_t columns1[] = {	{L"", 19	}, {	L"", 13	}, {	L"", 37	},	};
 
 				resize(lv, 1000, 31);
 				lv.set_columns_model(mocks::columns_model::create(columns1, columns_model::npos(), true));
@@ -462,7 +462,7 @@ namespace wpl
 				assert_equal_pred(make_pair(0, 69), sm->get_range(), eq());
 
 				// INIT
-				column_t columns2[] = { column_t(L"", 19), column_t(L"", 37), };
+				column_t columns2[] = {	{L"", 19	}, {	L"", 37	},	};
 
 				lv.set_columns_model(mocks::columns_model::create(columns2, columns_model::npos(), true));
 
@@ -660,7 +660,7 @@ namespace wpl
 				tracking_listview lv;
 				const auto sm = lv.get_hscroll_model();
 				column_t columns[] = {
-					column_t(L"", 17), column_t(L"", 31),column_t(L"", 23),
+					{	L"", 17	}, {	L"", 31	},{	L"", 23	},
 				};
 				auto cm = mocks::columns_model::create(columns, columns_model::npos(), false);
 
@@ -1125,7 +1125,7 @@ namespace wpl
 				tracking_listview lv;
 				const auto sm = lv.get_hscroll_model();
 				column_t columns[] = {
-					column_t(L"#1", 103), column_t(L"#2", 53), column_t(L"#3", 43),
+					{	L"#1", 103	}, {	L"#2", 53	}, {	L"#3", 43	},
 				};
 				const auto cm = mocks::columns_model::create(columns, columns_model::npos(), false);
 
