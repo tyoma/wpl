@@ -27,7 +27,11 @@ namespace wpl
 			{	column = columns[index].caption.c_str();	}
 
 			void columns_model::update_column(index_type index, short int width)
-			{	columns[index].width = width;	}
+			{
+				columns[index].width = width, column_update_log.push_back(index);
+				if (invalidate_on_update)
+					invalidate();
+			}
 
 			pair<columns_model::index_type, bool> columns_model::get_sort_order() const throw()
 			{	return make_pair(sort_column, sort_ascending);	}

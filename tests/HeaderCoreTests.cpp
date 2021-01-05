@@ -392,8 +392,11 @@ namespace wpl
 
 				hdr.on_measure_item = [&] (const columns_model &m_, columns_model::index_type index) -> agge::box<int> {
 					assert_equal(m.get(), &m_);
-					assert_equal(0, index);
-					return agge::create_box(11, 0);
+					switch (index)
+					{
+					case 0:	return agge::create_box(11, 0);
+					default:	return agge::create_box(0, 0);
+					}
 				};
 
 				// ACT
@@ -412,8 +415,11 @@ namespace wpl
 				// INIT
 				hdr.mouse_up(mouse_input::left, 0, 25, 10);
 				hdr.on_measure_item = [&] (const columns_model &, columns_model::index_type index) -> agge::box<int> {
-					assert_equal(2, index);
-					return agge::create_box(23, 0);
+					switch (index)
+					{
+					case 2:	return agge::create_box(23, 0);
+					default:	return agge::create_box(0, 0);
+					}
 				};
 
 				// ACT
@@ -814,6 +820,135 @@ namespace wpl
 				// ASSERT
 				assert_equal(cursor_manager_->cursors[cursor_manager::hand], cursor_manager_->recently_set);
 				assert_equal(0u, cursor_manager_->stack_level);
+			}
+
+
+			test( ColumnHeaderWidthsAreAdjustedOnRequest )
+			{
+				// INIT
+				tracking_header hdr(cursor_manager_);
+				column_t c[] = {	{	L"", 17	}, {	L"", 13	}, {	L"", 29	}, {	L"", 29	},	};
+				const auto m = mocks::columns_model::create(c, columns_model::npos(), true);
+
+				resize(hdr, 1000, 33);
+				hdr.set_model(m);
+
+				hdr.on_measure_item = [&] (const columns_model &/*m*/, columns_model::index_type item) -> agge::box<int> {
+					switch (item)
+					{
+					case 0:	return agge::create_box(10, 0);
+					case 1:	 return agge::create_box(200, 0);
+					case 2:	 return agge::create_box(30, 0);
+					case 3: default:	return agge::create_box(29, 0);
+					}
+				};
+
+				// ACT
+				hdr.adjust_column_widths();
+
+				// ACT
+				short reference1_ulog[] = {	1, 2,	};
+				column_t reference1_widths[] = {	{	L"", 17	}, {	L"", 200	}, {	L"", 30	}, {	L"", 29	},	};
+
+				assert_equal(reference1_ulog, m->column_update_log);
+				assert_equal(reference1_widths, m->columns);
+
+				// INIT
+				hdr.on_measure_item = [&] (const columns_model &/*m*/, columns_model::index_type item) -> agge::box<int> {
+					switch (item)
+					{
+					case 0:	return agge::create_box(100, 0);
+					default:	return agge::create_box(0, 0);
+					}
+				};
+				m->column_update_log.clear();
+
+				// ACT
+				hdr.adjust_column_widths();
+
+				// ACT
+				short reference2_ulog[] = {	0,	};
+				column_t reference2_widths[] = {	{	L"", 100	}, {	L"", 200	}, {	L"", 30	}, {	L"", 29	},	};
+
+				assert_equal(reference2_ulog, m->column_update_log);
+				assert_equal(reference2_widths, m->columns);
+			}
+
+
+			test( ColumnWidthsAreAdjustedOnModelSetting )
+			{
+				// INIT
+				tracking_header hdr(cursor_manager_);
+				column_t c[] = {	{	L"", 17	}, {	L"", 13	}, {	L"", 29	}, {	L"", 29	},	};
+				const auto m = mocks::columns_model::create(c, columns_model::npos(), true);
+
+				resize(hdr, 1000, 33);
+
+				hdr.on_measure_item = [&] (const columns_model &/*m*/, columns_model::index_type item) -> agge::box<int> {
+					switch (item)
+					{
+					case 0:	return agge::create_box(100, 0);
+					case 2:	 return agge::create_box(72, 0);
+					default:	return agge::create_box(0, 0);
+					}
+				};
+
+				// ACT
+				hdr.set_model(m);
+
+				// ACT
+				column_t reference_widths[] = {	{	L"", 100	}, {	L"", 13	}, {	L"", 72	}, {	L"", 29	},	};
+
+				assert_equal(reference_widths, m->columns);
+			}
+
+
+			test( ColumnWidthsAreAdjustedOnModelInvalidation )
+			{
+				// INIT
+				tracking_header hdr(cursor_manager_);
+				column_t c[] = {	{	L"", 17	}, {	L"", 13	}, {	L"", 29	}, {	L"", 29	},	};
+				const auto m = mocks::columns_model::create(c, columns_model::npos(), true);
+
+				m->invalidate_on_update = true;
+				resize(hdr, 1000, 33);
+				hdr.set_model(m);
+
+				hdr.on_measure_item = [&] (const columns_model &/*m*/, columns_model::index_type item) -> agge::box<int> {
+					switch (item)
+					{
+					case 1:	return agge::create_box(153, 0);
+					case 3:	return agge::create_box(31, 0);
+					default:	return agge::create_box(0, 0);
+					}
+				};
+
+				// ACT
+				m->invalidate();
+
+				// ACT
+				short reference1_ulog[] = {	1, 3,	};
+				column_t reference1_widths[] = {	{	L"", 17	}, {	L"", 153	}, {	L"", 29	}, {	L"", 31	},	};
+
+				assert_equal(reference1_ulog, m->column_update_log);
+				assert_equal(reference1_widths, m->columns);
+
+				// INIT
+				hdr.on_measure_item = [&] (const columns_model &/*m*/, columns_model::index_type item) -> agge::box<int> {
+					switch (item)
+					{
+					case 2:	return agge::create_box(32, 0);
+					default:	return agge::create_box(0, 0);
+					}
+				};
+
+				// ACT
+				m->invalidate();
+
+				// ACT
+				column_t reference2_widths[] = {	{	L"", 17	}, {	L"", 153	}, {	L"", 32	}, {	L"", 31	},	};
+
+				assert_equal(reference2_widths, m->columns);
 			}
 
 		end_test_suite

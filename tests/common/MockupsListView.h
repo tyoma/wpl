@@ -60,12 +60,14 @@ namespace wpl
 			public:
 				std::vector<column> columns;
 				std::vector<index_type> column_activation_log;
+				std::vector<index_type> column_update_log;
 				index_type sort_column;
 				bool sort_ascending;
+				bool invalidate_on_update;
 
 			private:
 				columns_model()
-					: sort_column(npos())
+					: sort_column(npos()), invalidate_on_update(false)
 				{	}
 
 				template<size_t n>
@@ -128,6 +130,10 @@ namespace wpl
 
 			inline listview_trackable::index_type listview_trackable::index() const
 			{	return track_result;	}
+
+
+			inline bool operator ==(const columns_model::column &lhs, const columns_model::column &rhs)
+			{	return lhs.caption == rhs.caption && lhs.width == rhs.width;	}
 		}
 	}
 }

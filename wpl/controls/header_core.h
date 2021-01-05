@@ -79,6 +79,7 @@ namespace wpl
 			std::pair<index_type, bool /*ascending*/> _sorted_column;
 			slot_connection _model_invalidation;
 			slot_connection _model_sorting_change;
+			bool _ignore_invalidations;
 		};
 	}
 }

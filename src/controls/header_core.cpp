@@ -32,7 +32,7 @@ namespace wpl
 	namespace controls
 	{
 		header_core::header_core(shared_ptr<cursor_manager> cursor_manager_)
-			: _cursor_manager(cursor_manager_), _offset(0.0f)
+			: _cursor_manager(cursor_manager_), _offset(0.0f), _ignore_invalidations(false)
 		{	}
 
 		header_core::~header_core()
@@ -42,6 +42,21 @@ namespace wpl
 		{
 			_offset = static_cast<agge::real_t>(offset);
 			invalidate(nullptr);
+		}
+
+		void header_core::adjust_column_widths()
+		{
+			_ignore_invalidations = true;
+			for (index_type i = 0, n = _model ? _model->get_count() : 0; i != n; ++i)
+			{
+				short current_width;
+				const auto item_box = measure_item(*_model, i);
+
+				_model->get_value(i, current_width);
+				if (current_width < item_box.w)
+					_model->update_column(i, static_cast<short>(item_box.w));
+			}
+			_ignore_invalidations = false;
 		}
 
 		int header_core::min_height(int /*for_width*/) const
@@ -57,7 +72,11 @@ namespace wpl
 		{
 			if (model)
 			{
-				_model_invalidation = model->invalidate += [this] { invalidate(nullptr); };
+				_model_invalidation = model->invalidate += [this] {
+					if (!_ignore_invalidations)	// Untestable - the guard is for iteration rather than recursion.
+						adjust_column_widths();
+					invalidate(nullptr);
+				};
 				_model_sorting_change = model->sort_order_changed += [this] (index_type column, bool ascending) {
 					_sorted_column = make_pair(column, ascending);
 					invalidate(nullptr);
@@ -71,6 +90,7 @@ namespace wpl
 			}
 			_resize.cancel();
 			_model = model;
+			adjust_column_widths();
 			invalidate(nullptr);
 		}
 

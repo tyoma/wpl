@@ -68,7 +68,7 @@ namespace wpl
 			_down.reset(new glyph(glyphs::down(base_style.basic.height)));
 
 			_caption_buffer.set_base_annotation(base_style);
-
+			adjust_column_widths();
 			invalidate(nullptr);
 		}
 
