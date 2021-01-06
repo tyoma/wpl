@@ -5,6 +5,7 @@
 #pragma warning(disable: 4355)
 
 using namespace std;
+using namespace std::placeholders;
 
 namespace wpl
 {
@@ -16,7 +17,7 @@ namespace wpl
 	animated_scroll_model::animated_scroll_model(shared_ptr<scroll_model> underlying, const clock &clock_,
 			const queue &queue_, const animation_function &release_animation)
 		: _underlying(underlying), _clock(clock_), _queue(queue_), _release_animation(release_animation),
-			_invalidate_connection(underlying->invalidate += [this] {	invalidate();	})
+			_invalidate_connection(underlying->invalidate += bind(&animated_scroll_model::on_invalidate, this, _1))
 	{	}
 
 	pair<double, double> animated_scroll_model::get_range() const
@@ -101,6 +102,24 @@ namespace wpl
 			_queue([this] {	animate();	}, 10);
 		else
 			_underlying->scrolling(false);
-		invalidate();
+		invalidate(false);
+	}
+
+	void animated_scroll_model::on_invalidate(bool invalidate_range)
+	{
+		if (invalidate_range)
+		{
+			auto require_scroll = false;
+			const auto r = _underlying->get_range();
+			auto uw = _underlying->get_window();
+
+			if (uw.first + uw.second > r.first + r.second)
+				uw.first = r.first + r.second - uw.second, require_scroll = true;
+			if (uw.first < r.first)
+				uw.first = r.first, require_scroll = true;
+			if (require_scroll)
+				_underlying->scroll_window(uw.first, uw.second);
+		}
+		invalidate(invalidate_range);
 	}
 }

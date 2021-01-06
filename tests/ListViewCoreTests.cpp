@@ -502,7 +502,10 @@ namespace wpl
 
 				resize(lv, 1000, 31);
 
-				const auto c = sm->invalidate += [&] { invalidations++; };
+				const auto c = sm->invalidate += [&] (bool invalidate_range) {
+					invalidations++;
+					assert_is_true(invalidate_range);
+				};
 
 				// ACT
 				lv.set_columns_model(mocks::columns_model::create(L"", 123));
@@ -529,7 +532,10 @@ namespace wpl
 
 				lv.set_columns_model(mocks::columns_model::create(L"", 123));
 
-				const auto c = sm->invalidate += [&] { invalidations++; };
+				const auto c = sm->invalidate += [&] (bool invalidate_range) {
+					invalidations++;
+					assert_is_true(invalidate_range);
+				};
 
 				// ACT
 				resize(lv, 1000, 31);
@@ -816,7 +822,7 @@ namespace wpl
 			}
 
 
-			test( VerticalScrollModelIsInvalidatedOnlyWhenModelCountChanges )
+			test( VerticalScrollModelRangeIsInvalidatedOnlyWhenModelCountChanges )
 			{
 				// INIT
 				auto invalidations = 0;
@@ -829,9 +835,12 @@ namespace wpl
 				resize(lv, 100, 40);
 				lv.set_columns_model(mocks::columns_model::create(L"", 100));
 
-				const auto c = sm->invalidate += [&] { invalidations++; };
-
 				lv.set_model(m);
+
+				const auto c = sm->invalidate += [&] (bool invalidate_range) {
+					invalidations++;
+					assert_is_true(invalidate_range);
+				};
 
 				// ACT
 				m->invalidate(1000);
@@ -853,7 +862,7 @@ namespace wpl
 			}
 
 
-			test( ScrollModelsAreInvalidatedOnResize )
+			test( VerticalScrollModelsIsInvalidatedOnResize )
 			{
 				// INIT
 				auto invalidations = 0;
@@ -868,7 +877,10 @@ namespace wpl
 				lv.set_model(create_model(1000, 1));
 
 				const auto c1 = lv.invalidate += [&] (const void *) { invalidations++; };
-				const auto c2 = sm->invalidate += [&] { scroll_invalidations++; };
+				const auto c2 = sm->invalidate += [&] (bool invalidate_range) {
+					scroll_invalidations++;
+					assert_is_true(invalidate_range);
+				};
 
 				// ACT
 				resize(lv, 100, 40);
@@ -894,7 +906,10 @@ namespace wpl
 				lv.set_model(create_model(1000, 1));
 
 				const auto c1 = lv.invalidate += [&] (const void *) { invalidations++; };
-				const auto c2 = sm->invalidate += [&] { scroll_invalidations++; };
+				const auto c2 = sm->invalidate += [&] (bool invalidate_range) {
+					scroll_invalidations++;
+					assert_is_false(invalidate_range);
+				};
 
 				// ACT
 				sm->scroll_window(10, 0);
@@ -927,7 +942,10 @@ namespace wpl
 				lv.set_model(create_model(1000, 1));
 
 				const auto c1 = lv.invalidate += [&] (const void *) { invalidations++; };
-				const auto c2 = sm->invalidate += [&] { scroll_invalidations++; };
+				const auto c2 = sm->invalidate += [&] (bool invalidate_range) {
+					scroll_invalidations++;
+					assert_is_false(invalidate_range);
+				};
 
 				// ACT
 				lv.make_visible(31);
@@ -978,7 +996,7 @@ namespace wpl
 				lv.set_model(create_model(1000, 1));
 
 				const auto c1 = lv.invalidate += [&] (const void *) { invalidations++; };
-				const auto c2 = sm->invalidate += [&] { scroll_invalidations++; };
+				const auto c2 = sm->invalidate += [&] (bool) { scroll_invalidations++; };
 
 				lv.make_visible(31);
 				lv.make_visible(5);
@@ -1011,7 +1029,9 @@ namespace wpl
 				lv.set_model(create_model(1000, 1));
 
 				const auto c1 = lv.invalidate += [&] (const void *) { invalidations++; };
-				const auto c2 = sm->invalidate += [&] { scroll_invalidations++; };
+				const auto c2 = sm->invalidate += [&] (bool) {
+					scroll_invalidations++;
+				};
 
 				lv.make_visible(31);
 				invalidations = 0;
@@ -1085,7 +1105,7 @@ namespace wpl
 			}
 
 
-			test( ColumnsModelInvalidationLeadsToHorizontalScrollModelInvalidation )
+			test( ColumnsModelInvalidationLeadsToHorizontalScrollModelRangeInvalidation )
 			{
 				// INIT
 				tracking_listview lv;
@@ -1100,7 +1120,10 @@ namespace wpl
 				lv.reported_events = tracking_listview::item_self;
 				resize(lv, 100, 25);
 
-				const auto c = sm->invalidate += [&] { invalidations++; };
+				const auto c = sm->invalidate += [&] (bool invalidate_range) {
+					invalidations++;
+					assert_is_true(invalidate_range);
+				};
 
 				// ACT
 				cm->invalidate();
@@ -1117,7 +1140,7 @@ namespace wpl
 			}
 
 
-			test( ScrollingOfAHorizontalModelLeadsToChangeOfRange )
+			test( ScrollingOfAHorizontalModelLeadsToChangeOfScrollWindow )
 			{
 				// INIT
 				auto invalidations = 0;
@@ -1137,7 +1160,10 @@ namespace wpl
 				resize(lv, 101, 25);
 
 				const auto c = lv.invalidate += [&](const void* r) { assert_null(r); invalidations++; };
-				const auto c2 = sm->invalidate += [&] { sinvalidations++; };
+				const auto c2 = sm->invalidate += [&] (bool invalidate_range) {
+					sinvalidations++;
+					assert_is_false(invalidate_range);
+				};
 
 				// ACT
 				sm->scroll_window(10, 101);

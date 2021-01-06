@@ -47,10 +47,10 @@ namespace wpl
 				_vscroller->set_model(shared_ptr<animated_scroll_model>(new animated_scroll_model(this->get_vscroll_model(),
 					context.clock_, context.queue_, smooth_animation())));
 
-				_scroll_connection = this->get_hscroll_model()->invalidate += [this] {
+				_scroll_connection = this->get_hscroll_model()->invalidate += [this] (bool) {
 					_header->set_offset(this->get_hscroll_model()->get_window().first);
 				};
-				this->get_hscroll_model()->invalidate();
+				this->get_hscroll_model()->invalidate(false);
 			}
 
 			void apply_styles(const stylesheet &ss)

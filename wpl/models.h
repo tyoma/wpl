@@ -54,7 +54,7 @@ namespace wpl
 		virtual void scrolling(bool begins) = 0;
 		virtual void scroll_window(double window_min, double window_width) = 0;
 
-		signal<void ()> invalidate;
+		signal<void (bool invalidate_range)> invalidate;
 	};
 
 

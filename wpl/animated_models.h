@@ -41,6 +41,7 @@ namespace wpl
 
 	private:
 		void animate();
+		void on_invalidate(bool invalidate_range);
 
 	private:
 		timestamp _animation_start;

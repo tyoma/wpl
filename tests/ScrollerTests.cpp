@@ -469,7 +469,7 @@ namespace wpl
 				slot_connection c = s.invalidate += log_invalidates(ilog);
 
 				// ACT
-				m->invalidate();
+				m->invalidate(false);
 
 				// ASSERT
 				assert_equal(1u, ilog.size());
@@ -482,7 +482,7 @@ namespace wpl
 				assert_equal(2u, ilog.size());
 
 				// ACT
-				m->invalidate();
+				m->invalidate(true);
 
 				// ASSERT
 				assert_equal(2u, ilog.size());

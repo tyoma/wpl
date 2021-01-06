@@ -85,7 +85,7 @@ namespace
 		virtual void scroll_window(double window_min, double window_width) override
 		{
 			_window = make_pair(window_min, window_width);
-			invalidate();
+			invalidate(false);
 		}
 
 	private:

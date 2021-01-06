@@ -68,17 +68,26 @@ namespace wpl
 				auto invalidate = 0;
 				shared_ptr<mocks::scroll_model> u(new mocks::scroll_model);
 				animated_scroll_model m(u, clock_, queue_, &no_animation);
-				auto conn = m.invalidate += [&] {	invalidate++;	};
+				auto conn = m.invalidate += [&] (bool invalidate_range) {
+					invalidate++;
+					assert_is_true(invalidate_range);
+				};
 
 				// ACT
-				u->invalidate();
+				u->invalidate(true);
 
 				// ASSERT
 				assert_equal(1, invalidate);
 
+				// INIT
+				conn = m.invalidate += [&] (bool invalidate_range) {
+					invalidate++;
+					assert_is_false(invalidate_range);
+				};
+
 				// ACT
-				u->invalidate();
-				u->invalidate();
+				u->invalidate(false);
+				u->invalidate(false);
 
 				// ASSERT
 				assert_equal(3, invalidate);
@@ -414,7 +423,10 @@ namespace wpl
 					p = progress;
 					return result;
 				});
-				auto conn = m.invalidate += [&] {	invalidate++;	};
+				auto conn = m.invalidate += [&] (bool invalidate_range) {
+					invalidate++;
+					assert_is_false(invalidate_range);
+				};
 				vector< pair<double, double> > log;
 				vector<int> events;
 
@@ -475,6 +487,112 @@ namespace wpl
 				assert_equal(reference3_events, events);
 				assert_equal_pred(make_pair(96, 7), log[3], eq());
 				assert_is_empty(queued);
+			}
+
+
+			test( UnderlyingWindowIsAdjustedWhenUnderlyingRangeNarrows )
+			{
+				// INIT
+				shared_ptr<mocks::scroll_model> u(new mocks::scroll_model);
+				animated_scroll_model m(u, clock_, queue_, [&] (...) -> bool {
+					return false;
+				});
+				vector< pair<double, double> > log;
+				vector<int> events;
+
+				u->range = make_pair(10, 104);
+				u->window = make_pair(10, 60);
+				u->on_scrolling = [&] (bool begins) { events.push_back(begins ? 1 : 3); };
+				u->on_scroll = [&] (double m, double w) {
+					events.push_back(2);
+					log.push_back(make_pair(m, w));
+				};
+
+				// ACT
+				u->range = make_pair(37, 77);
+				u->invalidate(true);
+
+				// ASSERT
+				int reference1_events[] = { 2, };
+
+				assert_equal(reference1_events, events);
+				assert_equal_pred(make_pair(37, 60), log[0], eq());
+				assert_is_empty(queued);
+
+				// INIT
+				events.clear();
+				u->window = make_pair(54, 60);
+				u->invalidate(false);
+
+				// INIT / ASSERT
+				assert_is_empty(events);
+
+				// ACT
+				u->range = make_pair(37, 75);
+				u->invalidate(true);
+
+				// ASSERT
+				assert_equal(reference1_events, events);
+				assert_equal_pred(make_pair(52, 60), log[1], eq());
+				assert_is_empty(queued);
+			}
+
+
+			test( AutoScrollDoesNotGoUnderRangeMinimum )
+			{
+				// INIT
+				shared_ptr<mocks::scroll_model> u(new mocks::scroll_model);
+				animated_scroll_model m(u, clock_, queue_, [&] (...) -> bool {
+					return false;
+				});
+				vector< pair<double, double> > log;
+				vector<int> events;
+
+				u->range = make_pair(10, 104);
+				u->window = make_pair(30, 50);
+				u->on_scrolling = [&] (bool begins) { events.push_back(begins ? 1 : 3); };
+				u->on_scroll = [&] (double m, double w) {
+					events.push_back(2);
+					log.push_back(make_pair(m, w));
+				};
+
+				// ACT
+				u->range = make_pair(10, 30);
+				u->invalidate(true);
+
+				// ASSERT
+				int reference_events[] = { 2, };
+
+				assert_equal(reference_events, events);
+				assert_equal_pred(make_pair(10, 50), log[0], eq());
+				assert_is_empty(queued);
+			}
+
+
+			test( AutoScrollIsNotTriggeredIfRangeIncludesTheWindowOnChange )
+			{
+				// INIT
+				shared_ptr<mocks::scroll_model> u(new mocks::scroll_model);
+				animated_scroll_model m(u, clock_, queue_, [&] (...) -> bool {
+					return false;
+				});
+				vector< pair<double, double> > log;
+				vector<int> events;
+
+				u->range = make_pair(10, 104);
+				u->window = make_pair(31, 57);
+				u->on_scrolling = [&] (bool) {	assert_is_true(false);	};
+				u->on_scroll = [&] (...) {	assert_is_true(false);	};
+
+				// ACT / ASSERT
+				u->range = make_pair(31, 83);
+				u->invalidate(true);
+				u->range = make_pair(31, 57);
+				u->invalidate(true);
+				u->range = make_pair(31, 150);
+				u->invalidate(true);
+				u->range = make_pair(0, 181);
+				u->invalidate(true);
 			}
 		end_test_suite
 	}

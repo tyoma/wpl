@@ -42,7 +42,7 @@ namespace wpl
 
 		void scroller::set_model(shared_ptr<scroll_model> model)
 		{
-			_underlying_invalidate = model ? model->invalidate += [this] { invalidate(nullptr); } : slot_connection();
+			_underlying_invalidate = model ? model->invalidate += [this] (bool) { invalidate(nullptr); } : slot_connection();
 			_model = model;
 			invalidate(nullptr);
 		}
