@@ -181,10 +181,10 @@ namespace wpl
 		return m;
 	}
 
-	uint16_t font_accessor::get_glyph_index(wchar_t character) const
-	{	return static_cast<uint16_t>(FT_Get_Char_Index(_face.get(), character));	}
+	agge::uint16_t font_accessor::get_glyph_index(wchar_t character) const
+	{	return static_cast<agge::uint16_t>(FT_Get_Char_Index(_face.get(), character));	}
 
-	glyph::outline_ptr font_accessor::load_glyph(uint16_t index, glyph::glyph_metrics &m) const
+	glyph::outline_ptr font_accessor::load_glyph(agge::uint16_t index, glyph::glyph_metrics &m) const
 	{
 		glyph::outline_ptr path(new glyph::outline_storage);
 

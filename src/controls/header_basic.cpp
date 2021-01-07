@@ -97,9 +97,9 @@ namespace wpl
 			box_r bounds = _text_services->measure(_caption_buffer);
 
 			bounds.w += _separator_width + 3.0f * _padding;
-			bounds.w += (max)(_up ? wpl::width(_up->bounds()) : 0.0f, _down ? wpl::width(_down->bounds()) : 0.0f);
-			bounds.h = (max)(bounds.h, _up ? wpl::width(_up->bounds()) : 0.0f);
-			bounds.h = (max)(bounds.h, _down ? wpl::width(_down->bounds()) : 0.0f);
+			bounds.w += agge_max(_up ? wpl::width(_up->bounds()) : 0.0f, _down ? wpl::width(_down->bounds()) : 0.0f);
+			bounds.h = agge_max(bounds.h, _up ? wpl::width(_up->bounds()) : 0.0f);
+			bounds.h = agge_max(bounds.h, _down ? wpl::width(_down->bounds()) : 0.0f);
 			bounds.h += _separator_width;
 			bounds.h += 2.0f * _padding;
 			return create_box(static_cast<int>(bounds.w + 0.999f), static_cast<int>(bounds.h + 0.999f));
