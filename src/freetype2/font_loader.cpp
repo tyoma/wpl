@@ -159,8 +159,9 @@ namespace wpl
 
 	font_accessor::font_accessor(FT_Library freetype_, const string &path, unsigned index, int height,
 			font_hinting hinting)
-		: _overscale(hint_vertical == hinting ? 1.0f / static_cast<real_t>(c_overscale) : 1.0f),
-			_height(height), _hinting(hinting), _face(open_face(freetype_, path, index))
+		: _face(open_face(freetype_, path, index)),
+			_overscale(hint_vertical == hinting ? 1.0f / static_cast<real_t>(c_overscale) : 1.0f), _height(height),
+			_hinting(hinting)
 	{	FT_Set_Pixel_Sizes(_face.get(), static_cast<int>(height / _overscale), height);	}
 
 	font_descriptor font_accessor::get_descriptor() const

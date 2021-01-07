@@ -16,7 +16,7 @@ namespace wpl
 
 	animated_scroll_model::animated_scroll_model(shared_ptr<scroll_model> underlying, const clock &clock_,
 			const queue &queue_, const animation_function &release_animation)
-		: _underlying(underlying), _clock(clock_), _queue(queue_), _release_animation(release_animation),
+		: _clock(clock_), _queue(queue_), _release_animation(release_animation), _underlying(underlying),
 			_invalidate_connection(underlying->invalidate += bind(&animated_scroll_model::on_invalidate, this, _1))
 	{	}
 
