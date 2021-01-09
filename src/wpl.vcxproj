@@ -66,6 +66,7 @@
       <ExcludedFromBuild>true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="mouse_router.cpp" />
+    <ClCompile Include="resizable_stack.cpp" />
     <ClCompile Include="stylesheet_db.cpp" />
     <ClCompile Include="visual_router.cpp" />
     <ClCompile Include="win32\combobox.cpp">

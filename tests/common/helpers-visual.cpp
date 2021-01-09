@@ -4,6 +4,7 @@
 #include <agge/pixel.h>
 #include <agge.text/text_engine.h>
 #include <string.h>
+#include <wpl/control.h>
 
 #pragma warning(disable: 4355)
 
@@ -79,6 +80,14 @@ namespace wpl
 
 			return shared_ptr<gcontext::text_engine_type>(c, &c->text_engine_);
 		}
+	}
+
+	bool operator ==(const placed_view &lhs, const placed_view &rhs)
+	{
+		return lhs.regular == rhs.regular
+			&& lhs.native == rhs.native
+			&& lhs.location == rhs.location
+			&& lhs.tab_order == rhs.tab_order;
 	}
 }
 

@@ -24,14 +24,14 @@ namespace wpl
 {
 	typedef std::function<bool (double &progress, double elapsed)> animation_function;
 
-	bool no_animation(double &progress, double /*elapsed*/) throw();
+	bool no_animation(double &progress, double /*elapsed*/);
 
 	class smooth_animation
 	{
 	public:
 		smooth_animation(double duration = 0.3);
 
-		bool operator ()(double &progress, double elapsed) const throw();
+		bool operator ()(double &progress, double elapsed) const;
 
 	private:
 		double _rduration;

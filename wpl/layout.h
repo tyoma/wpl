@@ -27,6 +27,8 @@
 
 namespace wpl
 {
+	struct cursor_manager;
+
 	class container : public control, noncopyable
 	{
 	protected:
@@ -58,6 +60,39 @@ namespace wpl
 	private:
 		std::vector<item> _children;
 		int _spacing;
+		bool _horizontal;
+	};
+
+
+	class resizable_stack : public container
+	{
+	public:
+		resizable_stack(int spacing, bool horizontal, std::shared_ptr<cursor_manager> cursor_manager_);
+
+		void add(std::shared_ptr<control> child, double size_fraction, int tab_order = 0);
+
+		// control methods
+		virtual void layout(const placed_view_appender &append_view, const agge::box<int> &box) override;
+
+	private:
+		struct item
+		{
+			std::shared_ptr<control> child;
+			double size_fraction;
+			int tab_order;
+		};
+
+		class splitter;
+
+	private:
+		double get_step() const;
+		void move_splitter(size_t index, double delta);
+
+	private:
+		std::vector<item> _children;
+		std::vector< std::shared_ptr<splitter> > _splitters;
+		const std::shared_ptr<cursor_manager> _cursor_manager;
+		int _spacing, _last_size;
 		bool _horizontal;
 	};
 

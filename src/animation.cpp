@@ -24,7 +24,7 @@
 
 namespace wpl
 {
-	bool no_animation(double &progress, double /*elapsed*/) throw()
+	bool no_animation(double &progress, double /*elapsed*/)
 	{	return progress = 1, false;	}
 
 
@@ -32,7 +32,7 @@ namespace wpl
 		: _rduration(1.0 / duration)
 	{	}
 
-	bool smooth_animation::operator ()(double &progress, double elapsed) const throw()
+	bool smooth_animation::operator ()(double &progress, double elapsed) const
 	{
 		auto t = elapsed * _rduration;
 		const auto proceed = t < 1 ? true : (t = 1, false);

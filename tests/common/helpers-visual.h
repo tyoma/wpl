@@ -10,6 +10,8 @@
 
 namespace wpl
 {
+	struct placed_view;
+
 	namespace tests
 	{
 		typedef agge::order_bgra pixel_color_model;
@@ -46,6 +48,8 @@ namespace wpl
 		void rectangle(gcontext &ctx, agge::color c, int x1, int y1, int x2, int y2);
 		std::shared_ptr<gcontext::text_engine_type> create_faked_text_engine();
 	}
+
+	bool operator ==(const placed_view &lhs, const placed_view &rhs);
 }
 
 namespace agge

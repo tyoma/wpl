@@ -133,6 +133,9 @@
     <ClCompile Include="macos\font_loader_freetype_unix.cpp">
       <Filter>src\macos</Filter>
     </ClCompile>
+    <ClCompile Include="resizable_stack.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\wpl\controls\listview_core.h">

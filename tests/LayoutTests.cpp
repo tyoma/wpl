@@ -12,14 +12,6 @@ using namespace std;
 
 namespace wpl
 {
-	static bool operator ==(const placed_view &lhs, const placed_view &rhs)
-	{
-		return lhs.regular == rhs.regular
-			&& lhs.native == rhs.native
-			&& lhs.location == rhs.location
-			&& lhs.tab_order == rhs.tab_order;
-	}
-
 	namespace tests
 	{
 		namespace
@@ -441,7 +433,7 @@ namespace wpl
 					assert_equal(expect_change, hierarchy_changed);
 				};
 
-				// ACT
+				// ACT 
 				ctl->layout_changed(true);
 
 				// ASSERT
