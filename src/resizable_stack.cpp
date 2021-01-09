@@ -145,6 +145,10 @@ namespace wpl
 
 	void resizable_stack::move_splitter(size_t index, double delta)
 	{
+		if (delta < -_children[index].size_fraction)
+			delta = -_children[index].size_fraction;
+		else if (delta > _children[index + 1].size_fraction)
+			delta = _children[index + 1].size_fraction;
 		_children[index].size_fraction += delta;
 		_children[index + 1].size_fraction -= delta;
 		layout_changed(false);

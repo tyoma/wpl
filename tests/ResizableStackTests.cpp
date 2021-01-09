@@ -497,6 +497,49 @@ namespace wpl
 				assert_equal(0u, cursor_manager_->stack_level);
 			}
 
+
+			test( ResizingIsLimitedToZeroSize )
+			{
+				// INIT
+				const auto c = make_shared<mocks::control>();
+				vector<placed_view> v;
+				placed_view pv[] = {	{	make_shared<view>(), nullptr_nv, agge::zero(), 0,	},	};
+				resizable_stack s(5, true, cursor_manager_);
+
+				c->views = mkvector(pv);
+				s.add(c, 1);
+				s.add(c, 2);
+				s.layout(make_appender(v), make_box(100, 10));
+
+				auto splitter = v[1].regular;
+
+				splitter->mouse_down(mouse_input::left, 0, 0, 0);
+
+				// ACT
+				splitter->mouse_move(0, -200, 0);
+
+				// ASSERT
+				agge::box<int> reference1_box[] = {	{ 0, 10 }, { 147, 10 },	};
+
+				v.clear();
+				c->size_log.clear();
+				s.layout(make_appender(v), make_box(152, 10));
+
+				assert_equal(reference1_box, c->size_log);
+
+				// ACT
+				splitter->mouse_move(0, 200, 0);
+
+				// ASSERT
+				agge::box<int> reference2_box[] = {	{ 95, 10 }, { 0, 10 },	};
+
+				v.clear();
+				c->size_log.clear();
+				s.layout(make_appender(v), make_box(100, 10));
+
+				assert_equal(reference2_box, c->size_log);
+			}
+
 		end_test_suite
 	}
 }
