@@ -105,20 +105,20 @@ int main()
 	const auto root = make_shared<overlay>();
 		root->add(fct->create_control<control>("background"));
 
-		const auto vstack = make_shared<stack>(5, false);
+		const auto vstack = make_shared<stack>(5, false, fct->context.cursor_manager_);
 		root->add(pad_control(vstack, 5, 5));
 			auto cb = fct->create_control<combobox>("combobox");
-			vstack->add(cb, 40, 1);
+			vstack->add(cb, pixels(40), false);
 			cb->set_model(shared_ptr<my_model>(new my_model(app.get_application_queue())));
 
 			auto scrl = fct->create_control<scroller>("hscroller");
-			vstack->add(scrl, 20);
+			vstack->add(scrl, pixels(20), false);
 			scrl->set_model(scrl_model);
 
-			auto fill = make_shared<stack>(5, true);
-			vstack->add(fill, -100);
+			auto fill = make_shared<stack>(5, true, fct->context.cursor_manager_);
+			vstack->add(fill, percents(100), false);
 				auto scrl2 = fct->create_control<scroller>("vscroller");
-				fill->add(scrl2, 8);
+				fill->add(scrl2, pixels(8), false);
 				scrl2->set_model(scrl_model);
 
 	f->set_root(root);

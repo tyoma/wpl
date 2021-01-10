@@ -9,8 +9,8 @@ set(WPL_SOURCES
 	input_stubs.cpp
 	keyboard_router.cpp
 	layout.cpp
+	layout_stack.cpp
 	mouse_router.cpp
-	resizable_stack.cpp
 	stylesheet_db.cpp
 	visual.cpp
 	visual_router.cpp

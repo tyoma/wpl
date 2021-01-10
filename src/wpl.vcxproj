@@ -36,9 +36,10 @@
   <ItemDefinitionGroup>
     <ClCompile>
       <AdditionalIncludeDirectories>..;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'"> /GH /Gh %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Lib>
-      <AdditionalDependencies>user32.lib;comctl32.lib</AdditionalDependencies>
+      <AdditionalDependencies>user32.lib;comctl32.lib;$(MICROPROFILERDIR)/micro-profiler_$(PlatformName).lib</AdditionalDependencies>
     </Lib>
     <ProjectReference>
       <LinkLibraryDependencies>false</LinkLibraryDependencies>
@@ -66,7 +67,7 @@
       <ExcludedFromBuild>true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="mouse_router.cpp" />
-    <ClCompile Include="resizable_stack.cpp" />
+    <ClCompile Include="layout_stack.cpp" />
     <ClCompile Include="stylesheet_db.cpp" />
     <ClCompile Include="visual_router.cpp" />
     <ClCompile Include="win32\combobox.cpp">
@@ -166,6 +167,7 @@
     <ClInclude Include="..\wpl\win32\listview.h" />
     <ClInclude Include="..\wpl\win32\view_host.h" />
     <ClInclude Include="glyphs.h" />
+    <ClInclude Include="helpers.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="macos\cursor_manager.mm" />

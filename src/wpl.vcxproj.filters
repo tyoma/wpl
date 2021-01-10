@@ -133,7 +133,7 @@
     <ClCompile Include="macos\font_loader_freetype_unix.cpp">
       <Filter>src\macos</Filter>
     </ClCompile>
-    <ClCompile Include="resizable_stack.cpp">
+    <ClCompile Include="layout_stack.cpp">
       <Filter>src</Filter>
     </ClCompile>
   </ItemGroup>
@@ -237,6 +237,9 @@
       <Filter>macos</Filter>
     </ClInclude>
     <ClInclude Include="..\wpl\view_helpers.h" />
+    <ClInclude Include="helpers.h">
+      <Filter>src</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="macos\form.mm">

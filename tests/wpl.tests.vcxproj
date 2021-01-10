@@ -47,7 +47,7 @@
     <ClCompile Include="MouseRouterTests.cpp" />
     <ClCompile Include="FactoryTests.cpp" />
     <ClCompile Include="ListViewCoreSelectionTests.cpp" />
-    <ClCompile Include="ResizableStackTests.cpp" />
+    <ClCompile Include="StackLayoutTests.cpp" />
     <ClCompile Include="SignalBaseTests.cpp" />
     <ClCompile Include="VisualRouterTests.cpp" />
     <ClCompile Include="HeaderCoreTests.cpp" />

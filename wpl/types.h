@@ -26,4 +26,58 @@ namespace wpl
 {
 	typedef agge::rect<int> rect_i;
 	typedef agge::rect<agge::real_t> rect_r;
+
+	class display_unit
+	{
+	public:
+		enum unit {	px, percent, em,	};
+
+	public:
+		display_unit();
+		display_unit(double value, unit unit_);
+
+		template <typename VisitorT>
+		void apply(VisitorT &visitor) const;
+		template <typename VisitorT>
+		void apply(VisitorT &visitor);
+
+	private:
+		double _value;
+		unit _unit;
+	};
+
+
+
+	inline display_unit::display_unit(double value, unit unit_)
+		: _value(value), _unit(unit_)
+	{	}
+
+	template <typename VisitorT>
+	inline void display_unit::apply(VisitorT &visitor) const
+	{
+		switch (_unit)
+		{
+		case px:	visitor.visit_pixel(_value);	break;
+		case percent:	visitor.visit_percent(_value);	break;
+		case em:	visitor.visit_em(_value);	break;
+		}
+	}
+
+	template <typename VisitorT>
+	inline void display_unit::apply(VisitorT &visitor)
+	{
+		switch (_unit)
+		{
+		case px:	visitor.visit_pixel(_value);	break;
+		case percent:	visitor.visit_percent(_value);	break;
+		case em:	visitor.visit_em(_value);	break;
+		}
+	}
+
+
+	inline display_unit pixels(double value)
+	{	return display_unit(value, display_unit::px);	}
+
+	inline display_unit percents(double value)
+	{	return display_unit(value, display_unit::percent);	}
 }

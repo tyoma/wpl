@@ -18,9 +18,10 @@
 //	OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //	THE SOFTWARE.
 
-#include <wpl/helpers.h>
+#include "helpers.h"
 
 #include <agge.text/text_engine.h>
+#include <wpl/helpers.h>
 
 using namespace agge;
 using namespace std;
@@ -42,5 +43,25 @@ namespace wpl
 			? box_.x2 : box_.x1 + 0.5f * wpl::width(box_);
 
 		text_engine_.render_string(target, font_, text.c_str(), halign, x, y, wpl::width(box_));
+	}
+
+	placed_view_appender offset(const placed_view_appender &inner, int dx, int dy, int tab_override)
+	{
+		// TODO: use custom appender functor, as function may allocate storage dynamically.
+
+		return [&inner, dx, dy, tab_override] (placed_view pv) {
+			wpl::offset(pv.location, dx, dy);
+			pv.tab_order = pv.tab_order ? tab_override ? tab_override : pv.tab_order : 0;
+			inner(pv);
+		};
+	}
+
+	placed_view_appender offset(const placed_view_appender &inner, int d, bool horizontal, int tab_override)
+	{
+		return [&inner, d, horizontal, tab_override] (placed_view pv) {
+			wpl::offset(pv.location, horizontal ? d : 0, horizontal ? 0 : d);
+			pv.tab_order = pv.tab_order ? tab_override ? tab_override : pv.tab_order : 0;
+			inner(pv);
+		};
 	}
 }

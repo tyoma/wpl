@@ -22,6 +22,7 @@
 
 #include "concepts.h"
 #include "control.h"
+#include "types.h"
 
 #include <vector>
 
@@ -42,34 +43,9 @@ namespace wpl
 	class stack : public container
 	{
 	public:
-		stack(int spacing, bool horizontal);
+		stack(int spacing, bool horizontal, std::shared_ptr<cursor_manager> cursor_manager_);
 
-		void add(std::shared_ptr<control> child, int size, int tab_order = 0);
-
-		// control methods
-		virtual void layout(const placed_view_appender &append_view, const agge::box<int> &box) override;
-
-	private:
-		struct item
-		{
-			std::shared_ptr<control> child;
-			int size;
-			int tab_order;
-		};
-
-	private:
-		std::vector<item> _children;
-		int _spacing;
-		bool _horizontal;
-	};
-
-
-	class resizable_stack : public container
-	{
-	public:
-		resizable_stack(int spacing, bool horizontal, std::shared_ptr<cursor_manager> cursor_manager_);
-
-		void add(std::shared_ptr<control> child, double size_fraction, int tab_order = 0);
+		void add(std::shared_ptr<control> child, display_unit size, bool resizable, int tab_order = 0);
 
 		// control methods
 		virtual void layout(const placed_view_appender &append_view, const agge::box<int> &box) override;
@@ -78,14 +54,15 @@ namespace wpl
 		struct item
 		{
 			std::shared_ptr<control> child;
-			double size_fraction;
+			display_unit size;
+			bool resizable;
 			int tab_order;
 		};
 
 		class splitter;
 
 	private:
-		double get_step() const;
+		double get_rsize() const;
 		void move_splitter(size_t index, double delta);
 
 	private:

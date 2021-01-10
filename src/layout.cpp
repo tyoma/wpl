@@ -20,6 +20,8 @@
 
 #include <wpl/layout.h>
 
+#include "helpers.h"
+
 #include <algorithm>
 #include <wpl/helpers.h>
 
@@ -27,60 +29,12 @@ using namespace std;
 
 namespace wpl
 {
-	namespace
-	{
-		placed_view_appender offset(const placed_view_appender &inner, int dx, int dy, int tab_override)
-		{
-			// TODO: use custom appender functor, as function may allocate storage dynamically.
-
-			return [&inner, dx, dy, tab_override] (placed_view pv) {
-				wpl::offset(pv.location, dx, dy);
-				pv.tab_order = pv.tab_order ? tab_override ? tab_override : pv.tab_order : 0;
-				inner(pv);
-			};
-		}
-	}
-
-
 	void container::add(control &child)
 	{
 		_connections.push_back(child.layout_changed += [this] (bool hierarchy_changed) {
 			layout_changed(hierarchy_changed);
 		});
 		layout_changed(true);
-	}
-
-
-	stack::stack(int spacing, bool horizontal)
-		: _spacing(spacing), _horizontal(horizontal)
-	{	}
-
-	void stack::add(shared_ptr<control> child, int size, int tab_order)
-	{
-		item i = { child, size, tab_order };
-		_children.push_back(i);
-		container::add(*child);
-	}
-
-	void stack::layout(const placed_view_appender &append_view, const agge::box<int> &box)
-	{
-		auto b = box;
-		const auto zero = b.w - b.w; // '0' in coordinates type
-		auto location = zero;
-		auto remainder = _horizontal ? box.w : box.h;
-		auto relative_base = zero;
-
-		for (auto i = _children.begin(); i != _children.end(); ++i)
-			(i->size > zero ? remainder : relative_base) -= i->size;
-		remainder -= (static_cast<int>(_children.size()) - 1) * _spacing;
-		for (auto i = _children.begin(); i != _children.end(); ++i)
-		{
-			const auto size = i->size > zero ? i->size : -i->size * remainder / relative_base;
-
-			(_horizontal ? b.w : b.h) = size;
-			i->child->layout(offset(append_view, _horizontal ? location : 0, _horizontal ? 0 : location, i->tab_order), b);
-			location += size + _spacing;
-		}
 	}
 
 

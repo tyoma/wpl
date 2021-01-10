@@ -113,20 +113,20 @@ int main()
 	const auto root = make_shared<overlay>();
 		root->add(fct->create_control<control>("background"));
 
-		const auto stk = make_shared<stack>(5, false);
+		const auto stk = make_shared<stack>(5, false, fct->context.cursor_manager_);
 		root->add(pad_control(stk, 5, 5));
 			const auto lv = fct->create_control<listview>("listview");
 			lv->set_columns_model(cm);
 			lv->set_model(m);
-			stk->add(lv, -100, 1);
+			stk->add(lv, percents(100), false, 1);
 
 			auto btn1 = fct->create_control<button>("button");
 			btn1->set_text(L"first");
-			stk->add(btn1, 20, 2);
+			stk->add(btn1, pixels(20), false, 2);
 
 			auto btn2 = fct->create_control<button>("button");
 			btn2->set_text(L"second");
-			stk->add(btn2, 20, 3);
+			stk->add(btn2, pixels(20), false, 3);
 
 	f->set_root(root);
 	f->set_location(l);
