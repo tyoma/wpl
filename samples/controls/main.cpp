@@ -105,7 +105,7 @@ int main()
 	const auto root = make_shared<overlay>();
 		root->add(fct->create_control<control>("background"));
 
-		const auto vstack = make_shared<stack>(false, fct->context.cursor_manager_);
+		const auto vstack = fct->create_control<stack>("vstack");
 		vstack->set_spacing(5);
 		root->add(pad_control(vstack, 5, 5));
 			auto cb = fct->create_control<combobox>("combobox");
@@ -116,7 +116,7 @@ int main()
 			vstack->add(scrl, pixels(20), false);
 			scrl->set_model(scrl_model);
 
-			auto fill = make_shared<stack>(true, fct->context.cursor_manager_);
+			auto fill = fct->create_control<stack>("hstack");
 			fill->set_spacing(5);
 			vstack->add(fill, percents(100), false);
 				auto scrl2 = fct->create_control<scroller>("vscroller");

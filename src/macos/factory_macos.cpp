@@ -69,5 +69,11 @@ namespace wpl
 		factory_.register_control("vscroller", [] (const factory &, const control_context &) {
 			return shared_ptr<control>(new controls::scroller(controls::scroller::vertical));
 		});
+		factory_.register_control("hstack", [] (const factory &, const control_context &context) {
+			return shared_ptr<control>(new stack(true, context.cursor_manager_));
+		});
+		factory_.register_control("vstack", [] (const factory &, const control_context &context) {
+			return shared_ptr<control>(new stack(false, context.cursor_manager_));
+		});
 	}
 }

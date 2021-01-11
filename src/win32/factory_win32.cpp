@@ -25,6 +25,7 @@
 #include <wpl/controls/listview_composite.h>
 #include <wpl/controls/listview_basic.h>
 #include <wpl/controls/scroller.h>
+#include <wpl/layout.h>
 #include <wpl/stylesheet_helpers.h>
 #include <wpl/win32/cursor_manager.h>
 #include <wpl/win32/font_loader.h>
@@ -115,6 +116,12 @@ namespace wpl
 		});
 		factory_.register_control("vscroller", [] (const factory &, const control_context &) {
 			return shared_ptr<control>(new controls::scroller(controls::scroller::vertical));
+		});
+		factory_.register_control("hstack", [] (const factory &, const control_context &context) {
+			return shared_ptr<control>(new stack(true, context.cursor_manager_));
+		});
+		factory_.register_control("vstack", [] (const factory &, const control_context &context) {
+			return shared_ptr<control>(new stack(false, context.cursor_manager_));
 		});
 	}
 }
