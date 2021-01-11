@@ -43,8 +43,9 @@ namespace wpl
 	class stack : public container
 	{
 	public:
-		stack(int spacing, bool horizontal, std::shared_ptr<cursor_manager> cursor_manager_);
+		stack(bool horizontal, std::shared_ptr<cursor_manager> cursor_manager_);
 
+		void set_spacing(int spacing);
 		void add(std::shared_ptr<control> child, display_unit size, bool resizable, int tab_order = 0);
 
 		// control methods
@@ -69,7 +70,8 @@ namespace wpl
 		std::vector<item> _children;
 		std::vector< std::shared_ptr<splitter> > _splitters;
 		const std::shared_ptr<cursor_manager> _cursor_manager;
-		int _spacing, _last_size;
+		int _spacing;
+		int _last_size;
 		bool _horizontal;
 	};
 

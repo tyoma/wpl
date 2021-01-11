@@ -113,7 +113,8 @@ int main()
 	const auto root = make_shared<overlay>();
 		root->add(fct->create_control<control>("background"));
 
-		const auto stk = make_shared<stack>(5, false, fct->context.cursor_manager_);
+		const auto stk = make_shared<stack>(false, fct->context.cursor_manager_);
+		stk->set_spacing(5);
 		root->add(pad_control(stk, 5, 5));
 			const auto lv = fct->create_control<listview>("listview");
 			lv->set_columns_model(cm);

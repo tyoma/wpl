@@ -24,7 +24,8 @@ int main()
 	const auto root = make_shared<overlay>();
 		root->add(fct->create_control<control>("background"));
 
-		auto vstack = make_shared<stack>(5, true, fct->context.cursor_manager_);
+		auto vstack = make_shared<stack>(true, fct->context.cursor_manager_);
+		vstack->set_spacing(5);
 		root->add(pad_control(vstack, 5, 5));
 			const auto p1 = fct->create_control<piechart>("piechart");
 			vstack->add(p1, percents(20), true);

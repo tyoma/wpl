@@ -44,7 +44,7 @@ namespace wpl
 			test( AddingAViewForcesLayoutRecalculate )
 			{
 				// INIT
-				stack s(0, false, cursor_manager_);
+				stack s(false, cursor_manager_);
 				auto layout_forced = 0;
 				slot_connection conn = s.layout_changed += [&] (bool hierarchy_changed) {
 					layout_forced++;
@@ -65,10 +65,34 @@ namespace wpl
 			}
 
 
+			test( ChangingSpacingForcesLayoutRecalculate )
+			{
+				// INIT
+				stack s(false, cursor_manager_);
+				auto layout_forced = 0;
+				slot_connection conn = s.layout_changed += [&] (bool hierarchy_changed) {
+					layout_forced++;
+					assert_is_false(hierarchy_changed);
+				};
+
+				// ACT
+				s.set_spacing(6);
+
+				// ASSERT
+				assert_equal(1, layout_forced);
+
+				// ACT
+				s.set_spacing(16);
+
+				// ASSERT
+				assert_equal(2, layout_forced);
+			}
+
+
 			test( ForceLayoutIsPropagatedUpstream )
 			{
 				// INIT
-				stack s(0, false, cursor_manager_);
+				stack s(false, cursor_manager_);
 				auto layout_forced = 0;
 				auto expect_change = true;
 				shared_ptr<mocks::control> ctls[] = {
@@ -110,8 +134,8 @@ namespace wpl
 				c->views.push_back(pv);
 
 				// INIT / ACT
-				stack sh(0, true, cursor_manager_);
-				stack sv(0, false, cursor_manager_);
+				stack sh(true, cursor_manager_);
+				stack sv(false, cursor_manager_);
 
 				sh.add(c, pixels(17), false, 190);
 				sv.add(c, pixels(91), false, 11);
@@ -134,10 +158,12 @@ namespace wpl
 				assert_equal(reference1_box, c->size_log);
 
 				// INIT / ACT
-				stack sh2(100, true, cursor_manager_);
-				stack sv2(10, false, cursor_manager_);
+				stack sh2(true, cursor_manager_);
+				stack sv2(false, cursor_manager_);
 
+				sh2.set_spacing(100);
 				sh2.add(c, pixels(170), false, 1);
+				sv2.set_spacing(10);
 				sv2.add(c, pixels(190), false, 2);
 
 				// INIT
@@ -173,7 +199,7 @@ namespace wpl
 				c->views = mkvector(pv);
 
 				// INIT / ACT
-				stack sh(0, true, cursor_manager_), sv(0, false, cursor_manager_);
+				stack sh(true, cursor_manager_), sv(false, cursor_manager_);
 
 				sh.add(c, percents(100.0), true, 1);
 				sv.add(c, percents(100.0), true, 11);
@@ -226,7 +252,7 @@ namespace wpl
 					{	make_shared<view>(), nullptr_nv, create_rect(1, 2, 10, 15), 1,	},
 					{	make_shared<view>(), nullptr_nv, create_rect(3, 5, 30, 20), 1,	},
 				};
-				stack sh(0, true, cursor_manager_);
+				stack sh(true, cursor_manager_);
 
 				controls[0]->views.push_back(pv[0]);
 				controls[1]->views.push_back(pv[1]);
@@ -251,7 +277,7 @@ namespace wpl
 				assert_equal(reference11_box, controls[1]->size_log);
 
 				// INIT
-				stack sv(0, false, cursor_manager_);
+				stack sv(false, cursor_manager_);
 
 				sv.add(controls[0], pixels(90), false, 10);
 				sv.add(controls[1], pixels(80), false, 11);
@@ -298,7 +324,7 @@ namespace wpl
 				c[2]->views.push_back(pv[2]);
 
 				// INIT / ACT
-				stack s(0, true, cursor_manager_);
+				stack s(true, cursor_manager_);
 
 				s.add(c[0], percents(17), true, 1);
 				s.add(c[1], percents(13), true);
@@ -360,7 +386,7 @@ namespace wpl
 				c->views = mkvector(pv);
 
 				// INIT / ACT
-				stack s(0, false, cursor_manager_);
+				stack s(false, cursor_manager_);
 
 				s.add(c, percents(19.090909), true);
 				s.add(c, percents(26.363636), true);
@@ -398,12 +424,13 @@ namespace wpl
 					{	make_shared<view>(), nullptr_nv, create_rect(1, 2, 10, 15), 10,	},
 					{	make_shared<view>(), nullptr_nv, create_rect(3, 5, 30, 20), 191,	},
 				};
-				stack sh(3, true, cursor_manager_);
+				stack sh(true, cursor_manager_);
 
 				controls[0]->views.push_back(pv[0]);
 				controls[1]->views.push_back(pv[1]);
 				controls[2]->views.push_back(pv[2]);
 
+				sh.set_spacing(3);
 				sh.add(controls[0], pixels(17), false);
 				sh.add(controls[1], pixels(23), false);
 				sh.add(controls[2], pixels(13), false);
@@ -446,7 +473,7 @@ namespace wpl
 					{	make_shared<view>(), nullptr_nv, create_rect(3, 5, 30, 20), 4,	},
 					{	make_shared<view>(), nullptr_nv, create_rect(3, 5, 30, 20), 4,	},
 				};
-				stack sh(3, true, cursor_manager_);
+				stack sh(true, cursor_manager_);
 
 				controls[0]->views.push_back(pv[0]);
 				controls[1]->views.push_back(pv[1]);
@@ -454,6 +481,7 @@ namespace wpl
 				controls[3]->views.push_back(pv[3]);
 				controls[4]->views.push_back(pv[4]);
 
+				sh.set_spacing(3);
 				sh.add(controls[0], pixels(17), false);
 				sh.add(controls[1], percents(50 /*3*/), false);
 				sh.add(controls[2], pixels(13), false);
@@ -529,7 +557,7 @@ namespace wpl
 					{	make_shared<view>(), nullptr_nv, create_rect(3, 5, 30, 20), 4,	},
 					{	make_shared<view>(), nullptr_nv, create_rect(7, 10, 30, 20), 4,	},
 				};
-				stack sh(5, true, cursor_manager_);
+				stack sh(true, cursor_manager_);
 
 				controls[0]->views.push_back(pv[0]);
 				controls[0]->views.push_back(pv[1]);
@@ -537,6 +565,7 @@ namespace wpl
 				controls[1]->views.push_back(pv[3]);
 				controls[1]->views.push_back(pv[4]);
 
+				sh.set_spacing(5);
 				sh.add(controls[0], pixels(30), false, 100);
 				sh.add(controls[1], pixels(50), false);
 
@@ -565,7 +594,7 @@ namespace wpl
 					{	nullptr, nullptr_nv, {}, 0,	},
 					{	nullptr, nullptr_nv, {}, 2,	},
 				};
-				stack sv(0, false, cursor_manager_);
+				stack sv(false, cursor_manager_);
 
 				control->views.assign(begin(pv), end(pv));
 
@@ -602,8 +631,9 @@ namespace wpl
 				c->views = mkvector(pv);
 
 				// INIT / ACT
-				stack sv(7, false, cursor_manager_);
+				stack sv(false, cursor_manager_);
 
+				sv.set_spacing(7);
 				sv.add(c, percents(19.090909), true);
 				sv.add(c, percents(26.363636), true);
 				sv.add(c, percents(54.545454), true);
@@ -629,8 +659,9 @@ namespace wpl
 				assert_not_equal(v[1].regular, v[3].regular);
 
 				// INIT / ACT
-				stack sh(11, true, cursor_manager_);
+				stack sh(true, cursor_manager_);
 
+				sh.set_spacing(11);
 				sh.add(c, percents(53), true);
 				sh.add(c, percents(47), true);
 				c->size_log.clear();
@@ -666,8 +697,9 @@ namespace wpl
 				c->views = mkvector(pv);
 
 				// INIT / ACT
-				stack sv(5, false, cursor_manager_);
+				stack sv(false, cursor_manager_);
 
+				sv.set_spacing(5);
 				sv.add(c, percents(10), false);
 				sv.add(c, percents(15), false);
 				sv.add(c, percents(10), true);
@@ -711,8 +743,9 @@ namespace wpl
 				c->views = mkvector(pv);
 
 				// INIT / ACT
-				stack sv(7, false, cursor_manager_);
+				stack sv(false, cursor_manager_);
 
+				sv.set_spacing(7);
 				sv.add(c, percents(1.05), true);
 				sv.add(c, percents(1.45), true);
 				sv.add(c, percents(3), true);
@@ -734,10 +767,11 @@ namespace wpl
 				const auto c = make_shared<mocks::control>();
 				vector<placed_view> v;
 				placed_view pv[] = {	{	make_shared<view>(), nullptr_nv, create_rect(0, 0, 10, 10), 0,	},	};
-				stack s(5, false, cursor_manager_);
+				stack s(false, cursor_manager_);
 				auto layout_invalidations = 0;
 
 				c->views = mkvector(pv);
+				s.set_spacing(5);
 				s.add(c, percents(33.333333), true);
 				s.add(c, percents(66.666667), true);
 				s.layout(make_appender(v), make_box(100, 105));
@@ -788,10 +822,11 @@ namespace wpl
 				const auto c = make_shared<mocks::control>();
 				vector<placed_view> v;
 				placed_view pv[] = {	{	make_shared<view>(), nullptr_nv, create_rect(0, 0, 10, 10), 0,	},	};
-				stack s(5, true, cursor_manager_);
+				stack s(true, cursor_manager_);
 				auto layout_invalidations = 0;
 
 				c->views = mkvector(pv);
+				s.set_spacing(5);
 				s.add(c, percents(16.666667), true);
 				s.add(c, percents(33.333333), true);
 				s.add(c, percents(50), true);
@@ -830,9 +865,10 @@ namespace wpl
 				const auto c = make_shared<mocks::control>();
 				vector<placed_view> v;
 				placed_view pv[] = {	{	make_shared<view>(), nullptr_nv, create_rect(0, 0, 10, 10), 0,	},	};
-				stack s(5, true, cursor_manager_);
+				stack s(true, cursor_manager_);
 
 				c->views = mkvector(pv);
+				s.set_spacing(5);
 				s.add(c, percents(1), true);
 				s.add(c, percents(2), true);
 
@@ -862,9 +898,10 @@ namespace wpl
 				const auto c = make_shared<mocks::control>();
 				vector<placed_view> v;
 				placed_view pv[] = {	{	make_shared<view>(), nullptr_nv, agge::zero(), 0,	},	};
-				stack s(5, true, cursor_manager_);
+				stack s(true, cursor_manager_);
 
 				c->views = mkvector(pv);
+				s.set_spacing(5);
 				s.add(c, percents(33.333333), true);
 				s.add(c, percents(66.666667), true);
 				s.layout(make_appender(v), make_box(5, 10));
@@ -896,13 +933,15 @@ namespace wpl
 				const auto c = make_shared<mocks::control>();
 				vector<placed_view> v;
 				placed_view pv[] = {	{	make_shared<view>(), nullptr_nv, agge::zero(), 0,	},	};
-				stack sh(5, true, cursor_manager_), sv(5, false, cursor_manager_);
+				stack sh(true, cursor_manager_), sv(false, cursor_manager_);
 
 				c->views = mkvector(pv);
+				sh.set_spacing(5);
 				sh.add(c, percents(1), true);
 				sh.add(c, percents(2), true);
 				sh.layout(make_appender(v), make_box(100, 100));
 				auto splitterh = v[1].regular;
+				sv.set_spacing(5);
 				sv.add(c, percents(1), true);
 				sv.add(c, percents(2), true);
 				sv.layout(make_appender(v), make_box(100, 100));
@@ -944,9 +983,10 @@ namespace wpl
 				const auto c = make_shared<mocks::control>();
 				vector<placed_view> v;
 				placed_view pv[] = {	{	make_shared<view>(), nullptr_nv, agge::zero(), 0,	},	};
-				stack s(5, true, cursor_manager_);
+				stack s(true, cursor_manager_);
 
 				c->views = mkvector(pv);
+				s.set_spacing(5);
 				s.add(c, percents(33.333333), true);
 				s.add(c, percents(66.666667), true);
 				s.layout(make_appender(v), make_box(100, 10));
@@ -987,9 +1027,10 @@ namespace wpl
 				const auto c = make_shared<mocks::control>();
 				vector<placed_view> v;
 				placed_view pv[] = {	{	make_shared<view>(), nullptr_nv, agge::zero(), 0,	},	};
-				stack s(5, true, cursor_manager_);
+				stack s(true, cursor_manager_);
 
 				c->views = mkvector(pv);
+				s.set_spacing(5);
 				s.add(c, percents(25), true);
 				s.add(c, percents(25), false);
 				s.add(c, percents(30), true);

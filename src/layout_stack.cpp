@@ -176,9 +176,15 @@ namespace wpl
 	{	_drag_helper.mouse_up(button_);	}
 
 
-	stack::stack(int spacing, bool horizontal, shared_ptr<cursor_manager> cursor_manager_)
-		: _cursor_manager(cursor_manager_), _spacing(spacing), _horizontal(horizontal)
+	stack::stack(bool horizontal, shared_ptr<cursor_manager> cursor_manager_)
+		: _cursor_manager(cursor_manager_), _spacing(0), _horizontal(horizontal)
 	{	}
+
+	void stack::set_spacing(int spacing)
+	{
+		_spacing = spacing;
+		layout_changed(false);
+	}
 
 	void stack::add(shared_ptr<control> child, display_unit size, bool resizable, int tab_order)
 	{
