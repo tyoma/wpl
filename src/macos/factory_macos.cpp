@@ -26,6 +26,7 @@
 #include <wpl/controls/listview_basic.h>
 #include <wpl/controls/scroller.h>
 #include <wpl/freetype2/font_loader.h>
+#include <wpl/layout.h>
 #include <wpl/macos/form.h>
 #include <wpl/stylesheet_helpers.h>
 
