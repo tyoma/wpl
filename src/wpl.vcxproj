@@ -100,6 +100,12 @@
     <ClCompile Include="win32\listview_win32.cpp">
       <DisableLanguageExtensions>false</DisableLanguageExtensions>
     </ClCompile>
+    <ClCompile Include="win32\mouse_router_win32.cpp">
+      <DisableLanguageExtensions Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</DisableLanguageExtensions>
+      <DisableLanguageExtensions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</DisableLanguageExtensions>
+      <DisableLanguageExtensions Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</DisableLanguageExtensions>
+      <DisableLanguageExtensions Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</DisableLanguageExtensions>
+    </ClCompile>
     <ClCompile Include="win32\native_view.cpp">
       <DisableLanguageExtensions>false</DisableLanguageExtensions>
     </ClCompile>
@@ -110,6 +116,12 @@
       <DisableLanguageExtensions>false</DisableLanguageExtensions>
     </ClCompile>
     <ClCompile Include="visual.cpp" />
+    <ClCompile Include="win32\visual_router_win32.cpp">
+      <DisableLanguageExtensions Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</DisableLanguageExtensions>
+      <DisableLanguageExtensions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</DisableLanguageExtensions>
+      <DisableLanguageExtensions Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</DisableLanguageExtensions>
+      <DisableLanguageExtensions Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</DisableLanguageExtensions>
+    </ClCompile>
     <ClCompile Include="win32\window.cpp">
       <DisableLanguageExtensions>false</DisableLanguageExtensions>
     </ClCompile>
@@ -158,9 +170,11 @@
     <ClInclude Include="..\wpl\win32\font_loader.h" />
     <ClInclude Include="..\wpl\win32\font_manager.h" />
     <ClInclude Include="..\wpl\win32\form.h" />
+    <ClInclude Include="..\wpl\win32\mouse_router.h" />
     <ClInclude Include="..\wpl\win32\native_view.h" />
     <ClInclude Include="..\wpl\win32\queue.h" />
     <ClInclude Include="..\wpl\win32\text_container.h" />
+    <ClInclude Include="..\wpl\win32\visual_router.h" />
     <ClInclude Include="..\wpl\win32\window.h" />
     <ClInclude Include="..\wpl\win32\combobox.h" />
     <ClInclude Include="..\wpl\win32\listview.h" />

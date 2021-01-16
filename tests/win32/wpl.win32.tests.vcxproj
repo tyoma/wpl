@@ -54,6 +54,7 @@
     <ClCompile Include="ListViewTests.cpp" />
     <ClCompile Include="MockupsNative.cpp" />
     <ClCompile Include="NativeViewTests.cpp" />
+    <ClCompile Include="ViewHostOverlayTests.cpp" />
     <ClCompile Include="ViewHostTests.cpp" />
     <ClCompile Include="WindowingTests.cpp" />
   </ItemGroup>

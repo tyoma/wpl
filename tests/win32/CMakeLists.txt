@@ -14,6 +14,7 @@ set(WPL_TEST_SOURCES
 	ListViewTests.cpp
 	MockupsNative.cpp
 	NativeViewTests.cpp
+	ViewHostOverlayTests.cpp
 	ViewHostTests.cpp
 	WindowingTests.cpp
 )

@@ -82,8 +82,8 @@ namespace wpl
 			m->mouse_move(depressed, point.x, point.y);
 	}
 
-	void mouse_router::mouse_click(void (mouse_input::*fn)(mouse_input::mouse_buttons, int, int, int),
-		mouse_input::mouse_buttons button_, int depressed, agge::point<int> point)
+	void mouse_router::mouse_click(void (mouse_input::*fn)(mouse_input::mouse_buttons button, int depressed,
+		int x, int y), mouse_input::mouse_buttons button_, int depressed, agge::point<int> point)
 	{
 		if (const auto m = switch_mouse_over(point))
 		{

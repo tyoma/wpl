@@ -10,9 +10,11 @@ set(WPL_WIN32_SOURCES
 	font_manager_win32.cpp
 	form.cpp
 	listview_win32.cpp
+	mouse_router_win32.cpp
 	native_view.cpp
 	queue.cpp
 	view_host.cpp
+	visual_router_win32.cpp
 	window.cpp
 )
 

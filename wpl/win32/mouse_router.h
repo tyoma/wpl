@@ -18,43 +18,28 @@
 //	OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //	THE SOFTWARE.
 
-#pragma once
+#include "../mouse_router.h"
 
-#include "signal.h"
-
-#include <agge/types.h>
+#include <windows.h>
 
 namespace wpl
 {
-	class native_view;
-	struct placed_view;
-	struct view;
+	struct cursor_manager;
 
-	typedef std::function<void (const placed_view &pv)> placed_view_appender;
-
-	struct placed_view
+	namespace win32
 	{
-		std::shared_ptr<view> regular;
-		std::shared_ptr<native_view> native;
-		agge::rect<int> location;
-		int tab_order;
-		bool overlay;
-	};
+		class mouse_router : wpl::mouse_router
+		{
+		public:
+			mouse_router(const std::vector<placed_view> &views, mouse_router_host &host,
+				std::shared_ptr<cursor_manager> cursor_manager_);
 
-	struct control
-	{
-		virtual void layout(const placed_view_appender &append_view, const agge::box<int> &box) = 0;
-		virtual int min_height(int for_width) const;
-		virtual int min_width(int for_height) const;
+			using wpl::mouse_router::reload_views;
+			bool handle_message(LRESULT &result, HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam);
 
-		signal<void (bool hierarchy_changed)> layout_changed;
-	};
-
-
-
-	inline int control::min_height(int /*for_width*/) const
-	{	return 0;	}
-
-	inline int control::min_width(int /*for_height*/) const
-	{	return 0;	}
+		private:
+			std::shared_ptr<cursor_manager> _cursor_manager;
+			bool _mouse_in;
+		};
+	}
 }

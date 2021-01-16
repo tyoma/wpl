@@ -136,6 +136,12 @@
     <ClCompile Include="layout_stack.cpp">
       <Filter>src</Filter>
     </ClCompile>
+    <ClCompile Include="win32\mouse_router_win32.cpp">
+      <Filter>src\win32</Filter>
+    </ClCompile>
+    <ClCompile Include="win32\visual_router_win32.cpp">
+      <Filter>src\win32</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\wpl\controls\listview_core.h">
@@ -239,6 +245,12 @@
     <ClInclude Include="..\wpl\view_helpers.h" />
     <ClInclude Include="helpers.h">
       <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="..\wpl\win32\mouse_router.h">
+      <Filter>win32</Filter>
+    </ClInclude>
+    <ClInclude Include="..\wpl\win32\visual_router.h">
+      <Filter>win32</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

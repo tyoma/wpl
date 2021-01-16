@@ -22,17 +22,14 @@
 
 #include <wpl/cursor.h>
 #include <wpl/helpers.h>
-#include <wpl/visual_router.h>
 #include <wpl/win32/native_view.h>
 
 #include <algorithm>
 #include <iterator>
 #include <olectl.h>
-#include <windowsx.h>
 
 #pragma warning(disable: 4355)
 
-using namespace agge;
 using namespace std;
 using namespace placeholders;
 
@@ -40,60 +37,9 @@ namespace wpl
 {
 	namespace win32
 	{
-		namespace
-		{
-			class paint_sequence : noncopyable, public PAINTSTRUCT
-			{
-			public:
-				paint_sequence(HWND hwnd)
-					: _hwnd(hwnd)
-				{	::BeginPaint(_hwnd, this);	}
-
-				~paint_sequence() throw()
-				{	::EndPaint(_hwnd, this);	}
-
-				count_t width() const throw()
-				{	return rcPaint.right - rcPaint.left;	}
-
-				count_t height() const throw()
-				{	return rcPaint.bottom - rcPaint.top;	}
-
-			private:
-				HWND _hwnd;
-			};
-
-			agge::point<int> unpack_point(LPARAM lparam)
-			{
-				const agge::point<int> pt = {	GET_X_LPARAM(lparam), GET_Y_LPARAM(lparam)	};
-				return pt;
-			}
-
-			void screen_to_client(HWND hwnd, agge::point<int> &point_)
-			{
-				POINT pt = { point_.x, point_.y };
-
-				::ScreenToClient(hwnd, &pt);
-				point_.x = pt.x, point_.y = pt.y;
-			}
-
-			int convert_mouse_modifiers(WPARAM wparam)
-			{
-				auto modifiers = 0;
-
-				modifiers |= MK_CONTROL & wparam ? keyboard_input::control : 0;
-				modifiers |= MK_SHIFT & wparam ? keyboard_input::shift : 0;
-				modifiers |= MK_LBUTTON & wparam ? mouse_input::left : 0;
-				modifiers |= MK_MBUTTON & wparam ? mouse_input::middle : 0;
-				modifiers |= MK_RBUTTON & wparam ? mouse_input::right : 0;
-				return modifiers;
-			}
-		}
-
-
 		view_host::view_host(HWND hwnd, const form_context &context_, const window::user_handler_t &user_handler)
-			: context(context_), _user_handler(user_handler), _rasterizer(new gcontext::rasterizer_type), _mouse_in(false),
-				_input_modifiers(0), _visual_router(_views, *this), _mouse_router(_views, *this),
-				_keyboard_router(_views, *this)
+			: context(context_), _user_handler(user_handler), _input_modifiers(0), _visual_router(_views, *this, context_),
+				_mouse_router(_views, *this, context_.cursor_manager_), _keyboard_router(_views, *this)
 		{	_window = window::attach(hwnd, bind(&view_host::wndproc, this, _1, _2, _3, _4));	}
 
 		view_host::~view_host()
@@ -157,6 +103,13 @@ namespace wpl
 
 		LRESULT view_host::wndproc(UINT message, WPARAM wparam, LPARAM lparam, const window::original_handler_t &previous)
 		{
+			LRESULT result;
+
+			if (_visual_router.handle_message(result, _window->hwnd(), message, wparam, lparam))
+				return result;
+			else if (_mouse_router.handle_message(result, _window->hwnd(), message, wparam, lparam))
+				return result;
+
 			switch (message)
 			{
 			case WM_COMMAND:
@@ -171,12 +124,6 @@ namespace wpl
 
 			case WM_NOTIFY:
 				return ::SendMessage(reinterpret_cast<const NMHDR*>(lparam)->hwndFrom, OCM_NOTIFY, wparam, lparam);
-
-			case WM_SETCURSOR:
-				if (HTCLIENT == LOWORD(lparam) && _window->hwnd() == reinterpret_cast<HWND>(wparam))
-					return TRUE;
-				else
-					break;
 
 			case WM_CAPTURECHANGED:
 				if (const auto h = _capture_handle.lock())
@@ -195,40 +142,6 @@ namespace wpl
 			case WM_KEYUP:
 				dispatch_key(message, wparam, lparam);
 				break;
-
-			case WM_LBUTTONDOWN:
-			case WM_LBUTTONUP:
-			case WM_LBUTTONDBLCLK:
-			case WM_RBUTTONDOWN:
-			case WM_RBUTTONUP:
-			case WM_RBUTTONDBLCLK:
-				dispatch_mouse_click(message, wparam, lparam);
-				break;
-
-			case WM_MOUSEMOVE:
-			case WM_MOUSELEAVE:
-				dispatch_mouse_move(message, wparam, lparam);
-				break;
-
-			case WM_MOUSEHWHEEL:
-			case WM_MOUSEWHEEL:
-				dispatch_mouse_scroll(message, wparam, lparam);
-				break;
-
-			case WM_ERASEBKGND:
-				return TRUE;
-
-			case WM_PAINT:
-				paint_sequence ps(_window->hwnd());
-				const vector_i offset = { ps.rcPaint.left, ps.rcPaint.top };
-				gcontext ctx(*context.backbuffer, *context.renderer, *context.text_engine, offset,
-					create_rect<int>(ps.rcPaint.left, ps.rcPaint.top, ps.rcPaint.right, ps.rcPaint.bottom));
-
-				context.backbuffer->resize(ps.width(), ps.height());
-				_rasterizer->reset();
-				_visual_router.draw(ctx, _rasterizer);
-				context.backbuffer->blit(ps.hdc, ps.rcPaint.left, ps.rcPaint.top, ps.width(), ps.height());
-				return 0;
 			}
 			return _user_handler(message, wparam, lparam, previous);
 		}
@@ -261,61 +174,6 @@ namespace wpl
 			else if (WM_KEYUP == message)
 				_input_modifiers &= ~modifier_flag;
 			return true;
-		}
-
-		void view_host::dispatch_mouse_move(UINT message, WPARAM wparam, LPARAM lparam)
-		{
-			switch (message)
-			{
-			case WM_MOUSELEAVE:
-				_mouse_in = false;
-				_mouse_router.mouse_leave();
-				context.cursor_manager_->pop();
-				break;
-
-			case WM_MOUSEMOVE:
-				if (!_mouse_in)
-				{
-					TRACKMOUSEEVENT tme = { sizeof(TRACKMOUSEEVENT), TME_LEAVE, _window->hwnd(), 0 };
-
-					_mouse_in = true;
-					TrackMouseEvent(&tme);
-					context.cursor_manager_->push(context.cursor_manager_->get(cursor_manager::arrow));
-				}
-				_mouse_router.mouse_move(convert_mouse_modifiers(wparam), unpack_point(lparam));
-				break;
-			}
-		}
-
-		void view_host::dispatch_mouse_click(UINT message, WPARAM wparam, LPARAM lparam)
-		{
-			void (mouse_input::*fn)(mouse_input::mouse_buttons button_, int depressed, int x, int y);
-			mouse_input::mouse_buttons button;
-
-			switch (message)
-			{
-			case WM_LBUTTONDOWN: case WM_RBUTTONDOWN:	fn = &mouse_input::mouse_down;	break;
-			case WM_LBUTTONUP: case WM_RBUTTONUP:	fn = &mouse_input::mouse_up;	break;
-			case WM_LBUTTONDBLCLK: case WM_RBUTTONDBLCLK:	fn = &mouse_input::mouse_double_click;	break;
-			default:	return;
-			}
-			switch(message)
-			{
-			case WM_LBUTTONDOWN: case WM_LBUTTONUP: case WM_LBUTTONDBLCLK:	 button = mouse_input::left;	break;
-			case WM_RBUTTONDOWN: case WM_RBUTTONUP: case WM_RBUTTONDBLCLK:	 button = mouse_input::right;	break;
-			default:	return;
-			}
-			_mouse_router.mouse_click(fn, button, convert_mouse_modifiers(wparam), unpack_point(lparam));
-		}
-
-		void view_host::dispatch_mouse_scroll(UINT message, WPARAM wparam, LPARAM lparam)
-		{
-			auto pt = unpack_point(lparam);
-			const int wheel_delta = GET_WHEEL_DELTA_WPARAM(wparam) / WHEEL_DELTA;
-
-			screen_to_client(_window->hwnd(), pt);
-			_mouse_router.mouse_scroll(convert_mouse_modifiers(wparam), pt, WM_MOUSEHWHEEL == message ? wheel_delta : 0,
-				WM_MOUSEWHEEL == message ? wheel_delta : 0);
 		}
 
 		void view_host::layout_views(int width, int height)

@@ -45,7 +45,7 @@ namespace wpl
 		// mouse_input methods
 		void mouse_leave();
 		void mouse_move(int depressed, agge::point<int> point);
-		void mouse_click(void (mouse_input::*fn)(mouse_input::mouse_buttons, int, int, int),
+		void mouse_click(void (mouse_input::*fn)(mouse_input::mouse_buttons button, int depressed, int x, int y),
 			mouse_input::mouse_buttons button_, int depressed, agge::point<int> point);
 		void mouse_scroll(int depressed, agge::point<int> point, int delta_x, int delta_y);
 

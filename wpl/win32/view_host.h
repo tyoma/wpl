@@ -23,9 +23,10 @@
 #include "../concepts.h"
 #include "../factory_context.h"
 #include "../keyboard_router.h"
-#include "../mouse_router.h"
 #include "../view_host.h"
-#include "../visual_router.h"
+
+#include "mouse_router.h"
+#include "visual_router.h"
 #include "window.h"
 
 namespace wpl
@@ -65,10 +66,6 @@ namespace wpl
 			void dispatch_key(UINT message, WPARAM wparam, LPARAM lparam);
 			bool update_modifier(UINT message, unsigned code);
 
-			void dispatch_mouse_move(UINT message, WPARAM wparam, LPARAM lparam);
-			void dispatch_mouse_click(UINT message, WPARAM wparam, LPARAM lparam);
-			void dispatch_mouse_scroll(UINT message, WPARAM wparam, LPARAM lparam);
-
 			void layout_views(int width, int height);
 
 		private:
@@ -76,11 +73,9 @@ namespace wpl
 			std::shared_ptr<window> _window;
 			std::shared_ptr<control> _root;
 			std::vector<placed_view> _views;
-			gcontext::rasterizer_ptr _rasterizer;
 			slot_connection _layout_changed_connection;
 			std::weak_ptr<bool> _capture_handle;
 			unsigned _input_modifiers;
-			unsigned _mouse_in : 1;
 			visual_router _visual_router;
 			mouse_router _mouse_router;
 			keyboard_router _keyboard_router;
