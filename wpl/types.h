@@ -24,6 +24,8 @@
 
 namespace wpl
 {
+	typedef agge::point<int> point_i;
+	typedef agge::point<agge::real_t> point_r;
 	typedef agge::rect<int> rect_i;
 	typedef agge::rect<agge::real_t> rect_r;
 

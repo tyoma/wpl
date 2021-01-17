@@ -106,10 +106,7 @@ namespace wpl
 			RECT rc;
 
 			::GetClientRect(hwnd, &rc);
-
-			agge::box<int> b = { rc.right, rc.bottom };
-
-			return b;
+			return agge::create_box<int>(rc.right, rc.bottom);
 		}
 
 		RECT rect(int left, int top, int width, int height)

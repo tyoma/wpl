@@ -20,6 +20,8 @@
 
 #include <wpl/win32/visual_router.h>
 
+#include <wpl/win32/helpers.h>
+
 using namespace agge;
 using namespace std;
 
@@ -27,29 +29,6 @@ namespace wpl
 {
 	namespace win32
 	{
-		namespace 
-		{
-			class paint_sequence : noncopyable, public PAINTSTRUCT
-			{
-			public:
-				paint_sequence(HWND hwnd)
-					: _hwnd(hwnd)
-				{	::BeginPaint(_hwnd, this);	}
-
-				~paint_sequence() throw()
-				{	::EndPaint(_hwnd, this);	}
-
-				count_t width() const throw()
-				{	return rcPaint.right - rcPaint.left;	}
-
-				count_t height() const throw()
-				{	return rcPaint.bottom - rcPaint.top;	}
-
-			private:
-				HWND _hwnd;
-			};
-		}
-
 		visual_router::visual_router(const vector<placed_view> &views, visual_router_host &host,
 				const form_context &context)
 			: wpl::visual_router(views, host), _rasterizer(new gcontext::rasterizer_type), _context(context)
@@ -67,7 +46,7 @@ namespace wpl
 				break;
 
 			case WM_PAINT:
-				paint_sequence ps(hwnd);
+				helpers::paint_sequence ps(hwnd);
 				auto &backbuffer = *_context.backbuffer;
 				const vector_i offset = { ps.rcPaint.left, ps.rcPaint.top };
 				gcontext ctx(backbuffer, *_context.renderer, *_context.text_engine, offset,

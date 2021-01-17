@@ -32,14 +32,8 @@ using namespace placeholders;
 namespace wpl
 {
 	native_view::native_view(const string &text_style_name)
-		: _text_style_name(text_style_name)
+		: _text_style_name(text_style_name), _hwnd(NULL)
 	{	}
-
-	native_view::~native_view()
-	{
-		if (HWND hwnd = get_window())
-			_window.reset(), ::DestroyWindow(hwnd);
-	}
 
 	void native_view::layout(const placed_view_appender &append_view, const agge::box<int> &box)
 	{
@@ -54,28 +48,25 @@ namespace wpl
 	}
 
 	HWND native_view::get_window() const throw()
-	{	return _window ? _window->hwnd() : 0;	}
+	{	return _hwnd;	}
 
 	HWND native_view::get_window(HWND hparent_for)
 	{
-		if (_window && hparent_for == ::GetParent(_window->hwnd()))
-			return _window->hwnd();
-
-		HWND hwnd = materialize(hparent_for);
-
-		if (_window)
-			::DestroyWindow(_window->hwnd());
-		::SendMessage(hwnd, WM_SETFONT, reinterpret_cast<WPARAM>(_font.get()), 0);
-		_window = win32::window::attach(hwnd, bind(&native_view::on_message, this, _1, _2, _3, _4));
-		return hwnd;
+		if (!_hwnd || hparent_for != ::GetParent(_hwnd))
+		{
+			_hwnd.reset(materialize(hparent_for));
+			::SendMessage(_hwnd, WM_SETFONT, reinterpret_cast<WPARAM>(_font.get()), 0);
+			_window = win32::window::attach(_hwnd, bind(&native_view::on_message, this, _1, _2, _3, _4));
+		}
+		return _hwnd;
 	}
 
 	void native_view::apply_styles(const stylesheet &stylesheet_, win32::font_manager &font_manager)
 	{
 		auto new_font = font_manager.get_font(stylesheet_.get_font(_text_style_name.c_str())->get_key());
 
-		if (_window)
-			::SendMessage(_window->hwnd(), WM_SETFONT, reinterpret_cast<WPARAM>(new_font.get()), 0);
+		if (_hwnd)
+			::SendMessage(_hwnd, WM_SETFONT, reinterpret_cast<WPARAM>(new_font.get()), 0);
 		_font = new_font;
 	}
 }

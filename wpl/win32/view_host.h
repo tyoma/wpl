@@ -25,6 +25,7 @@
 #include "../keyboard_router.h"
 #include "../view_host.h"
 
+#include "helpers.h"
 #include "mouse_router.h"
 #include "visual_router.h"
 #include "window.h"
@@ -69,6 +70,9 @@ namespace wpl
 			void layout_views(int width, int height);
 
 		private:
+			HWND _hwnd;
+			const helpers::window_handle _hoverlay;
+
 			window::user_handler_t _user_handler;
 			std::shared_ptr<window> _window;
 			std::shared_ptr<control> _root;
@@ -79,7 +83,6 @@ namespace wpl
 			visual_router _visual_router;
 			mouse_router _mouse_router;
 			keyboard_router _keyboard_router;
-			HWND _hoverlay;
 		};
 	}
 }

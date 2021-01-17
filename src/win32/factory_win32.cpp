@@ -34,7 +34,6 @@
 #include <wpl/win32/controls.h>
 #include <wpl/win32/form.h>
 #include <wpl/win32/listview.h>
-#include <wpl/win32/queue.h>
 
 using namespace std;
 

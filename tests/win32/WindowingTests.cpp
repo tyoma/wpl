@@ -102,19 +102,6 @@ namespace wpl
 			}
 
 
-			test( WrapperHoldsHWND )
-			{
-				// INIT
-				HWND hwnd1 = windowManager.create_window(), hwnd2 = windowManager.create_window();
-				shared_ptr<win32::window> w1(win32::window::attach(hwnd1, &passthrough));
-				shared_ptr<win32::window> w2(win32::window::attach(hwnd2, &passthrough));
-
-				// ACT / ASSERT
-				assert_equal(hwnd1, w1->hwnd());
-				assert_equal(hwnd2, w2->hwnd());
-			}
-
-
 			test( WrapperForTheSameWindowIsTheSame )
 			{
 				// INIT
@@ -384,20 +371,6 @@ namespace wpl
 				// ASSERT
 				assert_is_false(h.messages.empty());
 				assert_equal(WM_NCDESTROY, static_cast<int>(h.messages.back().message));
-			}
-
-
-			test( WindowHandleIsNulledOnDestroy )
-			{
-				// INIT
-				HWND hwnd = windowManager.create_window();
-				shared_ptr<win32::window> w(win32::window::attach(hwnd, &passthrough));
-
-				// ACT
-				::DestroyWindow(hwnd);
-
-				// ASSERT
-				assert_null(w->hwnd());
 			}
 
 

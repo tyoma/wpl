@@ -22,6 +22,7 @@
 
 #include "../factory_context.h"
 #include "../form.h"
+#include "helpers.h"
 #include "window.h"
 
 #include <memory>
@@ -55,7 +56,7 @@ namespace wpl
 			LRESULT wndproc(UINT message, WPARAM wparam, LPARAM lparam, const window::original_handler_t &previous);
 
 		private:
-			HWND _hwnd;
+			helpers::window_handle _hwnd;
 			std::shared_ptr<win32::view_host> _host;
 		};
 	}

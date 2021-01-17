@@ -38,8 +38,6 @@ namespace wpl
 		public:
 			static std::shared_ptr<window> attach(HWND hwnd, const user_handler_t &user_handler);
 
-			HWND hwnd() const throw();
-
 			LRESULT operator ()(UINT message, WPARAM wparam, LPARAM lparam) const;
 
 		private:

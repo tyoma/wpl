@@ -22,6 +22,7 @@
 
 #include <windowsx.h>
 #include <wpl/cursor.h>
+#include <wpl/win32/helpers.h>
 
 using namespace std;
 
@@ -41,14 +42,6 @@ namespace wpl
 				modifiers |= MK_MBUTTON & wparam ? mouse_input::middle : 0;
 				modifiers |= MK_RBUTTON & wparam ? mouse_input::right : 0;
 				return modifiers;
-			}
-
-			void screen_to_client(HWND hwnd, agge::point<int> &point_)
-			{
-				POINT pt = { point_.x, point_.y };
-
-				::ScreenToClient(hwnd, &pt);
-				point_.x = pt.x, point_.y = pt.y;
 			}
 		}
 
@@ -108,7 +101,7 @@ namespace wpl
 			case WM_MOUSEWHEEL:
 				const int wheel_delta = GET_WHEEL_DELTA_WPARAM(wparam) / WHEEL_DELTA;
 
-				screen_to_client(hwnd, pt);
+				helpers::screen_to_client(pt, hwnd);
 				mouse_scroll(convert_mouse_modifiers(wparam), pt, WM_MOUSEHWHEEL == message ? wheel_delta : 0,
 					WM_MOUSEWHEEL == message ? wheel_delta : 0);
 				break;

@@ -94,16 +94,13 @@ namespace wpl
 		{
 			if (::IsWindow(hwnd))
 			{
-				auto_ptr<window> w(new window(hwnd, user_handler));
+				unique_ptr<window> w(new window(hwnd, user_handler));
 
 				w->map();
 				return shared_ptr<window>(w.release(), bind(&window::detach, _1));
 			}
 			throw invalid_argument("");
 		}
-
-		HWND window::hwnd() const throw()
-		{	return _hwnd;	}
 
 		LRESULT window::operator ()(UINT message, WPARAM wparam, LPARAM lparam) const
 		{	return ::CallWindowProc(_wndproc, _hwnd, message, wparam, lparam);	}
@@ -136,7 +133,7 @@ namespace wpl
 			}
 			else
 			{
-				auto_ptr<windows_map> mm(new windows_map);
+				unique_ptr<windows_map> mm(new windows_map);
 
 				mm->insert(make_pair(_hwnd, this));
 				_windows->set(mm.release());

@@ -20,25 +20,58 @@
 
 #pragma once
 
-#include "../queue.h"
+#include "../concepts.h"
+#include "../types.h"
 
-#include <memory>
+#include <windows.h>
 
 namespace wpl
 {
 	namespace win32
 	{
-		timestamp clock();
-
-		class queue
+		struct helpers
 		{
-		public:
-			queue();
+			static void client_to_screen(rect_i &value, HWND hwnd);
+			static void screen_to_client(point_i &value, HWND hwnd);
 
-			bool operator ()(const queue_task &task, timespan defer_by);
+			class defer_window_pos : noncopyable
+			{
+			public:
+				explicit defer_window_pos(size_t count);
+				~defer_window_pos();
 
-		private:
-			std::shared_ptr<void> _hwnd;
+				void update_location(HWND hwnd, const rect_i &location);
+
+			private:
+				HDWP _hdwp;
+			};
+
+			class paint_sequence : public PAINTSTRUCT, noncopyable
+			{
+			public:
+				explicit paint_sequence(HWND hwnd);
+				~paint_sequence() throw();
+
+				agge::count_t width() const throw();
+				agge::count_t height() const throw();
+
+			private:
+				HWND _hwnd;
+			};
+
+			class window_handle : noncopyable
+			{
+			public:
+				explicit window_handle(HWND hwnd) throw();
+				~window_handle() throw();
+
+				void reset(HWND hwnd) throw();
+				HWND release() throw();
+				operator HWND() const throw();
+
+			private:
+				HWND _hwnd;
+			};
 		};
 	}
 }

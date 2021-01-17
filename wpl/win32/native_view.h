@@ -21,6 +21,7 @@
 #pragma once
 
 #include "../signal.h"
+#include "helpers.h"
 #include "window.h"
 
 #include <agge/types.h>
@@ -42,7 +43,6 @@ namespace wpl
 	{
 	public:
 		native_view(const std::string &text_style_name);
-		~native_view();
 
 		void layout(const placed_view_appender &append_view, const agge::box<int> &box);
 		HWND get_window() const throw();
@@ -60,6 +60,7 @@ namespace wpl
 	private:
 		std::string _text_style_name;
 		std::shared_ptr<void> _font;
+		win32::helpers::window_handle _hwnd;
 		std::shared_ptr<win32::window> _window;
 	};
 }

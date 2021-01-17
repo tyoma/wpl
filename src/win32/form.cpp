@@ -56,10 +56,7 @@ namespace wpl
 		}
 
 		form::~form()
-		{
-			if (_hwnd)
-				::DestroyWindow(_hwnd);
-		}
+		{	}
 
 		void form::set_root(shared_ptr<control> root)
 		{	_host->set_root(root);	}
@@ -119,8 +116,8 @@ namespace wpl
 				close();
 				return 0;
 
-			case WM_DESTROY:
-				_hwnd = NULL;
+			case WM_NCDESTROY:
+				_hwnd.release();
 				break;
 			}
 			return previous(message, wparam, lparam);
