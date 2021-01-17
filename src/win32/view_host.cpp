@@ -25,11 +25,11 @@
 #include <wpl/win32/native_view.h>
 
 #include <algorithm>
-#include <iterator>
 #include <olectl.h>
 
 #pragma warning(disable: 4355)
 
+using namespace agge;
 using namespace std;
 using namespace placeholders;
 
@@ -37,13 +37,47 @@ namespace wpl
 {
 	namespace win32
 	{
+		namespace
+		{
+			class defer_window_pos : noncopyable
+			{
+			public:
+				defer_window_pos(size_t count)
+					: _hdwp(::BeginDeferWindowPos(static_cast<int>(count)))
+				{	}
+
+				~defer_window_pos()
+				{	::EndDeferWindowPos(_hdwp);	}
+
+				void update_location(HWND hwnd, const rect<int> &location)
+				{
+					_hdwp = ::DeferWindowPos(_hdwp, hwnd, NULL, location.x1, location.y1,
+						wpl::width(location), wpl::height(location), SWP_NOZORDER);
+				}
+
+			private:
+				HDWP _hdwp;
+			};
+
+			void client_to_screen(rect<int> &rect_, HWND hwnd)
+			{
+				POINT pt[] = {	{	rect_.x1, rect_.y1	}, {	rect_.x2, rect_.y2	},	};
+
+				::MapWindowPoints(hwnd, NULL, pt, 2);
+				rect_.x1 = pt[0].x, rect_.y1 = pt[0].y, rect_.x2 = pt[1].x, rect_.y2 = pt[1].y;
+			}
+		}
+
 		view_host::view_host(HWND hwnd, const form_context &context_, const window::user_handler_t &user_handler)
 			: context(context_), _user_handler(user_handler), _input_modifiers(0), _visual_router(_views, *this, context_),
 				_mouse_router(_views, *this, context_.cursor_manager_), _keyboard_router(_views, *this)
-		{	_window = window::attach(hwnd, bind(&view_host::wndproc, this, _1, _2, _3, _4));	}
+		{
+			_window = window::attach(hwnd, bind(&view_host::wndproc, this, _1, _2, _3, _4));
+			_hoverlay = ::CreateWindowExA(0, "static", NULL, WS_POPUP, 0, 0, 1, 1, hwnd, NULL, NULL, NULL);
+		}
 
 		view_host::~view_host()
-		{	}
+		{	::DestroyWindow(_hoverlay);	}
 
 		void view_host::set_root(shared_ptr<control> root)
 		{
@@ -69,7 +103,7 @@ namespace wpl
 			} : slot_connection();
 		}
 
-		void view_host::invalidate(const agge::rect_i &area)
+		void view_host::invalidate(const rect_i &area)
 		{
 			RECT rc = {	area.x1, area.y1, area.x2, area.y2	};
 
@@ -178,28 +212,38 @@ namespace wpl
 
 		void view_host::layout_views(int width, int height)
 		{
-			const agge::box<int> b = { width, height };
+			const box<int> b = { width, height };
 
 			_views.clear();
 			if (_root)
 				_root->layout([this] (const placed_view &pv) {	_views.emplace_back(pv);	}, b);
 
-			const auto n = count_if(_views.begin(), _views.end(), [] (const placed_view &pv) {
-				return !!pv.native;
-			});
-
 			const auto hwnd = _window->hwnd();
-			auto hdwp = ::BeginDeferWindowPos(static_cast<int>(n));
+			defer_window_pos dwp(count_if(_views.begin(), _views.end(), [] (const placed_view &pv) {
+				return !!pv.native;
+			}));
+			auto has_overlay = false;
+			rect<int> overlay_rect = {};
 
 			for (auto i = _views.begin(); i != _views.end(); ++i)
 			{
 				if (const auto nv = i->native)
+					dwp.update_location(nv->get_window(hwnd), i->location);
+				if (i->overlay)
 				{
-					hdwp = ::DeferWindowPos(hdwp, nv->get_window(hwnd), NULL, i->location.x1, i->location.y1,
-						wpl::width(i->location), wpl::height(i->location), SWP_NOZORDER);
+					if (!has_overlay)
+						overlay_rect = i->location, has_overlay = true;
+					else
+						unite(overlay_rect, i->location);
 				}
 			}
-			::EndDeferWindowPos(hdwp);
+			if (has_overlay)
+			{
+				client_to_screen(overlay_rect, hwnd);
+				::MoveWindow(_hoverlay, overlay_rect.x1, overlay_rect.y1,
+					wpl::width(overlay_rect), wpl::height(overlay_rect), TRUE);
+			}
+			::ShowWindow(_hoverlay, has_overlay ? SW_SHOW : SW_HIDE);
 			::InvalidateRect(hwnd, NULL, TRUE);
 		}
 	}

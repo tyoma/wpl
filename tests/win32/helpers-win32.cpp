@@ -96,7 +96,7 @@ namespace wpl
 			HWND hparent = ::GetParent(hwnd);
 
 			::GetWindowRect(hwnd, &rc);
-			if (hparent)
+			if ((WS_CHILD & ::GetWindowLong(hwnd, GWL_STYLE)) && hparent)
 				::MapWindowPoints(NULL, hparent, reinterpret_cast<POINT *>(&rc), 2);
 			return rc;
 		}

@@ -41,6 +41,19 @@ namespace wpl
 	inline void offset(agge::rect<T> &rect_, T dx, T dy)
 	{	rect_.x1 += dx, rect_.y1 += dy, rect_.x2 += dx, rect_.y2 += dy;	}
 
+	template <typename T>
+	inline bool is_empty(agge::rect<T> &rect_)
+	{	return !(rect_.x1 < rect_.x2) || !(rect_.y1 < rect_.y2);	}
+
+	template <typename T>
+	inline void unite(agge::rect<T> &lhs, const agge::rect<T> &rhs)
+	{
+		if (rhs.x1 < lhs.x1) lhs.x1 = rhs.x1;
+		if (rhs.y1 < lhs.y1) lhs.y1 = rhs.y1;
+		if (rhs.x2 > lhs.x2) lhs.x2 = rhs.x2;
+		if (rhs.y2 > lhs.y2) lhs.y2 = rhs.y2;
+	}
+
 	void render_string(gcontext::rasterizer_type &target, const std::wstring &text,
 		gcontext::text_engine_type &text_engine, const agge::font &font, const agge::rect_r &box,
 		agge::text_alignment halign, agge::text_alignment valign_);

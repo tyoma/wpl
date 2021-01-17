@@ -79,6 +79,7 @@ namespace wpl
 			visual_router _visual_router;
 			mouse_router _mouse_router;
 			keyboard_router _keyboard_router;
+			HWND _hoverlay;
 		};
 	}
 }

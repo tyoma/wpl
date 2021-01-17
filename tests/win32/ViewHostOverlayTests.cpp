@@ -48,24 +48,54 @@ namespace wpl
 			}
 
 
-			ignored_test( OverlayWindowIsNotCreatedIfNoOverlayViewsInLayout )
+			test( OverlayWindowGetsCreatedOnViewHostConstruction )
+			{
+				// INIT
+				const auto hwnd = create_window(true);
+
+				tracker.checkpoint(), tracker.created.clear();
+
+				// ACT
+				unique_ptr<win32::view_host> vh(new win32::view_host(hwnd, context));
+
+				// ASSERT
+				tracker.checkpoint();
+
+				assert_equal(1u, tracker.find_created(L"static").size());
+				const auto hoverlay = tracker.created[0];
+				assert_is_false(!!::IsWindowVisible(hoverlay));
+				assert_equal(hwnd, ::GetWindow(hoverlay, GW_OWNER));
+				assert_equal(WS_POPUP, (WS_POPUP | WS_OVERLAPPEDWINDOW | WS_CHILD | WS_BORDER)
+					& ::GetWindowLongPtr(hoverlay, GWL_STYLE));
+
+				// ACT
+				vh.reset();
+
+				// ASSERT
+				tracker.checkpoint();
+				assert_equal(1u, tracker.destroyed.size());
+				assert_equal(hoverlay, tracker.destroyed[0]);
+			}
+
+
+			test( OverlayWindowIsNotVisibleIfNoOverlayViewsInLayout )
 			{
 				// INIT
 				const auto v = make_shared< mocks::logging_visual<view> >();
-				placed_view pv[] = {	{	v, nullptr_nv, create_rect(0, 0, 1000, 1000), false	}	};
+				placed_view pv[] = {	{	v, nullptr_nv, create_rect(0, 0, 1000, 1000), 0, false	}	};
 				const auto ctl = make_shared<mocks::control>();
 				const auto hwnd = create_window(true);
-				win32::view_host vh(hwnd, context);
 
+				tracker.checkpoint(), tracker.created.clear();
+				win32::view_host vh(hwnd, context);
 				tracker.checkpoint();
+				const auto hoverlay = tracker.created[0];
 
 				// ACT
 				vh.set_root(ctl);
 
 				// ASSERT
-				tracker.checkpoint();
-
-				assert_is_empty(tracker.created);
+				assert_is_false(!!::IsWindowVisible(hoverlay));
 
 				// INIT
 				ctl->views = mkvector(pv);
@@ -74,55 +104,80 @@ namespace wpl
 				ctl->layout_changed(true);
 
 				// ASSERT
-				tracker.checkpoint();
-
-				assert_is_empty(tracker.created);
+				assert_is_false(!!::IsWindowVisible(hoverlay));
 			}
 
 
-			ignored_test( OverlayWindowGetsCreatedIfOverlayViewIsMetInLayoutOnSettingRoot )
+			test( OverlayWindowBecomesVisibleIfOverlayViewIsMetInLayoutOnSettingRoot )
 			{
 				// INIT
 				const auto v = make_shared< mocks::logging_visual<view> >();
-				placed_view pv[] = {	{	v, nullptr_nv, create_rect(0, 0, 71, 37), true	}	};
+				placed_view pv[] = {	{	v, nullptr_nv, create_rect(0, 0, 71, 37), 0, true	}	};
 				const auto ctl = make_shared<mocks::control>();
 				const auto hwnd = create_window(true);
+
+				tracker.checkpoint(), tracker.created.clear();
 				win32::view_host vh(hwnd, context);
+				tracker.checkpoint();
+				const auto hoverlay = tracker.created[0];
 
 				ctl->views = mkvector(pv);
-				tracker.checkpoint();
 
 				// ACT
 				vh.set_root(ctl);
 
 				// ASSERT
-				tracker.checkpoint();
-
-				assert_equal(1u, tracker.find_created(L"#32770").size());
+				assert_is_true(!!::IsWindowVisible(hoverlay));
 			}
 
 
-			ignored_test( OverlayWindowSizeIsAUnionOfOverlayViewRects )
+			test( OverlayWindowGetsHiddenWhenOverlayViewsDisappear )
 			{
 				// INIT
 				const auto v = make_shared< mocks::logging_visual<view> >();
-				placed_view pv1[] = {	{	v, nullptr_nv, create_rect(2, 100, 71, 137), true	}	};
+				placed_view pv[] = {	{	v, nullptr_nv, create_rect(0, 0, 71, 37), 0, true	}	};
 				const auto ctl = make_shared<mocks::control>();
 				const auto hwnd = create_window(true);
+
+				tracker.checkpoint(), tracker.created.clear();
 				win32::view_host vh(hwnd, context);
+				tracker.checkpoint();
+				const auto hoverlay = tracker.created[0];
+
+				ctl->views = mkvector(pv);
+				vh.set_root(ctl);
+
+				// ACT
+				pv[0].overlay = false;
+				ctl->views = mkvector(pv);
+				ctl->layout_changed(true);
+
+				// ASSERT
+				assert_is_false(!!::IsWindowVisible(hoverlay));
+			}
+
+
+			test( OverlayWindowSizeIsAUnionOfOverlayViewRects )
+			{
+				// INIT
+				const auto v = make_shared< mocks::logging_visual<view> >();
+				placed_view pv1[] = {	{	v, nullptr_nv, create_rect(2, 100, 71, 137), 0, true	}	};
+				const auto ctl = make_shared<mocks::control>();
+				const auto hwnd = create_window(true);
+
+				tracker.checkpoint(), tracker.created.clear();
+				win32::view_host vh(hwnd, context);
+				tracker.checkpoint();
+				const auto hoverlay = tracker.created[0];
 
 				::MoveWindow(hwnd, 17, 121, 100, 100, TRUE);
 				vh.set_root(ctl);
 				ctl->views = mkvector(pv1);
-				tracker.checkpoint();
 
 				// ACT
 				ctl->layout_changed(true);
 
 				// ASSERT
-				tracker.checkpoint();
-				const auto hoverlay = tracker.find_created(L"#32770")[0];
-
 				assert_equal(create_rect(19, 221, 88, 258), get_window_rect(hoverlay));
 
 				// INIT
@@ -130,8 +185,8 @@ namespace wpl
 
 				// INIT
 				placed_view pv2[] = {
-					{	v, nullptr_nv, create_rect(30, 19, 40, 41), true	},
-					{	v, nullptr_nv, create_rect(32, 9, 20, 80), true	},
+					{	v, nullptr_nv, create_rect(30, 19, 40, 41), 0, true	},
+					{	v, nullptr_nv, create_rect(32, 9, 20, 80), 0, true	},
 				};
 
 				ctl->views = mkvector(pv2);
@@ -140,10 +195,6 @@ namespace wpl
 				ctl->layout_changed(true);
 
 				// ASSERT
-				tracker.checkpoint();
-				assert_is_empty(tracker.created);
-				assert_is_empty(tracker.destroyed);
-
 				assert_equal(create_rect(30 + 5, 9 + 11, 40 + 5, 80 + 11), get_window_rect(hoverlay));
 			}
 		end_test_suite
