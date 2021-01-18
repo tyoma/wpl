@@ -7,6 +7,7 @@ set(SAMPLES_COMMON_SOURCES
 if (WIN32)
 	set(SAMPLES_COMMON_SOURCES ${SAMPLES_COMMON_SOURCES}
 		application_win32.cpp
+		simple_queue_win32.cpp
 	)
 elseif(APPLE)
 	enable_language(OBJCXX)

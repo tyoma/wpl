@@ -1,6 +1,7 @@
 #include <crtdbg.h>
 
 #include "../application.h"
+#include "../simple_queue.h"
 #include "../stylesheet.h"
 
 #include <tchar.h>
@@ -25,44 +26,6 @@ namespace wpl
 			::QueryPerformanceCounter(&v);
 			return 1000 * v.QuadPart / c_pq_frequency;
 		}
-
-
-		class queue_win32 : noncopyable
-		{
-		public:
-			queue_win32()
-				: _hwnd(::CreateWindow(_T("static"), 0, WS_CHILD, 0, 0, 0, 0, HWND_MESSAGE, 0, 0, 0))
-			{	::SetWindowLongPtr(_hwnd, GWLP_WNDPROC, reinterpret_cast<LONG_PTR>(&window_proc));	}
-
-			bool schedule(const queue_task &task, timespan defer_by)
-			{
-				unique_ptr<queue_task> t(new queue_task(task));
-
-				return (defer_by
-					? ::SetTimer(_hwnd, reinterpret_cast<UINT_PTR>(t.get()), static_cast<UINT>(defer_by), NULL)
-					: ::PostMessageA(_hwnd, WM_USER, reinterpret_cast<WPARAM>(t.get()), 0)
-				) ? t.release(), true : false;
-			}
-
-		private:
-			static LRESULT CALLBACK window_proc(HWND hwnd, UINT message, WPARAM wparam, LPARAM /*lparam*/)
-			{
-				switch (message)
-				{
-				case WM_TIMER:
-					::KillTimer(hwnd, wparam);
-
-				case WM_USER:
-					const unique_ptr<queue_task> task(reinterpret_cast<queue_task *>(wparam));
-
-					(*task)();
-				}
-				return 0;
-			}
-
-		private:
-			win32::helpers::window_handle _hwnd;
-		};
 	}
 
 	class application::impl
@@ -73,7 +36,7 @@ namespace wpl
 	{
 		_CrtSetDbgFlag(_CrtSetDbgFlag(_CRTDBG_REPORT_FLAG) | _CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
 
-		const auto q = make_shared<queue_win32>();
+		const auto q = make_shared<simple_queue>();
 
 		_queue = [q] (const queue_task &task, timespan defer_by) {	return q->schedule(task, defer_by);	};
 	}

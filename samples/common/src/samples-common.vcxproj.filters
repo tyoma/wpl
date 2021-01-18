@@ -7,6 +7,9 @@
     <ClCompile Include="stylesheet.cpp">
       <Filter>src</Filter>
     </ClCompile>
+    <ClCompile Include="simple_queue_win32.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="src">
@@ -16,5 +19,6 @@
   <ItemGroup>
     <ClInclude Include="..\application.h" />
     <ClInclude Include="..\stylesheet.h" />
+    <ClInclude Include="..\simple_queue.h" />
   </ItemGroup>
 </Project>

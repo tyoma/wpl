@@ -36,6 +36,7 @@
   <ItemDefinitionGroup>
     <ClCompile>
       <DisableLanguageExtensions>false</DisableLanguageExtensions>
+      <AdditionalIncludeDirectories>..\..\..;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <ProjectReference>
       <LinkLibraryDependencies>true</LinkLibraryDependencies>
@@ -43,10 +44,12 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="application_win32.cpp" />
+    <ClCompile Include="simple_queue_win32.cpp" />
     <ClCompile Include="stylesheet.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\application.h" />
+    <ClInclude Include="..\simple_queue.h" />
     <ClInclude Include="..\stylesheet.h" />
   </ItemGroup>
   <ItemGroup>
