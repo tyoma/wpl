@@ -72,6 +72,7 @@ namespace wpl
 			assert_equal(1u, v.size());
 			assert_not_null(v[0].native);
 			assert_equal(create_rect(0, 0, cx, cy), v[0].location);
+			assert_is_false(v[0].overlay);
 
 			HWND hwnd = v[0].native->get_window(hparent);
 
@@ -107,6 +108,14 @@ namespace wpl
 
 			::GetClientRect(hwnd, &rc);
 			return agge::create_box<int>(rc.right, rc.bottom);
+		}
+
+		agge::rect<int> get_update_rect(HWND hwnd)
+		{
+			RECT rc;
+
+			assert_is_true(!!::GetUpdateRect(hwnd, &rc, FALSE));
+			return create_rect<int>(rc.left, rc.top, rc.right, rc.bottom);
 		}
 
 		RECT rect(int left, int top, int width, int height)

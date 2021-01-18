@@ -205,7 +205,7 @@ namespace wpl
 
 			template <typename BaseT>
 			inline filling_visual<BaseT>::filling_visual(agge::color color)
-				: _color(color)
+				: _color(color), _cx(1000), _cy(1000)
 			{	}
 
 			template <typename BaseT>

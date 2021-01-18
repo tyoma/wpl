@@ -27,14 +27,6 @@ namespace wpl
 				::GetClientRect(hwnd, &rc);
 				return create_rect<int>(rc.left, rc.top, rc.right, rc.bottom);
 			}
-
-			rect_i get_update_rect(HWND hwnd)
-			{
-				RECT rc;
-
-				assert_is_true(!!::GetUpdateRect(hwnd, &rc, FALSE));
-				return create_rect<int>(rc.left, rc.top, rc.right, rc.bottom);
-			}
 		}
 
 		begin_test_suite( ViewHostTests )
@@ -241,37 +233,6 @@ namespace wpl
 			}
 
 
-			test( InvalidateSignalMarksAreaAsInvalid )
-			{
-				// INIT
-				const auto hwnd = create_window(true, 1000, 1000);
-				win32::view_host vh(hwnd, context);
-				visual_router_host &vrhost = vh;
-				const auto rc1 = create_rect(10, 100, 50, 120);
-				RECT invalid;
-
-				::ValidateRect(hwnd, NULL);
-
-				// ACT
-				vrhost.invalidate(rc1);
-
-				// ASSERT
-				assert_is_true(!!::GetUpdateRect(hwnd, &invalid, FALSE));
-				assert_equal(rc1, invalid);
-
-				// INIT
-				const auto rc2 = create_rect(10, 13, 131, 251);
-				::ValidateRect(hwnd, NULL);
-
-				// ACT
-				vrhost.invalidate(rc2);
-
-				// ASSERT
-				assert_is_true(!!::GetUpdateRect(hwnd, &invalid, FALSE));
-				assert_equal(rc2, invalid);
-			}
-
-
 			test( WholeClientIsInvalidatedOnResizeAndRootSetting )
 			{
 				// INIT
@@ -365,23 +326,33 @@ namespace wpl
 			test( HostReactsOnInvalidateRequestsFromViews )
 			{
 				// INIT
-				const auto v = make_shared<view>();
-				placed_view pv = { v, nullptr, create_rect(1, 7, 100, 100), };
+				const shared_ptr<view> v[] = {	make_shared<view>(), make_shared<view>(),	};
+				placed_view pv[] = {
+					{	v[0], nullptr, create_rect(1, 7, 100, 100),	},
+					{	v[1], nullptr, create_rect(50, 50, 110, 105),	},
+				};
 				const auto ctl = make_shared<mocks::control>();
 				const auto hwnd = create_window(true, 1000, 1000);
 				win32::view_host vh(hwnd, context);
-				RECT invalid;
 
-				ctl->views.push_back(pv);
+				ctl->views = mkvector(pv);
 				vh.set_root(ctl);
 				::ValidateRect(hwnd, NULL);
 
 				// ACT
-				v->invalidate(nullptr);
+				v[0]->invalidate(nullptr);
 
 				// ASSERT
-				assert_is_true(!!::GetUpdateRect(hwnd, &invalid, FALSE));
-				assert_equal(create_rect(1, 7, 100, 100), invalid);
+				assert_equal(create_rect(1, 7, 100, 100), get_update_rect(hwnd));
+
+				// INIT
+				::ValidateRect(hwnd, NULL);
+
+				// ACT
+				v[1]->invalidate(nullptr);
+
+				// ASSERT
+				assert_equal(create_rect(50, 50, 110, 105), get_update_rect(hwnd));
 			}
 
 

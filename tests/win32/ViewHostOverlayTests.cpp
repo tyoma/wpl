@@ -37,6 +37,14 @@ namespace wpl
 				return hwnd;
 			}
 
+			pair<shared_ptr<win32::view_host>, HWND /*hoverlay*/> create_view_host(HWND hwnd, const form_context &context)
+			{
+				tracker.checkpoint(), tracker.created.clear();
+				const auto vh = make_shared<win32::view_host>(hwnd, context);
+				tracker.checkpoint();
+				return make_pair(vh, tracker.created[0]);
+			}
+
 			init( Init )
 			{
 				context.backbuffer = make_shared<gcontext::surface_type>(1, 1, 0);
@@ -85,17 +93,13 @@ namespace wpl
 				placed_view pv[] = {	{	v, nullptr_nv, create_rect(0, 0, 1000, 1000), 0, false	}	};
 				const auto ctl = make_shared<mocks::control>();
 				const auto hwnd = create_window(true);
-
-				tracker.checkpoint(), tracker.created.clear();
-				win32::view_host vh(hwnd, context);
-				tracker.checkpoint();
-				const auto hoverlay = tracker.created[0];
+				const auto vh = create_view_host(hwnd, context);
 
 				// ACT
-				vh.set_root(ctl);
+				vh.first->set_root(ctl);
 
 				// ASSERT
-				assert_is_false(!!::IsWindowVisible(hoverlay));
+				assert_is_false(!!::IsWindowVisible(vh.second));
 
 				// INIT
 				ctl->views = mkvector(pv);
@@ -104,7 +108,7 @@ namespace wpl
 				ctl->layout_changed(true);
 
 				// ASSERT
-				assert_is_false(!!::IsWindowVisible(hoverlay));
+				assert_is_false(!!::IsWindowVisible(vh.second));
 			}
 
 
@@ -115,19 +119,15 @@ namespace wpl
 				placed_view pv[] = {	{	v, nullptr_nv, create_rect(0, 0, 71, 37), 0, true	}	};
 				const auto ctl = make_shared<mocks::control>();
 				const auto hwnd = create_window(true);
-
-				tracker.checkpoint(), tracker.created.clear();
-				win32::view_host vh(hwnd, context);
-				tracker.checkpoint();
-				const auto hoverlay = tracker.created[0];
+				const auto vh = create_view_host(hwnd, context);
 
 				ctl->views = mkvector(pv);
 
 				// ACT
-				vh.set_root(ctl);
+				vh.first->set_root(ctl);
 
 				// ASSERT
-				assert_is_true(!!::IsWindowVisible(hoverlay));
+				assert_is_true(!!::IsWindowVisible(vh.second));
 			}
 
 
@@ -138,14 +138,10 @@ namespace wpl
 				placed_view pv[] = {	{	v, nullptr_nv, create_rect(0, 0, 71, 37), 0, true	}	};
 				const auto ctl = make_shared<mocks::control>();
 				const auto hwnd = create_window(true);
-
-				tracker.checkpoint(), tracker.created.clear();
-				win32::view_host vh(hwnd, context);
-				tracker.checkpoint();
-				const auto hoverlay = tracker.created[0];
+				const auto vh = create_view_host(hwnd, context);
 
 				ctl->views = mkvector(pv);
-				vh.set_root(ctl);
+				vh.first->set_root(ctl);
 
 				// ACT
 				pv[0].overlay = false;
@@ -153,7 +149,7 @@ namespace wpl
 				ctl->layout_changed(true);
 
 				// ASSERT
-				assert_is_false(!!::IsWindowVisible(hoverlay));
+				assert_is_false(!!::IsWindowVisible(vh.second));
 			}
 
 
@@ -164,21 +160,17 @@ namespace wpl
 				placed_view pv1[] = {	{	v, nullptr_nv, create_rect(2, 100, 71, 137), 0, true	}	};
 				const auto ctl = make_shared<mocks::control>();
 				const auto hwnd = create_window(true);
-
-				tracker.checkpoint(), tracker.created.clear();
-				win32::view_host vh(hwnd, context);
-				tracker.checkpoint();
-				const auto hoverlay = tracker.created[0];
+				const auto vh = create_view_host(hwnd, context);
 
 				::MoveWindow(hwnd, 17, 121, 100, 100, TRUE);
-				vh.set_root(ctl);
+				vh.first->set_root(ctl);
 				ctl->views = mkvector(pv1);
 
 				// ACT
 				ctl->layout_changed(true);
 
 				// ASSERT
-				assert_equal(create_rect(19, 221, 88, 258), get_window_rect(hoverlay));
+				assert_equal(create_rect(19, 221, 88, 258), get_window_rect(vh.second));
 
 				// INIT
 				::MoveWindow(hwnd, 5, 11, 100, 100, TRUE);
@@ -195,7 +187,60 @@ namespace wpl
 				ctl->layout_changed(true);
 
 				// ASSERT
-				assert_equal(create_rect(30 + 5, 9 + 11, 40 + 5, 80 + 11), get_window_rect(hoverlay));
+				assert_equal(create_rect(30 + 5, 9 + 11, 40 + 5, 80 + 11), get_window_rect(vh.second));
+			}
+
+
+			test( InvalidatedAreaIsOffsetForOverlayWindow )
+			{
+				// INIT
+				shared_ptr<view> v[] = {	make_shared<view>(), make_shared<view>(),	};
+				placed_view pv1[] = {
+					{	v[0], nullptr_nv, create_rect(21, 41, 35, 60), 0, true	},
+					{	v[1], nullptr_nv, create_rect(25, 30, 71, 137), 0, true	},
+				};
+				const auto ctl = make_shared<mocks::control>();
+				const auto hwnd = create_window(true);
+				const auto vh = create_view_host(hwnd, context);
+
+				ctl->views = mkvector(pv1);
+				vh.first->set_root(ctl);
+				::ValidateRect(hwnd, nullptr);
+				::ValidateRect(vh.second, nullptr);
+
+				// ACT
+				v[0]->invalidate(nullptr);
+
+				// ASSERT
+				assert_is_false(!!::GetUpdateRect(hwnd, NULL, FALSE));
+				assert_equal(create_rect(0, 11, 14, 30), get_update_rect(vh.second));
+
+				// INIT
+				::ValidateRect(vh.second, nullptr);
+
+				// ACT
+				v[1]->invalidate(nullptr);
+
+				// ASSERT
+				assert_is_false(!!::GetUpdateRect(hwnd, NULL, FALSE));
+				assert_equal(create_rect(4, 0, 50, 107), get_update_rect(vh.second));
+
+				// INIT
+				placed_view pv2[] = {
+					{	v[0], nullptr_nv, create_rect(0, 0, 10, 10), 0, true	},
+				};
+
+				ctl->views = mkvector(pv2);
+				ctl->layout_changed(true);
+				::ValidateRect(hwnd, nullptr);
+				::ValidateRect(vh.second, nullptr);
+
+				// ACT
+				v[0]->invalidate(nullptr);
+
+				// ASSERT
+				assert_is_false(!!::GetUpdateRect(hwnd, NULL, FALSE));
+				assert_equal(create_rect(0, 0, 10, 10), get_update_rect(vh.second));
 			}
 		end_test_suite
 	}

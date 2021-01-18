@@ -41,7 +41,8 @@ namespace wpl
 			shared_ptr<view>(),
 			shared_from_this(),
 			{ 0, 0, box.w, box.h },
-			1
+			1,
+			false,
 		};
 
 		append_view(v);

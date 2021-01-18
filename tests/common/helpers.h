@@ -29,6 +29,7 @@ namespace wpl
 			c->layout(make_appender(v), b);
 			assert_equal(1u, v.size());
 			assert_not_null(v[0].regular);
+			assert_is_false(v[0].overlay);
 			assert_equal(0, v[0].location.x1);
 			assert_equal(0, v[0].location.y1);
 			assert_equal(cx, v[0].location.x2);

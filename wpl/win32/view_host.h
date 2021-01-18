@@ -34,8 +34,7 @@ namespace wpl
 {
 	namespace win32
 	{
-		class view_host : public wpl::view_host, public visual_router_host, public mouse_router_host,
-			public keyboard_router_host, noncopyable
+		class view_host : public wpl::view_host, public mouse_router_host, public keyboard_router_host, noncopyable
 		{
 		public:
 			view_host(HWND hwnd, const form_context &context_,
@@ -44,9 +43,6 @@ namespace wpl
 
 			// view_host methods
 			virtual void set_root(std::shared_ptr<control> root) override;
-
-			// visual_router_host methods
-			virtual void invalidate(const agge::rect_i &area) override;
 
 			// mouse_router_host methods
 			virtual void request_focus(std::shared_ptr<keyboard_input> input) override;
@@ -63,24 +59,26 @@ namespace wpl
 
 		private:
 			LRESULT wndproc(UINT message, WPARAM wparam, LPARAM lparam, const window::original_handler_t &previous);
+			LRESULT wndproc_overlay(UINT message, WPARAM wparam, LPARAM lparam,
+				const window::original_handler_t &previous);
 
 			void dispatch_key(UINT message, WPARAM wparam, LPARAM lparam);
 			bool update_modifier(UINT message, unsigned code);
 
-			void layout_views(int width, int height);
+			void layout_views(const agge::box<int> &box);
 
 		private:
 			HWND _hwnd;
 			const helpers::window_handle _hoverlay;
 
 			window::user_handler_t _user_handler;
-			std::shared_ptr<window> _window;
+			std::shared_ptr<window> _window, _window_overlay;
 			std::shared_ptr<control> _root;
-			std::vector<placed_view> _views;
+			std::vector<placed_view> _views, _overlay_views;
 			slot_connection _layout_changed_connection;
 			std::weak_ptr<bool> _capture_handle;
 			unsigned _input_modifiers;
-			visual_router _visual_router;
+			visual_router _visual_router, _visual_router_overlay;
 			mouse_router _mouse_router;
 			keyboard_router _keyboard_router;
 		};

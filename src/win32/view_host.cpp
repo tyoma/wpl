@@ -42,9 +42,12 @@ namespace wpl
 		view_host::view_host(HWND hwnd, const form_context &context_, const window::user_handler_t &user_handler)
 			: context(context_), _hwnd(hwnd), _hoverlay(::CreateWindowEx(0, _T("static"), NULL, WS_POPUP, 0, 0, 1, 1, hwnd,
 				NULL, NULL, NULL)), _user_handler(user_handler), _input_modifiers(0),
-				_visual_router(_views, *this, context_), _mouse_router(_views, *this, context_.cursor_manager_),
-				_keyboard_router(_views, *this)
-		{	_window = window::attach(hwnd, bind(&view_host::wndproc, this, _1, _2, _3, _4));	}
+				_visual_router(hwnd, _views, context_), _visual_router_overlay(_hoverlay, _overlay_views, context_),
+				_mouse_router(_views, *this, context_.cursor_manager_), _keyboard_router(_views, *this)
+		{
+			_window = window::attach(hwnd, bind(&view_host::wndproc, this, _1, _2, _3, _4));
+			_window_overlay = window::attach(_hoverlay, bind(&view_host::wndproc_overlay, this, _1, _2, _3, _4));
+		}
 
 		view_host::~view_host()
 		{	}
@@ -55,10 +58,11 @@ namespace wpl
 				RECT rc;
 
 				::GetClientRect(_hwnd, &rc);
-				layout_views(rc.right, rc.bottom);
+				layout_views(create_box<int>(rc.right, rc.bottom));
 			};
 			const auto reload = [this] {
 				_visual_router.reload_views();
+				_visual_router_overlay.reload_views();
 				_mouse_router.reload_views();
 				_keyboard_router.reload_views();
 			};
@@ -71,13 +75,6 @@ namespace wpl
 				if (hierarchy_changed)
 					reload();
 			} : slot_connection();
-		}
-
-		void view_host::invalidate(const rect_i &area)
-		{
-			RECT rc = {	area.x1, area.y1, area.x2, area.y2	};
-
-			::InvalidateRect(_hwnd, &rc, FALSE);
 		}
 
 		void view_host::request_focus(shared_ptr<keyboard_input> input)
@@ -135,7 +132,7 @@ namespace wpl
 				return 0;
 
 			case WM_SIZE:
-				layout_views(LOWORD(lparam), HIWORD(lparam));
+				layout_views(create_box<int>(LOWORD(lparam), HIWORD(lparam)));
 				break;
 
 			case WM_KILLFOCUS:
@@ -148,6 +145,16 @@ namespace wpl
 				break;
 			}
 			return _user_handler(message, wparam, lparam, previous);
+		}
+
+		LRESULT view_host::wndproc_overlay(UINT message, WPARAM wparam, LPARAM lparam,
+			const window::original_handler_t &previous)
+		{
+			LRESULT result;
+
+			if (_visual_router_overlay.handle_message(result, _hoverlay, message, wparam, lparam))
+				return result;
+			return previous(message, wparam, lparam);
 		}
 
 		void view_host::dispatch_key(UINT message, WPARAM wparam, LPARAM /*lparam*/)
@@ -180,39 +187,43 @@ namespace wpl
 			return true;
 		}
 
-		void view_host::layout_views(int width, int height)
+		void view_host::layout_views(const box<int> &box_)
 		{
-			const box<int> b = { width, height };
-
 			_views.clear();
+			_overlay_views.clear();
 			if (_root)
-				_root->layout([this] (const placed_view &pv) {	_views.emplace_back(pv);	}, b);
+			{
+				_root->layout([this] (const placed_view &pv) {
+					(pv.overlay ? _overlay_views : _views).emplace_back(pv);
+				}, box_);
+			}
 
 			helpers::defer_window_pos dwp(count_if(_views.begin(), _views.end(), [] (const placed_view &pv) {
 				return !!pv.native;
 			}));
-			auto has_overlay = false;
-			rect<int> overlay_rect = {};
 
 			for (auto i = _views.begin(); i != _views.end(); ++i)
 			{
-				if (const auto nv = i->native)
-					dwp.update_location(nv->get_window(_hwnd), i->location);
-				if (i->overlay)
+				if (i->native)
+					dwp.update_location(i->native->get_window(_hwnd), i->location);
+			}
+			if (!_overlay_views.empty())
+			{
+				rect<int> overlay_rect = {};
+
+				for (auto i = _overlay_views.begin(); i != _overlay_views.end(); ++i)
 				{
-					if (!has_overlay)
-						overlay_rect = i->location, has_overlay = true;
+					if (i == _overlay_views.begin())
+						overlay_rect = i->location;
 					else
 						unite(overlay_rect, i->location);
 				}
-			}
-			if (has_overlay)
-			{
+				_visual_router_overlay.set_offset(create_vector(overlay_rect.x1, overlay_rect.y1));
 				helpers::client_to_screen(overlay_rect, _hwnd);
 				::MoveWindow(_hoverlay, overlay_rect.x1, overlay_rect.y1,
 					wpl::width(overlay_rect), wpl::height(overlay_rect), TRUE);
 			}
-			::ShowWindow(_hoverlay, has_overlay ? SW_SHOW : SW_HIDE);
+			::ShowWindow(_hoverlay, _overlay_views.empty() ? SW_HIDE : SW_SHOWNA);
 			::InvalidateRect(_hwnd, NULL, TRUE);
 		}
 	}

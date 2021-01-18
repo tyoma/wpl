@@ -65,6 +65,7 @@ namespace wpl
 				std::shared_ptr<native_view>(),
 				{ 0, 0, box_.w, box_.h },
 				!!tab_stop,
+				false
 			};
 
 			_last_size.w = static_cast<agge::real_t>(box_.w), _last_size.h = static_cast<agge::real_t>(box_.h);

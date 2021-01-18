@@ -20,7 +20,11 @@
 
 #include <wpl/win32/visual_router.h>
 
+#include <agge/math.h>
+#include <wpl/helpers.h>
 #include <wpl/win32/helpers.h>
+
+#pragma warning(disable: 4355)
 
 using namespace agge;
 using namespace std;
@@ -29,10 +33,16 @@ namespace wpl
 {
 	namespace win32
 	{
-		visual_router::visual_router(const vector<placed_view> &views, visual_router_host &host,
-				const form_context &context)
-			: wpl::visual_router(views, host), _rasterizer(new gcontext::rasterizer_type), _context(context)
+		visual_router::visual_router(HWND hwnd, const vector<placed_view> &views, const form_context &context)
+			: _hwnd(hwnd), _underlying(views, *this), _rasterizer(new gcontext::rasterizer_type), _context(context),
+				_offset(zero())
 		{	}
+
+		void visual_router::reload_views()
+		{	_underlying.reload_views();	}
+
+		void visual_router::set_offset(const agge_vector<int> &offset)
+		{	_offset = offset;	}
 
 		bool visual_router::handle_message(LRESULT &result, HWND hwnd, UINT message, WPARAM /*wparam*/, LPARAM /*lparam*/)
 		{
@@ -48,18 +58,29 @@ namespace wpl
 			case WM_PAINT:
 				helpers::paint_sequence ps(hwnd);
 				auto &backbuffer = *_context.backbuffer;
-				const vector_i offset = { ps.rcPaint.left, ps.rcPaint.top };
-				gcontext ctx(backbuffer, *_context.renderer, *_context.text_engine, offset,
+				auto offset = create_vector<int>(ps.rcPaint.left, ps.rcPaint.top);
+				gcontext ctx(backbuffer, *_context.renderer, *_context.text_engine, offset += _offset,
 					create_rect<int>(ps.rcPaint.left, ps.rcPaint.top, ps.rcPaint.right, ps.rcPaint.bottom));
 
 				backbuffer.resize(ps.width(), ps.height());
 				_rasterizer->reset();
-				draw(ctx, _rasterizer);
+				_underlying.draw(ctx, _rasterizer);
 				backbuffer.blit(ps.hdc, ps.rcPaint.left, ps.rcPaint.top, ps.width(), ps.height());
 				result = 0;
 				break;
 			}
 			return true;
+		}
+
+		void visual_router::invalidate(const rect_i &area)
+		{
+			auto area2 = area;
+
+			wpl::offset(area2, -_offset.dx, -_offset.dy);
+
+			RECT rc = {	area2.x1, area2.y1, area2.x2, area2.y2	};
+
+			::InvalidateRect(_hwnd, &rc, FALSE);
 		}
 	}
 }

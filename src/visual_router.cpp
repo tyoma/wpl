@@ -38,9 +38,9 @@ namespace wpl
 		_connections.clear();
 		for (auto i = _views.begin(); i != _views.end(); ++i, ++index)
 		{
-			if (const auto v = i->regular)
+			if (i->regular)
 			{
-				_connections.push_back(v->invalidate += [this, index] (const agge::rect_i *area) {
+				_connections.push_back(i->regular->invalidate += [this, index] (const agge::rect_i *area) {
 					if (index < _views.size())
 					{
 						const auto &l = _views[index].location;
@@ -66,19 +66,19 @@ namespace wpl
 	{
 		for (auto i = _views.begin(); i != _views.end(); ++i)
 		{
-			if (const auto v = i->regular)
+			if (i->regular)
 			{
 				auto child_ctx = ctx.translate(i->location.x1, i->location.y1);
 
-				if (v->transcending)
+				if (i->regular->transcending)
 				{
-					v->draw(child_ctx, rasterizer);
+					i->regular->draw(child_ctx, rasterizer);
 				}
 				else
 				{
 					auto child_ctx_windowed = child_ctx.window(0, 0, wpl::width(i->location), wpl::height(i->location));
 
-					v->draw(child_ctx_windowed, rasterizer);
+					i->regular->draw(child_ctx_windowed, rasterizer);
 				}
 			}
 		}

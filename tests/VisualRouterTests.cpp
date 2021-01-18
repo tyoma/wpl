@@ -33,150 +33,6 @@ namespace wpl
 			}
 
 
-			//test( ForceLayoutRequestIsMadeOnSettingLayout )
-			//{
-			//	// INIT
-			//	auto force_layouts = 0;
-			//	container c;
-			//	shared_ptr<mocks::logging_layout_manager> lm(new mocks::logging_layout_manager);
-			//	const auto conn = c.force_layout += [&] { force_layouts++; };
-
-			//	// ACT
-			//	c.set_layout(lm);
-
-			//	// ASSERT
-			//	assert_equal(1, force_layouts);
-
-			//	// ACT
-			//	c.set_layout(lm);
-			//	c.set_layout(lm);
-
-			//	// ASSERT
-			//	assert_equal(3, force_layouts);
-			//}
-
-
-			//test( AddingAViewForcesLayoutRecalculate )
-			//{
-			//	// INIT
-			//	container c;
-			//	shared_ptr<view> v1(new view);
-			//	shared_ptr<view> v2(new view);
-			//	shared_ptr<layout_manager> lm(new mocks::logging_layout_manager);
-			//	int layout_forced = 0;
-			//	slot_connection conn = c.force_layout += bind(&increment, &layout_forced);
-
-			//	// ACT
-			//	c.add_view(v1);
-
-			//	// ASSERT
-			//	assert_equal(1, layout_forced);
-
-			//	// ACT
-			//	c.add_view(v2);
-
-			//	// ASSERT
-			//	assert_equal(2, layout_forced);
-			//}
-
-
-			//test( ForceLyaoutIsPropagatedUpstream )
-			//{
-			//	// INIT
-			//	container c;
-			//	shared_ptr<view> v1(new view);
-			//	shared_ptr<view> v2(new view);
-			//	shared_ptr<layout_manager> lm(new mocks::logging_layout_manager);
-			//	int layout_forced = 0;
-
-			//	c.add_view(v1);
-			//	c.add_view(v2);
-
-			//	slot_connection conn = c.force_layout += bind(&increment, &layout_forced);
-
-			//	// ACT
-			//	v1->force_layout();
-
-			//	// ASSERT
-			//	assert_equal(1, layout_forced);
-
-			//	// ACT
-			//	v2->force_layout();
-
-			//	// ASSERT
-			//	assert_equal(2, layout_forced);
-			//}
-
-
-			//test( LayoutIsMadeOnNonEmptyContainerResize )
-			//{
-			//	// INIT
-			//	container c;
-			//	shared_ptr<mocks::logging_layout_manager> lm(new mocks::logging_layout_manager);
-			//	shared_ptr< mocks::logging_visual<view> > v1(new mocks::logging_visual<view>());
-			//	shared_ptr< mocks::logging_visual<view> > v2(new mocks::logging_visual<view>());
-
-			//	c.set_layout(lm);
-			//	c.add_view(v1);
-			//	c.add_view(v2);
-			//	lm->reposition_log.clear();
-
-			//	// ACT
-			//	c.resize(100, 117, nviews);
-
-			//	// ASSERT
-			//	assert_equal(1u, lm->reposition_log.size());
-			//	assert_equal(make_pair(100u, 117u), lm->reposition_log[0]);
-
-			//	// ACT
-			//	c.resize(53, 91, nviews);
-
-			//	// ASSERT
-			//	assert_equal(2u, lm->reposition_log.size());
-			//	assert_equal(make_pair(53u, 91u), lm->reposition_log[1]);
-			//}
-
-
-			//test( ChildrenAreResizedOnContainerResize )
-			//{
-			//	// INIT
-			//	container c;
-			//	shared_ptr<mocks::logging_layout_manager> lm(new mocks::logging_layout_manager);
-			//	shared_ptr< mocks::logging_visual<view> > v1(new mocks::logging_visual<view>());
-			//	shared_ptr< mocks::logging_visual<view> > v2(new mocks::logging_visual<view>());
-
-			//	c.set_layout(lm);
-			//	c.add_view(v1);
-			//	c.add_view(v2);
-			//	lm->positions.push_back(make_position(13, 17, 100, 200));
-			//	lm->positions.push_back(make_position(90, 40, 110, 112));
-			//	v1->resize_log.clear();
-			//	v2->resize_log.clear();
-
-			//	// ACT
-			//	c.resize(1000, 1000, nviews);
-
-			//	// ASSERT
-			//	assert_equal(1u, v1->resize_log.size());
-			//	assert_equal(1u, v2->resize_log.size());
-			//	assert_equal(make_pair(100, 200), v1->resize_log[0]);
-			//	assert_equal(make_pair(110, 112), v2->resize_log[0]);
-
-			//	// INIT
-			//	lm->positions[0] = make_position(13, 17, 10, 20);
-			//	lm->positions[1] = make_position(90, 40, 11, 12);
-
-			//	// ACT
-			//	c.resize(1001, 1002, nviews);
-
-			//	// ASSERT
-			//	assert_equal(2u, v1->resize_log.size());
-			//	assert_equal(2u, v2->resize_log.size());
-			//	assert_equal(make_pair(10, 20), v1->resize_log[1]);
-			//	assert_equal(make_pair(11, 12), v2->resize_log[1]);
-			//}
-
-
 			test( ChildViewsAreDrawnWithCorrespondentOffset )
 			{
 				// INIT
@@ -214,43 +70,6 @@ namespace wpl
 
 				assert_equal(reference2, v->update_area_log);
 			}
-
-
-			//test( MultipleChildViewsAreDrawnWithCorrespondentOffset )
-			//{
-			//	// INIT
-			//	container c;
-			//	shared_ptr<mocks::logging_layout_manager> lm(new mocks::logging_layout_manager);
-			//	shared_ptr< mocks::logging_visual<view> > v1(new mocks::logging_visual<view>());
-			//	shared_ptr< mocks::logging_visual<view> > v2(new mocks::logging_visual<view>());
-			//	gcontext::surface_type surface(200, 150, 0);
-			//	gcontext::renderer_type ren(1);
-			//	gcontext::text_engine_type text_engine(fake_loader, 0);
-			//	gcontext::rasterizer_ptr ras(new gcontext::rasterizer_type);
-
-			//	gcontext ctx(surface, ren, text_engine, make_vector(13, 17));
-
-			//	lm->positions.push_back(make_position(13, 17, 1000, 1000));
-			//	lm->positions.push_back(make_position(91, 45, 1000, 1000));
-
-			//	// INIT / ACT
-			//	c.set_layout(lm);
-			//	v1->transcending = true;
-			//	c.add_view(v1);
-			//	v2->transcending = true;
-			//	c.add_view(v2);
-			//	c.resize(1000, 1000, nviews);
-
-			//	// ACT
-			//	c.draw(ctx, ras);
-
-			//	// ASSERT
-			//	agge::rect_i reference11[] = { { -26, -34, 174, 116 }, };
-			//	agge::rect_i reference12[] = { { -104, -62, 96, 88 }, };
-
-			//	assert_equal(reference11, v1->update_area_log);
-			//	assert_equal(reference12, v2->update_area_log);
-			//}
 
 
 			test( ContextIsWindowedForNonTranscendingViews )
@@ -307,65 +126,56 @@ namespace wpl
 			}
 
 
-			//test( ViewsAreRenderedAsExpected )
-			//{
-			//	// INIT
-			//	container container_;
-			//	agge::color color_o = agge::color::make(0, 0, 0);
-			//	gcontext::pixel_type o = make_pixel_real(color_o);
-			//	agge::color color_a = agge::color::make(255, 0, 0);
-			//	gcontext::pixel_type a = make_pixel_real(color_a);
-			//	agge::color color_b = agge::color::make(0, 255, 0);
-			//	gcontext::pixel_type b = make_pixel_real(color_b);
-			//	agge::color color_c = agge::color::make(0, 0, 255);
-			//	gcontext::pixel_type c = make_pixel_real(color_c);
-			//	shared_ptr<mocks::logging_layout_manager> lm(new mocks::logging_layout_manager);
-			//	shared_ptr< mocks::filling_visual<view> > v1(new mocks::filling_visual<view>(color_a));
-			//	shared_ptr< mocks::filling_visual<view> > v2(new mocks::filling_visual<view>(color_b));
-			//	shared_ptr< mocks::filling_visual<view> > v3(new mocks::filling_visual<view>(color_c));
-			//	gcontext::surface_type surface(10, 7, 0);
-			//	gcontext::renderer_type ren(1);
-			//	gcontext::text_engine_type text_engine(fake_loader, 0);
-			//	gcontext::rasterizer_ptr ras(new gcontext::rasterizer_type);
-			//	gcontext ctx(surface, ren, text_engine, agge::zero());
+			test( ViewsAreRenderedAsExpected )
+			{
+				// INIT
+				visual_router vr(views, vrhost);
+				agge::color color_o = agge::color::make(0, 0, 0);
+				gcontext::pixel_type o = make_pixel_real(color_o);
+				agge::color color_a = agge::color::make(255, 0, 0);
+				gcontext::pixel_type a = make_pixel_real(color_a);
+				agge::color color_b = agge::color::make(0, 255, 0);
+				gcontext::pixel_type b = make_pixel_real(color_b);
+				agge::color color_c = agge::color::make(0, 0, 255);
+				gcontext::pixel_type c = make_pixel_real(color_c);
+				shared_ptr<view> v[] = {
+					make_shared< mocks::filling_visual<view> >(color_a),
+					make_shared< mocks::filling_visual<view> >(color_b),
+					make_shared< mocks::filling_visual<view> >(color_c),
+				};
+				placed_view pv[] = {
+					{	v[0], nullptr_nv, {	3, 1, 9, 6	},	},
+					{	v[1], nullptr_nv, {	1, 2, 4, 5	},	},
+					{	v[2], nullptr_nv, {	5, 4, 10, 6	},	},
+				};
+				gcontext::surface_type surface(10, 7, 0);
+				gcontext::renderer_type ren(1);
+				mocks::font_loader fake_loader;
+				gcontext::text_engine_type text_engine(fake_loader, 0);
+				gcontext::rasterizer_ptr ras(new gcontext::rasterizer_type);
+				gcontext ctx(surface, ren, text_engine, agge::zero());
 
-			//	lm->positions.push_back(make_position(3, 1, 6, 5));
-			//	lm->positions.push_back(make_position(1, 2, 3, 3));
-			//	lm->positions.push_back(make_position(5, 4, 5, 2));
+				views = mkvector(pv);
 
-			//	container_.set_layout(lm);
-			//	container_.add_view(v1);
-			//	container_.add_view(v2);
-			//	container_.add_view(v3);
-			//	container_.resize(10, 7, nviews);
+				reset(surface, o);
 
-			//	reset(surface, o);
+				// ACT
+				vr.draw(ctx, ras);
 
-			//	// ACT
-			//	container_.draw(ctx, ras);
+				// ASSERT
+				const gcontext::pixel_type reference[] = {
+					o, o, o, o, o, o, o, o, o, o,
+					o, o, o, a, a, a, a, a, a, o,
+					o, b, b, b, a, a, a, a, a, o,
+					o, b, b, b, a, a, a, a, a, o,
+					o, b, b, b, a, c, c, c, c, c,
+					o, o, o, a, a, c, c, c, c, c,
+					o, o, o, o, o, o, o, o, o, o,
+				};
 
-			//	// ASSERT
-			//	const gcontext::pixel_type reference[] = {
-			//		o, o, o, o, o, o, o, o, o, o,
-			//		o, o, o, a, a, a, a, a, a, o,
-			//		o, b, b, b, a, a, a, a, a, o,
-			//		o, b, b, b, a, a, a, a, a, o,
-			//		o, b, b, b, a, c, c, c, c, c,
-			//		o, o, o, a, a, c, c, c, c, c,
-			//		o, o, o, o, o, o, o, o, o, o,
-			//	};
+				assert_equal(reference, surface);
+			}
 
-			//	assert_equal(reference, surface);
-			//}
-
-
-			//vector<agge::rect_i> invalidation_log;
-
-			//void on_invalidate(const agge::rect_i *area)
-			//{
-			//	assert_not_null(area);
-			//	invalidation_log.push_back(*area);
-			//}
 
 			test( ChildInvalidationIsBroadcastForChildViewRect )
 			{
@@ -373,8 +183,8 @@ namespace wpl
 				visual_router vr(views, vrhost);
 				shared_ptr<view> v[] = {	make_shared<view>(), make_shared<view>(),	};
 				placed_view pv[] = {
-					{ v[0], nullptr_nv, { 13, 17, 44, 40 }	},
-					{ v[1], nullptr_nv, { 91, 45, 1091, 1045 }	},
+					{ v[0], nullptr_nv, { 13, 17, 44, 40 },	},
+					{ v[1], nullptr_nv, { 91, 45, 1091, 1045 },	},
 				};
 				vector<agge::rect_i> invalidation_log;
 
@@ -405,8 +215,8 @@ namespace wpl
 				visual_router vr(views, vrhost);
 				shared_ptr<view> v[] = {	make_shared<view>(), make_shared<view>(),	};
 				placed_view pv[] = {
-					{ v[0], nullptr_nv, { 13, 17, 44, 40 }	},
-					{ v[1], nullptr_nv, { 91, 45, 1091, 1045 }	},
+					{ v[0], nullptr_nv, { 13, 17, 44, 40 },	},
+					{ v[1], nullptr_nv, { 91, 45, 1091, 1045 },	},
 				};
 				agge::rect_i a1 = { 10, 11, 20, 22 }, a2 = { -10, -1, 17, 20 };
 				vector<agge::rect_i> invalidation_log;
@@ -443,9 +253,9 @@ namespace wpl
 			{
 				// INIT
 				visual_router vr(views, vrhost);
-				shared_ptr<view> v[] = {	make_shared<view>(),	make_shared<view>(),	};
-				placed_view pv1[] = {	{ v[0], nullptr_nv, { 1, 2, 5, 10 }	},	};
-				placed_view pv2[] = {	{ v[1], nullptr_nv, { 10, 10, 100, 100 }	},	};
+				shared_ptr<view> v[] = {	make_shared<view>(), make_shared<view>(),	};
+				placed_view pv1[] = {	{ v[0], nullptr_nv, { 1, 2, 5, 10 },	},	};
+				placed_view pv2[] = {	{ v[1], nullptr_nv, { 10, 10, 100, 100 },	},	};
 				vector<agge::rect_i> invalidation_log;
 
 				views.assign(begin(pv1), end(pv1));
@@ -475,8 +285,8 @@ namespace wpl
 				visual_router vr(views, vrhost);
 				auto v = make_shared<view>();
 				placed_view pv[] = {
-					{ nullptr, nullptr_nv /* we don't actually use native view */, { 0, 0, 10, 10 }	},
-					{ v, nullptr_nv, { 0, 0, 100, 55 }	},
+					{ nullptr, nullptr_nv /* we don't actually use native view */, { 0, 0, 10, 10 },	},
+					{ v, nullptr_nv, { 0, 0, 100, 55 },	},
 				};
 				vector<agge::rect_i> invalidation_log;
 
@@ -498,11 +308,11 @@ namespace wpl
 				visual_router vr(views, vrhost);
 				shared_ptr<view> v[] = {	make_shared<view>(), make_shared<view>(),	};
 				placed_view pv1[] = {
-					{ v[0], nullptr_nv, { 0, 0, 100, 55 }	},
-					{ v[1], nullptr_nv, { 0, 0, 100, 55 }	},
+					{ v[0], nullptr_nv, { 0, 0, 100, 55 },	},
+					{ v[1], nullptr_nv, { 0, 0, 100, 55 },	},
 				};
 				placed_view pv2[] = {
-					{ v[1], nullptr_nv, { 0, 0, 100, 55 }	},
+					{ v[1], nullptr_nv, { 0, 0, 100, 55 },	},
 				};
 				vector<agge::rect_i> invalidation_log;
 

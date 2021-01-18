@@ -38,6 +38,7 @@ namespace wpl
 		bool provides_tabstoppable_native_view(std::shared_ptr<control> control_);
 		RECT get_window_rect(HWND hwnd);
 		agge::box<int> get_client_size(HWND hwnd);
+		agge::rect<int> get_update_rect(HWND hwnd);
 		RECT rect(int left, int top, int width, int height);
 		std::wstring get_window_text(HWND hwnd);
 		bool has_style(HWND hwnd, int style);
