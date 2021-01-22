@@ -150,10 +150,8 @@ namespace wpl
 				};
 				gcontext::surface_type surface(10, 7, 0);
 				gcontext::renderer_type ren(1);
-				mocks::font_loader fake_loader;
-				gcontext::text_engine_type text_engine(fake_loader, 0);
 				gcontext::rasterizer_ptr ras(new gcontext::rasterizer_type);
-				gcontext ctx(surface, ren, text_engine, agge::zero());
+				gcontext ctx(surface, ren, *text_engine, agge::zero());
 
 				views = mkvector(pv);
 

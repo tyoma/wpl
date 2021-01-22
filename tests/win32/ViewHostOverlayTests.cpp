@@ -37,10 +37,10 @@ namespace wpl
 				return hwnd;
 			}
 
-			pair<shared_ptr<win32::view_host>, HWND /*hoverlay*/> create_view_host(HWND hwnd, const form_context &context)
+			pair<shared_ptr<win32::view_host>, HWND /*hoverlay*/> create_view_host(HWND hwnd, const form_context &context_)
 			{
 				tracker.checkpoint(), tracker.created.clear();
-				const auto vh = make_shared<win32::view_host>(hwnd, context);
+				const auto vh = make_shared<win32::view_host>(hwnd, context_);
 				tracker.checkpoint();
 				return make_pair(vh, tracker.created[0]);
 			}
