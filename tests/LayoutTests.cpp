@@ -125,6 +125,146 @@ namespace wpl
 				assert_equal(reference2, v);
 			}
 
+
+			test( MinimumWidthIncludesPadding )
+			{
+				// INIT
+				shared_ptr<mocks::control> c = make_shared<mocks::control>();
+				auto p = pad_control(c, 3, 0);
+
+				c->minimum_height = 1000;
+				c->minimum_width = 11;
+
+				// ACT / ASSERT
+				assert_equal(17, p->min_width(0));
+
+				// INIT
+				c->minimum_width = 19;
+
+				// ACT / ASSERT
+				assert_equal(25, p->min_width(0));
+
+				// INIT / ACT
+				p = pad_control(c, 9, 0);
+
+				// ACT / ASSERT
+				assert_equal(37, p->min_width(0));
+			}
+
+
+			test( MinimumHeightIncludesPadding )
+			{
+				// INIT
+				shared_ptr<mocks::control> c = make_shared<mocks::control>();
+				auto p = pad_control(c, 1, 3);
+
+				c->minimum_width = 1000;
+				c->minimum_height = 11;
+
+				// ACT / ASSERT
+				assert_equal(17, p->min_height(0));
+
+				// INIT
+				c->minimum_height = 19;
+
+				// ACT / ASSERT
+				assert_equal(25, p->min_height(0));
+
+				// INIT / ACT
+				p = pad_control(c, 0, 9);
+
+				// ACT / ASSERT
+				assert_equal(37, p->min_height(0));
+			}
+
+
+			test( ReducedHeightIsPassedToInnerControlOnRequestMinWidth )
+			{
+				// INIT
+				shared_ptr<mocks::control> c = make_shared<mocks::control>();
+				auto p = pad_control(c, 11, 13);
+
+				// ACT
+				p->min_width(100);
+
+				// ASSERT
+				int reference1[] = {	74,	};
+
+				assert_equal(reference1, c->for_height_log);
+
+				// ACT
+				p->min_width(73);
+
+				// ASSERT
+				int reference2[] = {	74, 47,	};
+
+				assert_equal(reference2, c->for_height_log);
+
+				// INIT
+				p = pad_control(c, 10, 7);
+
+				// ACT
+				p->min_width(90);
+
+				// ASSERT
+				int reference3[] = {	74, 47, 76,	};
+
+				assert_equal(reference3, c->for_height_log);
+			}
+
+
+			test( ReducedWidthIsPassedToInnerControlOnRequestMinHeight )
+			{
+				// INIT
+				shared_ptr<mocks::control> c = make_shared<mocks::control>();
+				auto p = pad_control(c, 13, 1);
+
+				// ACT
+				p->min_height(100);
+
+				// ASSERT
+				int reference1[] = {	74,	};
+
+				assert_equal(reference1, c->for_width_log);
+
+				// ACT
+				p->min_height(73);
+
+				// ASSERT
+				int reference2[] = {	74, 47,	};
+
+				assert_equal(reference2, c->for_width_log);
+
+				// INIT
+				p = pad_control(c, 7, 1);
+
+				// ACT
+				p->min_height(90);
+
+				// ASSERT
+				int reference3[] = {	74, 47, 76,	};
+
+				assert_equal(reference3, c->for_width_log);
+			}
+
+
+			test( MaxForWidthForHeightArePassedAsIs )
+			{
+				// INIT
+				shared_ptr<mocks::control> c = make_shared<mocks::control>();
+				auto p = pad_control(c, 13, 1);
+
+				// ACT
+				p->min_height(maximum_size);
+				p->min_width(maximum_size);
+
+				// ASSERT
+				int reference[] = {	maximum_size,	};
+
+				assert_equal(reference, c->for_width_log);
+				assert_equal(reference, c->for_height_log);
+			}
+
 		end_test_suite
 
 
@@ -257,6 +397,108 @@ namespace wpl
 
 				assert_equal(reference, v);
 			}
+
+
+			test( MaximumMinWidthIsReturned )
+			{
+				// INIT
+				const shared_ptr<mocks::control> ctls[] = {
+					make_shared<mocks::control>(), make_shared<mocks::control>(), make_shared<mocks::control>(),
+				};
+				overlay o;
+
+				ctls[0]->minimum_height = 1000;
+				ctls[0]->minimum_width = 91;
+				o.add(ctls[0]);
+				ctls[1]->minimum_width = 29;
+				o.add(ctls[1]);
+
+				// ACT / ASSERT
+				assert_equal(91, o.min_width(0));
+
+				// INIT
+				ctls[2]->minimum_width = 109;
+				o.add(ctls[2]);
+
+				// ACT / ASSERT
+				assert_equal(109, o.min_width(0));
+			}
+
+
+			test( MaximumMinHeightIsReturned )
+			{
+				// INIT
+				const shared_ptr<mocks::control> ctls[] = {
+					make_shared<mocks::control>(), make_shared<mocks::control>(), make_shared<mocks::control>(),
+				};
+				overlay o;
+
+				ctls[0]->minimum_width = 1000;
+				ctls[0]->minimum_height = 91;
+				o.add(ctls[0]);
+				ctls[1]->minimum_height = 29;
+				o.add(ctls[1]);
+
+				// ACT / ASSERT
+				assert_equal(91, o.min_height(0));
+
+				// INIT
+				ctls[2]->minimum_height = 109;
+				o.add(ctls[2]);
+
+				// ACT / ASSERT
+				assert_equal(109, o.min_height(0));
+			}
+
+
+			test( ForWidthForHeightPassedAsIsToAllChildren )
+			{
+				// INIT
+				const shared_ptr<mocks::control> ctls[] = {
+					make_shared<mocks::control>(), make_shared<mocks::control>(), make_shared<mocks::control>(),
+				};
+				overlay o;
+
+				o.add(ctls[0]);
+				o.add(ctls[1]);
+				o.add(ctls[2]);
+
+				// ACT
+				o.min_width(123);
+
+				// ASSERT
+				int reference1[] = {	123,	};
+
+				assert_equal(reference1, ctls[0]->for_height_log);
+				assert_equal(reference1, ctls[1]->for_height_log);
+				assert_equal(reference1, ctls[2]->for_height_log);
+
+				// ACT
+				o.min_width(1000);
+				o.min_height(97);
+
+				// ASSERT
+				int reference2[] = {	123, 1000,	};
+				int reference3[] = {	97,	};
+
+				assert_equal(reference2, ctls[0]->for_height_log);
+				assert_equal(reference2, ctls[1]->for_height_log);
+				assert_equal(reference2, ctls[2]->for_height_log);
+				assert_equal(reference3, ctls[0]->for_width_log);
+				assert_equal(reference3, ctls[1]->for_width_log);
+				assert_equal(reference3, ctls[2]->for_width_log);
+
+				// ACT
+				o.min_height(19);
+
+				// ASSERT
+				int reference4[] = {	97, 19,	};
+
+				assert_equal(reference4, ctls[0]->for_width_log);
+				assert_equal(reference4, ctls[1]->for_width_log);
+				assert_equal(reference4, ctls[2]->for_width_log);
+			}
+
 		end_test_suite
 	}
 }

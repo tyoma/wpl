@@ -29,6 +29,10 @@ namespace wpl
 	typedef agge::rect<int> rect_i;
 	typedef agge::rect<agge::real_t> rect_r;
 
+	enum {
+		maximum_size = 0x7FFFFFFF,
+	};
+
 	class display_unit
 	{
 	public:

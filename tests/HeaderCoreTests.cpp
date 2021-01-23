@@ -435,19 +435,20 @@ namespace wpl
 			{
 				// INIT
 				tracking_header hdr(cursor_manager_);
+				const control &as_control = hdr;
 				column_t c[] = {	{	L"", 17	}, {	L"", 13	}, {	L"", 29	},	};
 				const auto m = mocks::columns_model::create(c, columns_model::npos(), true);
 
 				resize(hdr, 1000, 33);
 
 				// ACT / ASSERT
-				assert_equal(0, hdr.min_height(0));
+				assert_equal(0, as_control.min_height());
 
 				// INIT
 				hdr.set_model(mocks::columns_model::create());
 
 				// ACT / ASSERT
-				assert_equal(0, hdr.min_height(0));
+				assert_equal(0, as_control.min_height());
 			}
 
 
@@ -472,7 +473,7 @@ namespace wpl
 				};
 
 				// ACT / ASSERT
-				assert_equal(15, static_cast<const control &>(hdr).min_height(0));
+				assert_equal(15, static_cast<const control &>(hdr).min_height());
 
 				// INIT
 				hdr.on_measure_item = [&] (const columns_model &, columns_model::index_type index) -> agge::box<int> {
@@ -486,7 +487,7 @@ namespace wpl
 				};
 
 				// ACT / ASSERT
-				assert_equal(21, static_cast<const control &>(hdr).min_height(0));
+				assert_equal(21, static_cast<const control &>(hdr).min_height());
 			}
 
 

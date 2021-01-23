@@ -54,6 +54,13 @@ namespace wpl
 		_inner->layout(offset(append_view, _px, _py, 0), b);
 	}
 
+	int padding::min_height(int for_width) const
+	{	return _inner->min_height(maximum_size == for_width ? maximum_size : for_width - 2 * _px) + 2 * _py;	}
+
+	int padding::min_width(int for_height) const
+	{	return _inner->min_width(maximum_size == for_height ? maximum_size : for_height - 2 * _py) + 2 * _px;	}
+
+
 
 	void overlay::add(shared_ptr<control> child)
 	{
@@ -66,6 +73,24 @@ namespace wpl
 		for_each(_children.begin(), _children.end(), [&append_view, &box] (const shared_ptr<control> &ctl) {
 			ctl->layout(append_view, box);
 		});
+	}
+
+	int overlay::min_height(int for_width) const
+	{
+		auto v = 0;
+
+		for (auto i = _children.begin(); i != _children.end(); ++i)
+			v = (max)(v, (*i)->min_height(for_width));
+		return v;
+	}
+
+	int overlay::min_width(int for_height) const
+	{
+		auto v = 0;
+
+		for (auto i = _children.begin(); i != _children.end(); ++i)
+			v = (max)(v, (*i)->min_width(for_height));
+		return v;
 	}
 
 

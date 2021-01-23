@@ -82,6 +82,8 @@ namespace wpl
 		padding(std::shared_ptr<control> inner, int px, int py);
 
 		virtual void layout(const placed_view_appender &append_view, const agge::box<int> &box) override;
+		virtual int min_height(int for_width) const override;
+		virtual int min_width(int for_height) const override;
 
 	private:
 		std::shared_ptr<control> _inner;
@@ -97,6 +99,8 @@ namespace wpl
 
 		// control methods
 		virtual void layout(const placed_view_appender &append_view, const agge::box<int> &box) override;
+		virtual int min_height(int for_width) const override;
+		virtual int min_width(int for_height) const override;
 
 	private:
 		std::vector< std::shared_ptr<control> > _children;

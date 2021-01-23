@@ -21,8 +21,7 @@
 #pragma once
 
 #include "signal.h"
-
-#include <agge/types.h>
+#include "types.h"
 
 namespace wpl
 {
@@ -44,8 +43,8 @@ namespace wpl
 	struct control
 	{
 		virtual void layout(const placed_view_appender &append_view, const agge::box<int> &box) = 0;
-		virtual int min_height(int for_width) const;
-		virtual int min_width(int for_height) const;
+		virtual int min_height(int for_width = maximum_size) const;
+		virtual int min_width(int for_height = maximum_size) const;
 
 		signal<void (bool hierarchy_changed)> layout_changed;
 	};
