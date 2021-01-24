@@ -49,6 +49,7 @@
     <ClCompile Include="ListViewCoreSelectionTests.cpp" />
     <ClCompile Include="StackLayoutTests.cpp" />
     <ClCompile Include="SignalBaseTests.cpp" />
+    <ClCompile Include="StaggeredLayoutTests.cpp" />
     <ClCompile Include="VisualRouterTests.cpp" />
     <ClCompile Include="HeaderCoreTests.cpp" />
     <ClCompile Include="LayoutTests.cpp" />

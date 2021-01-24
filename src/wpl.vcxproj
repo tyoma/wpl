@@ -59,6 +59,7 @@
     <ClCompile Include="helpers.cpp" />
     <ClCompile Include="input_stubs.cpp" />
     <ClCompile Include="keyboard_router.cpp" />
+    <ClCompile Include="layout_staggered.cpp" />
     <ClCompile Include="macos\factory_macos.cpp">
       <ExcludedFromBuild>true</ExcludedFromBuild>
     </ClCompile>

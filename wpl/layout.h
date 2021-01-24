@@ -24,6 +24,7 @@
 #include "control.h"
 #include "types.h"
 
+#include <queue>
 #include <vector>
 
 namespace wpl
@@ -104,6 +105,33 @@ namespace wpl
 
 	private:
 		std::vector< std::shared_ptr<control> > _children;
+	};
+
+
+	class staggered : public container
+	{
+	public:
+		staggered();
+
+		void add(std::shared_ptr<control> child);
+
+		void set_base_width(display_unit width);
+
+		// control methods
+		virtual void layout(const placed_view_appender &append_view, const agge::box<int> &box) override;
+
+	private:
+		struct next
+		{
+			int bottom, x0, width;
+
+			bool operator <(const next &rhs) const;
+		};
+
+	private:
+		std::vector< std::shared_ptr<control> > _children;
+		mutable std::vector<next> _next_items_buffer;
+		display_unit _base_width;
 	};
 
 

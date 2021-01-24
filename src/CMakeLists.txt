@@ -10,6 +10,7 @@ set(WPL_SOURCES
 	keyboard_router.cpp
 	layout.cpp
 	layout_stack.cpp
+	layout_staggered.cpp
 	mouse_router.cpp
 	stylesheet_db.cpp
 	visual.cpp

@@ -17,6 +17,7 @@ set(WPL_TEST_SOURCES
 	SignalBaseTests.cpp
 	SignalTests.cpp
 	StackLayoutTests.cpp
+	StaggeredLayoutTests.cpp
 	StylesheetTests.cpp
 	VisualRouterTests.cpp
 	VisualTests.cpp

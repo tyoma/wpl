@@ -142,6 +142,9 @@
     <ClCompile Include="win32\helpers_win32.cpp">
       <Filter>src\win32</Filter>
     </ClCompile>
+    <ClCompile Include="layout_staggered.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\wpl\controls\listview_core.h">
