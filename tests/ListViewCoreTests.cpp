@@ -440,7 +440,7 @@ namespace wpl
 				assert_equal_pred(make_pair(0, 1), sm->get_range(), eq());
 
 				// INIT
-				m->items.resize(17, vector<wstring>(1));
+				m->set_count(17);
 
 				// ACT / ASSERT
 				assert_equal_pred(make_pair(0, 17), sm->get_range(), eq());
@@ -591,9 +591,8 @@ namespace wpl
 				// INIT
 				tracking_listview lv;
 				const auto sm = lv.get_vscroll_model();
-				const auto m = create_model(1, 1);
+				const auto m = create_model(111, 1);
 
-				m->items.resize(111, vector<wstring>(1));
 				lv.set_columns_model(mocks::columns_model::create(L"", 10));
 				lv.set_model(m);
 				resize(lv, 1000, 1000);
@@ -805,7 +804,7 @@ namespace wpl
 				};
 
 				// ACT
-				m->invalidate(10);
+				m->invalidate(table_model::npos());
 
 				// ASSERT
 				assert_equal(1, invalidations);
@@ -815,7 +814,7 @@ namespace wpl
 				invalidations = 0;
 
 				// ACT
-				m->invalidate(100);
+				m->invalidate(table_model::npos());
 
 				// ASSERT
 				assert_equal(0, invalidations);
@@ -843,19 +842,19 @@ namespace wpl
 				};
 
 				// ACT
-				m->invalidate(1000);
+				m->set_count(1000);
 
 				// ASSERT
 				assert_equal(0, invalidations);
 
 				// ACT
-				m->invalidate(100);
+				m->set_count(100);
 
 				// ASSERT
 				assert_equal(1, invalidations);
 
 				// ACT
-				m->invalidate(100);
+				m->set_count(100);
 
 				// ASSERT
 				assert_equal(1, invalidations);
@@ -1291,6 +1290,125 @@ namespace wpl
 				assert_is_empty(m->tracking_requested);
 			}
 
+
+			test( MinHeightIsZeroForMissingOrEmptyModel )
+			{
+				// INIT
+				tracking_listview lv;
+				const control &as_control = lv;
+				const auto cm = mocks::columns_model::create(L"", 10);
+				const shared_ptr<mocks::listview_model> m(new mocks::listview_model(0, 1));
+
+				lv.set_columns_model(cm);
+				lv.item_height = 19.3;
+
+				// ACT / ASSERT
+				assert_equal(0, as_control.min_height());
+
+				// INIT
+				lv.set_model(m);
+
+				// ACT / ASSERT
+				assert_equal(0, as_control.min_height());
+			}
+
+
+			test( MinHeightEqualsItemSizeTimesItemsCount )
+			{
+				// INIT
+				tracking_listview lv;
+				const control &as_control = lv;
+				const auto cm = mocks::columns_model::create(L"", 10);
+				const shared_ptr<mocks::listview_model> m(new mocks::listview_model(11, 1));
+
+				lv.set_columns_model(cm);
+				lv.set_model(m);
+				lv.item_height = 19.3;
+
+				// ACT / ASSERT
+				assert_equal(213, as_control.min_height(10));
+				assert_equal(213, as_control.min_height());
+
+				// INIT
+				lv.item_height = 5.1;
+
+				// ACT / ASSERT
+				assert_equal(57, as_control.min_height(10));
+				assert_equal(57, as_control.min_height());
+
+				// INIT
+				m->set_count(3);
+				lv.item_height = 5;
+
+				// ACT / ASSERT
+				assert_equal(15, as_control.min_height(10));
+				assert_equal(15, as_control.min_height());
+			}
+
+
+			test( LayoutIsChangedOnChangingModel )
+			{
+				// INIT
+				auto layout_changes = 0;
+				tracking_listview lv;
+				const auto cm = mocks::columns_model::create(L"", 10);
+				const shared_ptr<mocks::listview_model> m(new mocks::listview_model(11, 1));
+
+				lv.set_columns_model(cm);
+
+				const auto conn = lv.layout_changed += [&] (bool hierarchy_changed) {
+					assert_is_false(hierarchy_changed);
+					layout_changes++;
+				};
+
+				// ACT
+				lv.set_model(m);
+
+				// ASSERT
+				assert_equal(1, layout_changes);
+
+				// ACT
+				lv.set_model(m);
+
+				// ASSERT
+				assert_equal(1, layout_changes);
+
+				// ACT
+				lv.set_model(nullptr);
+
+				// ASSERT
+				assert_equal(2, layout_changes);
+			}
+
+
+			test( LayoutIsChangedOnItemCountChange )
+			{
+				// INIT
+				auto layout_changes = 0;
+				tracking_listview lv;
+				const auto cm = mocks::columns_model::create(L"", 10);
+				const shared_ptr<mocks::listview_model> m(new mocks::listview_model(11, 1));
+
+				lv.set_columns_model(cm);
+				lv.set_model(m);
+
+				const auto conn = lv.layout_changed += [&] (bool hierarchy_changed) {
+					assert_is_false(hierarchy_changed);
+					layout_changes++;
+				};
+
+				// ACT
+				m->set_count(11);
+
+				// ASSERT
+				assert_equal(0, layout_changes);
+
+				// ACT
+				m->set_count(13);
+
+				// ASSERT
+				assert_equal(1, layout_changes);
+			}
 		end_test_suite
 	}
 }

@@ -951,7 +951,7 @@ namespace wpl
 				assert_equal(reference1, get_visible_states(lv));
 
 				// INIT
-				m->items.resize(4, vector<wstring>(1)); // we don't invalidate the model - get_count() is used instead.
+				m->set_count(4);
 
 				// ACT
 				lv.key_down(keyboard_input::down, 0);

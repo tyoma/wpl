@@ -101,12 +101,12 @@ namespace wpl
 					model->set_order(sort_order.first, sort_order.second);
 			}
 			_invalidated_connection = model ?
-				model->invalidate += bind(&listview::invalidate_view, this, _1) : slot_connection();
-			invalidate_view(model ? model->get_count() : 0);
+				model->invalidate += bind(&listview::invalidate_view, this) : slot_connection();
 			_focused_item.reset();
 			_selected_items.clear();
 			_visible_item.second.reset();
 			_model = model;
+			invalidate_view();
 		}
 
 		void listview::adjust_column_widths()
@@ -281,9 +281,9 @@ namespace wpl
 			ListView_RedrawItems(get_window(), 0, ListView_GetItemCount(get_window()));
 		}
 
-		void listview::invalidate_view(index_type new_count)
+		void listview::invalidate_view()
 		{
-			setup_data(get_window(), new_count);
+			setup_data(get_window(), _model ? _model->get_count() : 0);
 			_avoid_notifications = true;
 			update_focus();
 			update_selection();

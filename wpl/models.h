@@ -93,7 +93,7 @@ namespace wpl
 		virtual void precache(index_type from, index_type count) const;
 		virtual std::shared_ptr<const trackable> track(index_type row) const;
 
-		signal<void (index_type new_count)> invalidate;
+		signal<void (index_type row)> invalidate; // It is model's responsibility to invalidate itself on count changes.
 	};
 
 

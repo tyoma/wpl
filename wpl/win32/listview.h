@@ -60,7 +60,7 @@ namespace wpl
 			static void setup_data(HWND hlistview, index_type item_count);
 			static void setup_selection(HWND hlistview, const selection_trackers &selection);
 			void update_sort_order(columns_model::index_type new_ordering_column, bool ascending);
-			void invalidate_view(index_type new_count);
+			void invalidate_view();
 			void update_focus();
 			void update_selection();
 			void ensure_tracked_visibility();

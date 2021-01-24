@@ -95,7 +95,7 @@ namespace wpl
 			}
 
 			virtual double get_max() const override
-			{	return owner->_model ? static_cast<double>(owner->_model->get_count()) : 0;	}
+			{	return owner->_model ? static_cast<double>(owner->_item_count) : 0;	}
 
 			virtual void set_window(double window_min) override
 			{	owner->_offset.dy = window_min;	}
@@ -135,7 +135,8 @@ namespace wpl
 
 
 		listview_core::listview_core()
-			: _vsmodel(new vertical_scroll_model), _hsmodel(new horizontal_scroll_model), _state_vscrolling(false)
+			: _item_count(0), _vsmodel(new vertical_scroll_model), _hsmodel(new horizontal_scroll_model),
+				_state_vscrolling(false)
 		{
 			tab_stop = true;
 			_offset.dx = 0, _offset.dy = 0;
@@ -159,18 +160,19 @@ namespace wpl
 		{
 			if (is_visible(item) | _state_vscrolling | (npos() == item))
 				return;
-			_offset.dy = static_cast<double>(item < _offset.dy ? item : item - get_last_size().h / get_minimal_item_height() + 1);
+			_offset.dy = static_cast<double>(item < _offset.dy
+				? item : item - get_last_size().h / get_minimal_item_height() + 1);
 			_vsmodel->invalidate(false);
 			invalidate_();
 		}
 
 		void listview_core::key_down(unsigned code, int modifiers)
 		{
-			if (const index_type item_count = _model ? _model->get_count() : index_type())
+			if (_item_count)
 			{
 				index_type focused = _focused ? _focused->index() : npos();
 				const index_type scroll_size = agge::iround(get_last_size().h / get_minimal_item_height());
-				const index_type last = item_count - 1;
+				const index_type last = _item_count - 1;
 				const index_type first_visible = first_partially_visible();
 				const index_type last_visible = last_partially_visible();
 
@@ -208,7 +210,7 @@ namespace wpl
 						focused = last;
 					else if (focused < last_visible)
 						focused = last_visible;
-					else if (focused + scroll_size < item_count)
+					else if (focused + scroll_size < _item_count)
 						focused += scroll_size;
 					else
 						focused = last;
@@ -257,7 +259,6 @@ namespace wpl
 				return;
 
 			const auto &size = get_last_size();
-			const index_type item_count = _model->get_count();
 			const columns_model::index_type columns = _cmodel->get_count();
 			const real_t item_height = get_minimal_item_height();
 			const index_type focused_item = has_focus && _focused ? _focused->index() : npos();
@@ -274,7 +275,7 @@ namespace wpl
 				_widths.push_back(width);
 				total_width += width;
 			}
-			for (; box.y2 = box.y1 + item_height, r < item_count && box.y1 < size.h; ++r, box.y1 = box.y2)
+			for (; box.y2 = box.y1 + item_height, r < _item_count && box.y1 < size.h; ++r, box.y1 = box.y2)
 			{
 				const unsigned state = (is_selected(r) ? selected : 0) | (focused_item == r ? focused : 0);
 
@@ -307,6 +308,9 @@ namespace wpl
 			_hsmodel->invalidate(true);
 		}
 
+		int listview_core::min_height(int /*for_width*/) const
+		{	return static_cast<int>(ceil(get_minimal_item_height() * _item_count));	}
+
 		void listview_core::set_columns_model(shared_ptr<columns_model> cmodel)
 		{
 			_cmodel_invalidation = cmodel ? cmodel->invalidate += [this] {
@@ -319,20 +323,30 @@ namespace wpl
 
 		void listview_core::set_model(shared_ptr<table_model> model)
 		{
-			if (model == _model)
-				return;
-			_model_invalidation = model ? model->invalidate += [this] (index_type count) {
-				if (_item_count != count)
-					_vsmodel->invalidate(true), _item_count = count;
+			const auto update_item_count = [this] {
+				const auto item_count = _model ? _model->get_count() : table_model::index_type();
+
+				if (item_count == _item_count)
+					return;
+				_item_count = item_count;
+				_vsmodel->invalidate(true);
+				layout_changed(false);
+			};
+			const auto on_invalidate = [this, update_item_count] (index_type /*row*/) {
+				update_item_count();
 				sort(_selected.begin(), _selected.end(), listview_core::trackable_less());
 				if (_focused && _state_keep_focus_visible)
 					make_visible(_focused->index());
 				invalidate_();
-			} : nullptr;
-			_item_count = model ? model->get_count() : 0u;
+			};
+
+			if (model == _model)
+				return;
+			_model_invalidation = model ? model->invalidate += on_invalidate : nullptr;
 			_model = model;
 			_focused = nullptr;
 			_selected.clear();
+			update_item_count();
 			invalidate_();
 		}
 

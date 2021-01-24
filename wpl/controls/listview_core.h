@@ -61,6 +61,7 @@ namespace wpl
 
 			// control methods
 			virtual void layout(const placed_view_appender &append_view, const agge::box<int> &box) override;
+			virtual int min_height(int for_width) const override;
 
 			// listview methods
 			virtual void set_columns_model(std::shared_ptr<columns_model> cmodel) override;
