@@ -22,6 +22,7 @@
 
 #include <wpl/controls/background.h>
 #include <wpl/controls/header_basic.h>
+#include <wpl/controls/label.h>
 #include <wpl/controls/listview_composite.h>
 #include <wpl/controls/listview_basic.h>
 #include <wpl/controls/scroller.h>
@@ -59,6 +60,9 @@ namespace wpl
 		factory_.register_control("header", [] (const factory &, const control_context &context) {
 			return apply_stylesheet(make_shared<controls::header_basic>(context.text_services, context.cursor_manager_),
 				*context.stylesheet_);
+		});
+		factory_.register_control("label", [] (const factory &, const control_context &context) {
+			return apply_stylesheet(make_shared<controls::label>(context.text_services), *context.stylesheet_);
 		});
 		factory_.register_control("listview", [] (const factory &f, const control_context &context) {
 			return apply_stylesheet(make_shared< controls::listview_composite<controls::listview_basic> >(f, context),
