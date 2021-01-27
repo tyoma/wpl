@@ -23,6 +23,7 @@
 #include "helpers.h"
 
 #include <agge/math.h>
+#include <algorithm>
 #include <wpl/helpers.h>
 
 using namespace agge;
@@ -100,11 +101,13 @@ namespace wpl
 		}
 		for (auto i = _children.begin(); i != _children.end(); ++i)
 		{
-			auto &item = (pop_heap(_next_items_buffer.begin(), _next_items_buffer.end()), _next_items_buffer.back());
-			const auto box2 = create_box(item.width, (*i)->min_height(item.width));
+			pop_heap(_next_items_buffer.begin(), _next_items_buffer.end());
 
-			(*i)->layout(offset(append_view, item.x0, item.bottom, 0), box2);
-			item.bottom += box2.h;
+			auto &item = _next_items_buffer.back();
+			const auto item_box = create_box(item.width, (*i)->min_height(item.width));
+
+			(*i)->layout(offset(append_view, item.x0, item.bottom, 0), item_box);
+			item.bottom += item_box.h;
 			push_heap(_next_items_buffer.begin(), _next_items_buffer.end());
 		}
 	}

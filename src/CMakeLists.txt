@@ -19,6 +19,7 @@ set(WPL_SOURCES
 	controls/background.cpp
 	controls/header_basic.cpp
 	controls/header_core.cpp
+	controls/label.cpp
 	controls/listview_basic.cpp
 	controls/listview_core.cpp
 	controls/scroller.cpp

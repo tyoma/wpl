@@ -128,6 +128,7 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\wpl\controls\label.h" />
     <ClInclude Include="..\wpl\freetype2\font_loader.h" />
     <ClInclude Include="..\wpl\animated_models.h" />
     <ClInclude Include="..\wpl\animation.h" />
@@ -180,6 +181,9 @@
     <ClInclude Include="..\wpl\win32\combobox.h" />
     <ClInclude Include="..\wpl\win32\listview.h" />
     <ClInclude Include="..\wpl\win32\view_host.h" />
+    <ClCompile Include="controls\label.cpp">
+      <FileType>CppHeader</FileType>
+    </ClCompile>
     <ClInclude Include="glyphs.h" />
     <ClInclude Include="helpers.h" />
   </ItemGroup>

@@ -145,6 +145,9 @@
     <ClCompile Include="layout_staggered.cpp">
       <Filter>src</Filter>
     </ClCompile>
+    <ClCompile Include="controls\label.cpp">
+      <Filter>src\controls</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\wpl\controls\listview_core.h">
@@ -254,6 +257,9 @@
     </ClInclude>
     <ClInclude Include="..\wpl\win32\helpers.h">
       <Filter>win32</Filter>
+    </ClInclude>
+    <ClInclude Include="..\wpl\controls\label.h">
+      <Filter>controls</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

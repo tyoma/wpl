@@ -24,7 +24,6 @@
 #include "control.h"
 #include "types.h"
 
-#include <queue>
 #include <vector>
 
 namespace wpl

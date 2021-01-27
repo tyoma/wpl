@@ -59,7 +59,7 @@ namespace wpl
 			virtual LRESULT on_message(UINT message, WPARAM wparam, LPARAM lparam,
 				const window::original_handler_t &handler) override;
 
-			virtual void set_align(halign value) override;
+			virtual void set_halign(agge::text_alignment value) override;
 		};
 	}
 }

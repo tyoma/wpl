@@ -63,15 +63,15 @@ namespace wpl
 
 		link::link()
 			: text_container("text.link")
-		{	_halign = wpl::text_container::left;	}
+		{	_halign = agge::align_near;	}
 
 		void link::layout(const placed_view_appender &append_view, const agge::box<int> &box)
 		{	native_view::layout(append_view, box);	}
 
 		HWND link::materialize(HWND hparent)
 		{
-			return ::CreateWindow(WC_LINK, _text.c_str(), WS_CHILD | WS_VISIBLE
-				| (wpl::text_container::right == _halign ? LWS_RIGHT : 0), 0, 0, 100, 100, hparent, NULL, NULL, NULL);
+			return ::CreateWindow(WC_LINK, _text.c_str(), helpers::update_flag(WS_CHILD | WS_VISIBLE,
+				agge::align_far == _halign, LWS_RIGHT), 0, 0, 100, 100, hparent, NULL, NULL, NULL);
 		}
 
 		LRESULT link::on_message(UINT message, WPARAM wparam, LPARAM lparam,
@@ -91,19 +91,11 @@ namespace wpl
 			}
 		}
 
-		void link::set_align(halign value)
+		void link::set_halign(agge::text_alignment value)
 		{
-			text_container::set_align(value);
-			switch (value)
-			{
-			case wpl::text_container::left:
-				SetWindowLong(get_window(), GWL_STYLE, ~LWS_RIGHT & GetWindowLong(get_window(), GWL_STYLE));
-				break;
-
-			case wpl::text_container::right:
-				SetWindowLong(get_window(), GWL_STYLE, LWS_RIGHT | GetWindowLong(get_window(), GWL_STYLE));
-				break;
-			}
+			text_container::set_halign(value);
+			::SetWindowLong(get_window(), GWL_STYLE, helpers::update_flag(::GetWindowLong(get_window(), GWL_STYLE),
+				agge::align_far == _halign, LWS_RIGHT));
 		}
 	}
 }

@@ -29,7 +29,7 @@ namespace wpl
 			};
 		}
 
-		begin_test_suite( AStaggeredLayoutTests )
+		begin_test_suite( StaggeredLayoutTests )
 			test( AddingAViewForcesLayoutRecalculate )
 			{
 				// INIT

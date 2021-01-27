@@ -42,9 +42,6 @@ namespace wpl
 
 				::SendMessage(hwnd, WM_SETICON, type, reinterpret_cast<LPARAM>(hicon));
 			}
-
-			void update_flag(long &styles, bool enable, long flag)
-			{	styles = enable ? (styles | flag) : (styles & ~flag);	}
 		}
 
 
@@ -96,12 +93,10 @@ namespace wpl
 
 		void form::set_features(unsigned /*features*/ features_)
 		{
-			auto style = ::GetWindowLong(_hwnd, GWL_STYLE);
+			auto style = helpers::update_flag(::GetWindowLong(_hwnd, GWL_STYLE), !!(features_ & resizeable), WS_SIZEBOX);
 
-			update_flag(style, !!(features_ & resizeable), WS_SIZEBOX);
-			update_flag(style, !!(features_ & minimizable), WS_MINIMIZEBOX);
-			update_flag(style, !!(features_ & maximizable), WS_MAXIMIZEBOX);
-			::SetWindowLong(_hwnd, GWL_STYLE, style);
+			style = helpers::update_flag(style, !!(features_ & minimizable), WS_MINIMIZEBOX);
+			::SetWindowLong(_hwnd, GWL_STYLE, helpers::update_flag(style, !!(features_ & maximizable), WS_MAXIMIZEBOX));
 		}
 
 		LRESULT form::wndproc(UINT message, WPARAM wparam, LPARAM lparam, const window::original_handler_t &previous)

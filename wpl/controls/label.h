@@ -21,54 +21,43 @@
 #pragma once
 
 #include "../controls.h"
-#include "native_view.h"
+#include "integrated.h"
 
-#include <memory>
+#include <agge/color.h>
+#include <agge.text/layout.h>
 
 namespace wpl
 {
-	namespace win32
+	struct stylesheet;
+
+	namespace controls
 	{
-		template <typename BaseT>
-		class text_container_impl : public BaseT, public native_view
+		class label : public integrated_control<wpl::label>
 		{
-		protected:
-			typedef text_container_impl text_container;
+		public:
+			label(std::shared_ptr<gcontext::text_engine_type> text_services);
 
-		protected:
-			text_container_impl(const std::string &text_style_name);
+			void apply_styles(const stylesheet &stylesheet_);
 
+		private:
+			// control methods
+			virtual int min_height(int for_width) const override;
+			virtual int min_width(int for_width) const override;
+
+			// text_container methods
 			virtual void set_text(const agge::richtext_modifier_t &text) override;
 			virtual void set_halign(agge::text_alignment value) override;
 			virtual void set_valign(agge::text_alignment value) override;
 
-		protected:
-			std::wstring _text;
+			// visual methods
+			virtual void draw(gcontext &context, gcontext::rasterizer_ptr &rasterizer) const override;
+
+		private:
+			const std::shared_ptr<gcontext::text_engine_type> _text_services;
+			agge::richtext_t _text;
+			agge::color _color;
+			mutable agge::layout _layout;
 			agge::text_alignment _halign, _valign;
 		};
-
-
-
-		template <typename BaseT>
-		inline text_container_impl<BaseT>::text_container_impl(const std::string &text_style_name)
-			: native_view(text_style_name)
-		{	}
-
-		template <typename BaseT>
-		inline void text_container_impl<BaseT>::set_text(const agge::richtext_modifier_t &text)
-		{
-			_text.clear();
-			for (auto r = text.ranges_begin(); r != text.ranges_end(); ++r)
-				_text.append(r->begin(), r->end());
-			::SetWindowTextW(get_window(), _text.c_str());
-		}
-
-		template <typename BaseT>
-		inline void text_container_impl<BaseT>::set_halign(agge::text_alignment value)
-		{	_halign = value;	}
-
-		template <typename BaseT>
-		inline void text_container_impl<BaseT>::set_valign(agge::text_alignment /*value*/)
-		{	}
 	}
 }

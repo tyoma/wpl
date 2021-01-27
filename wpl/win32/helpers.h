@@ -34,6 +34,9 @@ namespace wpl
 			static void client_to_screen(rect_i &value, HWND hwnd);
 			static void screen_to_client(point_i &value, HWND hwnd);
 
+			template <typename ValueT, typename FlagT>
+			static ValueT update_flag(ValueT in, bool enable, FlagT flag);
+
 			class defer_window_pos : noncopyable
 			{
 			public:
@@ -73,5 +76,11 @@ namespace wpl
 				HWND _hwnd;
 			};
 		};
+
+
+
+		template <typename ValueT, typename FlagT>
+		inline ValueT helpers::update_flag(ValueT in, bool enable, FlagT flag)
+		{	return enable ? (in | flag) : (in & ~flag);	}
 	}
 }

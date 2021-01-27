@@ -23,16 +23,21 @@
 #include "control.h"
 #include "models.h"
 
+#include <agge.text/richtext.h>
+#include <agge.text/types.h>
 #include <string>
 
 namespace wpl
 {
 	struct text_container
 	{
-		enum halign { left, center, right };
+		virtual void set_text(const agge::richtext_modifier_t &text) = 0;
+		virtual void set_halign(agge::text_alignment value) = 0;
+		virtual void set_valign(agge::text_alignment value) = 0;
+	};
 
-		virtual void set_text(const std::wstring &text) = 0;
-		virtual void set_align(halign value) = 0;
+	struct label : control, text_container
+	{
 	};
 
 	struct button : control, text_container

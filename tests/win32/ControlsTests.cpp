@@ -191,7 +191,7 @@ namespace wpl
 				shared_ptr<link> b(new win32::link);
 
 				// ACT
-				b->set_align(text_container::left);
+				b->set_halign(agge::align_near);
 				HWND hlink = get_window_and_resize(b, parent, 100, 20);
 
 				// ASSERT
@@ -199,7 +199,7 @@ namespace wpl
 
 				// ACT
 				b.reset(new win32::link);
-				b->set_align(text_container::right);
+				b->set_halign(agge::align_far);
 				hlink = get_window_and_resize(b, parent, 100, 20);
 
 				// ASSERT
@@ -220,25 +220,25 @@ namespace wpl
 				assert_equal(0, LWS_RIGHT & ::GetWindowLong(hlink, GWL_STYLE));
 					
 				// ACT
-				b->set_align(text_container::center);
+				b->set_halign(agge::align_center);
 
 				// ASSERT
 				assert_equal(0, LWS_RIGHT & ::GetWindowLong(hlink, GWL_STYLE));
 
 				// ACT
-				b->set_align(text_container::right);
+				b->set_halign(agge::align_far);
 
 				// ASSERT
 				assert_equal(LWS_RIGHT, LWS_RIGHT & ::GetWindowLong(hlink, GWL_STYLE));
 
 				// ACT
-				b->set_align(text_container::center);
+				b->set_halign(agge::align_center);
 
 				// ASSERT
-				assert_equal(LWS_RIGHT, LWS_RIGHT & ::GetWindowLong(hlink, GWL_STYLE));
+				assert_equal(0, LWS_RIGHT & ::GetWindowLong(hlink, GWL_STYLE));
 
 				// ACT
-				b->set_align(text_container::left);
+				b->set_halign(agge::align_near);
 
 				// ASSERT
 				assert_equal(0, LWS_RIGHT & ::GetWindowLong(hlink, GWL_STYLE));
