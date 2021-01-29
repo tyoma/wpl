@@ -23,6 +23,7 @@ set(WPL_SOURCES
 	controls/listview_basic.cpp
 	controls/listview_core.cpp
 	controls/scroller.cpp
+	misc/statistics_view.cpp
 
 	freetype2/font_loader.cpp
 )

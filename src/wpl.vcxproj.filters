@@ -29,6 +29,12 @@
     <Filter Include="macos">
       <UniqueIdentifier>{f5a59500-6246-41f9-9c12-0cf177e1b5e7}</UniqueIdentifier>
     </Filter>
+    <Filter Include="misc">
+      <UniqueIdentifier>{2e750271-b114-4a39-b2f0-15371f2d9767}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\misc">
+      <UniqueIdentifier>{455fc822-7739-4bbe-b475-9a412d0d593c}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="layout.cpp">
@@ -148,6 +154,9 @@
     <ClCompile Include="controls\label.cpp">
       <Filter>src\controls</Filter>
     </ClCompile>
+    <ClCompile Include="misc\statistics_view.cpp">
+      <Filter>src\misc</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\wpl\controls\listview_core.h">
@@ -260,6 +269,9 @@
     </ClInclude>
     <ClInclude Include="..\wpl\controls\label.h">
       <Filter>controls</Filter>
+    </ClInclude>
+    <ClInclude Include="..\wpl\misc\statistics_view.h">
+      <Filter>misc</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

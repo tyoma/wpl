@@ -27,12 +27,18 @@
 
 namespace wpl
 {
+	namespace misc
+	{
+		class statistics_view;
+	}
+
 	namespace win32
 	{
 		class visual_router : visual_router_host
 		{
 		public:
 			visual_router(HWND hwnd, const std::vector<placed_view> &views, const form_context &context);
+			~visual_router();
 
 			void reload_views();
 			void set_offset(const agge::agge_vector<int> &offset);
@@ -48,6 +54,8 @@ namespace wpl
 			const form_context _context;
 			gcontext::rasterizer_ptr _rasterizer;
 			agge::agge_vector<int> _offset;
+			std::unique_ptr<misc::statistics_view> _statistics_view;
+			bool _measure_draw;
 		};
 	}
 }

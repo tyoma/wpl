@@ -22,6 +22,7 @@
 
 #include <agge/math.h>
 #include <wpl/helpers.h>
+#include <wpl/misc/statistics_view.h>
 #include <wpl/win32/helpers.h>
 
 #pragma warning(disable: 4355)
@@ -33,9 +34,38 @@ namespace wpl
 {
 	namespace win32
 	{
+		namespace
+		{
+			LARGE_INTEGER c_tmp;
+			float c_counter_period = 1000.0f / static_cast<float>(::QueryPerformanceFrequency(&c_tmp), c_tmp.QuadPart);
+
+			float stopwatch(LARGE_INTEGER &previous)
+			{
+				LARGE_INTEGER current;
+
+				::QueryPerformanceCounter(&current);
+				swap(previous, current);
+				return c_counter_period * static_cast<float>(previous.QuadPart - current.QuadPart);
+			}
+
+			void invalidate_window(HWND hwnd, const rect_i &rc_)
+			{
+				RECT rc = {	rc_.x1, rc_.y1, rc_.x2, rc_.y2	};
+
+				::InvalidateRect(hwnd, &rc, FALSE);
+			}
+		}
+
 		visual_router::visual_router(HWND hwnd, const vector<placed_view> &views, const form_context &context)
 			: _hwnd(hwnd), _underlying(views, *this), _rasterizer(new gcontext::rasterizer_type), _context(context),
-				_offset(zero())
+				_offset(zero()), _measure_draw(false)
+		{
+#ifdef WPL_SHOW_STATISTICS
+			_statistics_view.reset(new misc::statistics_view(context.text_engine));
+#endif
+		}
+
+		visual_router::~visual_router()
 		{	}
 
 		void visual_router::reload_views()
@@ -48,6 +78,9 @@ namespace wpl
 		{
 			switch (message)
 			{
+			case WM_SIZE:
+				_measure_draw = true;
+
 			default:
 				return false;
 
@@ -56,6 +89,7 @@ namespace wpl
 				break;
 
 			case WM_PAINT:
+				LARGE_INTEGER time = {};
 				helpers::paint_sequence ps(hwnd);
 				auto &backbuffer = *_context.backbuffer;
 				auto offset = create_vector<int>(ps.rcPaint.left, ps.rcPaint.top);
@@ -65,8 +99,22 @@ namespace wpl
 				gcontext ctx(backbuffer, *_context.renderer, *_context.text_engine, offset += _offset);
 
 				_rasterizer->reset();
+				stopwatch(time);
 				_underlying.draw(ctx, _rasterizer);
+				if (_statistics_view)
+					_statistics_view->draw(ctx, _rasterizer);
+				const auto render_time = stopwatch(time);
 				backbuffer.blit(ps.hdc, ps.rcPaint.left, ps.rcPaint.top, ps.width(), ps.height());
+				const auto blit_time = stopwatch(time);
+
+				if (_statistics_view && _measure_draw)
+				{
+					_statistics_view->set_value("Render", render_time, "ms");
+					_statistics_view->set_value("Blit", blit_time, "ms");
+					_statistics_view->set_value("Invalid rect", create_box<int>(ps.width(), ps.height()), "");
+					invalidate_window(_hwnd, _statistics_view->update());
+					_measure_draw = false;
+				}
 				result = 0;
 				break;
 			}
@@ -78,10 +126,8 @@ namespace wpl
 			auto area2 = area;
 
 			wpl::offset(area2, -_offset.dx, -_offset.dy);
-
-			RECT rc = {	area2.x1, area2.y1, area2.x2, area2.y2	};
-
-			::InvalidateRect(_hwnd, &rc, FALSE);
+			invalidate_window(_hwnd, area2);
+			_measure_draw = true;
 		}
 	}
 }
