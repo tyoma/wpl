@@ -38,48 +38,49 @@ namespace wpl
 		_connections.clear();
 		for (auto i = _views.begin(); i != _views.end(); ++i, ++index)
 		{
-			if (i->regular)
-			{
-				_connections.push_back(i->regular->invalidate += [this, index] (const agge::rect_i *area) {
-					if (index < _views.size())
-					{
-						const auto &l = _views[index].location;
+			if (!i->regular)
+				continue;
+			_connections.push_back(i->regular->invalidate += [this, index] (const agge::rect_i *area) {
+				if (index >= _views.size())
+					return;
 
-						if (area)
-						{
-							auto a = *area;
+				const auto &l = _views[index].location;
 
-							offset(a, l.x1, l.y1);
-							_host.invalidate(a);
-						}
-						else
-						{
-							_host.invalidate(l);
-						}
-					}
-				});
-			}
+				if (area)
+				{
+					auto a = *area;
+
+					offset(a, l.x1, l.y1);
+					_host.invalidate(a);
+				}
+				else
+				{
+					_host.invalidate(l);
+				}
+			});
 		}
 	}
 
 	void visual_router::draw(gcontext &ctx, gcontext::rasterizer_ptr &rasterizer) const
 	{
+		const auto update_area = ctx.update_area();
+
 		for (auto i = _views.begin(); i != _views.end(); ++i)
 		{
-			if (i->regular)
+			if (!i->regular)
+				continue;
+
+			auto child_ctx = ctx.translate(i->location.x1, i->location.y1);
+
+			if (i->regular->transcending)
 			{
-				auto child_ctx = ctx.translate(i->location.x1, i->location.y1);
+				i->regular->draw(child_ctx, rasterizer);
+			}
+			else if (are_intersecting(update_area, i->location))
+			{
+				auto child_ctx_windowed = child_ctx.window(0, 0, wpl::width(i->location), wpl::height(i->location));
 
-				if (i->regular->transcending)
-				{
-					i->regular->draw(child_ctx, rasterizer);
-				}
-				else
-				{
-					auto child_ctx_windowed = child_ctx.window(0, 0, wpl::width(i->location), wpl::height(i->location));
-
-					i->regular->draw(child_ctx_windowed, rasterizer);
-				}
+				i->regular->draw(child_ctx_windowed, rasterizer);
 			}
 		}
 	}

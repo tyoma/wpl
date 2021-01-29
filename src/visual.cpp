@@ -9,7 +9,11 @@ namespace agge
 {
 	template <typename T>
 	inline rect<T> operator -(rect<T> lhs, const agge_vector<T> &rhs)
-	{	return lhs.x1 -= rhs.dx, lhs.y1 -= rhs.dy, lhs.x2 -= rhs.dx, lhs.y2 -= rhs.dy, lhs;	}
+	{	return wpl::offset(lhs, -rhs.dx, -rhs.dy), lhs;	}
+
+	template <typename T>
+	inline rect<T> operator +(rect<T> lhs, const agge_vector<T> &rhs)
+	{	return wpl::offset(lhs, rhs.dx, rhs.dy), lhs;	}
 
 	template <typename T>
 	inline agge_vector<T> operator -(agge_vector<T> lhs, const agge_vector<T> &rhs)
@@ -21,7 +25,7 @@ namespace wpl
 	gcontext::gcontext(surface_type &surface, renderer_type &renderer_, text_engine_type &text_engine_,
 			const vector_i &offset) throw()
 		: text_engine(text_engine_), _surface(surface), _renderer(renderer_), _offset(offset),
-			_window(create_rect<int>(0, 0, surface.width(), surface.height()) - offset)
+			_window(create_rect<int>(0, 0, surface.width(), surface.height()) + offset)
 	{	}
 
 	gcontext::gcontext(surface_type &surface, renderer_type &renderer_, text_engine_type &text_engine_,

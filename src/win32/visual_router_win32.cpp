@@ -59,10 +59,11 @@ namespace wpl
 				helpers::paint_sequence ps(hwnd);
 				auto &backbuffer = *_context.backbuffer;
 				auto offset = create_vector<int>(ps.rcPaint.left, ps.rcPaint.top);
-				gcontext ctx(backbuffer, *_context.renderer, *_context.text_engine, offset += _offset,
-					create_rect<int>(ps.rcPaint.left, ps.rcPaint.top, ps.rcPaint.right, ps.rcPaint.bottom));
 
 				backbuffer.resize(ps.width(), ps.height());
+
+				gcontext ctx(backbuffer, *_context.renderer, *_context.text_engine, offset += _offset);
+
 				_rasterizer->reset();
 				_underlying.draw(ctx, _rasterizer);
 				backbuffer.blit(ps.hdc, ps.rcPaint.left, ps.rcPaint.top, ps.width(), ps.height());

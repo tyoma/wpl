@@ -110,7 +110,7 @@ namespace wpl
 			return agge::create_box<int>(rc.right, rc.bottom);
 		}
 
-		agge::rect<int> get_update_rect(HWND hwnd)
+		rect_i get_update_rect(HWND hwnd)
 		{
 			RECT rc;
 

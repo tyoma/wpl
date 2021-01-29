@@ -209,7 +209,7 @@ namespace wpl
 			}
 			if (!_overlay_views.empty())
 			{
-				rect<int> overlay_rect = {};
+				rect_i overlay_rect = {};
 
 				for (auto i = _overlay_views.begin(); i != _overlay_views.end(); ++i)
 				{

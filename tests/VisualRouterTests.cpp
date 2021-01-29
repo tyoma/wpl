@@ -41,8 +41,8 @@ namespace wpl
 				gcontext ctx(surface, *renderer, *text_engine, make_vector(103, 71));
 				const auto v = make_shared< mocks::logging_visual<view> >();
 				placed_view pv[] = {
-					{ v, nullptr_nv, { 13, 17, 1000, 1000 }	},
-					{ v, nullptr_nv, { 90, 40, 1000, 1000 }	},
+					{	 v, nullptr_nv, {	 13, 17, 1000, 1000	 }		},
+					{	 v, nullptr_nv, {	 90, 40, 1000, 1000	 }		},
 				};
 
 				v->transcending = true;
@@ -52,7 +52,7 @@ namespace wpl
 				vr.draw(ctx, rasterizer);
 
 				// ASSERT
-				agge::rect_i reference1[] = { { -116, -88, 34, 12 }, { -193, -111, -43, -11 }, };
+				agge::rect_i reference1[] = {	{	90, 54, 240, 154	}, {	13, 31, 163, 131	},	};
 
 				assert_equal(reference1, v->update_area_log);
 
@@ -66,7 +66,7 @@ namespace wpl
 				vr.draw(ctx, rasterizer);
 
 				// ASSERT
-				agge::rect_i reference2[] = { { -116, -88, 34, 12 }, { -193, -111, -43, -11 }, { 0, 0, 150, 100 }, };
+				agge::rect_i reference2[] = {	{	90, 54, 240, 154	}, {	13, 31, 163, 131	}, { 206, 142, 356, 242	}, };
 
 				assert_equal(reference2, v->update_area_log);
 			}
@@ -324,6 +324,102 @@ namespace wpl
 
 				// ASSERT
 				assert_is_empty(invalidation_log);
+			}
+
+
+			test( NonTranscendingViewsAreDrawnOnlyIfIntersectUpdateRectangle )
+			{
+				// INIT
+				visual_router vr(views, vrhost);
+				gcontext::surface_type surface(3, 3, 0);
+				shared_ptr< mocks::logging_visual<view> > v[] = {
+					make_shared< mocks::logging_visual<view> >(), make_shared< mocks::logging_visual<view> >(),
+					make_shared< mocks::logging_visual<view> >(), make_shared< mocks::logging_visual<view> >(),
+				};
+				placed_view pv[] = {
+					{	v[0], nullptr_nv, {	1, 1, 4, 4	},	},
+					{	v[1], nullptr_nv, {	6, 1, 9, 4	},	},
+					{	v[2], nullptr_nv, {	1, 6, 4, 9	},	},
+					{	v[3], nullptr_nv, {	6, 6, 9, 9	},	},
+				};
+
+				views = mkvector(pv);
+
+				// ACT
+				gcontext ctx1(surface, *renderer, *text_engine, make_vector(0, 0));
+				vr.draw(ctx1, rasterizer);
+
+				// ASSERT
+				assert_equal(1u, v[0]->update_area_log.size());
+				assert_is_empty(v[1]->update_area_log);
+				assert_is_empty(v[2]->update_area_log);
+				assert_is_empty(v[3]->update_area_log);
+
+				// INIT
+				v[0]->update_area_log.clear();
+
+				// ACT
+				gcontext ctx2(surface, *renderer, *text_engine, make_vector(7, 1));
+				vr.draw(ctx2, rasterizer);
+
+				// ASSERT
+				assert_is_empty(v[0]->update_area_log);
+				assert_equal(1u, v[1]->update_area_log.size());
+				assert_is_empty(v[2]->update_area_log);
+				assert_is_empty(v[3]->update_area_log);
+
+				// INIT
+				v[1]->update_area_log.clear();
+
+				// ACT
+				gcontext ctx3(surface, *renderer, *text_engine, make_vector(1, 4));
+				vr.draw(ctx3, rasterizer);
+
+				// ASSERT
+				assert_is_empty(v[0]->update_area_log);
+				assert_is_empty(v[1]->update_area_log);
+				assert_equal(1u, v[2]->update_area_log.size());
+				assert_is_empty(v[3]->update_area_log);
+
+				// INIT
+				v[2]->update_area_log.clear();
+
+				// ACT
+				gcontext ctx4(surface, *renderer, *text_engine, make_vector(6, 6));
+				vr.draw(ctx4, rasterizer);
+
+				// ASSERT
+				assert_is_empty(v[0]->update_area_log);
+				assert_is_empty(v[1]->update_area_log);
+				assert_is_empty(v[2]->update_area_log);
+				assert_equal(1u, v[3]->update_area_log.size());
+			}
+
+
+			test( TranscendingViewsAreDrawnEvenIfNoIntersectionWithUpdateRectangle )
+			{
+				// INIT
+				visual_router vr(views, vrhost);
+				gcontext::surface_type surface(3, 3, 0);
+				auto v = make_shared< mocks::logging_visual<view> >();
+				placed_view pv[] = {	{	v, nullptr_nv, {	1, 1, 4, 4	},	},	};
+
+				views = mkvector(pv);
+				v->transcending = true;
+
+				// ACT
+				gcontext ctx1(surface, *renderer, *text_engine, make_vector(4, 1));
+				vr.draw(ctx1, rasterizer);
+
+				// ASSERT
+				assert_equal(1u, v->update_area_log.size());
+
+				// ACT
+				gcontext ctx2(surface, *renderer, *text_engine, make_vector(1, 4));
+				vr.draw(ctx2, rasterizer);
+
+				// ASSERT
+				assert_equal(2u, v->update_area_log.size());
 			}
 
 		end_test_suite

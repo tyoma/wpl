@@ -35,7 +35,7 @@ namespace wpl
 	{
 		std::shared_ptr<view> regular;
 		std::shared_ptr<native_view> native;
-		agge::rect<int> location;
+		rect_i location;
 		int tab_order;
 		bool overlay;
 	};

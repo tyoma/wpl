@@ -157,8 +157,8 @@ namespace wpl
 				gcontext::surface_type s(200, 150, 0);
 
 				// ACT / ASSERT
-				assert_equal(create_rect(12, -31, 212, 119), gcontext(s, *renderer, *text_engine, make_vector(-12, 31)).update_area());
-				assert_equal(create_rect(-5, 10, 195, 160), gcontext(s, *renderer, *text_engine, make_vector(5, -10)).update_area());
+				assert_equal(create_rect(-12, 31, 188, 181), gcontext(s, *renderer, *text_engine, make_vector(-12, 31)).update_area());
+				assert_equal(create_rect(5, -10, 205, 140), gcontext(s, *renderer, *text_engine, make_vector(5, -10)).update_area());
 			}
 
 
