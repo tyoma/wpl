@@ -47,7 +47,7 @@ namespace wpl
 			static void update_selection(HWND hcombobox, std::shared_ptr<const trackable> &selected_item);
 
 		private:
-			mutable std::wstring _text_buffer;
+			mutable std::string _text_buffer;
 			std::shared_ptr<model_t> _model;
 			std::shared_ptr<void> _invalidated_connection;
 			std::shared_ptr<const trackable> _selected_item;

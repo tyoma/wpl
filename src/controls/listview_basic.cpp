@@ -110,7 +110,7 @@ namespace wpl
 		}
 
 		void listview_basic::draw_subitem(gcontext &ctx, gcontext::rasterizer_ptr &ras, const rect_r &b_, index_type /*item*/,
-			unsigned state, columns_model::index_type /*subitem*/, const wstring &text) const
+			unsigned state, columns_model::index_type /*subitem*/, const string &text) const
 		{
 			rect_r b(b_);
 

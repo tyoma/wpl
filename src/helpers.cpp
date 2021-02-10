@@ -28,7 +28,7 @@ using namespace std;
 
 namespace wpl
 {
-	void render_string(gcontext::rasterizer_type &target, const wstring &text, gcontext::text_engine_type &text_engine_,
+	void render_string(gcontext::rasterizer_type &target, const string &text, gcontext::text_engine_type &text_engine_,
 		const font &font_, const rect_r &box_, text_alignment halign, text_alignment valign_)
 	{
 		const auto align_vcenter = [&] () -> real_t {
@@ -42,7 +42,7 @@ namespace wpl
 		const auto x = halign == align_near ? box_.x1 : halign == align_far
 			? box_.x2 : box_.x1 + 0.5f * wpl::width(box_);
 
-		text_engine_.render_string(target, font_, text.c_str(), halign, x, y, wpl::width(box_));
+		text_engine_.render_string(target, font_, text, halign, x, y, wpl::width(box_));
 	}
 
 	placed_view_appender offset(const placed_view_appender &inner, int dx, int dy, int tab_override)

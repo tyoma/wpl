@@ -27,12 +27,6 @@ using namespace agge;
 using namespace std;
 using namespace wpl;
 
-#if TARGET_RT_BIG_ENDIAN
-	const NSStringEncoding kEncoding_wchar_t = CFStringConvertEncodingToNSStringEncoding(kCFStringEncodingUTF32BE);
-#else
-	const NSStringEncoding kEncoding_wchar_t = CFStringConvertEncodingToNSStringEncoding(kCFStringEncodingUTF32LE);
-#endif
-
 @interface window_macos : NSWindow
 	{
 		@public wpl::signal<void ()> close_;
@@ -122,10 +116,10 @@ namespace wpl
 		void form::set_visible(bool value)
 		{	[_window setIsVisible:value];	}
 			
-		void form::set_caption(const wstring &caption)
+		void form::set_caption(const string &caption)
 		{
 			[_window setTitle:[[NSString alloc]
-				initWithBytes:caption.c_str() length:caption.size() encoding:kEncoding_wchar_t]];
+				initWithBytes:caption.c_str() length:caption.size() encoding:NSUTF8StringEncoding]];
 		}
 			
 		void form::set_caption_icon(const gcontext::surface_type &icon)

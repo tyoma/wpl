@@ -157,6 +157,9 @@
     <ClCompile Include="misc\statistics_view.cpp">
       <Filter>src\misc</Filter>
     </ClCompile>
+    <ClCompile Include="win32\utf8.cpp">
+      <Filter>src\win32</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\wpl\controls\listview_core.h">
@@ -272,6 +275,9 @@
     </ClInclude>
     <ClInclude Include="..\wpl\misc\statistics_view.h">
       <Filter>misc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\wpl\win32\utf8.h">
+      <Filter>win32</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

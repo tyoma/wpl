@@ -149,7 +149,7 @@ namespace wpl
 				// INIT
 				int invalidations = 0;
 				tracking_header hdr(cursor_manager_);
-				const auto m = mocks::columns_model::create(L"x", 1);
+				const auto m = mocks::columns_model::create("x", 1);
 				slot_connection conn = hdr.invalidate += [&] (const agge::rect_i *r) {
 					++invalidations;
 					assert_null(r);
@@ -176,7 +176,7 @@ namespace wpl
 				// INIT
 				int invalidations = 0;
 				tracking_header hdr(cursor_manager_);
-				const auto m = mocks::columns_model::create(L"x", 1);
+				const auto m = mocks::columns_model::create("x", 1);
 				slot_connection conn = hdr.invalidate += [&] (const agge::rect_i *r) {
 					++invalidations;
 					assert_null(r);
@@ -214,7 +214,7 @@ namespace wpl
 			{
 				// INIT
 				tracking_header hdr(cursor_manager_);
-				const auto model = mocks::columns_model::create(L"abc", 123);
+				const auto model = mocks::columns_model::create("abc", 123);
 
 				resize(hdr, 400, 50);
 				hdr.set_model(model);
@@ -235,7 +235,7 @@ namespace wpl
 			{
 				// INIT
 				tracking_header hdr(cursor_manager_);
-				column_t c1[] = {	{	L"abc", 10	}, {	L"abc zyx", 17	}, {	L"AA bbb Z", 25	},	};
+				column_t c1[] = {	{	"abc", 10	}, {	"abc zyx", 17	}, {	"AA bbb Z", 25	},	};
 				auto model = mocks::columns_model::create(c1, columns_model::npos(), true);
 
 				resize(hdr, 1000, 33);
@@ -254,7 +254,7 @@ namespace wpl
 				assert_equal_pred(reference1, hdr.events, rect_eq());
 
 				// INIT
-				column_t c2[] = {	{	L"lorem", 100	}, {	L"ipsum", 17	},	};
+				column_t c2[] = {	{	"lorem", 100	}, {	"ipsum", 17	},	};
 				model = mocks::columns_model::create(c2, columns_model::npos(), true);
 
 				resize(hdr, 1000, 13);
@@ -278,7 +278,7 @@ namespace wpl
 			{
 				// INIT
 				tracking_header hdr(cursor_manager_);
-				column_t c[] = {	{	L"", 17	}, {	L"", 29	}, {	L"", 25	},	};
+				column_t c[] = {	{	"", 17	}, {	"", 29	}, {	"", 25	},	};
 				const auto m = mocks::columns_model::create(c, columns_model::npos(), true);
 
 				resize(hdr, 1000, 33);
@@ -344,7 +344,7 @@ namespace wpl
 			{
 				// INIT
 				tracking_header hdr(cursor_manager_);
-				column_t c[] = {	{	L"", 17	}, {	L"", 13	}, {	L"", 29	},	};
+				column_t c[] = {	{	"", 17	}, {	"", 13	}, {	"", 29	},	};
 				const auto m = mocks::columns_model::create(c, columns_model::npos(), true);
 
 				resize(hdr, 1000, 33);
@@ -384,7 +384,7 @@ namespace wpl
 			{
 				// INIT
 				tracking_header hdr(cursor_manager_);
-				column_t c[] = {	{	L"", 17	}, {	L"", 13	}, {	L"", 29	},	};
+				column_t c[] = {	{	"", 17	}, {	"", 13	}, {	"", 29	},	};
 				const auto m = mocks::columns_model::create(c, columns_model::npos(), true);
 
 				resize(hdr, 1000, 33);
@@ -436,7 +436,7 @@ namespace wpl
 				// INIT
 				tracking_header hdr(cursor_manager_);
 				const control &as_control = hdr;
-				column_t c[] = {	{	L"", 17	}, {	L"", 13	}, {	L"", 29	},	};
+				column_t c[] = {	{	"", 17	}, {	"", 13	}, {	"", 29	},	};
 				const auto m = mocks::columns_model::create(c, columns_model::npos(), true);
 
 				resize(hdr, 1000, 33);
@@ -456,7 +456,7 @@ namespace wpl
 			{
 				// INIT
 				tracking_header hdr(cursor_manager_);
-				column_t c[] = {	{	L"", 17	}, {	L"", 13	}, {	L"", 29	},	};
+				column_t c[] = {	{	"", 17	}, {	"", 13	}, {	"", 29	},	};
 				const auto m = mocks::columns_model::create(c, columns_model::npos(), true);
 
 				resize(hdr, 1000, 33);
@@ -495,7 +495,7 @@ namespace wpl
 			{
 				// INIT
 				tracking_header hdr(cursor_manager_);
-				column_t c[] = {	{	L"", 17	}, {	L"", 13	}, {	L"", 29	},	};
+				column_t c[] = {	{	"", 17	}, {	"", 13	}, {	"", 29	},	};
 				const auto m = mocks::columns_model::create(c, columns_model::npos(), true);
 				auto capture = 0;
 				auto release = 0;
@@ -537,7 +537,7 @@ namespace wpl
 			{
 				// INIT
 				tracking_header hdr(cursor_manager_);
-				column_t c[] = {	{	L"", 17	}, {	L"", 13	}, {	L"", 29	},	};
+				column_t c[] = {	{	"", 17	}, {	"", 13	}, {	"", 29	},	};
 				const auto m = mocks::columns_model::create(c, columns_model::npos(), true);
 				auto capture = 0;
 				auto conn = hdr.capture += [&] (shared_ptr<void> &handle) {
@@ -570,7 +570,7 @@ namespace wpl
 			{
 				// INIT
 				tracking_header hdr(cursor_manager_);
-				column_t c[] = {	{	L"", 17	}, {	L"", 13	}, {	L"", 29	},	};
+				column_t c[] = {	{	"", 17	}, {	"", 13	}, {	"", 29	},	};
 				const auto m = mocks::columns_model::create(c, columns_model::npos(), true);
 
 				resize(hdr, 1000, 33);
@@ -592,7 +592,7 @@ namespace wpl
 			{
 				// INIT
 				tracking_header hdr(cursor_manager_);
-				column_t c[] = {	{	L"", 17	}, {	L"", 13	}, {	L"", 29	},	};
+				column_t c[] = {	{	"", 17	}, {	"", 13	}, {	"", 29	},	};
 				const auto m = mocks::columns_model::create(c, columns_model::npos(), true);
 
 				resize(hdr, 1000, 33);
@@ -611,7 +611,7 @@ namespace wpl
 			{
 				// INIT
 				tracking_header hdr(cursor_manager_);
-				column_t c[] = {	{	L"a", 10	}, {	L"b", 13	}, {	L"Z A", 17	},	};
+				column_t c[] = {	{	"a", 10	}, {	"b", 13	}, {	"Z A", 17	},	};
 				const auto m = mocks::columns_model::create(c, 2, true);
 
 				resize(hdr, 1000, 33);
@@ -653,7 +653,7 @@ namespace wpl
 				// INIT
 				tracking_header hdr(cursor_manager_);
 				auto invalidations = 0;
-				column_t c[] = {	{	L"a", 10	}, {	L"b", 13	}, {	L"Z A", 17	},	};
+				column_t c[] = {	{	"a", 10	}, {	"b", 13	}, {	"Z A", 17	},	};
 				const auto m = mocks::columns_model::create(c, 2, true);
 				auto conn = hdr.invalidate += [&] (const agge::rect_i *r) { assert_null(r); invalidations++; };
 
@@ -680,7 +680,7 @@ namespace wpl
 			{
 				// INIT
 				tracking_header hdr(cursor_manager_);
-				column_t c[] = {	{	L"a", 10	}, {	L"b", 13	}, {	L"Z A", 17	},	};
+				column_t c[] = {	{	"a", 10	}, {	"b", 13	}, {	"Z A", 17	},	};
 				const auto m = mocks::columns_model::create(c, 2, true);
 
 				resize(hdr, 1000, 33);
@@ -723,7 +723,7 @@ namespace wpl
 			{
 				// INIT
 				tracking_header hdr(cursor_manager_);
-				column_t c[] = {	{	L"a", 10	}, {	L"b", 13	}, {	L"Z A", 17	},	};
+				column_t c[] = {	{	"a", 10	}, {	"b", 13	}, {	"Z A", 17	},	};
 				const auto m = mocks::columns_model::create(c, 2, true);
 
 				resize(hdr, 1000, 33);
@@ -747,7 +747,7 @@ namespace wpl
 				// INIT
 				tracking_header hdr(cursor_manager_);
 				auto invalidations = 0;
-				column_t columns[] = {	{	L"a", 10	}, {	L"b", 13	}, {	L"Z A", 17	},	};
+				column_t columns[] = {	{	"a", 10	}, {	"b", 13	}, {	"Z A", 17	},	};
 
 				resize(hdr, 1000, 33);
 				hdr.set_model(mocks::columns_model::create(columns, 2, true));
@@ -795,7 +795,7 @@ namespace wpl
 			{
 				// INIT
 				tracking_header hdr(cursor_manager_);
-				column_t columns[] = {	{	L"a", 10	}, {	L"b", 13	}, {	L"Z A", 17	},	};
+				column_t columns[] = {	{	"a", 10	}, {	"b", 13	}, {	"Z A", 17	},	};
 
 				resize(hdr, 1000, 33);
 				hdr.set_model(mocks::columns_model::create(columns, 2, true));
@@ -828,7 +828,7 @@ namespace wpl
 			{
 				// INIT
 				tracking_header hdr(cursor_manager_);
-				column_t c[] = {	{	L"", 17	}, {	L"", 13	}, {	L"", 29	}, {	L"", 29	},	};
+				column_t c[] = {	{	"", 17	}, {	"", 13	}, {	"", 29	}, {	"", 29	},	};
 				const auto m = mocks::columns_model::create(c, columns_model::npos(), true);
 
 				resize(hdr, 1000, 33);
@@ -849,7 +849,7 @@ namespace wpl
 
 				// ACT
 				short reference1_ulog[] = {	1, 2,	};
-				column_t reference1_widths[] = {	{	L"", 17	}, {	L"", 200	}, {	L"", 30	}, {	L"", 29	},	};
+				column_t reference1_widths[] = {	{	"", 17	}, {	"", 200	}, {	"", 30	}, {	"", 29	},	};
 
 				assert_equal(reference1_ulog, m->column_update_log);
 				assert_equal(reference1_widths, m->columns);
@@ -869,7 +869,7 @@ namespace wpl
 
 				// ACT
 				short reference2_ulog[] = {	0,	};
-				column_t reference2_widths[] = {	{	L"", 100	}, {	L"", 200	}, {	L"", 30	}, {	L"", 29	},	};
+				column_t reference2_widths[] = {	{	"", 100	}, {	"", 200	}, {	"", 30	}, {	"", 29	},	};
 
 				assert_equal(reference2_ulog, m->column_update_log);
 				assert_equal(reference2_widths, m->columns);
@@ -880,7 +880,7 @@ namespace wpl
 			{
 				// INIT
 				tracking_header hdr(cursor_manager_);
-				column_t c[] = {	{	L"", 17	}, {	L"", 13	}, {	L"", 29	}, {	L"", 29	},	};
+				column_t c[] = {	{	"", 17	}, {	"", 13	}, {	"", 29	}, {	"", 29	},	};
 				const auto m = mocks::columns_model::create(c, columns_model::npos(), true);
 
 				resize(hdr, 1000, 33);
@@ -898,7 +898,7 @@ namespace wpl
 				hdr.set_model(m);
 
 				// ACT
-				column_t reference_widths[] = {	{	L"", 100	}, {	L"", 13	}, {	L"", 72	}, {	L"", 29	},	};
+				column_t reference_widths[] = {	{	"", 100	}, {	"", 13	}, {	"", 72	}, {	"", 29	},	};
 
 				assert_equal(reference_widths, m->columns);
 			}
@@ -908,7 +908,7 @@ namespace wpl
 			{
 				// INIT
 				tracking_header hdr(cursor_manager_);
-				column_t c[] = {	{	L"", 17	}, {	L"", 13	}, {	L"", 29	}, {	L"", 29	},	};
+				column_t c[] = {	{	"", 17	}, {	"", 13	}, {	"", 29	}, {	"", 29	},	};
 				const auto m = mocks::columns_model::create(c, columns_model::npos(), true);
 
 				m->invalidate_on_update = true;
@@ -929,7 +929,7 @@ namespace wpl
 
 				// ACT
 				short reference1_ulog[] = {	1, 3,	};
-				column_t reference1_widths[] = {	{	L"", 17	}, {	L"", 153	}, {	L"", 29	}, {	L"", 31	},	};
+				column_t reference1_widths[] = {	{	"", 17	}, {	"", 153	}, {	"", 29	}, {	"", 31	},	};
 
 				assert_equal(reference1_ulog, m->column_update_log);
 				assert_equal(reference1_widths, m->columns);
@@ -947,7 +947,7 @@ namespace wpl
 				m->invalidate();
 
 				// ACT
-				column_t reference2_widths[] = {	{	L"", 17	}, {	L"", 153	}, {	L"", 32	}, {	L"", 31	},	};
+				column_t reference2_widths[] = {	{	"", 17	}, {	"", 153	}, {	"", 32	}, {	"", 31	},	};
 
 				assert_equal(reference2_widths, m->columns);
 			}

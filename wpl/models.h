@@ -88,7 +88,7 @@ namespace wpl
 	struct table_model : index_traits
 	{
 		virtual index_type get_count() const throw() = 0;
-		virtual void get_text(index_type row, index_type column, std::wstring &text) const = 0;
+		virtual void get_text(index_type row, index_type column, std::string &text) const = 0;
 		virtual void set_order(index_type column, bool ascending) = 0;
 		virtual void precache(index_type from, index_type count) const;
 		virtual std::shared_ptr<const trackable> track(index_type row) const;

@@ -20,46 +20,21 @@
 
 #pragma once
 
-#include "../factory_context.h"
-#include "../form.h"
-#include "helpers.h"
-#include "utf8.h"
-#include "window.h"
-
-#include <memory>
+#include <string>
 
 namespace wpl
 {
 	namespace win32
 	{
-		class view_host;
-
-		class form : public wpl::form
+		class utf_converter
 		{
 		public:
-			form(const form_context &context, HWND howner = NULL);
-			~form();
+			const char *operator ()(const wchar_t *from);
+			const wchar_t *operator ()(const char *from);
 
 		private:
-			// view_host methods
-			virtual void set_root(std::shared_ptr<control> root) override;
-
-			// form methods
-			virtual rect_i get_location() const override;
-			virtual void set_location(const rect_i &location) override;
-			virtual void set_visible(bool value) override;
-			virtual void set_caption(const std::string &caption) override;
-			virtual void set_caption_icon(const gcontext::surface_type &icon) override;
-			virtual void set_task_icon(const gcontext::surface_type &icon) override;
-			virtual std::shared_ptr<wpl::form> create_child() override;
-			virtual void set_features(unsigned /*features*/ features_) override;
-
-			LRESULT wndproc(UINT message, WPARAM wparam, LPARAM lparam, const window::original_handler_t &previous);
-
-		private:
-			helpers::window_handle _hwnd;
-			std::shared_ptr<win32::view_host> _host;
-			utf_converter _converter;
+			std::string _utf8_buffer;
+			std::wstring _utf16_buffer;
 		};
 	}
 }

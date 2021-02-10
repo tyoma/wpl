@@ -20,6 +20,8 @@
 
 #include <wpl/win32/listview.h>
 
+#include <agge.text/utf8.h>
+#include <agge.text/richtext.h>
 #include <algorithm>
 #include <commctrl.h>
 #include <iterator>
@@ -35,8 +37,6 @@ namespace wpl
 	{
 		namespace
 		{
-			typedef basic_string<TCHAR> tstring;
-
 			enum {
 				style = LVS_REPORT | LVS_SHOWSELALWAYS | LVS_OWNERDATA | WS_BORDER,
 				listview_style = LVS_EX_FULLROWSELECT | LVS_EX_DOUBLEBUFFER,
@@ -47,15 +47,6 @@ namespace wpl
 				to.clear();
 				for (auto i = from.ranges_begin(); i != from.ranges_end(); ++i)
 					to.insert(to.end(), i->begin(), i->end());
-			}
-
-			void convert_cp(string &to, const wstring &from)
-			{
-				size_t n = wcstombs(0, from.c_str(), 0);
-				vector<char> buffer(n != static_cast<size_t>(-1) ? n + 1 : 1);
-
-				wcstombs(&buffer[0], from.c_str(), buffer.size());
-				to = &buffer[0];
 			}
 		}
 
@@ -205,21 +196,12 @@ namespace wpl
 						item_activate(reinterpret_cast<const NMITEMACTIVATE *>(lparam)->iItem);
 						return 0;
 
-					case LVN_GETDISPINFOA:
-						if (const NMLVDISPINFOA *pdi = reinterpret_cast<const NMLVDISPINFOA *>(lparam))
-							if (pdi->item.mask & LVIF_TEXT)
-							{
-								_model->get_text(pdi->item.iItem, pdi->item.iSubItem, _text_buffer);
-								wcstombs_s(0, pdi->item.pszText, pdi->item.cchTextMax, _text_buffer.c_str(), _TRUNCATE);
-							}
-						return 0;
-
 					case LVN_GETDISPINFOW:
 						if (const NMLVDISPINFOW *pdi = reinterpret_cast<const NMLVDISPINFOW *>(lparam))
 							if (pdi->item.mask & LVIF_TEXT)
 							{
 								_model->get_text(pdi->item.iItem, pdi->item.iSubItem, _text_buffer);
-								wcsncpy_s(pdi->item.pszText, pdi->item.cchTextMax, _text_buffer.c_str(), _TRUNCATE);
+								wcsncpy_s(pdi->item.pszText, pdi->item.cchTextMax, _converter(_text_buffer.c_str()), _TRUNCATE);
 							}
 						return 0;
 
@@ -235,23 +217,24 @@ namespace wpl
 		void listview::setup_columns(HWND hlistview, const columns_model &cm)
 		{
 			short width;
-			agge::richtext_t caption;
-			tstring caption_plain;
-			LVCOLUMN lvcolumn = { };
+			agge::richtext_t caption((agge::font_style_annotation()));
+			wstring caption_plain;
+			LVCOLUMNW lvcolumn = { };
 			pair<columns_model::index_type, bool> sort_order = cm.get_sort_order();
 
 			for (int i = Header_GetItemCount(ListView_GetHeader(hlistview)) - 1; i >= 0; --i)
 				ListView_DeleteColumn(hlistview, i);
 			for (columns_model::index_type i = 0, count = cm.get_count(); i != count; ++i)
 			{
+				caption.clear();
 				cm.get_value(i, width);
 				cm.get_caption(i, caption);
 				convert_cp(caption_plain, caption);
 				lvcolumn.mask = LVCF_SUBITEM | LVCF_TEXT | LVCF_WIDTH;
-				lvcolumn.pszText = (LPTSTR)caption_plain.c_str();
+				lvcolumn.pszText = (LPWSTR)caption_plain.c_str();
 				lvcolumn.iSubItem = i;
 				lvcolumn.cx = width;
-				ListView_InsertColumn(hlistview, i, &lvcolumn);
+				::SendMessageW(hlistview, LVM_INSERTCOLUMNW, i, (LPARAM)&lvcolumn);
 			}
 			set_column_direction(hlistview, sort_order.first, sort_order.second ? dir_ascending : dir_descending);
 		}

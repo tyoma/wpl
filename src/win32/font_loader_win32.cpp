@@ -111,17 +111,18 @@ namespace wpl
 			return m;
 		}
 
-		agge::uint16_t font_accessor::get_glyph_index(wchar_t character) const
+		agge::glyph_index_t font_accessor::get_glyph_index(agge::codepoint_t character) const
 		{
 			dc ctx;
 			dc::handle h(ctx.select(native()));
 			WORD index = 0;
+			wchar_t character2 = static_cast<wchar_t>(character);
 
-			::GetGlyphIndicesW(ctx, &character, 1, &index, 0/*GGI_MARK_NONEXISTING_GLYPHS*/);
+			::GetGlyphIndicesW(ctx, &character2, 1, &index, 0/*GGI_MARK_NONEXISTING_GLYPHS*/);
 			return index;
 		}
 
-		glyph::outline_ptr font_accessor::load_glyph(agge::uint16_t index, glyph::glyph_metrics &m) const
+		glyph::outline_ptr font_accessor::load_glyph(agge::glyph_index_t index, glyph::glyph_metrics &m) const
 		{
 			typedef const void *pvoid;
 

@@ -24,12 +24,13 @@ namespace
 		{
 			auto a = caption.current_annotation();
 
+			caption.clear();
 			switch (index)
 			{
-			case 0: caption.append(L"Total\n(inclusive)"); break;
-			case 1: caption.append(L"Total\n(exclusive)"); break;
-			case 2: caption.append(L"Average\n(inclusive)"); break;
-			case 3: caption.append(L"Average\n(exclusive)"); break;
+			case 0:	caption << "Total\n(inclusive)";	break;
+			case 1:	caption << "Total\n(exclusive)";	break;
+			case 2:	caption << "Average\n(inclusive)";	break;
+			case 3:	caption << "Average\n(exclusive)";	break;
 			}
 		}
 		virtual void update_column(index_type index, short int width) override { _widths[index] = width, invalidate(); }
@@ -67,10 +68,10 @@ namespace
 		virtual index_type get_count() const throw() override
 		{	return 100u;	}
 
-		virtual void get_text(index_type row, index_type column, wstring &text) const override
+		virtual void get_text(index_type row, index_type column, string &text) const override
 		{
 			row++, column++;
-			text = to_wstring(static_cast<long double>(row * _n + 13 * column * _n));
+			text = to_string(static_cast<long double>(row * _n + 13 * column * _n));
 		}
 
 		virtual void set_order(index_type /*column*/, bool /*ascending*/) override
@@ -122,11 +123,11 @@ int main()
 			stk->add(lv, percents(100), false, 1);
 
 			auto btn1 = fct->create_control<button>("button");
-			btn1->set_text(L"first");
+			btn1->set_text(agge::style_modifier::empty + "first");
 			stk->add(btn1, pixels(20), false, 2);
 
 			auto btn2 = fct->create_control<button>("button");
-			btn2->set_text(L"second");
+			btn2->set_text(agge::style_modifier::empty + "second");
 			stk->add(btn2, pixels(20), false, 3);
 
 	f->set_root(root);

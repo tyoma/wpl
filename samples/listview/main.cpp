@@ -10,8 +10,8 @@ using namespace wpl;
 
 namespace
 {
-	agge::richtext_t &operator <<(agge::richtext_t &lhs, const wchar_t *rhs)
-	{	return lhs.append(rhs, rhs + wcslen(rhs)), lhs;	}
+	agge::richtext_t &operator <<(agge::richtext_t &lhs, const char *rhs)
+	{	return lhs.append(rhs, rhs + strlen(rhs)), lhs;	}
 
 	class my_columns : public columns_model
 	{
@@ -25,24 +25,23 @@ namespace
 		virtual void get_value(index_type index, short int &w) const override { w = _widths[index]; }
 		virtual void get_caption(index_type index, agge::richtext_t &caption) const override
 		{
-			auto a = caption.current_annotation();
-
+			caption.clear();
 			switch (index)
 			{
 			case 0:
-				caption << L"Total\n" << agge::style::height(static_cast<int>(0.8 * a.basic.height)) << L"(inclusive)";
+				caption << "Total\n" << agge::style::height_scale_base(0.8) << "(inclusive)";
 				break;
 
 			case 1:
-				caption << L"Total\n" << agge::style::height(static_cast<int>(0.8 * a.basic.height)) << L"(exclusive)";
+				caption << "Total\n" << agge::style::height_scale_base(0.8) << "(exclusive)";
 				break;
 
 			case 2:
-				caption << L"Average\n" << agge::style::height(static_cast<int>(0.8 * a.basic.height)) << L"(inclusive)";
+				caption << "Average\n" << agge::style::height_scale_base(0.8) << "(inclusive)";
 				break;
 
 			case 3:
-				caption << L"Average\n" << agge::style::height(static_cast<int>(0.8 * a.basic.height)) << L"(exclusive)";
+				caption << "Average\n" << agge::style::height_scale_base(0.8) << "(exclusive)";
 				break;
 			}
 		}
@@ -81,10 +80,10 @@ namespace
 		virtual index_type get_count() const throw() override
 		{	return 100u;	}
 
-		virtual void get_text(index_type row, index_type column, wstring &text) const override
+		virtual void get_text(index_type row, index_type column, string &text) const override
 		{
 			row++, column++;
-			text = to_wstring(static_cast<long double>(row * _n + 13 * column * _n));
+			text = to_string(static_cast<long double>(row * _n + 13 * column * _n));
 		}
 
 		virtual void set_order(index_type /*column*/, bool /*ascending*/) override

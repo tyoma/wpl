@@ -22,6 +22,7 @@
 
 #include "../controls.h"
 #include "native_view.h"
+#include "utf8.h"
 
 #include <memory>
 
@@ -43,7 +44,8 @@ namespace wpl
 			virtual void set_valign(agge::text_alignment value) override;
 
 		protected:
-			std::wstring _text;
+			std::string _text;
+			utf_converter _converter;
 			agge::text_alignment _halign, _valign;
 		};
 
@@ -60,7 +62,7 @@ namespace wpl
 			_text.clear();
 			for (auto r = text.ranges_begin(); r != text.ranges_end(); ++r)
 				_text.append(r->begin(), r->end());
-			::SetWindowTextW(get_window(), _text.c_str());
+			::SetWindowTextW(get_window(), _converter(_text.c_str()));
 		}
 
 		template <typename BaseT>

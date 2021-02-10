@@ -55,9 +55,9 @@ namespace wpl
 				f.first->set_visible(true);
 
 				mocks::columns_model::column columns[] = {
-					{	L"", 100	},
-					{	L"", 100	},
-					{	L"", 50	},
+					{	"", 100	},
+					{	"", 100	},
+					{	"", 50	},
 				};
 				mocks::columns_model_ptr cm(mocks::columns_model::create(columns, columns_model::npos(), false));
 				mocks::model_ptr m(new mocks::listview_model(3, 3));

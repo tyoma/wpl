@@ -17,15 +17,14 @@ using namespace wpl;
 
 namespace
 {
+	const agge::font_style_annotation c_default_annotation = {	agge::font_descriptor::create("Arial", 13),	};
+
 	class hint : public view
 	{
 	public:
 		hint()
-		{
-			agge::font_style_annotation a = {	agge::font_descriptor::create("Arial", 13),	};
-
-			_text.set_base_annotation(a);
-		}
+			: _text(c_default_annotation)
+		{	}
 
 		void set_text(gcontext::text_engine_type &text_services, const agge::richtext_modifier_t &text)
 		{
@@ -106,8 +105,8 @@ namespace
 			using namespace agge;
 
 			_location = create_point(x, y);
-			_hint->set_text(*_text_services, L"X: " + style::weight(bold) + to_wstring((long long)x).c_str()
-				+ style::weight(regular) + L", Y: " + style::weight(bold) + to_wstring((long long)y).c_str());
+			_hint->set_text(*_text_services, "X: " + style::weight(bold) + to_string((long long)x).c_str()
+				+ style::weight(regular) + ", Y: " + style::weight(bold) + to_string((long long)y).c_str());
 			layout_changed(false);
 		}
 

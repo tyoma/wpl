@@ -28,12 +28,12 @@ namespace wpl
 				index_type index_;
 			};
 
-			struct list_model : wpl::list_model<wstring>
+			struct list_model : wpl::list_model<string>
 			{
 				virtual index_type get_count() const throw() override
 				{	return items.size();	}
 
-				virtual void get_value(index_type index, wstring &text) const override
+				virtual void get_value(index_type index, string &text) const override
 				{	text = items[index];	}
 
 				virtual shared_ptr<const wpl::trackable> track(index_type row) const override
@@ -46,19 +46,19 @@ namespace wpl
 					return shared_ptr<wpl::trackable>(&*i, [i, this] (...) { trackables.erase(i); });
 				}
 
-				vector<wstring> items;
+				vector<string> items;
 				mutable list<trackable> trackables;
 			};
 		}
 
 		namespace
 		{
-			static wstring get_item_text(HWND hcombobox, unsigned index)
+			static string get_item_text(HWND hcombobox, unsigned index)
 			{
 				const size_t length = ComboBox_GetLBTextLen(hcombobox, index);
 				vector<TCHAR> buffer(length + 1);
 				ComboBox_GetLBText(hcombobox, index, &buffer[0]);
-				return wstring(buffer.begin(), buffer.end() - 1);
+				return string(buffer.begin(), buffer.end() - 1);
 			}
 		}
 
@@ -120,8 +120,8 @@ namespace wpl
 			test( CreatedComboboxIsPopulatedWithStringsFromThePreviouslySetModel )
 			{
 				// INIT
-				wstring items1[] = { L"foo", L"bar" };
-				wstring items2[] = { L"Lorem ipsum", L"amet dolor", L"sit amet, consectetur adipiscing elit", };
+				string items1[] = { "foo", "bar" };
+				string items2[] = { "Lorem ipsum", "amet dolor", "sit amet, consectetur adipiscing elit", };
 				shared_ptr<mocks::list_model> m(new mocks::list_model);
 				shared_ptr<combobox> cb1(new win32::combobox);
 				shared_ptr<combobox> cb2(new win32::combobox);
@@ -152,8 +152,8 @@ namespace wpl
 			test( ComboboxIsPopulatedWhenModelIsSet )
 			{
 				// INIT
-				wstring items1[] = { L"foo", L"bar" };
-				wstring items2[] = { L"Lorem ipsum", L"amet dolor", L"sit amet, consectetur adipiscing elit", };
+				string items1[] = { "foo", "bar" };
+				string items2[] = { "Lorem ipsum", "amet dolor", "sit amet, consectetur adipiscing elit", };
 				shared_ptr<mocks::list_model> m(new mocks::list_model);
 				shared_ptr<combobox> cb(new win32::combobox);
 
@@ -191,29 +191,29 @@ namespace wpl
 				m->items.resize(2);
 
 				// ACT
-				m->items[1] = L"one two";
+				m->items[1] = "one two";
 				m->invalidate();
 
 				// ASSERT
 				assert_equal(2, ComboBox_GetCount(hwnd));
-				assert_equal(L"", get_item_text(hwnd, 0));
-				assert_equal(L"one two", get_item_text(hwnd, 1));
+				assert_equal("", get_item_text(hwnd, 0));
+				assert_equal("one two", get_item_text(hwnd, 1));
 
 				// INIT
 				m->items.resize(5);
 
 				// ACT
-				m->items[0] = L"three four five";
-				m->items[3] = L"ein";
+				m->items[0] = "three four five";
+				m->items[3] = "ein";
 				m->invalidate();
 
 				// ASSERT
 				assert_equal(5, ComboBox_GetCount(hwnd));
-				assert_equal(L"three four five", get_item_text(hwnd, 0));
-				assert_equal(L"one two", get_item_text(hwnd, 1));
-				assert_equal(L"", get_item_text(hwnd, 2));
-				assert_equal(L"ein", get_item_text(hwnd, 3));
-				assert_equal(L"", get_item_text(hwnd, 4));
+				assert_equal("three four five", get_item_text(hwnd, 0));
+				assert_equal("one two", get_item_text(hwnd, 1));
+				assert_equal("", get_item_text(hwnd, 2));
+				assert_equal("ein", get_item_text(hwnd, 3));
+				assert_equal("", get_item_text(hwnd, 4));
 			}
 
 
@@ -228,7 +228,7 @@ namespace wpl
 				cb->set_model(m);
 
 				// ACT
-				cb->set_model(shared_ptr< list_model<wstring> >());
+				cb->set_model(shared_ptr< list_model<string> >());
 
 				// ASSERT
 				assert_equal(0, ComboBox_GetCount(hwnd));
@@ -263,7 +263,7 @@ namespace wpl
 			test( SelectingAnItemChangesNativeSelection )
 			{
 				// INIT
-				wstring items[] = { L"Lorem ipsum", L"amet dolor", L"sit amet, consectetur adipiscing elit", L"one two" };
+				string items[] = { "Lorem ipsum", "amet dolor", "sit amet, consectetur adipiscing elit", "one two" };
 				shared_ptr<mocks::list_model> m(new mocks::list_model);
 				shared_ptr<combobox> cb(new win32::combobox);
 				HWND hwnd =  get_window_and_resize(cb, parent, 100, 20);
@@ -294,7 +294,7 @@ namespace wpl
 			test( SelectingAnItemSetsNativeSelectionOnMaterialize )
 			{
 				// INIT
-				wstring items[] = { L"Lorem ipsum", L"amet dolor", L"sit amet, consectetur adipiscing elit", L"one two" };
+				string items[] = { "Lorem ipsum", "amet dolor", "sit amet, consectetur adipiscing elit", "one two" };
 				shared_ptr<mocks::list_model> m(new mocks::list_model);
 				shared_ptr<combobox> cb(new win32::combobox);
 
@@ -325,7 +325,7 @@ namespace wpl
 			{
 				// INIT
 				vector<combobox::model_t::index_type> selection_log;
-				wstring items[] = { L"1", L"2", L"3", L"4", L"5", };
+				string items[] = { "1", "2", "3", "4", "5", };
 				shared_ptr<mocks::list_model> m(new mocks::list_model);
 				shared_ptr<combobox> cb(new win32::combobox);
 				slot_connection c = cb->selection_changed += [&] (combobox::model_t::index_type s) {
@@ -373,7 +373,7 @@ namespace wpl
 			{
 				// INIT
 				vector<combobox::model_t::index_type> selection_log;
-				wstring items[] = { L"1", L"2", L"3", L"4", L"5", };
+				string items[] = { "1", "2", "3", "4", "5", };
 				shared_ptr<mocks::list_model> m(new mocks::list_model);
 				shared_ptr<combobox> cb(new win32::combobox);
 				HWND hwnd = get_window_and_resize(cb, parent, 100, 20);
@@ -424,7 +424,7 @@ namespace wpl
 				assert_equal(2u, m->trackables.begin()->index_);
 
 				// ACT
-				cb->select(list_model<wstring>::npos());
+				cb->select(list_model<string>::npos());
 
 				// ASSERT
 				assert_is_empty(m->trackables);
@@ -537,7 +537,7 @@ namespace wpl
 				assert_equal(0u, m2->trackables.begin()->index_);
 
 				// ACT
-				cb->set_model(shared_ptr< list_model<wstring> >());
+				cb->set_model(shared_ptr< list_model<string> >());
 
 				// ASSERT
 				assert_is_empty(m2->trackables);

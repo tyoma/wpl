@@ -11,7 +11,7 @@ namespace wpl
 	struct simple_queue::impl
 	{
 		impl()
-			: hwnd(::CreateWindow(_T("static"), 0, WS_CHILD, 0, 0, 0, 0, HWND_MESSAGE, 0, 0, 0))
+			: hwnd(::CreateWindowW(L"static", 0, WS_CHILD, 0, 0, 0, 0, HWND_MESSAGE, 0, 0, 0))
 		{	::SetWindowLongPtr(hwnd, GWLP_WNDPROC, reinterpret_cast<LONG_PTR>(&window_proc));	}
 
 		static LRESULT CALLBACK window_proc(HWND hwnd_, UINT message, WPARAM wparam, LPARAM /*lparam*/)

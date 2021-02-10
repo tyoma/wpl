@@ -92,7 +92,7 @@ namespace wpl
 				const agge::rect_r &box, index_type item, unsigned /*item_state_flags*/ state) const;
 			virtual void draw_subitem(gcontext &ctx, gcontext::rasterizer_ptr &rasterizer,
 				const agge::rect_r &box, index_type item, unsigned /*item_state_flags*/ state,
-				columns_model::index_type subitem, const std::wstring &text) const = 0;
+				columns_model::index_type subitem, const std::string &text) const = 0;
 
 			void invalidate_();
 			void toggle_selection(index_type item);
@@ -111,7 +111,7 @@ namespace wpl
 			slot_connection _model_invalidation, _cmodel_invalidation;
 			agge::agge_vector<double> _offset;
 			mutable std::vector<agge::real_t> _widths;
-			mutable std::wstring _text_buffer;
+			mutable std::string _text_buffer;
 
 			trackable_ptr _focused;
 			trackables _selected;

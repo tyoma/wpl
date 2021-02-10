@@ -47,12 +47,12 @@ namespace wpl
 
 	struct link : control, text_container
 	{
-		signal<void (size_t item, const std::wstring &link_text)> clicked;
+		signal<void (size_t item, const std::string &link_text)> clicked;
 	};
 
 	struct combobox : control
 	{
-		typedef list_model<std::wstring> model_t;
+		typedef list_model<std::string> model_t;
 
 		virtual void set_model(std::shared_ptr<model_t> model) = 0;
 		virtual void select(model_t::index_type item) = 0;

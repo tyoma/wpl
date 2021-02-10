@@ -33,13 +33,15 @@ namespace wpl
 {
 	namespace
 	{
+		const font_style_annotation c_base_annotation = {	font_descriptor::create("Arial", 10),	};
 		typedef blender_solid_color<simd::blender_solid_color, platform_pixel_order> blender;
 	}
 
 	namespace controls
 	{
 		label::label(shared_ptr<gcontext::text_engine_type> text_services)
-			: _text_services(text_services), _layout(*_text_services), _halign(align_near), _valign(align_center)
+			: _text_services(text_services), _text(c_base_annotation), _layout(*_text_services),
+				_halign(align_near), _valign(align_center)
 		{	}
 
 		void label::apply_styles(const stylesheet &stylesheet_)

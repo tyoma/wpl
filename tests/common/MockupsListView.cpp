@@ -24,7 +24,7 @@ namespace wpl
 			{	width = columns[index].width;	}
 
 			void columns_model::get_caption(index_type index, agge::richtext_t &column) const
-			{	column = columns[index].caption.c_str();	}
+			{	column << columns[index].caption.c_str();	}
 
 			void columns_model::update_column(index_type index, short int width)
 			{
@@ -39,7 +39,7 @@ namespace wpl
 			void columns_model::activate_column(index_type column)
 			{	column_activation_log.push_back(column);	}
 
-			shared_ptr<columns_model> columns_model::create(const wstring &caption, short int width)
+			shared_ptr<columns_model> columns_model::create(const string &caption, short int width)
 			{
 				column columns[] = {	{	caption, width	}, };
 
@@ -59,18 +59,18 @@ namespace wpl
 
 			listview_model::listview_model(index_type count, index_type columns)
 				: columns_count(columns)
-			{	items.resize(count, vector<wstring>(columns));	}
+			{	items.resize(count, vector<string>(columns));	}
 
 			void listview_model::set_count(index_type new_count)
 			{
-				items.resize(new_count, vector<wstring>(columns_count));
+				items.resize(new_count, vector<string>(columns_count));
 				invalidate(static_cast<index_type>(items.size()));
 			}
 
 			listview_model::index_type listview_model::get_count() const throw()
 			{	return static_cast<index_type>(items.size());	}
 
-			void listview_model::get_text(index_type row, index_type column, wstring &text) const
+			void listview_model::get_text(index_type row, index_type column, string &text) const
 			{
 				assert_is_true(row < items.size());
 				text = items[row][column];

@@ -67,8 +67,8 @@ namespace wpl
 	private:
 		virtual agge::font_descriptor get_descriptor() const override;
 		virtual agge::font_metrics get_metrics() const override;
-		virtual agge::uint16_t get_glyph_index(wchar_t character) const override;
-		virtual agge::glyph::outline_ptr load_glyph(agge::uint16_t index, agge::glyph::glyph_metrics &m) const override;
+		virtual agge::glyph_index_t get_glyph_index(agge::codepoint_t character) const override;
+		virtual agge::glyph::outline_ptr load_glyph(agge::glyph_index_t index, agge::glyph::glyph_metrics &m) const override;
 
 		agge::real_t scale_x(int value) const;
 		static agge::real_t scale_y(int value);

@@ -21,6 +21,7 @@
 #pragma once
 
 #include "native_view.h"
+#include "utf8.h"
 
 #include "../controls.h"
 
@@ -70,7 +71,8 @@ namespace wpl
 
 		private:
 			bool _avoid_notifications;
-			std::wstring _text_buffer;
+			std::string _text_buffer;
+			utf_converter _converter;
 			std::shared_ptr<columns_model> _columns_model;
 			std::shared_ptr<table_model> _model;
 			std::shared_ptr<void> _invalidated_connection, _sort_order_changed_connection;

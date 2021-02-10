@@ -49,7 +49,7 @@ namespace wpl
 				index_type item, unsigned state) const override;
 			virtual void draw_subitem(wpl::gcontext &ctx, wpl::gcontext::rasterizer_ptr &rasterizer,
 				const agge::rect_r &box, index_type item, unsigned state, wpl::columns_model::index_type subitem,
-				const std::wstring &text) const override;
+				const std::string &text) const override;
 
 		private:
 			agge::real_t _item_height, _padding, _baseline_offset;

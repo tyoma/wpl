@@ -21,6 +21,7 @@
 #pragma once
 
 #include "text_container.h"
+#include "utf8.h"
 
 #include "../controls.h"
 #include <memory>
@@ -60,6 +61,9 @@ namespace wpl
 				const window::original_handler_t &handler) override;
 
 			virtual void set_halign(agge::text_alignment value) override;
+
+		private:
+			utf_converter _converter;
 		};
 	}
 }

@@ -48,7 +48,7 @@ namespace wpl
 
 			shared_ptr<void> create_window(HWND hparent)
 			{
-				return shared_ptr<void>(::CreateWindow(_T("static"), NULL, WS_CHILD | WS_VISIBLE, 0, 0, 0, 0, hparent,
+				return shared_ptr<void>(::CreateWindowW(L"static", NULL, WS_CHILD | WS_VISIBLE, 0, 0, 0, 0, hparent,
 					NULL, NULL, 0), &::DestroyWindow);
 			}
 
@@ -207,16 +207,16 @@ namespace wpl
 				form_and_handle f(create_form_with_handle());
 
 				// ACT
-				f.first->set_caption(L"Dialog #1...");
+				f.first->set_caption("Dialog #1...");
 
 				// ASSERT
-				assert_equal(L"Dialog #1...", get_window_text(f.second));
+				assert_equal("Dialog #1...", get_window_text(f.second));
 
 				// ACT
-				f.first->set_caption(L"Are you sure?");
+				f.first->set_caption("Are you sure?");
 
 				// ASSERT
-				assert_equal(L"Are you sure?", get_window_text(f.second));
+				assert_equal("Are you sure?", get_window_text(f.second));
 			}
 
 

@@ -25,7 +25,7 @@ namespace wpl
 				if (hparent_for != _hparent)
 				{
 					::DestroyWindow(_hwnd);
-					return _hwnd = ::CreateWindow(_T("static"), NULL, WS_CHILD, 0, 0, 0, 0, hparent_for, NULL, NULL, 0);
+					return _hwnd = ::CreateWindowW(L"static", NULL, WS_CHILD, 0, 0, 0, 0, hparent_for, NULL, NULL, 0);
 				}
 				return _hwnd;
 			}

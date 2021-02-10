@@ -42,7 +42,7 @@ namespace wpl
 			public:
 				struct column
 				{
-					std::wstring caption;
+					std::string caption;
 					short int width;
 				};
 
@@ -52,7 +52,7 @@ namespace wpl
 					bool ascending)
 				{	return std::shared_ptr<columns_model>(new columns_model(columns, sort_column, ascending));	}
 
-				static std::shared_ptr<columns_model> create(const std::wstring &caption, short int width = 0);
+				static std::shared_ptr<columns_model> create(const std::string &caption, short int width = 0);
 				static std::shared_ptr<columns_model> create();
 
 				void set_sort_order(index_type column, bool ascending);
@@ -91,14 +91,14 @@ namespace wpl
 
 			public:
 				index_type columns_count;
-				std::vector< std::vector<std::wstring> > items;
+				std::vector< std::vector<std::string> > items;
 				std::map< index_type, std::shared_ptr<const trackable> > trackables;
 				std::vector< std::pair<index_type, bool> > ordering;
 				mutable std::vector<index_type> tracking_requested;
 
 			private:
 				virtual index_type get_count() const throw() override;
-				virtual void get_text(index_type row, index_type column, std::wstring &text) const override;
+				virtual void get_text(index_type row, index_type column, std::string &text) const override;
 				virtual void set_order(index_type column, bool ascending) override;
 				virtual std::shared_ptr<const trackable> track(index_type row) const override;
 			};

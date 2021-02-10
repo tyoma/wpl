@@ -20,6 +20,7 @@
 
 #include <wpl/win32/combobox.h>
 
+#include <agge.text/utf8.h>
 #include <commctrl.h>
 #include <olectl.h>
 #include <stdexcept>
@@ -96,12 +97,14 @@ namespace wpl
 			case OCM_NOTIFY:
 				switch (reinterpret_cast<const NMHDR *>(lparam)->code)
 				{
-				case CBEN_GETDISPINFO:
+				case CBEN_GETDISPINFOW:
 					NMCOMBOBOXEX *cb_item = reinterpret_cast<NMCOMBOBOXEX *>(lparam);
+					auto l = cb_item->ceItem.cchTextMax;
 
 					_model->get_value(cb_item->ceItem.iItem, _text_buffer);
-					wcsncpy(cb_item->ceItem.pszText, _text_buffer.c_str(), cb_item->ceItem.cchTextMax - 1);
-					cb_item->ceItem.pszText[cb_item->ceItem.cchTextMax - 1] = 0;
+					for (auto i = _text_buffer.begin(); l > 1 && i != _text_buffer.end(); --l)
+						cb_item->ceItem.pszText[cb_item->ceItem.cchTextMax - l] = static_cast<wchar_t>(agge::utf8::next(i, _text_buffer.end()));
+					cb_item->ceItem.pszText[cb_item->ceItem.cchTextMax - l] = 0;
 					cb_item->ceItem.mask = CBEIF_TEXT;
 					return 0;
 				}

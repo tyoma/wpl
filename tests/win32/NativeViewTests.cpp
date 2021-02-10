@@ -34,7 +34,7 @@ namespace wpl
 
 				virtual HWND materialize(HWND hparent) override
 				{
-					HWND hwnd = ::CreateWindow(L"static", 0, WS_CHILD, 0, 0, 1, 1, hparent, 0, 0, 0);
+					HWND hwnd = ::CreateWindowW(L"static", 0, WS_CHILD, 0, 0, 1, 1, hparent, 0, 0, 0);
 
 					log.push_back(make_pair(hparent, hwnd));
 					return hwnd;

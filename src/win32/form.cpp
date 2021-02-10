@@ -76,10 +76,10 @@ namespace wpl
 				::ShowWindow(_hwnd, value ? SW_SHOW : SW_HIDE);
 		}
 
-		void form::set_caption(const wstring &caption)
+		void form::set_caption(const string &caption)
 		{
 			if (_hwnd)
-				::SetWindowTextW(_hwnd, caption.c_str());
+				::SetWindowTextW(_hwnd, _converter(caption.c_str()));
 		}
 
 		void form::set_caption_icon(const gcontext::surface_type &icon)

@@ -73,7 +73,7 @@ namespace wpl
 				assert_is_empty(lv1.events);
 
 				// INIT
-				lv1.set_columns_model(mocks::columns_model::create(L"Name", 100));
+				lv1.set_columns_model(mocks::columns_model::create("Name", 100));
 				lv2.set_model(create_model(10));
 
 				// ACT
@@ -117,7 +117,7 @@ namespace wpl
 				tracking_listview lv;
 
 				resize(lv, 1000, 1000);
-				lv.set_columns_model(mocks::columns_model::create(L"Name"));
+				lv.set_columns_model(mocks::columns_model::create("Name"));
 				lv.set_model(create_model(1, 1));
 
 				// ACT
@@ -140,7 +140,7 @@ namespace wpl
 				// INIT
 				agge::rect_r z = {};
 				tracking_listview lv;
-				column_t c[] = {	{L"", 0	}, {	L"", 0	}, {	L"", 0	},	};
+				column_t c[] = {	{"", 0	}, {	"", 0	}, {	"", 0	},	};
 
 				resize(lv, 1000, 1000);
 				lv.set_columns_model(mocks::columns_model::create(c, columns_model::npos(), true));
@@ -196,8 +196,8 @@ namespace wpl
 			{
 				// INIT
 				tracking_listview lv;
-				column_t c1[] = {	{L"", 10	}, {	L"", 30	},	};
-				column_t c2[] = {	{L"", 10	}, {	L"", 13	}, {	L"", 29	},	};
+				column_t c1[] = {	{"", 10	}, {	"", 30	},	};
+				column_t c2[] = {	{"", 10	}, {	"", 13	}, {	"", 29	},	};
 
 				resize(lv, 1000, 1000);
 				lv.item_height = 3;
@@ -271,7 +271,7 @@ namespace wpl
 			{
 				// INIT
 				tracking_listview lv;
-				column_t c[] = {	{L"", 1	}, {	L"", 1	},	};
+				column_t c[] = {	{"", 1	}, {	"", 1	},	};
 				const auto cm = mocks::columns_model::create(c, columns_model::npos(), true);
 				const auto m = create_model(2, 2);
 
@@ -280,10 +280,10 @@ namespace wpl
 				lv.set_columns_model(cm);
 				lv.set_model(m);
 
-				m->items[0][0] = L"one";
-				m->items[0][1] = L"one two";
-				m->items[1][0] = L"lorem ipsum";
-				m->items[1][1] = L"dolor sit amet";
+				m->items[0][0] = "one";
+				m->items[0][1] = "one two";
+				m->items[1][0] = "lorem ipsum";
+				m->items[1][1] = "dolor sit amet";
 
 				// ACT
 				lv.draw(*ctx, ras);
@@ -294,15 +294,15 @@ namespace wpl
 					tracking_listview::drawing_event(tracking_listview::subitem_background, *ctx, ras, create_rect(0, 0, 1, 1), 0, 0, 0),
 					tracking_listview::drawing_event(tracking_listview::subitem_background, *ctx, ras, create_rect(1, 0, 2, 1), 0, 0, 1),
 					tracking_listview::drawing_event(tracking_listview::item_self, *ctx, ras, create_rect(0, 0, 2, 1), 0, 0),
-					tracking_listview::drawing_event(tracking_listview::subitem_self, *ctx, ras, create_rect(0, 0, 1, 1), 0, 0, 0, L"one"),
-					tracking_listview::drawing_event(tracking_listview::subitem_self, *ctx, ras, create_rect(1, 0, 2, 1), 0, 0, 1, L"one two"),
+					tracking_listview::drawing_event(tracking_listview::subitem_self, *ctx, ras, create_rect(0, 0, 1, 1), 0, 0, 0, "one"),
+					tracking_listview::drawing_event(tracking_listview::subitem_self, *ctx, ras, create_rect(1, 0, 2, 1), 0, 0, 1, "one two"),
 
 					tracking_listview::drawing_event(tracking_listview::item_background, *ctx, ras, create_rect(0, 1, 2, 2), 1, 0),
 					tracking_listview::drawing_event(tracking_listview::subitem_background, *ctx, ras, create_rect(0, 1, 1, 2), 1, 0, 0),
 					tracking_listview::drawing_event(tracking_listview::subitem_background, *ctx, ras, create_rect(1, 1, 2, 2), 1, 0, 1),
 					tracking_listview::drawing_event(tracking_listview::item_self, *ctx, ras, create_rect(0, 1, 2, 2), 1, 0),
-					tracking_listview::drawing_event(tracking_listview::subitem_self, *ctx, ras, create_rect(0, 1, 1, 2), 1, 0, 0, L"lorem ipsum"),
-					tracking_listview::drawing_event(tracking_listview::subitem_self, *ctx, ras, create_rect(1, 1, 2, 2), 1, 0, 1, L"dolor sit amet"),
+					tracking_listview::drawing_event(tracking_listview::subitem_self, *ctx, ras, create_rect(0, 1, 1, 2), 1, 0, 0, "lorem ipsum"),
+					tracking_listview::drawing_event(tracking_listview::subitem_self, *ctx, ras, create_rect(1, 1, 2, 2), 1, 0, 1, "dolor sit amet"),
 				};
 
 				assert_equal_pred(reference, lv.events, listview_event_eq());
@@ -316,7 +316,7 @@ namespace wpl
 
 				resize(lv, 1000, 31);
 				lv.item_height = 15.4;
-				lv.set_columns_model(mocks::columns_model::create(L"", 10));
+				lv.set_columns_model(mocks::columns_model::create("", 10));
 				lv.set_model(create_model(4, 1));
 
 				// ACT
@@ -387,7 +387,7 @@ namespace wpl
 
 				resize(*lv, 1000, 31);
 				lv->item_height = 15.4;
-				lv->set_columns_model(mocks::columns_model::create(L"", 10));
+				lv->set_columns_model(mocks::columns_model::create("", 10));
 				lv->set_model(m);
 
 				// ACT
@@ -410,7 +410,7 @@ namespace wpl
 
 				resize(*lv, 1000, 31);
 				lv->item_height = 15.4;
-				lv->set_columns_model(mocks::columns_model::create(L"", 10));
+				lv->set_columns_model(mocks::columns_model::create("", 10));
 				lv->set_model(m);
 
 				// ACT
@@ -433,7 +433,7 @@ namespace wpl
 
 				resize(lv, 1000, 31);
 				lv.item_height = 15.4;
-				lv.set_columns_model(mocks::columns_model::create(L"", 10));
+				lv.set_columns_model(mocks::columns_model::create("", 10));
 				lv.set_model(m);
 
 				// ACT / ASSERT
@@ -453,7 +453,7 @@ namespace wpl
 				tracking_listview lv;
 				const auto sm = lv.get_hscroll_model();
 				const auto m(create_model(1, 1));
-				column_t columns1[] = {	{L"", 19	}, {	L"", 13	}, {	L"", 37	},	};
+				column_t columns1[] = {	{"", 19	}, {	"", 13	}, {	"", 37	},	};
 
 				resize(lv, 1000, 31);
 				lv.set_columns_model(mocks::columns_model::create(columns1, columns_model::npos(), true));
@@ -462,7 +462,7 @@ namespace wpl
 				assert_equal_pred(make_pair(0, 69), sm->get_range(), eq());
 
 				// INIT
-				column_t columns2[] = {	{L"", 19	}, {	L"", 37	},	};
+				column_t columns2[] = {	{"", 19	}, {	"", 37	},	};
 
 				lv.set_columns_model(mocks::columns_model::create(columns2, columns_model::npos(), true));
 
@@ -508,14 +508,14 @@ namespace wpl
 				};
 
 				// ACT
-				lv.set_columns_model(mocks::columns_model::create(L"", 123));
+				lv.set_columns_model(mocks::columns_model::create("", 123));
 
 				// ACT / ASSERT
 				assert_equal(1, invalidations);
 
 				// ACT
-				lv.set_columns_model(mocks::columns_model::create(L"", 123));
-				lv.set_columns_model(mocks::columns_model::create(L"", 127));
+				lv.set_columns_model(mocks::columns_model::create("", 123));
+				lv.set_columns_model(mocks::columns_model::create("", 127));
 
 				// ACT / ASSERT
 				assert_equal(3, invalidations);
@@ -530,7 +530,7 @@ namespace wpl
 				const auto sm = lv.get_hscroll_model();
 				const auto m(create_model(1, 1));
 
-				lv.set_columns_model(mocks::columns_model::create(L"", 123));
+				lv.set_columns_model(mocks::columns_model::create("", 123));
 
 				const auto c = sm->invalidate += [&] (bool invalidate_range) {
 					invalidations++;
@@ -560,7 +560,7 @@ namespace wpl
 				const auto m = create_model(1000, 1);
 
 				lv.item_height = 5;
-				lv.set_columns_model(mocks::columns_model::create(L"", 10));
+				lv.set_columns_model(mocks::columns_model::create("", 10));
 				lv.set_model(m);
 
 				// ACT
@@ -593,7 +593,7 @@ namespace wpl
 				const auto sm = lv.get_vscroll_model();
 				const auto m = create_model(111, 1);
 
-				lv.set_columns_model(mocks::columns_model::create(L"", 10));
+				lv.set_columns_model(mocks::columns_model::create("", 10));
 				lv.set_model(m);
 				resize(lv, 1000, 1000);
 
@@ -623,7 +623,7 @@ namespace wpl
 
 				resize(lv, 100, 1000);
 				lv.item_height = 10;
-				lv.set_columns_model(mocks::columns_model::create(L"", 10));
+				lv.set_columns_model(mocks::columns_model::create("", 10));
 				lv.set_model(create_model(1, 1));
 
 				// ACT
@@ -665,7 +665,7 @@ namespace wpl
 				tracking_listview lv;
 				const auto sm = lv.get_hscroll_model();
 				column_t columns[] = {
-					{	L"", 17	}, {	L"", 31	},{	L"", 23	},
+					{	"", 17	}, {	"", 31	},{	"", 23	},
 				};
 				auto cm = mocks::columns_model::create(columns, columns_model::npos(), false);
 
@@ -758,7 +758,7 @@ namespace wpl
 				lv.item_height = 10;
 				lv.reported_events = tracking_listview::item_self;
 				resize(lv, 100, 40);
-				lv.set_columns_model(mocks::columns_model::create(L"", 100));
+				lv.set_columns_model(mocks::columns_model::create("", 100));
 				lv.set_model(create_model(100, 1));
 
 				// ACT
@@ -795,7 +795,7 @@ namespace wpl
 				lv.item_height = 10;
 				lv.reported_events = tracking_listview::item_self;
 				resize(lv, 100, 40);
-				lv.set_columns_model(mocks::columns_model::create(L"", 100));
+				lv.set_columns_model(mocks::columns_model::create("", 100));
 				lv.set_model(m);
 
 				auto invalidations = 0;
@@ -832,7 +832,7 @@ namespace wpl
 				lv.item_height = 10;
 				lv.reported_events = tracking_listview::item_self;
 				resize(lv, 100, 40);
-				lv.set_columns_model(mocks::columns_model::create(L"", 100));
+				lv.set_columns_model(mocks::columns_model::create("", 100));
 
 				lv.set_model(m);
 
@@ -872,7 +872,7 @@ namespace wpl
 				lv.item_height = 10;
 				lv.reported_events = tracking_listview::item_self;
 				resize(lv, 100, 40);
-				lv.set_columns_model(mocks::columns_model::create(L"", 100));
+				lv.set_columns_model(mocks::columns_model::create("", 100));
 				lv.set_model(create_model(1000, 1));
 
 				const auto c1 = lv.invalidate += [&] (const void *) { invalidations++; };
@@ -901,7 +901,7 @@ namespace wpl
 				lv.item_height = 10;
 				lv.reported_events = tracking_listview::item_self;
 				resize(lv, 100, 40);
-				lv.set_columns_model(mocks::columns_model::create(L"", 100));
+				lv.set_columns_model(mocks::columns_model::create("", 100));
 				lv.set_model(create_model(1000, 1));
 
 				const auto c1 = lv.invalidate += [&] (const void *) { invalidations++; };
@@ -937,7 +937,7 @@ namespace wpl
 				lv.item_height = 5;
 				lv.reported_events = tracking_listview::item_self;
 				resize(lv, 10, 28);
-				lv.set_columns_model(mocks::columns_model::create(L"", 100));
+				lv.set_columns_model(mocks::columns_model::create("", 100));
 				lv.set_model(create_model(1000, 1));
 
 				const auto c1 = lv.invalidate += [&] (const void *) { invalidations++; };
@@ -991,7 +991,7 @@ namespace wpl
 				lv.item_height = 5;
 				lv.reported_events = tracking_listview::item_self;
 				resize(lv, 10, 28);
-				lv.set_columns_model(mocks::columns_model::create(L"", 100));
+				lv.set_columns_model(mocks::columns_model::create("", 100));
 				lv.set_model(create_model(1000, 1));
 
 				const auto c1 = lv.invalidate += [&] (const void *) { invalidations++; };
@@ -1024,7 +1024,7 @@ namespace wpl
 				lv.item_height = 5;
 				lv.reported_events = tracking_listview::item_self;
 				resize(lv, 10, 28);
-				lv.set_columns_model(mocks::columns_model::create(L"", 100));
+				lv.set_columns_model(mocks::columns_model::create("", 100));
 				lv.set_model(create_model(1000, 1));
 
 				const auto c1 = lv.invalidate += [&] (const void *) { invalidations++; };
@@ -1070,7 +1070,7 @@ namespace wpl
 			{
 				// INIT
 				tracking_listview lv;
-				const auto cm = mocks::columns_model::create(L"", 13);
+				const auto cm = mocks::columns_model::create("", 13);
 				auto invalidations = 0;
 
 				lv.set_columns_model(cm);
@@ -1109,7 +1109,7 @@ namespace wpl
 				// INIT
 				tracking_listview lv;
 				const auto sm = lv.get_hscroll_model();
-				const auto cm = mocks::columns_model::create(L"", 13);
+				const auto cm = mocks::columns_model::create("", 13);
 				auto invalidations = 0;
 
 				lv.set_columns_model(cm);
@@ -1147,7 +1147,7 @@ namespace wpl
 				tracking_listview lv;
 				const auto sm = lv.get_hscroll_model();
 				column_t columns[] = {
-					{	L"#1", 103	}, {	L"#2", 53	}, {	L"#3", 43	},
+					{	"#1", 103	}, {	"#2", 53	}, {	"#3", 43	},
 				};
 				const auto cm = mocks::columns_model::create(columns, columns_model::npos(), false);
 
@@ -1192,7 +1192,7 @@ namespace wpl
 			{
 				// INIT
 				tracking_listview lv;
-				const auto cm = mocks::columns_model::create(L"", 13);
+				const auto cm = mocks::columns_model::create("", 13);
 				vector<table_model::index_type> log;
 				const auto c = lv.item_activate += [&](table_model::index_type i) { log.push_back(i); };
 
@@ -1225,7 +1225,7 @@ namespace wpl
 			{
 				// INIT
 				tracking_listview lv;
-				const auto cm = mocks::columns_model::create(L"", 13);
+				const auto cm = mocks::columns_model::create("", 13);
 				vector<table_model::index_type> log;
 				const auto c = lv.item_activate += [&] (...) { assert_is_true(false); };
 
@@ -1246,7 +1246,7 @@ namespace wpl
 			{
 				// INIT
 				tracking_listview lv;
-				const auto cm = mocks::columns_model::create(L"", 13);
+				const auto cm = mocks::columns_model::create("", 13);
 				const auto c1 = lv.selection_changed += [&] (...) { assert_is_true(false); };
 				const auto c2 = lv.item_activate += [&] (...) { assert_is_true(false); };
 
@@ -1268,7 +1268,7 @@ namespace wpl
 			{
 				// INIT
 				tracking_listview lv;
-				const auto cm = mocks::columns_model::create(L"", 13);
+				const auto cm = mocks::columns_model::create("", 13);
 				const shared_ptr<mocks::listview_model> m(new mocks::listview_model(0, 1));
 				const auto c1 = lv.selection_changed += [&] (...) { assert_is_true(false); };
 				const auto c2 = lv.item_activate += [&] (...) { assert_is_true(false); };
@@ -1296,7 +1296,7 @@ namespace wpl
 				// INIT
 				tracking_listview lv;
 				const control &as_control = lv;
-				const auto cm = mocks::columns_model::create(L"", 10);
+				const auto cm = mocks::columns_model::create("", 10);
 				const shared_ptr<mocks::listview_model> m(new mocks::listview_model(0, 1));
 
 				lv.set_columns_model(cm);
@@ -1318,7 +1318,7 @@ namespace wpl
 				// INIT
 				tracking_listview lv;
 				const control &as_control = lv;
-				const auto cm = mocks::columns_model::create(L"", 10);
+				const auto cm = mocks::columns_model::create("", 10);
 				const shared_ptr<mocks::listview_model> m(new mocks::listview_model(11, 1));
 
 				lv.set_columns_model(cm);
@@ -1351,7 +1351,7 @@ namespace wpl
 				// INIT
 				auto layout_changes = 0;
 				tracking_listview lv;
-				const auto cm = mocks::columns_model::create(L"", 10);
+				const auto cm = mocks::columns_model::create("", 10);
 				const shared_ptr<mocks::listview_model> m(new mocks::listview_model(11, 1));
 
 				lv.set_columns_model(cm);
@@ -1386,7 +1386,7 @@ namespace wpl
 				// INIT
 				auto layout_changes = 0;
 				tracking_listview lv;
-				const auto cm = mocks::columns_model::create(L"", 10);
+				const auto cm = mocks::columns_model::create("", 10);
 				const shared_ptr<mocks::listview_model> m(new mocks::listview_model(11, 1));
 
 				lv.set_columns_model(cm);

@@ -35,41 +35,41 @@ namespace wpl
 {
 	namespace misc
 	{
-		statistics_view::statistics_view(shared_ptr<gcontext::text_engine_type> text_services)
-			: _text_services(text_services)
+		namespace
 		{
-			font_style_annotation a = {	font_descriptor::create("Arial", 10),	};
-			_text.set_base_annotation(a);
+			const font_style_annotation c_base_annotation = {	font_descriptor::create("Arial", 10),	};
 		}
+
+		statistics_view::statistics_view(shared_ptr<gcontext::text_engine_type> text_services)
+			: _text_services(text_services), _text(c_base_annotation)
+		{	}
 
 		rect_i statistics_view::update()
 		{
-			wchar_t buffer[100];
+			char buffer[100];
 
 			_text.clear();
 			for (auto i = _values.begin(); i != _values.end(); ++i)
 			{
-				_text.append(i->first.begin(), i->first.end());
-				_text.append(L": ");
+				_text << i->first.c_str() << ": ";
 				switch (i->second.current_type)
 				{
 				case variant::type_float:
-					swprintf(buffer, 100, L"%g", static_cast<double>(i->second.value.f));
-					_text.append(buffer);
+					sprintf(buffer, "%g", static_cast<double>(i->second.value.f));
+					_text << buffer;
 					break;
 
 				case variant::type_int:
-					_text.append(to_wstring(static_cast<long long>(i->second.value.i)));
+					sprintf(buffer, "%d", i->second.value.i);
+					_text << buffer;
 					break;
 
 				case variant::type_box:
-					_text.append(to_wstring(static_cast<long long>(i->second.value.b.w)));
-					_text.append(L"x");
-					_text.append(to_wstring(static_cast<long long>(i->second.value.b.h)));
+					sprintf(buffer, "%dx%d", i->second.value.b.w, i->second.value.b.h);
+					_text << buffer;
 					break;
 				}
-				_text.append(i->second.unit.begin(), i->second.unit.end());
-				_text.append(L"\n");
+				_text << i->second.unit.c_str() << "\n";
 			}
 			const auto b = _text_services->measure(_text);
 			const auto invalid = create_rect(0, 0, static_cast<int>(b.w) + 11, static_cast<int>(b.h) + 11);

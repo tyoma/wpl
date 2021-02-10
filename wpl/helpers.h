@@ -70,7 +70,7 @@ namespace wpl
 		return !is_empty(lhs);
 	}
 
-	void render_string(gcontext::rasterizer_type &target, const std::wstring &text,
+	void render_string(gcontext::rasterizer_type &target, const std::string &text,
 		gcontext::text_engine_type &text_engine, const agge::font &font, const agge::rect_r &box,
 		agge::text_alignment halign, agge::text_alignment valign_);
 }

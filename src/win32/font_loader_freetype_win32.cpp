@@ -22,6 +22,7 @@
 
 #include <regex>
 #include <windows.h>
+#include <wpl/win32/utf8.h>
 
 #pragma warning(disable: 4244)
 
@@ -31,13 +32,13 @@ namespace wpl
 {
 	namespace
 	{
-		const auto c_default_font_directory = L"C:\\Windows\\Fonts";
+		const auto c_default_font_directory = "C:\\Windows\\Fonts";
 		const regex c_font_match(".+\\.(ttf|otf|ttc)", regex::icase);
 
-		wstring append_path(wstring lhs, const wstring &rhs)
+		string append_path(string lhs, const string &rhs)
 		{
-			if (!lhs.empty() && lhs.back() != L'\\' && lhs.back() != L'/')
-				lhs += L"\\";
+			if (!lhs.empty() && lhs.back() != '\\' && lhs.back() != '/')
+				lhs += "\\";
 			lhs += rhs;
 			return lhs;
 		}
@@ -46,7 +47,7 @@ namespace wpl
 	class directory_enumerator : noncopyable
 	{
 	public:
-		directory_enumerator(const wstring &directory)
+		directory_enumerator(const string &directory)
 			: _directory(directory), _handle(NULL)
 		{	}
 
@@ -67,20 +68,19 @@ namespace wpl
 			}
 			else
 			{
-				const auto handle = ::FindFirstFileW(append_path(_directory, L"*").c_str(), &fd);
+				const auto handle = ::FindFirstFileW(_converter(append_path(_directory, "*").c_str()), &fd);
 
 				if (INVALID_HANDLE_VALUE == handle)
 					return false;
 				_handle = handle;
 			}
-			_filepath = append_path(_directory, fd.cFileName);
-			path.assign(_filepath.begin(), _filepath.end());
+			path = append_path(_directory, _converter(fd.cFileName));
 			return true;
 		}
 
 	private:
-		const wstring _directory;
-		wstring _filepath;
+		win32::utf_converter _converter;
+		const string _directory;
 		HANDLE _handle;
 	};
 

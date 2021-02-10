@@ -39,12 +39,13 @@ namespace wpl
 	{
 		namespace
 		{
+			const font_style_annotation c_base_annotation = {	font_descriptor::create("Arial", 10),	};
 			typedef blender_solid_color<simd::blender_solid_color, platform_pixel_order> blender;
 		}
 
 		header_basic::header_basic(shared_ptr<gcontext::text_engine_type> text_services,
 				shared_ptr<cursor_manager> cursor_manager_)
-			: header_core(cursor_manager_), _text_services(text_services)
+			: header_core(cursor_manager_), _text_services(text_services), _caption_buffer(c_base_annotation)
 		{	}
 
 		header_basic::~header_basic()

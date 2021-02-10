@@ -13,6 +13,7 @@ set(WPL_WIN32_SOURCES
 	listview_win32.cpp
 	mouse_router_win32.cpp
 	native_view.cpp
+	utf8.cpp
 	view_host.cpp
 	visual_router_win32.cpp
 	window.cpp

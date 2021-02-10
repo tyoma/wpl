@@ -5,7 +5,7 @@
 #include <wpl/control.h>
 #include <wpl/win32/font_loader.h>
 #include <wpl/win32/native_view.h>
-//#include <wpl/win32/view_host.h>
+#include <wpl/win32/utf8.h>
 #include <wpl/win32/window.h>
 
 #include <algorithm>
@@ -22,30 +22,6 @@ namespace wpl
 	{
 		namespace
 		{
-#ifdef UNICODE
-			wstring t2w(const wstring &text)
-			{	return text;	}
-
-			wstring w2t(const wstring &text)
-			{	return text;	}
-#else 
-			wstring t2w(const string &text)
-			{
-				vector<wchar_t> wtext(mbstowcs(NULL, text.c_str(), text.size()) + 1);
-
-				mbstowcs(&wtext[0], text.c_str(), text.size());
-				return &wtext[0];
-			}
-
-			string w2t(const wstring &text)
-			{
-				vector<char> mbtext(wcstombs(NULL, text.c_str(), text.size()) + 1);
-
-				wcstombs(&mbtext[0], text.c_str(), text.size());
-				return string(mbtext.begin(), mbtext.end());
-			}
-#endif
-
 			LRESULT reflection_wndproc(UINT message, WPARAM wparam, LPARAM lparam,
 				const wpl::win32::window::original_handler_t &previous)
 			{
@@ -125,12 +101,13 @@ namespace wpl
 			return rc;
 		}
 
-		wstring get_window_text(HWND hwnd)
+		string get_window_text(HWND hwnd)
 		{
-			vector<TCHAR> text(::GetWindowTextLength(hwnd) + 1);
+			win32::utf_converter c;
+			vector<wchar_t> text(::GetWindowTextLength(hwnd) + 1);
 
-			::GetWindowText(hwnd, &text[0], static_cast<int>(text.size()));
-			return t2w(tstring(&text[0]));
+			::GetWindowTextW(hwnd, &text[0], static_cast<int>(text.size()));
+			return c(&text[0]);
 		}
 
 		bool has_style(HWND hwnd, int style)
@@ -190,7 +167,7 @@ namespace wpl
 
 		HWND window_manager::create_window(const wstring &class_name, HWND parent, unsigned int style, unsigned int exstyle)
 		{
-			HWND hwnd = ::CreateWindowEx(exstyle, w2t(class_name).c_str(), NULL, style, 0, 0, 200, 150, parent, NULL, NULL, NULL);
+			HWND hwnd = ::CreateWindowExW(exstyle, class_name.c_str(), NULL, style, 0, 0, 200, 150, parent, NULL, NULL, NULL);
 
 			_windows.push_back(hwnd);
 			return hwnd;
@@ -240,7 +217,7 @@ namespace wpl
 					::EnumChildWindows(hwnd, &enum_windows_callback, lParam);
 					return TRUE;
 				}
-			} data = { w2t(_allow), w2t(_prohibit) };
+			} data = { _allow, _prohibit };
 
 			::EnumThreadWindows(::GetCurrentThreadId(), &WindowEnumData::enum_windows_callback, reinterpret_cast<LPARAM>(&data));
 			set_difference(data.windows.begin(), data.windows.end(), _windows.begin(), _windows.end(), back_inserter(created));

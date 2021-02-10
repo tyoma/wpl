@@ -100,16 +100,16 @@ namespace wpl
 				HWND hbutton = get_window_and_resize(b, parent, 100, 20);
 
 				// ACT
-				b->set_text(L"Launch!");
+				b->set_text(agge::style_modifier::empty + "Launch!");
 
 				// ASSERT
-				assert_equal(L"Launch!", get_window_text(hbutton));
+				assert_equal("Launch!", get_window_text(hbutton));
 
 				// ACT
-				b->set_text(L"Let's go...");
+				b->set_text(agge::style_modifier::empty +"Let's go...");
 
 				// ASSERT
-				assert_equal(L"Let's go...", get_window_text(hbutton));
+				assert_equal("Let's go...", get_window_text(hbutton));
 			}
 
 
@@ -119,14 +119,14 @@ namespace wpl
 				shared_ptr<button> b[] = { shared_ptr<button>(new win32::button), shared_ptr<button>(new win32::button), };
 
 				// ACT
-				b[0]->set_text(L"Launch!");
-				b[1]->set_text(L"Stop...");
+				b[0]->set_text(agge::style_modifier::empty +"Launch!");
+				b[1]->set_text(agge::style_modifier::empty +"Stop...");
 				HWND hbutton1 = get_window_and_resize(b[0], parent, 100, 20);
 				HWND hbutton2 = get_window_and_resize(b[1], parent, 100, 20);
 
 				// ASSERT
-				assert_equal(L"Launch!", get_window_text(hbutton1));
-				assert_equal(L"Stop...", get_window_text(hbutton2));
+				assert_equal("Launch!", get_window_text(hbutton1));
+				assert_equal("Stop...", get_window_text(hbutton2));
 			}
 
 
@@ -249,11 +249,11 @@ namespace wpl
 			{
 				// INIT
 				vector<size_t> log_ids;
-				vector<wstring> log_links;
+				vector<string> log_links;
 				shared_ptr<link> l(new win32::link);
 				HWND hlink = get_window_and_resize(l, parent, 100, 20);
 				slot_connection c1 = l->clicked += std::bind(&push_back<size_t>, ref(log_ids), _1);
-				slot_connection c2 = l->clicked += std::bind(&push_back<wstring>, ref(log_links), _2);
+				slot_connection c2 = l->clicked += std::bind(&push_back<string>, ref(log_links), _2);
 				NMLINK nmlink = {};
 
 				nmlink.hdr.code = NM_CLICK;
@@ -265,7 +265,7 @@ namespace wpl
 
 				// ASSERT
 				size_t reference_ids1[] = { 0u, };
-				wstring reference_links1[] = { L"Test #1", };
+				string reference_links1[] = { "Test #1", };
 
 				assert_equal(reference_ids1, log_ids);
 				assert_equal(reference_links1, log_links);
@@ -279,7 +279,7 @@ namespace wpl
 
 				// ASSERT
 				size_t reference_ids2[] = { 0u, 3u, };
-				wstring reference_links2[] = { L"Test #1", L"https://github.com", };
+				string reference_links2[] = { "Test #1", "https://github.com", };
 
 				assert_equal(reference_ids2, log_ids);
 				assert_equal(reference_links2, log_links);
@@ -293,16 +293,16 @@ namespace wpl
 				HWND hlink = get_window_and_resize(l, parent, 100, 20);
 
 				// ACT
-				l->set_text(L"Launch!");
+				l->set_text(agge::style_modifier::empty +"Launch!");
 
 				// ASSERT
-				assert_equal(L"Launch!", get_window_text(hlink));
+				assert_equal("Launch!", get_window_text(hlink));
 
 				// ACT
-				l->set_text(L"Let's <a href=\"zz\">go</a>...");
+				l->set_text(agge::style_modifier::empty + "Let's <a href=\"zz\">go</a>...");
 
 				// ASSERT
-				assert_equal(L"Let's <a href=\"zz\">go</a>...", get_window_text(hlink));
+				assert_equal("Let's <a href=\"zz\">go</a>...", get_window_text(hlink));
 			}
 
 
@@ -312,14 +312,14 @@ namespace wpl
 				shared_ptr<link> l[] = { shared_ptr<link>(new win32::link), shared_ptr<link>(new win32::link), };
 
 				// ACT
-				l[0]->set_text(L"Launch <a>the rocket</a>!");
-				l[1]->set_text(L"Stop...");
+				l[0]->set_text(agge::style_modifier::empty + "Launch <a>the rocket</a>!");
+				l[1]->set_text(agge::style_modifier::empty + "Stop...");
 				HWND hlink1 = get_window_and_resize(l[0], parent, 100, 20);
 				HWND hlink2 = get_window_and_resize(l[1], parent, 100, 20);
 
 				// ASSERT
-				assert_equal(L"Launch <a>the rocket</a>!", get_window_text(hlink1));
-				assert_equal(L"Stop...", get_window_text(hlink2));
+				assert_equal("Launch <a>the rocket</a>!", get_window_text(hlink1));
+				assert_equal("Stop...", get_window_text(hlink2));
 			}
 
 

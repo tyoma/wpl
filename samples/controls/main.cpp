@@ -9,7 +9,7 @@ using namespace wpl;
 
 namespace
 {
-	struct my_model : list_model<wstring>
+	struct my_model : list_model<string>
 	{
 		my_model(const queue &queue_)
 			: _queue(queue_), _elapsed(0), _alive(make_shared<bool>(true))
@@ -22,9 +22,9 @@ namespace
 		{
 			if (*alive)
 			{
-				wchar_t buffer[100];
+				char buffer[100];
 
-				swprintf(buffer, sizeof(buffer), L"Dynamic: %d", _elapsed += 10);
+				sprintf(buffer, "Dynamic: %d", _elapsed += 10);
 				_dynamic_item = buffer;
 				invalidate();
 				_queue([this, alive] {	on_timer(alive);	}, 10);
@@ -34,14 +34,14 @@ namespace
 		virtual index_type get_count() const throw() override
 		{	return 4;	}
 
-		virtual void get_value(index_type index, wstring &text) const override
+		virtual void get_value(index_type index, string &text) const override
 		{
 			switch (index)
 			{
-			case 0: text = L"foo"; break;
+			case 0: text = "foo"; break;
 			case 1: text = _dynamic_item; break;
-			case 2: text = L"baz"; break;
-			case 3: text = L"doodle"; break;
+			case 2: text = "baz"; break;
+			case 3: text = "doodle"; break;
 			}
 		}
 
@@ -60,7 +60,7 @@ namespace
 
 		queue _queue;
 		int _elapsed;
-		wstring _dynamic_item;
+		string _dynamic_item;
 		shared_ptr<bool> _alive;
 	};
 
