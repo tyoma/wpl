@@ -98,7 +98,10 @@ namespace wpl
 			{	return owner->_model ? static_cast<double>(owner->_item_count) : 0;	}
 
 			virtual void set_window(double window_min) override
-			{	owner->_offset.dy = window_min;	}
+			{
+				owner->_offset.dy = window_min;
+				owner->precache_model();
+			}
 		};
 
 		struct listview_core::horizontal_scroll_model : base_scroll_model
@@ -306,6 +309,7 @@ namespace wpl
 			integrated_control<wpl::listview>::layout(append_view, box_);
 			_vsmodel->invalidate(true);
 			_hsmodel->invalidate(true);
+			precache_model();
 		}
 
 		int listview_core::min_height(int /*for_width*/) const
@@ -331,6 +335,7 @@ namespace wpl
 				_item_count = item_count;
 				_vsmodel->invalidate(true);
 				layout_changed(false);
+				precache_model();
 			};
 			const auto on_invalidate = [this, update_item_count] (index_type /*row*/) {
 				update_item_count();
@@ -346,7 +351,9 @@ namespace wpl
 			_model = model;
 			_focused = nullptr;
 			_selected.clear();
+			_precached_range = make_pair(npos(), 0);
 			update_item_count();
+			precache_model();
 			invalidate_();
 		}
 
@@ -401,6 +408,28 @@ namespace wpl
 				_selected.erase(i), selection_changed(item, false);
 			else
 				select(item, false);
+		}
+
+		void listview_core::precache_model()
+		{
+			if (!_model)
+				return;
+
+			const auto visible_range = get_visible_range();
+
+			if (visible_range != _precached_range)
+				_model->precache(visible_range.first, visible_range.second), _precached_range = visible_range;
+		}
+
+		pair<table_model::index_type, table_model::index_type> listview_core::get_visible_range() const
+		{
+			const auto items = get_last_size().h / get_minimal_item_height();
+			const auto first = (min)(static_cast<index_type>((max)(floor(_offset.dy), 0.0)),
+				_item_count);
+			const auto count = (min)(static_cast<index_type>((max)(ceil(_offset.dy + items), 0.0)) - first,
+				_item_count - first);
+
+			return make_pair(first, count);
 		}
 
 		listview_core::index_type listview_core::first_partially_visible() const

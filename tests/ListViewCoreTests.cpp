@@ -1409,6 +1409,374 @@ namespace wpl
 				// ASSERT
 				assert_equal(1, layout_changes);
 			}
+
+
+			test( ModelIsPrecachedOnSetting )
+			{
+				// INIT
+				tracking_listview lv;
+				const auto cm = mocks::columns_model::create("", 100);
+				const shared_ptr<mocks::listview_model> m(new mocks::listview_model(10, 1));
+
+				lv.item_height = 7;
+				lv.set_columns_model(cm);
+				resize(lv, 100, 40);
+
+				// ACT
+				lv.set_model(m);
+
+				// ASSERT
+				pair<table_model::index_type, table_model::index_type> reference1[] = {
+					make_pair(0, 6),
+				};
+
+				assert_equal(reference1, m->precached);
+
+				// INIT
+				lv.set_model(nullptr);
+				lv.item_height = 9;
+				m->precached.clear();
+
+				// ACT
+				lv.set_model(m);
+
+				// ASSERT
+				pair<table_model::index_type, table_model::index_type> reference2[] = {
+					make_pair(0, 5),
+				};
+
+				assert_equal(reference2, m->precached);
+
+				// INIT
+				lv.set_model(nullptr);
+				resize(lv, 100, 70);
+				m->precached.clear();
+
+				// ACT
+				lv.set_model(m);
+
+				// ASSERT
+				pair<table_model::index_type, table_model::index_type> reference3[] = {
+					make_pair(0, 8),
+				};
+
+				assert_equal(reference3, m->precached);
+
+				// INIT
+				lv.set_model(nullptr);
+				resize(lv, 100, 72);
+				m->precached.clear();
+
+				// ACT
+				lv.set_model(m);
+
+				// ASSERT
+				pair<table_model::index_type, table_model::index_type> reference4[] = {
+					make_pair(0, 8),
+				};
+
+				assert_equal(reference4, m->precached);
+
+				// INIT
+				lv.set_model(nullptr);
+				lv.get_vscroll_model()->scroll_window(2, 8);
+				m->precached.clear();
+
+				// ACT
+				lv.set_model(m);
+
+				// ASSERT
+				pair<table_model::index_type, table_model::index_type> reference5[] = {
+					make_pair(2, 8),
+				};
+
+				assert_equal(reference5, m->precached);
+
+				// INIT
+				lv.set_model(nullptr);
+				lv.get_vscroll_model()->scroll_window(1.5, 8);
+				m->precached.clear();
+
+				// ACT
+				lv.set_model(m);
+
+				// ASSERT
+				pair<table_model::index_type, table_model::index_type> reference6[] = {
+					make_pair(1, 9),
+				};
+
+				assert_equal(reference6, m->precached);
+			}
+
+
+			test( PrecachingIsLimitedToModelRange )
+			{
+				// INIT
+				tracking_listview lv;
+				const auto cm = mocks::columns_model::create("", 100);
+				const shared_ptr<mocks::listview_model> m(new mocks::listview_model(11, 1));
+
+				lv.item_height = 7;
+				lv.set_columns_model(cm);
+				lv.get_vscroll_model()->scroll_window(-3.3, 40.0 / 7);
+				resize(lv, 100, 40);
+
+				// ACT
+				lv.set_model(m);
+
+				// ASSERT
+				pair<table_model::index_type, table_model::index_type> reference1[] = {
+					make_pair(0, 3),
+				};
+
+				assert_equal(reference1, m->precached);
+
+				// INIT
+				lv.set_model(nullptr);
+				lv.get_vscroll_model()->scroll_window(-5.7143, 40.0 / 7);
+				m->precached.clear();
+
+				// ACT
+				lv.set_model(m);
+
+				// ASSERT
+				pair<table_model::index_type, table_model::index_type> reference2[] = {
+					make_pair(0, 0),
+				};
+
+				assert_equal(reference2, m->precached);
+
+				// INIT
+				lv.set_model(nullptr);
+				lv.get_vscroll_model()->scroll_window(-50, 40.0 / 7);
+				m->precached.clear();
+
+				// ACT
+				lv.set_model(m);
+
+				// ASSERT
+				assert_equal(reference2, m->precached);
+
+				// INIT
+				lv.set_model(nullptr);
+				lv.get_vscroll_model()->scroll_window(9.3, 40.0 / 7);
+				m->precached.clear();
+
+				// ACT
+				lv.set_model(m);
+
+				// ASSERT
+				pair<table_model::index_type, table_model::index_type> reference3[] = {
+					make_pair(9, 2),
+				};
+
+				assert_equal(reference3, m->precached);
+
+				// INIT
+				lv.set_model(nullptr);
+				lv.get_vscroll_model()->scroll_window(11.0, 40.0 / 7);
+				m->precached.clear();
+
+				// ACT
+				lv.set_model(m);
+
+				// ASSERT
+				pair<table_model::index_type, table_model::index_type> reference4[] = {
+					make_pair(11, 0),
+				};
+
+				assert_equal(reference4, m->precached);
+
+				// INIT
+				lv.set_model(nullptr);
+				lv.get_vscroll_model()->scroll_window(13.0, 40.0 / 7);
+				m->precached.clear();
+
+				// ACT
+				lv.set_model(m);
+
+				// ASSERT
+				assert_equal(reference4, m->precached);
+			}
+
+
+			test( SettingTheSameModelPrecachesIt )
+			{
+				// INIT
+				tracking_listview lv;
+				const auto cm = mocks::columns_model::create("", 100);
+				const shared_ptr<mocks::listview_model> m(new mocks::listview_model(11, 1));
+
+				lv.item_height = 7;
+				lv.set_columns_model(cm);
+				lv.get_vscroll_model()->scroll_window(-3.3, 40.0 / 7);
+				resize(lv, 100, 40);
+				lv.set_model(m);
+				lv.set_model(nullptr);
+				m->precached.clear();
+
+				// ACT
+				lv.set_model(m);
+
+				// ASSERT
+				pair<table_model::index_type, table_model::index_type> reference[] = {
+					make_pair(0, 3),
+				};
+
+				assert_equal(reference, m->precached);
+			}
+
+
+			test( ResizingLeadsToPrecaching )
+			{
+				// INIT
+				tracking_listview lv;
+				const auto cm = mocks::columns_model::create("", 100);
+				const shared_ptr<mocks::listview_model> m(new mocks::listview_model(13, 1));
+
+				lv.item_height = 7;
+				lv.set_columns_model(cm);
+				resize(lv, 100, 40);
+				lv.set_model(m);
+				m->precached.clear();
+
+				// ACT
+				resize(lv, 100, 65);
+
+				// ASSERT
+				pair<table_model::index_type, table_model::index_type> reference1[] = {
+					make_pair(0, 10),
+				};
+
+				assert_equal(reference1, m->precached);
+
+				// ACT
+				resize(lv, 100, 150);
+
+				// ASSERT
+				pair<table_model::index_type, table_model::index_type> reference2[] = {
+					make_pair(0, 10), make_pair(0, 13),
+				};
+
+				assert_equal(reference2, m->precached);
+			}
+
+
+			test( ResizingDoesNotLeadToPrecachingIfRangeDoesNotChange )
+			{
+				// INIT
+				tracking_listview lv;
+				const auto cm = mocks::columns_model::create("", 100);
+				const shared_ptr<mocks::listview_model> m(new mocks::listview_model(13, 1));
+
+				lv.item_height = 7;
+				lv.set_columns_model(cm);
+				resize(lv, 100, 40);
+				lv.set_model(m);
+				m->precached.clear();
+
+				// ACT
+				resize(lv, 100, 41);
+				resize(lv, 100, 36);
+
+				// ASSERT
+				assert_is_empty(m->precached);
+
+				// INIT
+				resize(lv, 100, 150);
+				m->precached.clear();
+
+				// ACT
+				resize(lv, 100, 140);
+
+				// ASSERT
+				assert_is_empty(m->precached);
+
+				// INIT
+				lv.set_model(nullptr);
+				lv.get_vscroll_model()->scroll_window(4.9, 140.0 / 7);
+				lv.set_model(m);
+				m->precached.clear();
+
+				// ACT
+				resize(lv, 100, 143);
+			}
+
+
+			test( ScrollingPrecachesModel )
+			{
+				// INIT
+				tracking_listview lv;
+				const auto cm = mocks::columns_model::create("", 100);
+				const shared_ptr<mocks::listview_model> m(new mocks::listview_model(19, 1));
+
+				lv.item_height = 7;
+				lv.set_columns_model(cm);
+				resize(lv, 100, 45);
+				lv.set_model(m);
+				m->precached.clear();
+
+				// ACT
+				lv.get_vscroll_model()->scroll_window(4.9, 45.0 / 7);
+
+				// ASSERT
+				pair<table_model::index_type, table_model::index_type> reference1[] = {
+					make_pair(4, 8),
+				};
+
+				assert_equal(reference1, m->precached);
+
+				// ACT
+				lv.get_vscroll_model()->scroll_window(2.1, 45.0 / 7);
+
+				// ASSERT
+				pair<table_model::index_type, table_model::index_type> reference2[] = {
+					make_pair(4, 8), make_pair(2, 7),
+				};
+
+				assert_equal(reference2, m->precached);
+			}
+
+
+			test( ModelCountChangePrecachesIt )
+			{
+				// INIT
+				tracking_listview lv;
+				const auto cm = mocks::columns_model::create("", 100);
+				const shared_ptr<mocks::listview_model> m(new mocks::listview_model(19, 1));
+
+				lv.item_height = 7;
+				lv.set_columns_model(cm);
+				resize(lv, 100, 400);
+				lv.set_model(m);
+				m->precached.clear();
+
+				// ACT
+				m->items.resize(23, vector<string>(1));
+				m->invalidate(table_model::npos());
+
+				// ASSERT
+				pair<table_model::index_type, table_model::index_type> reference1[] = {
+					make_pair(0, 23),
+				};
+
+				assert_equal(reference1, m->precached);
+
+				// INIT
+				lv.get_vscroll_model()->scroll_window(2.7, 400.0 / 7);
+				m->precached.clear();
+
+				// ACT
+				m->items.resize(20, vector<string>(1));
+				m->invalidate(table_model::npos());
+
+				// ASSERT
+				pair<table_model::index_type, table_model::index_type> reference2[] = {
+					make_pair(2, 18),
+				};
+
+				assert_equal(reference2, m->precached);
+			}
 		end_test_suite
 	}
 }

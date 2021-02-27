@@ -90,7 +90,7 @@ namespace wpl
 		virtual index_type get_count() const throw() = 0;
 		virtual void get_text(index_type row, index_type column, std::string &text) const = 0;
 		virtual void set_order(index_type column, bool ascending) = 0;
-		virtual void precache(index_type from, index_type count) const;
+		virtual void precache(index_type from, index_type count);
 		virtual std::shared_ptr<const trackable> track(index_type row) const;
 
 		signal<void (index_type row)> invalidate; // It is model's responsibility to invalidate itself on count changes.
@@ -109,7 +109,7 @@ namespace wpl
 	{	return std::shared_ptr<const trackable>();	}
 
 
-	inline void table_model::precache(index_type /*from*/, index_type /*count*/) const
+	inline void table_model::precache(index_type /*from*/, index_type /*count*/)
 	{	}
 
 	inline std::shared_ptr<const trackable> table_model::track(index_type /*row*/) const

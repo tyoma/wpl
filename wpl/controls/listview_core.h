@@ -96,6 +96,8 @@ namespace wpl
 
 			void invalidate_();
 			void toggle_selection(index_type item);
+			void precache_model();
+			std::pair<index_type, index_type> get_visible_range() const;
 			index_type first_partially_visible() const;
 			index_type last_partially_visible() const;
 			index_type get_item(int y) const;
@@ -105,6 +107,7 @@ namespace wpl
 		private:
 			std::shared_ptr<columns_model_base> _cmodel;
 			std::shared_ptr<table_model> _model;
+			std::pair<table_model::index_type, table_model::index_type> _precached_range;
 			table_model::index_type _item_count;
 			std::shared_ptr<vertical_scroll_model> _vsmodel;
 			std::shared_ptr<horizontal_scroll_model> _hsmodel;

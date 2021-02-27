@@ -95,11 +95,13 @@ namespace wpl
 				std::map< index_type, std::shared_ptr<const trackable> > trackables;
 				std::vector< std::pair<index_type, bool> > ordering;
 				mutable std::vector<index_type> tracking_requested;
+				std::vector< std::pair<index_type, index_type> > precached;
 
 			private:
 				virtual index_type get_count() const throw() override;
 				virtual void get_text(index_type row, index_type column, std::string &text) const override;
 				virtual void set_order(index_type column, bool ascending) override;
+				virtual void precache(index_type from, index_type count) override;
 				virtual std::shared_ptr<const trackable> track(index_type row) const override;
 			};
 
