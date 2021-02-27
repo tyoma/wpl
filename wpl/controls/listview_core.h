@@ -97,7 +97,9 @@ namespace wpl
 			void invalidate_();
 			void toggle_selection(index_type item);
 			void precache_model();
+			agge::real_t get_visible_count() const;
 			std::pair<index_type, index_type> get_visible_range() const;
+			std::pair<columns_model::index_type, columns_model::index_type> update_horizontal_visible_range() const;
 			index_type first_partially_visible() const;
 			index_type last_partially_visible() const;
 			index_type get_item(int y) const;
@@ -113,7 +115,8 @@ namespace wpl
 			std::shared_ptr<horizontal_scroll_model> _hsmodel;
 			slot_connection _model_invalidation, _cmodel_invalidation;
 			agge::agge_vector<double> _offset;
-			mutable std::vector<agge::real_t> _widths;
+			mutable agge::real_t _total_width;
+			mutable std::vector< std::pair<agge::real_t /*x1*/, agge::real_t /*x2*/> > _subitem_positions;
 			mutable std::string _text_buffer;
 
 			trackable_ptr _focused;

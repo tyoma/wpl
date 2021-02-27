@@ -163,10 +163,10 @@ namespace wpl
 		{
 			if (is_visible(item) | _state_vscrolling | (npos() == item))
 				return;
-			_offset.dy = static_cast<double>(item < _offset.dy
-				? item : item - get_last_size().h / get_minimal_item_height() + 1);
-			_vsmodel->invalidate(false);
-			invalidate_();
+
+			const auto visible = get_visible_count();
+
+			_vsmodel->scroll_window(item < _offset.dy ? static_cast<double>(item) : item - visible + 1, visible);
 		}
 
 		void listview_core::key_down(unsigned code, int modifiers)
@@ -261,45 +261,32 @@ namespace wpl
 			if (!_model | !_cmodel)
 				return;
 
-			const auto &size = get_last_size();
-			const columns_model::index_type columns = _cmodel->get_count();
-			const real_t item_height = get_minimal_item_height();
-			const index_type focused_item = has_focus && _focused ? _focused->index() : npos();
-			real_t total_width = 0.0f;
-			index_type r = (max)(0, static_cast<int>(_offset.dy));
-			auto box = create_rect(real_t(), item_height * static_cast<real_t>(r - _offset.dy), real_t(), real_t());
+			auto vrange = get_visible_range();
+			const auto hrange = update_horizontal_visible_range();
+			const auto item_height = static_cast<real_t>(get_minimal_item_height());
+			const auto focused_item = has_focus && _focused ? _focused->index() : npos();
+			auto y1 = item_height * static_cast<real_t>(vrange.first - _offset.dy);
+			auto y2 = y1 + item_height;
 
-			_widths.clear();
-			for (columns_model::index_type c = 0; c != columns; ++c)
+			for (auto row = vrange.first; vrange.second; vrange.second--, row++, y1 = y2, y2 += item_height)
 			{
-				short int width;
+				const unsigned state = (is_selected(row) ? selected : 0) | (focused_item == row ? focused : 0);
+				const auto item = create_rect(-static_cast<real_t>(_offset.dx), y1,
+					_total_width - static_cast<real_t>(_offset.dx), y2);
+				auto subitem = create_rect(0.0f, y1, 0.0f, y2);
 
-				_cmodel->get_value(c, width);
-				_widths.push_back(width);
-				total_width += width;
-			}
-			for (; box.y2 = box.y1 + item_height, r < _item_count && box.y1 < size.h; ++r, box.y1 = box.y2)
-			{
-				const unsigned state = (is_selected(r) ? selected : 0) | (focused_item == r ? focused : 0);
-
-				box.x1 = -static_cast<agge::real_t>(_offset.dx), box.x2 = box.x1 + total_width;
-				draw_item_background(ctx, ras, box, r, state);
-				for (columns_model::index_type c = 0; c != columns; box.x1 = box.x2, ++c)
+				draw_item_background(ctx, ras, item, row, state);
+				for (columns_model::index_type column = hrange.first, count = hrange.second; count; count--, column++)
 				{
-					box.x2 = box.x1 + _widths[c];
-					if (box.x2 < 0.0 || box.x1 >= size.w - c_tolerance)
-						continue;
-					draw_subitem_background(ctx, ras, box, r, state, c);
+					subitem.x1 = _subitem_positions[column].first, subitem.x2 = _subitem_positions[column].second;
+					draw_subitem_background(ctx, ras, subitem, row, state, column);
 				}
-				box.x1 = -static_cast<agge::real_t>(_offset.dx), box.x2 = box.x1 + total_width;
-				draw_item(ctx, ras, box, r, state);
-				for (columns_model::index_type c = 0; c != columns; box.x1 = box.x2, ++c)
+				draw_item(ctx, ras, item, row, state);
+				for (columns_model::index_type column = hrange.first, count = hrange.second; count; count--, column++)
 				{
-					box.x2 = box.x1 + _widths[c];
-					if (box.x2 < 0.0 || box.x1 >= size.w - c_tolerance)
-						continue;
-					_model->get_text(r, c, _text_buffer);
-					draw_subitem(ctx, ras, box, r, state, c, _text_buffer);
+					subitem.x1 = _subitem_positions[column].first, subitem.x2 = _subitem_positions[column].second;
+					_model->get_text(row, column, _text_buffer);
+					draw_subitem(ctx, ras, subitem, row, state, column, _text_buffer);
 				}
 			}
 		}
@@ -421,15 +408,43 @@ namespace wpl
 				_model->precache(visible_range.first, visible_range.second), _precached_range = visible_range;
 		}
 
+		real_t listview_core::get_visible_count() const
+		{	return get_last_size().h / (max)(get_minimal_item_height(), 0.001f);	}
+
 		pair<table_model::index_type, table_model::index_type> listview_core::get_visible_range() const
 		{
-			const auto items = get_last_size().h / get_minimal_item_height();
 			const auto first = (min)(static_cast<index_type>((max)(floor(_offset.dy), 0.0)),
 				_item_count);
-			const auto count = (min)(static_cast<index_type>((max)(ceil(_offset.dy + items), 0.0)) - first,
+			const auto count = (min)(static_cast<index_type>((max)(ceil(_offset.dy + get_visible_count()), 0.0)) - first,
 				_item_count - first);
 
 			return make_pair(first, count);
+		}
+
+		pair<columns_model::index_type, columns_model::index_type> listview_core::update_horizontal_visible_range() const
+		{
+			auto visible_range = make_pair(columns_model::npos(), columns_model::index_type());
+			auto x = -static_cast<real_t>(_offset.dx);
+			const auto x_limit = static_cast<real_t>(get_last_size().w + _offset.dx);
+
+			_total_width = real_t();
+			_subitem_positions.clear();
+			for (columns_model::index_type c = 0, count = _cmodel->get_count(); c != count; ++c)
+			{
+				short int width;
+
+				_cmodel->get_value(c, width);
+				_subitem_positions.push_back(make_pair(x, x + width));
+				x += width;
+				_total_width += width;
+				if ((x > real_t()) & (x - width < x_limit))
+				{
+					if (columns_model::npos() == visible_range.first)
+						visible_range.first = c;
+					visible_range.second++;
+				}
+			}
+			return visible_range;
 		}
 
 		listview_core::index_type listview_core::first_partially_visible() const
@@ -443,7 +458,7 @@ namespace wpl
 			const auto item_height = get_minimal_item_height();
 			const auto item = (y + _offset.dy * item_height + 0.5) / item_height;
 
-			return _model && 0 <= item && item < _model->get_count() ? static_cast<index_type>(item) : table_model::npos();
+			return _model && 0 <= item && item < _item_count ? static_cast<index_type>(item) : table_model::npos();
 		}
 
 		bool listview_core::is_selected(index_type item) const

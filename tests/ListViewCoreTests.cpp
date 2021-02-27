@@ -117,7 +117,7 @@ namespace wpl
 				tracking_listview lv;
 
 				resize(lv, 1000, 1000);
-				lv.set_columns_model(mocks::columns_model::create("Name"));
+				lv.set_columns_model(mocks::columns_model::create("Name", 1));
 				lv.set_model(create_model(1, 1));
 
 				// ACT
@@ -125,10 +125,10 @@ namespace wpl
 
 				// ASSERT
 				tracking_listview::drawing_event reference[] = {
-					tracking_listview::drawing_event(tracking_listview::item_background, *ctx, ras, create_rect(0, 0, 0, 0), 0, 0),
-					tracking_listview::drawing_event(tracking_listview::subitem_background, *ctx, ras, create_rect(0, 0, 0, 0), 0, 0),
-					tracking_listview::drawing_event(tracking_listview::item_self, *ctx, ras, create_rect(0, 0, 0, 0), 0, 0),
-					tracking_listview::drawing_event(tracking_listview::subitem_self, *ctx, ras, create_rect(0, 0, 0, 0), 0, 0),
+					tracking_listview::drawing_event(tracking_listview::item_background, *ctx, ras, create_rect(0, 0, 1, 0), 0, 0),
+					tracking_listview::drawing_event(tracking_listview::subitem_background, *ctx, ras, create_rect(0, 0, 1, 0), 0, 0),
+					tracking_listview::drawing_event(tracking_listview::item_self, *ctx, ras, create_rect(0, 0, 1, 0), 0, 0),
+					tracking_listview::drawing_event(tracking_listview::subitem_self, *ctx, ras, create_rect(0, 0, 1, 0), 0, 0),
 				};
 
 				assert_equal_pred(reference, lv.events, listview_event_eq());
@@ -138,9 +138,14 @@ namespace wpl
 			test( DrawingSequenceIsRowsCols )
 			{
 				// INIT
-				agge::rect_r z = {};
+				auto z = create_rect(0.0f, 0.0f, 3.0f, 0.0f);
+				rect_r zz[] = {
+					create_rect(0.0f, 0.0f, 1.0f, 0.0f),
+					create_rect(1.0f, 0.0f, 2.0f, 0.0f),
+					create_rect(2.0f, 0.0f, 3.0f, 0.0f),
+				};
 				tracking_listview lv;
-				column_t c[] = {	{"", 0	}, {	"", 0	}, {	"", 0	},	};
+				column_t c[] = {	{"", 1	}, {	"", 1	}, {	"", 1	},	};
 
 				resize(lv, 1000, 1000);
 				lv.set_columns_model(mocks::columns_model::create(c, columns_model::npos(), true));
@@ -152,40 +157,40 @@ namespace wpl
 				// ASSERT
 				tracking_listview::drawing_event reference[] = {
 					tracking_listview::drawing_event(tracking_listview::item_background, *ctx, ras, z, 0, 0),
-					tracking_listview::drawing_event(tracking_listview::subitem_background, *ctx, ras, z, 0, 0, 0),
-					tracking_listview::drawing_event(tracking_listview::subitem_background, *ctx, ras, z, 0, 0, 1),
-					tracking_listview::drawing_event(tracking_listview::subitem_background, *ctx, ras, z, 0, 0, 2),
+					tracking_listview::drawing_event(tracking_listview::subitem_background, *ctx, ras, zz[0], 0, 0, 0),
+					tracking_listview::drawing_event(tracking_listview::subitem_background, *ctx, ras, zz[1], 0, 0, 1),
+					tracking_listview::drawing_event(tracking_listview::subitem_background, *ctx, ras, zz[2], 0, 0, 2),
 					tracking_listview::drawing_event(tracking_listview::item_self, *ctx, ras, z, 0, 0),
-					tracking_listview::drawing_event(tracking_listview::subitem_self, *ctx, ras, z, 0, 0, 0),
-					tracking_listview::drawing_event(tracking_listview::subitem_self, *ctx, ras, z, 0, 0, 1),
-					tracking_listview::drawing_event(tracking_listview::subitem_self, *ctx, ras, z, 0, 0, 2),
+					tracking_listview::drawing_event(tracking_listview::subitem_self, *ctx, ras, zz[0], 0, 0, 0),
+					tracking_listview::drawing_event(tracking_listview::subitem_self, *ctx, ras, zz[1], 0, 0, 1),
+					tracking_listview::drawing_event(tracking_listview::subitem_self, *ctx, ras, zz[2], 0, 0, 2),
 
 					tracking_listview::drawing_event(tracking_listview::item_background, *ctx, ras, z, 1, 0),
-					tracking_listview::drawing_event(tracking_listview::subitem_background, *ctx, ras, z, 1, 0, 0),
-					tracking_listview::drawing_event(tracking_listview::subitem_background, *ctx, ras, z, 1, 0, 1),
-					tracking_listview::drawing_event(tracking_listview::subitem_background, *ctx, ras, z, 1, 0, 2),
+					tracking_listview::drawing_event(tracking_listview::subitem_background, *ctx, ras, zz[0], 1, 0, 0),
+					tracking_listview::drawing_event(tracking_listview::subitem_background, *ctx, ras, zz[1], 1, 0, 1),
+					tracking_listview::drawing_event(tracking_listview::subitem_background, *ctx, ras, zz[2], 1, 0, 2),
 					tracking_listview::drawing_event(tracking_listview::item_self, *ctx, ras, z, 1, 0),
-					tracking_listview::drawing_event(tracking_listview::subitem_self, *ctx, ras, z, 1, 0, 0),
-					tracking_listview::drawing_event(tracking_listview::subitem_self, *ctx, ras, z, 1, 0, 1),
-					tracking_listview::drawing_event(tracking_listview::subitem_self, *ctx, ras, z, 1, 0, 2),
+					tracking_listview::drawing_event(tracking_listview::subitem_self, *ctx, ras, zz[0], 1, 0, 0),
+					tracking_listview::drawing_event(tracking_listview::subitem_self, *ctx, ras, zz[1], 1, 0, 1),
+					tracking_listview::drawing_event(tracking_listview::subitem_self, *ctx, ras, zz[2], 1, 0, 2),
 
 					tracking_listview::drawing_event(tracking_listview::item_background, *ctx, ras, z, 2, 0),
-					tracking_listview::drawing_event(tracking_listview::subitem_background, *ctx, ras, z, 2, 0, 0),
-					tracking_listview::drawing_event(tracking_listview::subitem_background, *ctx, ras, z, 2, 0, 1),
-					tracking_listview::drawing_event(tracking_listview::subitem_background, *ctx, ras, z, 2, 0, 2),
+					tracking_listview::drawing_event(tracking_listview::subitem_background, *ctx, ras, zz[0], 2, 0, 0),
+					tracking_listview::drawing_event(tracking_listview::subitem_background, *ctx, ras, zz[1], 2, 0, 1),
+					tracking_listview::drawing_event(tracking_listview::subitem_background, *ctx, ras, zz[2], 2, 0, 2),
 					tracking_listview::drawing_event(tracking_listview::item_self, *ctx, ras, z, 2, 0),
-					tracking_listview::drawing_event(tracking_listview::subitem_self, *ctx, ras, z, 2, 0, 0),
-					tracking_listview::drawing_event(tracking_listview::subitem_self, *ctx, ras, z, 2, 0, 1),
-					tracking_listview::drawing_event(tracking_listview::subitem_self, *ctx, ras, z, 2, 0, 2),
+					tracking_listview::drawing_event(tracking_listview::subitem_self, *ctx, ras, zz[0], 2, 0, 0),
+					tracking_listview::drawing_event(tracking_listview::subitem_self, *ctx, ras, zz[1], 2, 0, 1),
+					tracking_listview::drawing_event(tracking_listview::subitem_self, *ctx, ras, zz[2], 2, 0, 2),
 
 					tracking_listview::drawing_event(tracking_listview::item_background, *ctx, ras, z, 3, 0),
-					tracking_listview::drawing_event(tracking_listview::subitem_background, *ctx, ras, z, 3, 0, 0),
-					tracking_listview::drawing_event(tracking_listview::subitem_background, *ctx, ras, z, 3, 0, 1),
-					tracking_listview::drawing_event(tracking_listview::subitem_background, *ctx, ras, z, 3, 0, 2),
+					tracking_listview::drawing_event(tracking_listview::subitem_background, *ctx, ras, zz[0], 3, 0, 0),
+					tracking_listview::drawing_event(tracking_listview::subitem_background, *ctx, ras, zz[1], 3, 0, 1),
+					tracking_listview::drawing_event(tracking_listview::subitem_background, *ctx, ras, zz[2], 3, 0, 2),
 					tracking_listview::drawing_event(tracking_listview::item_self, *ctx, ras, z, 3, 0),
-					tracking_listview::drawing_event(tracking_listview::subitem_self, *ctx, ras, z, 3, 0, 0),
-					tracking_listview::drawing_event(tracking_listview::subitem_self, *ctx, ras, z, 3, 0, 1),
-					tracking_listview::drawing_event(tracking_listview::subitem_self, *ctx, ras, z, 3, 0, 2),
+					tracking_listview::drawing_event(tracking_listview::subitem_self, *ctx, ras, zz[0], 3, 0, 0),
+					tracking_listview::drawing_event(tracking_listview::subitem_self, *ctx, ras, zz[1], 3, 0, 1),
+					tracking_listview::drawing_event(tracking_listview::subitem_self, *ctx, ras, zz[2], 3, 0, 2),
 				};
 
 				assert_equal_pred(reference, lv.events, listview_event_eq());
