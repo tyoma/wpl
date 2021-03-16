@@ -209,10 +209,9 @@ namespace wpl
 		auto &item_size = _horizontal ? b.w : b.h;
 		calculate_size item_size_calc(_horizontal ? b.w : b.h, acc.get_remainder());
 
-		for (auto i = _children.begin(); i != _children.end(); )
+		for (auto next = _children.begin(); next != _children.end(); )
 		{
-			const auto current = i++;
-			const auto last = _children.end() == i;
+			const auto current = next++;
 
 			// Add child's views to layout.
 			current->size.apply(item_size_calc);
@@ -220,7 +219,7 @@ namespace wpl
 			location += item_size;
 
 			// Add splitter view to layout, if possible.
-			if (!last && current->resizable && i->resizable)
+			if (current->resizable && (_children.end() != next && next->resizable))
 			{
 				placed_view pv = {	*splitter++, shared_ptr<native_view>(), create_rect(0, 0, box.w, box.h), 0	};
 

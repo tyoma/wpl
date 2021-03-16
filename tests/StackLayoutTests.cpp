@@ -52,13 +52,13 @@ namespace wpl
 				};
 
 				// ACT
-				s.add(make_shared<mocks::control>(), pixels(10), false);
+				s.add(make_shared<mocks::control>(), pixels(10));
 
 				// ASSERT
 				assert_equal(1, layout_forced);
 
 				// ACT
-				s.add(make_shared<mocks::control>(), pixels(50), false);
+				s.add(make_shared<mocks::control>(), pixels(50));
 
 				// ASSERT
 				assert_equal(2, layout_forced);
@@ -103,8 +103,8 @@ namespace wpl
 					assert_equal(expect_change, hierarchy_changed);
 				};
 
-				s.add(ctls[0], pixels(10), false);
-				s.add(ctls[1], pixels(10), false);
+				s.add(ctls[0], pixels(10));
+				s.add(ctls[1], pixels(10));
 				layout_forced = 0;
 
 				// ACT
@@ -431,9 +431,9 @@ namespace wpl
 				controls[2]->views.push_back(pv[2]);
 
 				sh.set_spacing(3);
-				sh.add(controls[0], pixels(17), false);
-				sh.add(controls[1], pixels(23), false);
-				sh.add(controls[2], pixels(13), false);
+				sh.add(controls[0], pixels(17));
+				sh.add(controls[1], pixels(23));
+				sh.add(controls[2], pixels(13));
 
 				// ACT
 				sh.layout(make_appender(v), make_box(100, 77));
@@ -482,10 +482,10 @@ namespace wpl
 				controls[4]->views.push_back(pv[4]);
 
 				sh.set_spacing(3);
-				sh.add(controls[0], pixels(17), false);
-				sh.add(controls[1], percents(50 /*3*/), false);
-				sh.add(controls[2], pixels(13), false);
-				sh.add(controls[3], percents(16.666666 /*1*/), false);
+				sh.add(controls[0], pixels(17));
+				sh.add(controls[1], percents(50 /*3*/));
+				sh.add(controls[2], pixels(13));
+				sh.add(controls[3], percents(16.666666 /*1*/));
 
 				// ACT
 				sh.layout(make_appender(v), make_box(59, 20));
@@ -526,7 +526,7 @@ namespace wpl
 				assert_equal(reference23_box, controls[3]->size_log);
 
 				// INIT
-				sh.add(controls[4], percents(33.333333 /*2*/), false);
+				sh.add(controls[4], percents(33.333333 /*2*/));
 
 				// ACT
 				sh.layout(make_appender(v), make_box(79, 20));
@@ -567,7 +567,7 @@ namespace wpl
 
 				sh.set_spacing(5);
 				sh.add(controls[0], pixels(30), false, 100);
-				sh.add(controls[1], pixels(50), false);
+				sh.add(controls[1], pixels(50));
 
 				// ACT
 				sh.layout(make_appender(v), make_box(150, 20));
@@ -599,7 +599,7 @@ namespace wpl
 				control->views.assign(begin(pv), end(pv));
 
 				sv.add(control, pixels(1), false, 100);
-				sv.add(control, pixels(1), false);
+				sv.add(control, pixels(1));
 				sv.add(control, pixels(1), false, 13);
 
 				// ACT
@@ -700,11 +700,11 @@ namespace wpl
 				stack sv(false, cursor_manager_);
 
 				sv.set_spacing(5);
-				sv.add(c, percents(10), false);
-				sv.add(c, percents(15), false);
+				sv.add(c, percents(10));
+				sv.add(c, percents(15));
 				sv.add(c, percents(10), true);
 				sv.add(c, percents(20), true);
-				sv.add(c, percents(10), false);
+				sv.add(c, percents(10));
 
 				// ACT
 				sv.layout(make_appender(v), make_box(20, 120));
@@ -1032,7 +1032,7 @@ namespace wpl
 				c->views = mkvector(pv);
 				s.set_spacing(5);
 				s.add(c, percents(25), true);
-				s.add(c, percents(25), false);
+				s.add(c, percents(25));
 				s.add(c, percents(30), true);
 				s.add(c, percents(20), true);
 				s.layout(make_appender(v), make_box(115, 10));

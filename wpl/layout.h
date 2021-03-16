@@ -46,7 +46,7 @@ namespace wpl
 		stack(bool horizontal, std::shared_ptr<cursor_manager> cursor_manager_);
 
 		void set_spacing(int spacing);
-		void add(std::shared_ptr<control> child, display_unit size, bool resizable, int tab_order = 0);
+		void add(std::shared_ptr<control> child, display_unit size, bool resizable = false, int tab_order = 0);
 
 		// control methods
 		virtual void layout(const placed_view_appender &append_view, const agge::box<int> &box) override;
