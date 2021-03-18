@@ -28,6 +28,7 @@
 #include <wpl/cursor.h>
 #include <wpl/drag_helper.h>
 #include <wpl/helpers.h>
+#include <wpl/static_visitor.h>
 #include <wpl/view.h>
 
 using namespace std;
@@ -36,92 +37,73 @@ namespace wpl
 {
 	namespace
 	{
-		class accumulator
+		struct static_size : unit_visitor<int>
 		{
-		public:
-			accumulator(double remainder)
-				: _remainder(remainder)
-			{	}
-
-			void visit_pixel(double value)
-			{	_remainder -= value;	}
-
-			void visit_percent(double /*value*/)
-			{	}
-
-			void visit_em(double /*value*/)
-			{	}
-
-			double get_remainder() const
-			{	return _remainder;	}
-
-		private:
-			double _remainder;
+			int visit_pixel(double value) const {	return static_cast<int>(value);	}
+			int visit_percent(double /*value*/) const {	return 0;	}
 		};
 
-		class calculate_size : noncopyable
+		class calculate_size : public unit_visitor<int>, noncopyable
 		{
 		public:
-			calculate_size(int &value, double remainder)
-				: _value(value), _remainder(remainder), _correction(0)
+			calculate_size(double remainder, double &correction)
+				: _remainder(remainder), _correction(correction)
 			{	}
 
-			void visit_pixel(double value)
-			{	_value = agge::iround(static_cast<agge::real_t>(value));	}
+			int visit_pixel(double value) const
+			{	return agge::iround(static_cast<agge::real_t>(value));	}
 
-			void visit_percent(double value)
+			int visit_percent(double value) const
 			{
 				const auto fsize = agge::agge_max(0.01 * value * _remainder, 0.0);
+				const auto ivalue = agge::iround(static_cast<agge::real_t>(fsize + _correction));
 
-				_value = agge::iround(static_cast<agge::real_t>(fsize + _correction));
-				_correction += fsize - _value;
+				_correction += fsize - ivalue;
+				return ivalue;
 			}
 
-			void visit_em(double /*value*/)
-			{	}
-
 		private:
-			int &_value;
-			double _remainder, _correction;
+			const double _remainder;
+			double &_correction;
 		};
 
-		class limit_delta : noncopyable
+		class limit_lower : public unit_visitor<double>
 		{
 		public:
-			limit_delta(double &delta, bool lower)
-				: _delta(delta), _lower(lower)
+			limit_lower(double delta)
+				: _delta(delta)
 			{	}
 
-			void visit_pixel(double /*value*/) const
-			{	}
-
-			void visit_percent(double value) const
-			{
-				if (_lower && _delta < -value)
-					_delta = -value;
-				else if (!_lower && _delta > value)
-					_delta = value;
-			}
-
-			void visit_em(double /*value*/) const
-			{	}
+			double visit_percent(double value) const {	return _delta < -value ? -value : _delta;	}
 
 		private:
-			double &_delta;
-			const bool _lower;
+			double _delta;
 		};
 
-		struct apply_delta : noncopyable
+		class limit_upper : public unit_visitor<double>
 		{
-			apply_delta(double delta_)
-				: delta(delta_)
+		public:
+			limit_upper(double delta)
+				: _delta(delta)
 			{	}
 
-			void visit_pixel(double /*value_*/) const {	}
-			void visit_percent(double &value_) const {	value_ += delta;	}
-			void visit_em(double /*value*/) const {	}
+			double visit_percent(double value) const {	return _delta > value ? value : _delta;	}
 
-			double delta;
+		private:
+			double _delta;
+		};
+
+		class apply_delta : public unit_visitor<display_unit>
+		{
+		public:
+			apply_delta(double delta)
+				: _delta(delta)
+			{	}
+
+			display_unit visit_percent(double value) const {	return display_unit(value + _delta, display_unit::percent);	}
+
+		private:
+			double _delta;
 		};
 	}
 
@@ -198,24 +180,21 @@ namespace wpl
 
 	void stack::layout(const placed_view_appender &append_view, const agge::box<int> &box)
 	{
-		auto b = box;
-		auto location = b.w - b.w;	// '0' in coordinates type
-		const auto children_space = (_horizontal ? box.w : box.h) - (static_cast<int>(_children.size()) - 1) * _spacing;
-		accumulator acc(children_space);
+		auto location = box.w - box.w;	// '0' in coordinates type
+		auto dynamic_space = (_horizontal ? box.w : box.h) - (static_cast<int>(_children.size()) - 1) * _spacing;
 		auto splitter = _splitters.begin();
+		auto correction = 0.0;
 
-		for_each(_children.begin(), _children.end(), [&] (const item &i) {	i.size.apply(acc);	});
-
-		auto &item_size = _horizontal ? b.w : b.h;
-		calculate_size item_size_calc(_horizontal ? b.w : b.h, acc.get_remainder());
-
+		for (auto i = _children.begin(); i != _children.end(); ++i)
+			dynamic_space -= i->size.apply<const static_size>(static_size());
 		for (auto next = _children.begin(); next != _children.end(); )
 		{
 			const auto current = next++;
+			const auto item_size = current->size.apply(calculate_size(dynamic_space, correction));
 
 			// Add child's views to layout.
-			current->size.apply(item_size_calc);
-			current->child->layout(offset(append_view, location, _horizontal, current->tab_order), b);
+			current->child->layout(offset(append_view, location, _horizontal, current->tab_order),
+				create_box(item_size, box));
 			location += item_size;
 
 			// Add splitter view to layout, if possible.
@@ -228,18 +207,21 @@ namespace wpl
 			}
 			location += _spacing;
 		}
-		_last_size = children_space;
+		_last_size = dynamic_space;
 	}
+
+	agge::box<int> stack::create_box(int item_size, const agge::box<int> &self) const
+	{	return _horizontal ? agge::create_box(item_size, self.h) : agge::create_box(self.w, item_size);	}
 
 	double stack::get_rsize() const
 	{	return _last_size ? 100.0 / _last_size : 0;	}
 
 	void stack::move_splitter(size_t index, double delta)
 	{
-		_children[index].size.apply<const limit_delta>(limit_delta(delta, true));
-		_children[index + 1].size.apply<const limit_delta>(limit_delta(delta, false));
-		_children[index].size.apply<const apply_delta>(apply_delta(delta));
-		_children[index + 1].size.apply<const apply_delta>(apply_delta(-delta));
+		delta = _children[index].size.apply(limit_lower(delta));
+		delta = _children[index + 1].size.apply(limit_upper(delta));
+		_children[index].size = _children[index].size.apply(apply_delta(delta));
+		_children[index + 1].size = _children[index + 1].size.apply(apply_delta(-delta));
 		layout_changed(false);
 	}
 }

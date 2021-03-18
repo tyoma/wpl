@@ -63,6 +63,7 @@ namespace wpl
 		class splitter;
 
 	private:
+		agge::box<int> create_box(int item_size, const agge::box<int> &self) const;
 		double get_rsize() const;
 		void move_splitter(size_t index, double delta);
 

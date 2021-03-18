@@ -161,6 +161,7 @@
     <ClInclude Include="..\wpl\mouse_router.h" />
     <ClInclude Include="..\wpl\queue.h" />
     <ClInclude Include="..\wpl\signal.h" />
+    <ClInclude Include="..\wpl\static_visitor.h" />
     <ClInclude Include="..\wpl\stylesheet.h" />
     <ClInclude Include="..\wpl\stylesheet_db.h" />
     <ClInclude Include="..\wpl\stylesheet_helpers.h" />

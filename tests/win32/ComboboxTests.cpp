@@ -12,6 +12,8 @@
 #include <ut/test.h>
 #include <windowsx.h>
 
+#pragma warning(disable: 4244)
+
 using namespace std;
 
 namespace wpl

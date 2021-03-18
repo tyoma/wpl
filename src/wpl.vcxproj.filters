@@ -279,6 +279,7 @@
     <ClInclude Include="..\wpl\win32\utf8.h">
       <Filter>win32</Filter>
     </ClInclude>
+    <ClInclude Include="..\wpl\static_visitor.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="macos\form.mm">

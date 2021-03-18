@@ -25,6 +25,7 @@
 #include <agge/math.h>
 #include <algorithm>
 #include <wpl/helpers.h>
+#include <wpl/static_visitor.h>
 
 using namespace agge;
 using namespace std;
@@ -33,28 +34,18 @@ namespace wpl
 {
 	namespace
 	{
-		struct calculate_width
+		struct calculate_width : unit_visitor< pair<size_t /*columns*/, double /*column_width*/> >
 		{
 			calculate_width(double container_width)
 				: _container_width(container_width)
 			{	}
 
-			void visit_pixel(double base_width)
+			pair<size_t, double> visit_pixel(double base_width) const
 			{
-				if (_container_width > base_width)
-					columns = static_cast<size_t>(_container_width / base_width), width = _container_width / columns;
-				else
-					columns = 1, width = _container_width;
+				auto columns = _container_width > base_width ? static_cast<size_t>(_container_width / base_width) : 1u;
+
+				return make_pair(columns, _container_width / columns);
 			}
-
-			void visit_percent(double /*value*/)
-			{	}
-
-			void visit_em(double /*value*/)
-			{	}
-
-			double width;
-			size_t columns;
 
 		private:
 			double _container_width;
@@ -84,17 +75,16 @@ namespace wpl
 
 	void staggered::layout(const placed_view_appender &append_view, const box<int> &box_)
 	{
-		calculate_width cw(box_.w);
+		const auto cw = _base_width.apply(calculate_width(box_.w));
 		auto x = 0;
 		auto remainder = 0.0;
 
-		_base_width.apply(cw);
 		_next_items_buffer.clear();
-		for (size_t i = 0; i != cw.columns; ++i)
+		for (auto i = 0u; i != cw.first; ++i)
 		{
-			const next item = {	0, x, static_cast<int>(iround(static_cast<real_t>(cw.width + remainder)))	};
+			const next item = {	0, x, static_cast<int>(iround(static_cast<real_t>(cw.second + remainder)))	};
 
-			remainder = cw.width - item.width;
+			remainder = cw.second - item.width;
 			x += item.width;
 			_next_items_buffer.push_back(item);
 			push_heap(_next_items_buffer.begin(), _next_items_buffer.end());

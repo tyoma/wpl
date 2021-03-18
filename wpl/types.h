@@ -43,9 +43,13 @@ namespace wpl
 		display_unit(double value, unit unit_);
 
 		template <typename VisitorT>
-		void apply(VisitorT &visitor) const;
+		typename VisitorT::result_type apply(const VisitorT &visitor) const;
 		template <typename VisitorT>
-		void apply(VisitorT &visitor);
+		typename VisitorT::result_type apply(VisitorT &visitor) const;
+
+	private:
+		template <typename VisitorT>
+		typename VisitorT::result_type apply2(VisitorT &visitor) const;
 
 	private:
 		double _value;
@@ -59,26 +63,26 @@ namespace wpl
 	{	}
 
 	template <typename VisitorT>
-	inline void display_unit::apply(VisitorT &visitor) const
-	{
-		switch (_unit)
-		{
-		case px:	visitor.visit_pixel(_value);	break;
-		case percent:	visitor.visit_percent(_value);	break;
-		case em:	visitor.visit_em(_value);	break;
-		}
-	}
+	inline typename VisitorT::result_type display_unit::apply(const VisitorT &visitor) const
+	{	return apply2<const VisitorT>(visitor);	}
 
 	template <typename VisitorT>
-	inline void display_unit::apply(VisitorT &visitor)
+	inline typename VisitorT::result_type display_unit::apply(VisitorT &visitor) const
+	{	return apply2(visitor);	}
+
+#pragma warning(push)
+#pragma warning(disable: 4702)
+	template <typename VisitorT>
+	inline typename VisitorT::result_type display_unit::apply2(VisitorT &visitor) const
 	{
 		switch (_unit)
 		{
-		case px:	visitor.visit_pixel(_value);	break;
-		case percent:	visitor.visit_percent(_value);	break;
-		case em:	visitor.visit_em(_value);	break;
+		default: case px:	return visitor.visit_pixel(_value);
+		case percent:	return visitor.visit_percent(_value);
+		case em:	return visitor.visit_em(_value);
 		}
 	}
+#pragma warning(pop)
 
 
 	inline display_unit pixels(double value)
