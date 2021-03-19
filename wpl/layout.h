@@ -50,11 +50,13 @@ namespace wpl
 
 		// control methods
 		virtual void layout(const placed_view_appender &append_view, const agge::box<int> &box) override;
+		virtual int min_height(int for_width = maximum_size) const override;
+		virtual int min_width(int for_height = maximum_size) const override;
 
 	private:
 		struct item
 		{
-			int min_size(bool horizontal) const;
+			int min_size(bool horizontal, int for_opposite) const;
 
 			std::shared_ptr<control> child;
 			display_unit size;
@@ -68,6 +70,7 @@ namespace wpl
 		agge::box<int> create_box(int item_size, const agge::box<int> &self) const;
 		double get_rsize() const;
 		void move_splitter(size_t index, double delta);
+		int min_shared(int for_opposite) const;
 
 	private:
 		std::vector<item> _children;

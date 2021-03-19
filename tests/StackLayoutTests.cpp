@@ -1146,16 +1146,91 @@ namespace wpl
 
 				// ASSERT
 				agge::box<int> reference1_box[] = {	{ 102, 10 },	};
+				int reference_for_height[] = {	10, 10,	};
 
 				assert_equal(reference1_box, controls[0]->size_log);
+				assert_equal(reference_for_height, controls[0]->for_height_log);
+				assert_equal(reference_for_height, controls[1]->for_height_log);
+				assert_is_empty(controls[0]->for_width_log);
+				assert_is_empty(controls[1]->for_width_log);
 
 				// ACT
 				sv.layout(make_appender(v), make_box(115, 100));
 
 				// ASSERT
 				agge::box<int> reference2_box[] = {	{ 102, 10 }, { 115, 83 },	};
+				int reference_for_width[] = {	115, 115,	};
 
 				assert_equal(reference2_box, controls[0]->size_log);
+				assert_equal(reference_for_height, controls[0]->for_height_log);
+				assert_equal(reference_for_height, controls[1]->for_height_log);
+				assert_equal(reference_for_width, controls[0]->for_width_log);
+				assert_equal(reference_for_width, controls[1]->for_width_log);
+			}
+
+
+			test( SharedMinSizeIsCalculatedAsSumOfMinAndOrFixedSizes )
+			{
+				// INIT
+				shared_ptr<mocks::control> controls[] = {
+					make_shared<mocks::control>(), // use fixed size
+					make_shared<mocks::control>(), // use min size
+					make_shared<mocks::control>(), // use zero (for a relatively sized)
+					make_shared<mocks::control>(), // use min size (for a relatively sized)
+				};
+				vector<placed_view> v;
+				stack sh(true, cursor_manager_);
+				stack sv(false, cursor_manager_);
+
+				controls[1]->minimum_width = 19;
+				controls[1]->minimum_height = 13;
+				controls[3]->minimum_width = 17;
+				controls[3]->minimum_height = 11;
+
+				sh.set_spacing(3);
+				sh.add(controls[0], pixels(31));
+				sh.add(controls[1], pixels(10));
+				sh.add(controls[2], percents(100));
+				sv.set_spacing(4);
+				sv.add(controls[0], pixels(32));
+				sv.add(controls[1], pixels(10));
+				sv.add(controls[2], percents(100));
+
+				// ACT / ASSERT
+				assert_equal(56, sh.min_width(131));
+				assert_equal(53, sv.min_height(111));
+
+				// ASSERT
+				int reference_for_height1[] = {	131,	};
+				int reference_for_width1[] = {	111,	};
+
+				assert_equal(reference_for_height1, controls[0]->for_height_log);
+				assert_equal(reference_for_height1, controls[1]->for_height_log);
+				assert_equal(reference_for_height1, controls[2]->for_height_log);
+
+				assert_equal(reference_for_width1, controls[0]->for_width_log);
+				assert_equal(reference_for_width1, controls[1]->for_width_log);
+				assert_equal(reference_for_width1, controls[2]->for_width_log);
+
+				// INIT
+				sh.add(controls[3], percents(100));
+				sv.add(controls[3], percents(100));
+
+				// ACT / ASSERT
+				assert_equal(76, sh.min_width(121));
+				assert_equal(68, sv.min_height(101));
+
+				// ASSERT
+				int reference_for_height2[] = {	131, 121,	};
+				int reference_for_width2[] = {	111, 101,	};
+
+				assert_equal(reference_for_height2, controls[0]->for_height_log);
+				assert_equal(reference_for_height2, controls[1]->for_height_log);
+				assert_equal(reference_for_height2, controls[2]->for_height_log);
+
+				assert_equal(reference_for_width2, controls[0]->for_width_log);
+				assert_equal(reference_for_width2, controls[1]->for_width_log);
+				assert_equal(reference_for_width2, controls[2]->for_width_log);
 			}
 
 		end_test_suite

@@ -81,6 +81,9 @@ namespace wpl
 				_header->layout(append_view, agge::create_box(box.w, header_height));
 			}
 
+			virtual int min_height(int /*for_width*/) const override
+			{	return 0;	}
+			
 			virtual void mouse_scroll(int depressed, int x, int y, int delta_x, int delta_y) override
 			{
 				for (auto i = _scrollers_views.begin(); i != _scrollers_views.end(); ++i)

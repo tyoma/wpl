@@ -20,7 +20,7 @@
 
 #pragma once
 
-#include <wpl/controls/header_core.h>
+#include "header_core.h"
 
 #include <agge/color.h>
 #include <agge.text/font.h>

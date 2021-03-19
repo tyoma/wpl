@@ -131,8 +131,8 @@ namespace wpl
 
 
 
-	int stack::item::min_size(bool horizontal) const
-	{	return horizontal ? child->min_width() : child->min_height();	}
+	int stack::item::min_size(bool horizontal, int for_opposite) const
+	{	return horizontal ? child->min_width(for_opposite) : child->min_height(for_opposite);	}
 
 
 	stack::splitter::splitter(stack &owner, size_t index, bool horizontal, shared_ptr<cursor_manager> cursor_manager_)
@@ -188,15 +188,16 @@ namespace wpl
 		auto dynamic_space = (_horizontal ? box.w : box.h) - (static_cast<int>(_children.size()) - 1) * _spacing;
 		auto splitter = _splitters.begin();
 		auto correction = 0.0;
+		const auto common_size = _horizontal ? box.h : box.w;
 		const auto splitter_rect = create_rect(0, 0, _horizontal ? _spacing : box.w, _horizontal ? box.h : _spacing);
 
 		for (auto i = _children.begin(); i != _children.end(); ++i)
-			dynamic_space -= (max)(i->size.apply(static_size()), i->min_size(_horizontal));
+			dynamic_space -= (max)(i->size.apply(static_size()), i->min_size(_horizontal, common_size));
 		for (auto j = _children.begin(); j != _children.end(); location += _spacing)
 		{
 			const auto i = j++;
 			const auto item_size = (max)(i->size.apply(calculate_size(dynamic_space, correction)),
-				i->min_size(_horizontal));
+				i->min_size(_horizontal, common_size));
 
 			// Add child's views to layout.
 			i->child->layout(offset(append_view, location, _horizontal, i->tab_order), create_box(item_size, box));
@@ -213,6 +214,12 @@ namespace wpl
 		_last_size = dynamic_space;
 	}
 
+	int stack::min_height(int for_width) const
+	{	return _horizontal ? 0 : min_shared(for_width);	}
+
+	int stack::min_width(int for_height) const
+	{	return _horizontal ? min_shared(for_height) : 0;	}
+
 	agge::box<int> stack::create_box(int item_size, const agge::box<int> &self) const
 	{	return _horizontal ? agge::create_box(item_size, self.h) : agge::create_box(self.w, item_size);	}
 
@@ -226,5 +233,14 @@ namespace wpl
 		_children[index].size = _children[index].size.apply(apply_delta(delta));
 		_children[index + 1].size = _children[index + 1].size.apply(apply_delta(-delta));
 		layout_changed(false);
+	}
+
+	int stack::min_shared(int for_opposite) const
+	{
+		auto value = (static_cast<int>(_children.size()) - 1) * _spacing;
+
+		for (auto i = _children.begin(); i != _children.end(); ++i)
+			value += (max)(i->min_size(_horizontal, for_opposite), i->size.apply(static_size()));
+		return value;
 	}
 }
