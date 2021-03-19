@@ -54,6 +54,8 @@ namespace wpl
 	private:
 		struct item
 		{
+			int min_size(bool horizontal) const;
+
 			std::shared_ptr<control> child;
 			display_unit size;
 			bool resizable;

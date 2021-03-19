@@ -1052,6 +1052,112 @@ namespace wpl
 				assert_equal(reference_box, c->size_log);
 			}
 
+
+			test( HorizontalAllocatedSizeCannotBeLessThanControlMinSizeForAbsoluteSizes )
+			{
+				// INIT
+				shared_ptr<mocks::control> controls[] = {
+					make_shared<mocks::control>(), make_shared<mocks::control>(),
+				};
+				vector<placed_view> v;
+				placed_view pv[] = {
+					{	make_shared<view>(), nullptr_nv, agge::zero(), 0,	},
+				};
+				stack s(true, cursor_manager_);
+
+				controls[1]->views = mkvector(pv);
+				s.add(controls[0], pixels(10));
+				s.add(controls[1], pixels(16));
+
+				controls[0]->minimum_width = 13;
+				controls[1]->minimum_width = 17;
+
+				// ACT
+				s.layout(make_appender(v), make_box(115, 10));
+
+				// ASSERT
+				agge::box<int> reference1_box[] = {	{ 13, 10 },	};
+				agge::box<int> reference2_box[] = {	{ 17, 10 },	};
+				placed_view reference_views[] = {
+					{	nullptr, nullptr_nv, create_rect(13, 0, 13, 0), 0	},
+				};
+
+				assert_equal(reference1_box, controls[0]->size_log);
+				assert_equal(reference2_box, controls[1]->size_log);
+				assert_equal_pred(reference_views, v, eq());
+			}
+
+
+			test( VerticalAllocatedSizeCannotBeLessThanControlMinSizeForAbsoluteSizes )
+			{
+				// INIT
+				shared_ptr<mocks::control> controls[] = {
+					make_shared<mocks::control>(), make_shared<mocks::control>(),
+				};
+				vector<placed_view> v;
+				placed_view pv[] = {
+					{	make_shared<view>(), nullptr_nv, agge::zero(), 0,	},
+				};
+				stack s(false, cursor_manager_);
+
+				controls[1]->views = mkvector(pv);
+				s.add(controls[0], pixels(10));
+				s.add(controls[1], pixels(16));
+
+				controls[0]->minimum_height = 13;
+				controls[1]->minimum_height = 17;
+
+				// ACT
+				s.layout(make_appender(v), make_box(115, 10));
+
+				// ASSERT
+				agge::box<int> reference1_box[] = {	{ 115, 13 },	};
+				agge::box<int> reference2_box[] = {	{ 115, 17 },	};
+				placed_view reference_views[] = {
+					{	nullptr, nullptr_nv, create_rect(0, 13, 0, 13), 0	},
+				};
+
+				assert_equal(reference1_box, controls[0]->size_log);
+				assert_equal(reference2_box, controls[1]->size_log);
+				assert_equal_pred(reference_views, v, eq());
+			}
+
+
+			test( MinSizeIsTakenIntoAccountWhenCalculatingSpaceForRelativelySizedControls )
+			{
+				// INIT
+				shared_ptr<mocks::control> controls[] = {
+					make_shared<mocks::control>(), make_shared<mocks::control>(),
+				};
+				vector<placed_view> v;
+				stack sh(true, cursor_manager_);
+				stack sv(false, cursor_manager_);
+
+				sh.add(controls[0], percents(100));
+				sh.add(controls[1], pixels(10));
+				sv.add(controls[0], percents(100));
+				sv.add(controls[1], pixels(10));
+
+				controls[1]->minimum_width = 13;
+				controls[1]->minimum_height = 17;
+
+				// ACT
+				sh.layout(make_appender(v), make_box(115, 10));
+
+				// ASSERT
+				agge::box<int> reference1_box[] = {	{ 102, 10 },	};
+
+				assert_equal(reference1_box, controls[0]->size_log);
+
+				// ACT
+				sv.layout(make_appender(v), make_box(115, 100));
+
+				// ASSERT
+				agge::box<int> reference2_box[] = {	{ 102, 10 }, { 115, 83 },	};
+
+				assert_equal(reference2_box, controls[0]->size_log);
+			}
+
 		end_test_suite
 	}
 }

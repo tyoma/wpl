@@ -131,6 +131,10 @@ namespace wpl
 
 
 
+	int stack::item::min_size(bool horizontal) const
+	{	return horizontal ? child->min_width() : child->min_height();	}
+
+
 	stack::splitter::splitter(stack &owner, size_t index, bool horizontal, shared_ptr<cursor_manager> cursor_manager_)
 		: _cursor_manager(cursor_manager_), _owner(owner), _index(index), _horizontal(horizontal)
 	{	}
@@ -184,28 +188,27 @@ namespace wpl
 		auto dynamic_space = (_horizontal ? box.w : box.h) - (static_cast<int>(_children.size()) - 1) * _spacing;
 		auto splitter = _splitters.begin();
 		auto correction = 0.0;
+		const auto splitter_rect = create_rect(0, 0, _horizontal ? _spacing : box.w, _horizontal ? box.h : _spacing);
 
 		for (auto i = _children.begin(); i != _children.end(); ++i)
-			dynamic_space -= i->size.apply<const static_size>(static_size());
-		for (auto next = _children.begin(); next != _children.end(); )
+			dynamic_space -= (max)(i->size.apply(static_size()), i->min_size(_horizontal));
+		for (auto j = _children.begin(); j != _children.end(); location += _spacing)
 		{
-			const auto current = next++;
-			const auto item_size = current->size.apply(calculate_size(dynamic_space, correction));
+			const auto i = j++;
+			const auto item_size = (max)(i->size.apply(calculate_size(dynamic_space, correction)),
+				i->min_size(_horizontal));
 
 			// Add child's views to layout.
-			current->child->layout(offset(append_view, location, _horizontal, current->tab_order),
-				create_box(item_size, box));
+			i->child->layout(offset(append_view, location, _horizontal, i->tab_order), create_box(item_size, box));
 			location += item_size;
 
-			// Add splitter view to layout, if possible.
-			if (current->resizable && (_children.end() != next && next->resizable))
+			// Add splitter view to layout, if needed and possible.
+			if (i->resizable && (_children.end() != j && j->resizable))
 			{
-				placed_view pv = {	*splitter++, shared_ptr<native_view>(), create_rect(0, 0, box.w, box.h), 0	};
+				placed_view pv = {	*splitter++, shared_ptr<native_view>(), splitter_rect, 0	};
 
-				(_horizontal ? pv.location.x2 : pv.location.y2) = _spacing;
 				offset(append_view, location, _horizontal, 0)(pv);
 			}
-			location += _spacing;
 		}
 		_last_size = dynamic_space;
 	}
