@@ -194,7 +194,7 @@ namespace wpl
 
 				// ACT
 				m->items[1] = "one two";
-				m->invalidate();
+				m->invalidate(1);
 
 				// ASSERT
 				assert_equal(2, ComboBox_GetCount(hwnd));
@@ -207,7 +207,7 @@ namespace wpl
 				// ACT
 				m->items[0] = "three four five";
 				m->items[3] = "ein";
-				m->invalidate();
+				m->invalidate(list_model<string>::npos());
 
 				// ASSERT
 				assert_equal(5, ComboBox_GetCount(hwnd));
@@ -236,7 +236,7 @@ namespace wpl
 				assert_equal(0, ComboBox_GetCount(hwnd));
 
 				// ACT
-				m->invalidate();
+				m->invalidate(list_model<string>::npos());
 
 				// ASSERT
 				assert_equal(0, ComboBox_GetCount(hwnd));
@@ -472,14 +472,14 @@ namespace wpl
 
 				// ACT
 				m->trackables.begin()->index_ = 1;
-				m->invalidate();
+				m->invalidate(2);
 
 				// ASSERT
 				assert_equal(1, ComboBox_GetCurSel(hwnd));
 
 				// ACT
 				m->trackables.begin()->index_ = 2;
-				m->invalidate();
+				m->invalidate(list_model<string>::npos());
 
 				// ASSERT
 				assert_equal(2, ComboBox_GetCurSel(hwnd));
@@ -500,7 +500,7 @@ namespace wpl
 
 				// ACT
 				m->trackables.begin()->index_ = trackable::npos();
-				m->invalidate();
+				m->invalidate(list_model<string>::npos());
 
 				// ASSERT
 				assert_equal(CB_ERR, ComboBox_GetCurSel(hwnd));

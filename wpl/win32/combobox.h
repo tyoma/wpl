@@ -43,7 +43,7 @@ namespace wpl
 				const window::original_handler_t &handler) override;
 
 			void on_invalidated(const model_t *model);
-			void update(HWND hcombobox, const model_t *model) const;
+			static void update(HWND hcombobox, const model_t *model);
 			static void update_selection(HWND hcombobox, std::shared_ptr<const trackable> &selected_item);
 
 		private:

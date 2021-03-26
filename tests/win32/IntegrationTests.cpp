@@ -54,12 +54,12 @@ namespace wpl
 				wt.created.clear();
 				f.first->set_visible(true);
 
-				mocks::columns_model::column columns[] = {
+				mocks::headers_model::column columns[] = {
 					{	"", 100	},
 					{	"", 100	},
 					{	"", 50	},
 				};
-				mocks::columns_model_ptr cm(mocks::columns_model::create(columns, columns_model::npos(), false));
+				mocks::columns_model_ptr cm(mocks::headers_model::create(columns, headers_model::npos(), false));
 				mocks::model_ptr m(new mocks::listview_model(3, 3));
 
 				lv->set_columns_model(cm);

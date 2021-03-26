@@ -29,15 +29,12 @@
 
 namespace wpl
 {
-	template <typename T>
-	struct index_traits_t
+	struct index_traits
 	{
-		typedef T index_type;
+		typedef size_t index_type;
 
 		static index_type npos();
 	};
-
-	typedef index_traits_t<size_t> index_traits;
 
 
 	struct trackable : index_traits
@@ -58,30 +55,37 @@ namespace wpl
 	};
 
 
-	template <typename ValueT, typename IndexT = size_t>
-	struct list_model : index_traits_t<IndexT>
+	template <typename ValueT>
+	struct list_model : index_traits
 	{
-		virtual typename index_traits_t<IndexT>::index_type get_count() const throw() = 0;
-		virtual void get_value(typename index_traits_t<IndexT>::index_type index, ValueT &value) const = 0;
-		virtual std::shared_ptr<const trackable> track(typename index_traits_t<IndexT>::index_type row) const;
+		virtual index_type get_count() const throw() = 0;
+		virtual void get_value(index_type index, ValueT &value) const = 0;
+		virtual std::shared_ptr<const trackable> track(index_type item) const;
 
-		signal<void ()> invalidate;
+		signal<void (index_type item)> invalidate;
 	};
 
 
-	struct columns_model_base : list_model<short int, short int>
+	struct columns_model : list_model<short int>
+	{
+		virtual void set_width(index_type index, short int width) = 0;
+	};
+
+
+	struct headers_model : columns_model
 	{
 		virtual std::pair<index_type, bool> get_sort_order() const throw() = 0;
-		virtual void update_column(index_type index, short int width) = 0;
+		virtual void get_caption(index_type index, agge::richtext_t &caption) const = 0;
+		virtual void activate_column(index_type column) = 0;
 
 		signal<void (index_type /*new_ordering_column*/, bool /*ascending*/)> sort_order_changed;
 	};
 
 
-	struct columns_model : columns_model_base
+	struct hierarchical_headers_model : headers_model
 	{
-		virtual void get_caption(index_type index, agge::richtext_t &caption) const = 0;
-		virtual void activate_column(index_type column) = 0;
+		virtual index_type get_levels_count() const throw() = 0;
+		virtual std::shared_ptr<headers_model> get_level(index_type higher_level) = 0;
 	};
 
 
@@ -98,14 +102,12 @@ namespace wpl
 
 
 
-	template<typename T>
-	inline typename index_traits_t<T>::index_type index_traits_t<T>::npos()
+	inline index_traits::index_type index_traits::npos()
 	{	return static_cast<index_type>(-1);	}
 
 
-	template <typename ValueT, typename IndexT>
-	inline std::shared_ptr<const trackable> list_model<ValueT, IndexT>::track(
-		typename index_traits_t<IndexT>::index_type /*row*/) const
+	template <typename ValueT>
+	inline std::shared_ptr<const trackable> list_model<ValueT>::track(index_type /*row*/) const
 	{	return std::shared_ptr<const trackable>();	}
 
 

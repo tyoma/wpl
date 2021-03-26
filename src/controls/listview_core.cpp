@@ -121,7 +121,7 @@ namespace wpl
 
 				if (const auto cmodel = owner->_cmodel)
 				{
-					for (columns_model::index_type i = 0, count = cmodel->get_count(); i != count; ++i)
+					for (headers_model::index_type i = 0, count = cmodel->get_count(); i != count; ++i)
 					{
 						short w = 0;
 
@@ -167,6 +167,16 @@ namespace wpl
 			const auto visible = get_visible_count();
 
 			_vsmodel->scroll_window(item < _offset.dy ? static_cast<double>(item) : item - visible + 1, visible);
+		}
+
+		void listview_core::set_columns_model(shared_ptr<columns_model> cmodel)
+		{
+			_cmodel_invalidation = cmodel ? cmodel->invalidate += [this] (columns_model::index_type /*column*/) {
+				invalidate_();
+				_hsmodel->invalidate(true);
+			} : nullptr;
+			_cmodel = cmodel;
+			_hsmodel->invalidate(true);
 		}
 
 		void listview_core::key_down(unsigned code, int modifiers)
@@ -276,13 +286,13 @@ namespace wpl
 				auto subitem = create_rect(0.0f, y1, 0.0f, y2);
 
 				draw_item_background(ctx, ras, item, row, state);
-				for (columns_model::index_type column = hrange.first, count = hrange.second; count; count--, column++)
+				for (headers_model::index_type column = hrange.first, count = hrange.second; count; count--, column++)
 				{
 					subitem.x1 = _subitem_positions[column].first, subitem.x2 = _subitem_positions[column].second;
 					draw_subitem_background(ctx, ras, subitem, row, state, column);
 				}
 				draw_item(ctx, ras, item, row, state);
-				for (columns_model::index_type column = hrange.first, count = hrange.second; count; count--, column++)
+				for (headers_model::index_type column = hrange.first, count = hrange.second; count; count--, column++)
 				{
 					subitem.x1 = _subitem_positions[column].first, subitem.x2 = _subitem_positions[column].second;
 					_model->get_text(row, column, _text_buffer);
@@ -301,16 +311,6 @@ namespace wpl
 
 		int listview_core::min_height(int /*for_width*/) const
 		{	return static_cast<int>(ceil(get_minimal_item_height() * _item_count));	}
-
-		void listview_core::set_columns_model(shared_ptr<columns_model> cmodel)
-		{
-			_cmodel_invalidation = cmodel ? cmodel->invalidate += [this] {
-				invalidate_();
-				_hsmodel->invalidate(true);
-			} : nullptr;
-			_cmodel = cmodel;
-			_hsmodel->invalidate(true);
-		}
 
 		void listview_core::set_model(shared_ptr<table_model> model)
 		{
@@ -377,7 +377,7 @@ namespace wpl
 
 		void listview_core::draw_subitem_background(gcontext &/*ctx*/, gcontext::rasterizer_ptr &/*rasterizer*/,
 			const agge::rect_r &/*box*/, index_type /*item*/, unsigned /*state*/,
-			columns_model::index_type /*subitem*/) const
+			headers_model::index_type /*subitem*/) const
 		{	}
 
 		void listview_core::draw_item(gcontext &/*ctx*/, gcontext::rasterizer_ptr &/*rasterizer*/,
@@ -421,15 +421,15 @@ namespace wpl
 			return make_pair(first, count);
 		}
 
-		pair<columns_model::index_type, columns_model::index_type> listview_core::update_horizontal_visible_range() const
+		pair<headers_model::index_type, headers_model::index_type> listview_core::update_horizontal_visible_range() const
 		{
-			auto visible_range = make_pair(columns_model::npos(), columns_model::index_type());
+			auto visible_range = make_pair(headers_model::npos(), headers_model::index_type());
 			auto x = -static_cast<real_t>(_offset.dx);
 			const auto x_limit = static_cast<real_t>(get_last_size().w + _offset.dx);
 
 			_total_width = real_t();
 			_subitem_positions.clear();
-			for (columns_model::index_type c = 0, count = _cmodel->get_count(); c != count; ++c)
+			for (headers_model::index_type c = 0, count = _cmodel->get_count(); c != count; ++c)
 			{
 				short int width;
 
@@ -439,7 +439,7 @@ namespace wpl
 				_total_width += width;
 				if ((x > real_t()) & (x - width < x_limit))
 				{
-					if (columns_model::npos() == visible_range.first)
+					if (headers_model::npos() == visible_range.first)
 						visible_range.first = c;
 					visible_range.second++;
 				}

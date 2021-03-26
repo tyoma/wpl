@@ -20,8 +20,6 @@
 
 #pragma once
 
-#include "header_basic.h"
-
 #include "../animated_models.h"
 #include "../controls.h"
 #include "../factory.h"
@@ -31,15 +29,15 @@ namespace wpl
 {
 	namespace controls
 	{
-		template <typename BaseControlT>
+		template <typename BaseControlT, typename HeaderControlT>
 		class listview_composite : public BaseControlT
 		{
 		public:
-			listview_composite(const factory &factory_, const control_context &context)
+			listview_composite(const factory &factory_, const control_context &context, const char *header_type)
 			{
 				using namespace std;
 
-				_header = factory_.create_control<header_basic>("header");
+				_header = factory_.create_control<HeaderControlT>(header_type);
 				_hscroller = factory_.create_control<scroller>("hscroller");
 				_hscroller->set_model(shared_ptr<animated_scroll_model>(new animated_scroll_model(this->get_hscroll_model(),
 					context.clock_, context.queue_, smooth_animation())));
@@ -59,7 +57,7 @@ namespace wpl
 				this->layout_changed(false);
 			}
 
-			virtual void set_columns_model(std::shared_ptr<columns_model> m) override
+			virtual void set_columns_model(std::shared_ptr<typename HeaderControlT::model_type> m) override
 			{
 				_header->set_model(m);
 				BaseControlT::set_columns_model(m);
@@ -109,7 +107,7 @@ namespace wpl
 			}
 
 		private:
-			std::shared_ptr<header_basic> _header;
+			std::shared_ptr<HeaderControlT> _header;
 			std::shared_ptr<wpl::scroller> _hscroller, _vscroller;
 			wpl::slot_connection _scroll_connection;
 			std::vector<placed_view> _scrollers_views;

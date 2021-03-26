@@ -54,7 +54,7 @@ namespace wpl
 
 				_model->get_value(i, current_width);
 				if (current_width < item_box.w)
-					_model->update_column(i, static_cast<short>(item_box.w));
+					_model->set_width(i, static_cast<short>(item_box.w));
 			}
 			_ignore_invalidations = false;
 		}
@@ -68,11 +68,11 @@ namespace wpl
 			return h;
 		}
 
-		void header_core::set_model(shared_ptr<columns_model> model)
+		void header_core::set_model(shared_ptr<headers_model> model)
 		{
 			if (model)
 			{
-				_model_invalidation = model->invalidate += [this] {
+				_model_invalidation = model->invalidate += [this] (index_type /*column*/) {
 					if (!_ignore_invalidations)	// Untestable - the guard is for iteration rather than recursion.
 						adjust_column_widths();
 					invalidate(nullptr);
@@ -124,7 +124,7 @@ namespace wpl
 				_resize.start([this, index, initial_width] (int dx, int) {
 					auto w = (max<int>)(initial_width + dx, measure_item(*_model, index).w);
 
-					_model->update_column(index, static_cast<short>(w));
+					_model->set_width(index, static_cast<short>(w));
 				}, capture, button_, x, y);
 			}
 		}
@@ -160,7 +160,7 @@ namespace wpl
 			}
 		}
 
-		box<int> header_core::measure_item(const columns_model &/*model*/, index_type /*index*/) const
+		box<int> header_core::measure_item(const headers_model &/*model*/, index_type /*index*/) const
 		{	return zero();	}
 
 		pair<header_core::index_type, header_core::handle_type> header_core::handle_from_point(int x) const

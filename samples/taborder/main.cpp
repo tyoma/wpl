@@ -10,7 +10,7 @@ using namespace wpl;
 
 namespace
 {
-	class my_columns : public columns_model
+	class my_columns : public headers_model
 	{
 	public:
 		my_columns()
@@ -33,7 +33,7 @@ namespace
 			case 3:	caption << "Average\n(exclusive)";	break;
 			}
 		}
-		virtual void update_column(index_type index, short int width) override { _widths[index] = width, invalidate(); }
+		virtual void set_width(index_type index, short int width) override { _widths[index] = width, invalidate(index); }
 		virtual pair<index_type, bool> get_sort_order() const throw() override { return _sort_order; }
 		virtual void activate_column(index_type index) override {
 			_sort_order.first = index, _sort_order.second = !_sort_order.second;

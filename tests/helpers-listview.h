@@ -19,7 +19,7 @@ namespace wpl
 				template <typename T>
 				drawing_event(drawing_event_type type_, gcontext &context_,
 						const gcontext::rasterizer_ptr &rasterizer_, const agge::rect<T> &box_, index_type item_,
-						unsigned state_, columns_model::index_type subitem_ = 0u, std::string text_ = "")
+						unsigned state_, headers_model::index_type subitem_ = 0u, std::string text_ = "")
 					: type(type_), context(&context_), rasterizer(rasterizer_.get()), item(item_),
 						subitem(subitem_), state(state_), text(text_)
 				{	box.x1 = box_.x1, box.y1 = box_.y1, box.x2 = box_.x2, box.y2 = box_.y2; }
@@ -29,7 +29,7 @@ namespace wpl
 				gcontext::rasterizer_type *rasterizer;
 				agge::rect<double> box;
 				table_model::index_type item;
-				columns_model::index_type subitem;
+				headers_model::index_type subitem;
 				unsigned state;
 				std::string text;
 			};
@@ -40,6 +40,9 @@ namespace wpl
 			tracking_listview()
 				: item_height(0), reported_events(item_background | subitem_background | item_self | subitem_self)
 			{	got_focus();	}
+
+			void set_columns_model(std::shared_ptr<headers_model> cmodel)
+			{	controls::listview_core::set_columns_model(cmodel);	}
 
 		public:
 			mutable std::vector<drawing_event> events;
@@ -58,7 +61,7 @@ namespace wpl
 			}
 
 			virtual void draw_subitem_background(gcontext &ctx, gcontext::rasterizer_ptr &rasterizer,
-				const agge::rect_r &box, index_type item, unsigned state, columns_model::index_type subitem) const override
+				const agge::rect_r &box, index_type item, unsigned state, headers_model::index_type subitem) const override
 			{
 				if (subitem_background & reported_events)
 					events.push_back(drawing_event(subitem_background, ctx, rasterizer, box, item, state, subitem));
@@ -72,7 +75,7 @@ namespace wpl
 			}
 
 			virtual void draw_subitem(gcontext &ctx, gcontext::rasterizer_ptr &rasterizer, const agge::rect_r &box,
-				index_type item, unsigned state, columns_model::index_type subitem, const std::string &text) const override
+				index_type item, unsigned state, headers_model::index_type subitem, const std::string &text) const override
 			{
 				if (subitem_self & reported_events)
 					events.push_back(drawing_event(subitem_self, ctx, rasterizer, box, item, state, subitem, text));

@@ -119,7 +119,7 @@ namespace wpl
 			update_selection(get_window(), _selected_item);
 		}
 
-		void combobox::update(HWND hcombobox, const model_t *model) const
+		void combobox::update(HWND hcombobox, const model_t *model)
 		{
 			const model_t::index_type count = model ? model->get_count() : 0u;
 			const model_t::index_type previous_count = ComboBox_GetCount(hcombobox);

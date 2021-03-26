@@ -47,9 +47,9 @@ namespace wpl
 			virtual void draw(gcontext &ctx, gcontext::rasterizer_ptr &rasterizer) const override;
 
 			// header_core methods
-			virtual agge::box<int> measure_item(const columns_model &model, index_type index) const override;
+			virtual agge::box<int> measure_item(const headers_model &model, index_type index) const override;
 			virtual void draw_item(gcontext &ctx, gcontext::rasterizer_ptr &ras, const agge::rect_r &b,
-				const columns_model &model, index_type item, unsigned /*item_state_flags*/ state) const override;
+				const headers_model &model, index_type item, unsigned /*item_state_flags*/ state) const override;
 
 		private:
 			std::shared_ptr<gcontext::text_engine_type> _text_services;

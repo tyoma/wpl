@@ -26,7 +26,7 @@ namespace
 
 				sprintf(buffer, "Dynamic: %d", _elapsed += 10);
 				_dynamic_item = buffer;
-				invalidate();
+				invalidate(npos());
 				_queue([this, alive] {	on_timer(alive);	}, 10);
 			}
 		}

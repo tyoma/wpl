@@ -90,7 +90,7 @@ namespace wpl
 			ctx(ras, blender(_fg_separator), winding<>());
 		}
 
-		box<int> header_basic::measure_item(const columns_model &model, index_type item) const
+		box<int> header_basic::measure_item(const headers_model &model, index_type item) const
 		{
 			_caption_buffer.clear();
 			model.get_caption(item, _caption_buffer);
@@ -107,7 +107,7 @@ namespace wpl
 		}
 
 		void header_basic::draw_item(gcontext &ctx, gcontext::rasterizer_ptr &ras, const rect_r &b,
-			const columns_model &model, index_type item, unsigned /*item_state_flags*/ state) const
+			const headers_model &model, index_type item, unsigned /*item_state_flags*/ state) const
 		{
 			auto halign_ = /*item ? align_far :*/ align_near;
 			auto box = b;

@@ -30,7 +30,7 @@ namespace wpl
 
 	namespace controls
 	{
-		class header_core : public integrated_control<wpl::header>, public index_traits_t<short int>
+		class header_core : public integrated_control<wpl::header>, public index_traits
 		{
 		public:
 			enum item_state_flags {
@@ -49,7 +49,7 @@ namespace wpl
 			virtual int min_height(int for_width) const override;
 
 			// header methods
-			virtual void set_model(std::shared_ptr<columns_model> model) override;
+			virtual void set_model(std::shared_ptr<headers_model> model) override;
 
 			// mouse_input methods
 			virtual void mouse_enter() override;
@@ -65,15 +65,15 @@ namespace wpl
 			enum handle_type { none_handle, column_handle, resize_handle };
 
 		private:
-			virtual agge::box<int> measure_item(const columns_model &model, index_type item) const;
+			virtual agge::box<int> measure_item(const headers_model &model, index_type item) const;
 			virtual void draw_item(gcontext &ctx, gcontext::rasterizer_ptr &rasterizer, const agge::rect_r &box,
-				const columns_model &model, index_type item, unsigned /*item_state_flags*/ state) const = 0;
+				const headers_model &model, index_type item, unsigned /*item_state_flags*/ state) const = 0;
 
 			std::pair<index_type, handle_type> handle_from_point(int x) const;
 
 		private:
 			const std::shared_ptr<cursor_manager> _cursor_manager;
-			std::shared_ptr<columns_model> _model;
+			std::shared_ptr<headers_model> _model;
 			agge::real_t _offset;
 			drag_helper _resize;
 			std::pair<index_type, bool /*ascending*/> _sorted_column;

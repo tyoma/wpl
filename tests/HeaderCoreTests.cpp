@@ -17,7 +17,7 @@ namespace wpl
 	{
 		namespace
 		{
-			typedef mocks::columns_model::column column_t;
+			typedef mocks::headers_model::column column_t;
 
 			class tracking_header : public controls::header_core
 			{
@@ -26,14 +26,14 @@ namespace wpl
 				{
 					template <typename T>
 					drawing_event(gcontext &context_, const gcontext::rasterizer_ptr &rasterizer_, const agge::rect<T> &box_,
-							const columns_model &model_, index_type item_, unsigned state_)
+							const headers_model &model_, index_type item_, unsigned state_)
 						: context(&context_), rasterizer(rasterizer_.get()), model(&model_), item(item_), state(state_)
 					{	box.x1 = box_.x1, box.y1 = box_.y1, box.x2 = box_.x2, box.y2 = box_.y2;	}
 
 					gcontext *context;
 					gcontext::rasterizer_type *rasterizer;
 					agge::rect<double> box;
-					const columns_model *model;
+					const headers_model *model;
 					index_type item;
 					unsigned state;
 				};
@@ -47,14 +47,14 @@ namespace wpl
 
 			public:
 				mutable vector<drawing_event> events;
-				function<agge::box<int> (const columns_model &model, columns_model::index_type item)> on_measure_item;
+				function<agge::box<int> (const headers_model &model, headers_model::index_type item)> on_measure_item;
 
 			private:
-				virtual agge::box<int> measure_item(const columns_model &model, index_type item) const override
+				virtual agge::box<int> measure_item(const headers_model &model, index_type item) const override
 				{	return on_measure_item ? on_measure_item(model, item) : agge::zero();	}
 
 				virtual void draw_item(gcontext &ctx, gcontext::rasterizer_ptr &rasterizer, const agge::rect_r &box,
-					const columns_model &model, index_type item, unsigned state) const override
+					const headers_model &model, index_type item, unsigned state) const override
 				{	events.push_back(drawing_event(ctx, rasterizer, box, model, item, state));	}
 			};
 
@@ -149,7 +149,7 @@ namespace wpl
 				// INIT
 				int invalidations = 0;
 				tracking_header hdr(cursor_manager_);
-				const auto m = mocks::columns_model::create("x", 1);
+				const auto m = mocks::headers_model::create("x", 1);
 				slot_connection conn = hdr.invalidate += [&] (const agge::rect_i *r) {
 					++invalidations;
 					assert_null(r);
@@ -176,7 +176,8 @@ namespace wpl
 				// INIT
 				int invalidations = 0;
 				tracking_header hdr(cursor_manager_);
-				const auto m = mocks::columns_model::create("x", 1);
+				column_t c[] = {	{	"", 107	}, {	"", 103	}, {	"", 129	},	};
+				const auto m = mocks::headers_model::create(c, headers_model::npos(), true);
 				slot_connection conn = hdr.invalidate += [&] (const agge::rect_i *r) {
 					++invalidations;
 					assert_null(r);
@@ -187,14 +188,14 @@ namespace wpl
 				invalidations = 0;
 
 				// ACT
-				m->invalidate();
+				m->invalidate(1);
 
 				// ASSERT
 				assert_equal(1, invalidations);
 
 				// ACT
-				m->invalidate();
-				m->invalidate();
+				m->invalidate(0);
+				m->invalidate(2);
 
 				// ASSERT
 				assert_equal(3, invalidations);
@@ -202,7 +203,7 @@ namespace wpl
 				// ACT
 				hdr.set_model(nullptr);
 				invalidations = 0;
-				m->invalidate();
+				m->invalidate(1);
 				m->sort_order_changed(1, true);
 
 				// ASSERT
@@ -214,7 +215,7 @@ namespace wpl
 			{
 				// INIT
 				tracking_header hdr(cursor_manager_);
-				const auto model = mocks::columns_model::create("abc", 123);
+				const auto model = mocks::headers_model::create("abc", 123);
 
 				resize(hdr, 400, 50);
 				hdr.set_model(model);
@@ -236,7 +237,7 @@ namespace wpl
 				// INIT
 				tracking_header hdr(cursor_manager_);
 				column_t c1[] = {	{	"abc", 10	}, {	"abc zyx", 17	}, {	"AA bbb Z", 25	},	};
-				auto model = mocks::columns_model::create(c1, columns_model::npos(), true);
+				auto model = mocks::headers_model::create(c1, headers_model::npos(), true);
 
 				resize(hdr, 1000, 33);
 				hdr.set_model(model);
@@ -255,7 +256,7 @@ namespace wpl
 
 				// INIT
 				column_t c2[] = {	{	"lorem", 100	}, {	"ipsum", 17	},	};
-				model = mocks::columns_model::create(c2, columns_model::npos(), true);
+				model = mocks::headers_model::create(c2, headers_model::npos(), true);
 
 				resize(hdr, 1000, 13);
 				hdr.set_model(model);
@@ -279,7 +280,7 @@ namespace wpl
 				// INIT
 				tracking_header hdr(cursor_manager_);
 				column_t c[] = {	{	"", 17	}, {	"", 29	}, {	"", 25	},	};
-				const auto m = mocks::columns_model::create(c, columns_model::npos(), true);
+				const auto m = mocks::headers_model::create(c, headers_model::npos(), true);
 
 				resize(hdr, 1000, 33);
 				hdr.set_model(m);
@@ -345,7 +346,7 @@ namespace wpl
 				// INIT
 				tracking_header hdr(cursor_manager_);
 				column_t c[] = {	{	"", 17	}, {	"", 13	}, {	"", 29	},	};
-				const auto m = mocks::columns_model::create(c, columns_model::npos(), true);
+				const auto m = mocks::headers_model::create(c, headers_model::npos(), true);
 
 				resize(hdr, 1000, 33);
 				hdr.set_model(m);
@@ -385,12 +386,12 @@ namespace wpl
 				// INIT
 				tracking_header hdr(cursor_manager_);
 				column_t c[] = {	{	"", 17	}, {	"", 13	}, {	"", 29	},	};
-				const auto m = mocks::columns_model::create(c, columns_model::npos(), true);
+				const auto m = mocks::headers_model::create(c, headers_model::npos(), true);
 
 				resize(hdr, 1000, 33);
 				hdr.set_model(m);
 
-				hdr.on_measure_item = [&] (const columns_model &m_, columns_model::index_type index) -> agge::box<int> {
+				hdr.on_measure_item = [&] (const headers_model &m_, headers_model::index_type index) -> agge::box<int> {
 					assert_equal(m.get(), &m_);
 					switch (index)
 					{
@@ -414,7 +415,7 @@ namespace wpl
 
 				// INIT
 				hdr.mouse_up(mouse_input::left, 0, 25, 10);
-				hdr.on_measure_item = [&] (const columns_model &, columns_model::index_type index) -> agge::box<int> {
+				hdr.on_measure_item = [&] (const headers_model &, headers_model::index_type index) -> agge::box<int> {
 					switch (index)
 					{
 					case 2:	return agge::create_box(23, 0);
@@ -437,7 +438,7 @@ namespace wpl
 				tracking_header hdr(cursor_manager_);
 				const control &as_control = hdr;
 				column_t c[] = {	{	"", 17	}, {	"", 13	}, {	"", 29	},	};
-				const auto m = mocks::columns_model::create(c, columns_model::npos(), true);
+				const auto m = mocks::headers_model::create(c, headers_model::npos(), true);
 
 				resize(hdr, 1000, 33);
 
@@ -445,7 +446,7 @@ namespace wpl
 				assert_equal(0, as_control.min_height());
 
 				// INIT
-				hdr.set_model(mocks::columns_model::create());
+				hdr.set_model(mocks::headers_model::create());
 
 				// ACT / ASSERT
 				assert_equal(0, as_control.min_height());
@@ -457,12 +458,12 @@ namespace wpl
 				// INIT
 				tracking_header hdr(cursor_manager_);
 				column_t c[] = {	{	"", 17	}, {	"", 13	}, {	"", 29	},	};
-				const auto m = mocks::columns_model::create(c, columns_model::npos(), true);
+				const auto m = mocks::headers_model::create(c, headers_model::npos(), true);
 
 				resize(hdr, 1000, 33);
 				hdr.set_model(m);
 
-				hdr.on_measure_item = [&] (const columns_model &, columns_model::index_type index) -> agge::box<int> {
+				hdr.on_measure_item = [&] (const headers_model &, headers_model::index_type index) -> agge::box<int> {
 					switch (index)
 					{
 					case 0:	return agge::create_box(10, 5);
@@ -476,7 +477,7 @@ namespace wpl
 				assert_equal(15, static_cast<const control &>(hdr).min_height());
 
 				// INIT
-				hdr.on_measure_item = [&] (const columns_model &, columns_model::index_type index) -> agge::box<int> {
+				hdr.on_measure_item = [&] (const headers_model &, headers_model::index_type index) -> agge::box<int> {
 					switch (index)
 					{
 					case 0:	return agge::create_box(10, 21);
@@ -496,7 +497,7 @@ namespace wpl
 				// INIT
 				tracking_header hdr(cursor_manager_);
 				column_t c[] = {	{	"", 17	}, {	"", 13	}, {	"", 29	},	};
-				const auto m = mocks::columns_model::create(c, columns_model::npos(), true);
+				const auto m = mocks::headers_model::create(c, headers_model::npos(), true);
 				auto capture = 0;
 				auto release = 0;
 				auto conn = hdr.capture += [&] (shared_ptr<void> &handle) {
@@ -538,7 +539,7 @@ namespace wpl
 				// INIT
 				tracking_header hdr(cursor_manager_);
 				column_t c[] = {	{	"", 17	}, {	"", 13	}, {	"", 29	},	};
-				const auto m = mocks::columns_model::create(c, columns_model::npos(), true);
+				const auto m = mocks::headers_model::create(c, headers_model::npos(), true);
 				auto capture = 0;
 				auto conn = hdr.capture += [&] (shared_ptr<void> &handle) {
 					capture++;
@@ -571,7 +572,7 @@ namespace wpl
 				// INIT
 				tracking_header hdr(cursor_manager_);
 				column_t c[] = {	{	"", 17	}, {	"", 13	}, {	"", 29	},	};
-				const auto m = mocks::columns_model::create(c, columns_model::npos(), true);
+				const auto m = mocks::headers_model::create(c, headers_model::npos(), true);
 
 				resize(hdr, 1000, 33);
 				hdr.set_model(m);
@@ -593,7 +594,7 @@ namespace wpl
 				// INIT
 				tracking_header hdr(cursor_manager_);
 				column_t c[] = {	{	"", 17	}, {	"", 13	}, {	"", 29	},	};
-				const auto m = mocks::columns_model::create(c, columns_model::npos(), true);
+				const auto m = mocks::headers_model::create(c, headers_model::npos(), true);
 
 				resize(hdr, 1000, 33);
 				hdr.set_model(m);
@@ -612,7 +613,7 @@ namespace wpl
 				// INIT
 				tracking_header hdr(cursor_manager_);
 				column_t c[] = {	{	"a", 10	}, {	"b", 13	}, {	"Z A", 17	},	};
-				const auto m = mocks::columns_model::create(c, 2, true);
+				const auto m = mocks::headers_model::create(c, 2, true);
 
 				resize(hdr, 1000, 33);
 				hdr.set_model(m);
@@ -654,7 +655,7 @@ namespace wpl
 				tracking_header hdr(cursor_manager_);
 				auto invalidations = 0;
 				column_t c[] = {	{	"a", 10	}, {	"b", 13	}, {	"Z A", 17	},	};
-				const auto m = mocks::columns_model::create(c, 2, true);
+				const auto m = mocks::headers_model::create(c, 2, true);
 				auto conn = hdr.invalidate += [&] (const agge::rect_i *r) { assert_null(r); invalidations++; };
 
 				resize(hdr, 1000, 33);
@@ -681,7 +682,7 @@ namespace wpl
 				// INIT
 				tracking_header hdr(cursor_manager_);
 				column_t c[] = {	{	"a", 10	}, {	"b", 13	}, {	"Z A", 17	},	};
-				const auto m = mocks::columns_model::create(c, 2, true);
+				const auto m = mocks::headers_model::create(c, 2, true);
 
 				resize(hdr, 1000, 33);
 				hdr.set_model(m);
@@ -724,7 +725,7 @@ namespace wpl
 				// INIT
 				tracking_header hdr(cursor_manager_);
 				column_t c[] = {	{	"a", 10	}, {	"b", 13	}, {	"Z A", 17	},	};
-				const auto m = mocks::columns_model::create(c, 2, true);
+				const auto m = mocks::headers_model::create(c, 2, true);
 
 				resize(hdr, 1000, 33);
 				hdr.set_model(m);
@@ -750,7 +751,7 @@ namespace wpl
 				column_t columns[] = {	{	"a", 10	}, {	"b", 13	}, {	"Z A", 17	},	};
 
 				resize(hdr, 1000, 33);
-				hdr.set_model(mocks::columns_model::create(columns, 2, true));
+				hdr.set_model(mocks::headers_model::create(columns, 2, true));
 
 				auto c = hdr.invalidate += [&] (const void *r) { assert_null(r); invalidations++; };
 
@@ -798,7 +799,7 @@ namespace wpl
 				column_t columns[] = {	{	"a", 10	}, {	"b", 13	}, {	"Z A", 17	},	};
 
 				resize(hdr, 1000, 33);
-				hdr.set_model(mocks::columns_model::create(columns, 2, true));
+				hdr.set_model(mocks::headers_model::create(columns, 2, true));
 				hdr.set_offset(-10);
 
 				// ACT
@@ -829,12 +830,12 @@ namespace wpl
 				// INIT
 				tracking_header hdr(cursor_manager_);
 				column_t c[] = {	{	"", 17	}, {	"", 13	}, {	"", 29	}, {	"", 29	},	};
-				const auto m = mocks::columns_model::create(c, columns_model::npos(), true);
+				const auto m = mocks::headers_model::create(c, headers_model::npos(), true);
 
 				resize(hdr, 1000, 33);
 				hdr.set_model(m);
 
-				hdr.on_measure_item = [&] (const columns_model &/*m*/, columns_model::index_type item) -> agge::box<int> {
+				hdr.on_measure_item = [&] (const headers_model &/*m*/, headers_model::index_type item) -> agge::box<int> {
 					switch (item)
 					{
 					case 0:	return agge::create_box(10, 0);
@@ -855,7 +856,7 @@ namespace wpl
 				assert_equal(reference1_widths, m->columns);
 
 				// INIT
-				hdr.on_measure_item = [&] (const columns_model &/*m*/, columns_model::index_type item) -> agge::box<int> {
+				hdr.on_measure_item = [&] (const headers_model &/*m*/, headers_model::index_type item) -> agge::box<int> {
 					switch (item)
 					{
 					case 0:	return agge::create_box(100, 0);
@@ -881,11 +882,11 @@ namespace wpl
 				// INIT
 				tracking_header hdr(cursor_manager_);
 				column_t c[] = {	{	"", 17	}, {	"", 13	}, {	"", 29	}, {	"", 29	},	};
-				const auto m = mocks::columns_model::create(c, columns_model::npos(), true);
+				const auto m = mocks::headers_model::create(c, headers_model::npos(), true);
 
 				resize(hdr, 1000, 33);
 
-				hdr.on_measure_item = [&] (const columns_model &/*m*/, columns_model::index_type item) -> agge::box<int> {
+				hdr.on_measure_item = [&] (const headers_model &/*m*/, headers_model::index_type item) -> agge::box<int> {
 					switch (item)
 					{
 					case 0:	return agge::create_box(100, 0);
@@ -909,13 +910,13 @@ namespace wpl
 				// INIT
 				tracking_header hdr(cursor_manager_);
 				column_t c[] = {	{	"", 17	}, {	"", 13	}, {	"", 29	}, {	"", 29	},	};
-				const auto m = mocks::columns_model::create(c, columns_model::npos(), true);
+				const auto m = mocks::headers_model::create(c, headers_model::npos(), true);
 
 				m->invalidate_on_update = true;
 				resize(hdr, 1000, 33);
 				hdr.set_model(m);
 
-				hdr.on_measure_item = [&] (const columns_model &/*m*/, columns_model::index_type item) -> agge::box<int> {
+				hdr.on_measure_item = [&] (const headers_model &/*m*/, headers_model::index_type item) -> agge::box<int> {
 					switch (item)
 					{
 					case 1:	return agge::create_box(153, 0);
@@ -925,7 +926,7 @@ namespace wpl
 				};
 
 				// ACT
-				m->invalidate();
+				m->invalidate(1);
 
 				// ACT
 				short reference1_ulog[] = {	1, 3,	};
@@ -935,7 +936,7 @@ namespace wpl
 				assert_equal(reference1_widths, m->columns);
 
 				// INIT
-				hdr.on_measure_item = [&] (const columns_model &/*m*/, columns_model::index_type item) -> agge::box<int> {
+				hdr.on_measure_item = [&] (const headers_model &/*m*/, headers_model::index_type item) -> agge::box<int> {
 					switch (item)
 					{
 					case 2:	return agge::create_box(32, 0);
@@ -944,7 +945,7 @@ namespace wpl
 				};
 
 				// ACT
-				m->invalidate();
+				m->invalidate(2);
 
 				// ACT
 				column_t reference2_widths[] = {	{	"", 17	}, {	"", 153	}, {	"", 32	}, {	"", 31	},	};

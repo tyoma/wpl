@@ -17,39 +17,39 @@ namespace wpl
 			}
 
 
-			columns_model::index_type columns_model::get_count() const throw()
+			headers_model::index_type headers_model::get_count() const throw()
 			{	return static_cast<index_type>(columns.size());	}
 
-			void columns_model::get_value(index_type index, short int &width) const
+			void headers_model::get_value(index_type index, short int &width) const
 			{	width = columns[index].width;	}
 
-			void columns_model::get_caption(index_type index, agge::richtext_t &column) const
+			void headers_model::get_caption(index_type index, agge::richtext_t &column) const
 			{	column << columns[index].caption.c_str();	}
 
-			void columns_model::update_column(index_type index, short int width)
+			void headers_model::set_width(index_type index, short int width)
 			{
 				columns[index].width = width, column_update_log.push_back(index);
 				if (invalidate_on_update)
-					invalidate();
+					invalidate(index);
 			}
 
-			pair<columns_model::index_type, bool> columns_model::get_sort_order() const throw()
+			pair<headers_model::index_type, bool> headers_model::get_sort_order() const throw()
 			{	return make_pair(sort_column, sort_ascending);	}
 
-			void columns_model::activate_column(index_type column)
+			void headers_model::activate_column(index_type column)
 			{	column_activation_log.push_back(column);	}
 
-			shared_ptr<columns_model> columns_model::create(const string &caption, short int width)
+			shared_ptr<headers_model> headers_model::create(const string &caption, short int width)
 			{
 				column columns[] = {	{	caption, width	}, };
 
 				return create(columns, npos(), false);
 			}
 
-			shared_ptr<columns_model> columns_model::create()
-			{	return shared_ptr<columns_model>(new columns_model);	}
+			shared_ptr<headers_model> headers_model::create()
+			{	return shared_ptr<headers_model>(new headers_model);	}
 
-			void columns_model::set_sort_order(index_type column, bool ascending)
+			void headers_model::set_sort_order(index_type column, bool ascending)
 			{
 				sort_column = column;
 				sort_ascending = ascending;

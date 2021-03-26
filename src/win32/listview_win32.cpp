@@ -56,19 +56,19 @@ namespace wpl
 			: native_view("text.listview")
 		{
 			_avoid_notifications = false,
-			_sort_column = columns_model::npos();
+			_sort_column = headers_model::npos();
 		}
 
 		void listview::layout(const placed_view_appender &append_view, const agge::box<int> &box)
 		{	native_view::layout(append_view, box);	}
 
-		void listview::set_columns_model(shared_ptr<columns_model> cm)
+		void listview::set_columns_model(shared_ptr<headers_model> cm)
 		{
 			setup_columns(get_window(), *cm);
 
-			pair<columns_model::index_type, bool> sort_order = cm->get_sort_order();
+			pair<headers_model::index_type, bool> sort_order = cm->get_sort_order();
 
-			if (columns_model::npos() != sort_order.first)
+			if (headers_model::npos() != sort_order.first)
 			{
 				if (_model)
 					_model->set_order(sort_order.first, sort_order.second);
@@ -86,9 +86,9 @@ namespace wpl
 		{
 			if (_columns_model && model)
 			{
-				pair<columns_model::index_type, bool> sort_order = _columns_model->get_sort_order();
+				pair<headers_model::index_type, bool> sort_order = _columns_model->get_sort_order();
 
-				if (columns_model::npos() != sort_order.first)
+				if (headers_model::npos() != sort_order.first)
 					model->set_order(sort_order.first, sort_order.second);
 			}
 			_invalidated_connection = model ?
@@ -156,7 +156,7 @@ namespace wpl
 				{
 					if (_columns_model && HDN_ITEMCHANGED == pnmhd->hdr.code && 0 != (HDI_WIDTH & pnmhd->pitem->mask))
 					{
-						_columns_model->update_column(static_cast<columns_model::index_type>(pnmhd->iItem),
+						_columns_model->set_width(static_cast<headers_model::index_type>(pnmhd->iItem),
 							static_cast<short>(pnmhd->pitem->cxy));
 					}
 				}
@@ -206,7 +206,7 @@ namespace wpl
 						return 0;
 
 					case LVN_COLUMNCLICK:
-						_columns_model->activate_column( static_cast<columns_model::index_type>(reinterpret_cast<const NMLISTVIEW *>(lparam)->iSubItem));
+						_columns_model->activate_column( static_cast<headers_model::index_type>(reinterpret_cast<const NMLISTVIEW *>(lparam)->iSubItem));
 						return 0;
 					}
 				}
@@ -214,17 +214,17 @@ namespace wpl
 			return previous(message, wparam, lparam);
 		}
 
-		void listview::setup_columns(HWND hlistview, const columns_model &cm)
+		void listview::setup_columns(HWND hlistview, const headers_model &cm)
 		{
 			short width;
 			agge::richtext_t caption((agge::font_style_annotation()));
 			wstring caption_plain;
 			LVCOLUMNW lvcolumn = { };
-			pair<columns_model::index_type, bool> sort_order = cm.get_sort_order();
+			pair<headers_model::index_type, bool> sort_order = cm.get_sort_order();
 
 			for (int i = Header_GetItemCount(ListView_GetHeader(hlistview)) - 1; i >= 0; --i)
 				ListView_DeleteColumn(hlistview, i);
-			for (columns_model::index_type i = 0, count = cm.get_count(); i != count; ++i)
+			for (headers_model::index_type i = 0, count = cm.get_count(); i != count; ++i)
 			{
 				caption.clear();
 				cm.get_value(i, width);
@@ -253,11 +253,11 @@ namespace wpl
 				ListView_SetItemState(hlistview, i->first, LVIS_SELECTED, LVIS_SELECTED);
 		}
 
-		void listview::update_sort_order(columns_model::index_type new_ordering_column, bool ascending)
+		void listview::update_sort_order(headers_model::index_type new_ordering_column, bool ascending)
 		{
 			if (_model)
 				_model->set_order(new_ordering_column, ascending);
-			if (columns_model::npos() != _sort_column)
+			if (headers_model::npos() != _sort_column)
 				set_column_direction(get_window(), _sort_column, dir_none);
 			set_column_direction(get_window(), new_ordering_column, ascending ? dir_ascending : dir_descending);
 			_sort_column = new_ordering_column;
@@ -340,7 +340,7 @@ namespace wpl
 			return true;
 		}
 
-		void listview::set_column_direction(HWND hlistview, columns_model::index_type column,
+		void listview::set_column_direction(HWND hlistview, headers_model::index_type column,
 			sort_direction dir) throw()
 		{
 			HDITEM item = { };

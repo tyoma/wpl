@@ -45,8 +45,8 @@ namespace wpl
 
 			std::shared_ptr<scroll_model> get_vscroll_model();
 			std::shared_ptr<scroll_model> get_hscroll_model();
-
 			void make_visible(index_type item);
+			void set_columns_model(std::shared_ptr<columns_model> cmodel);
 
 			// keyboard_input methods
 			virtual void key_down(unsigned code, int modifiers) override;
@@ -64,7 +64,6 @@ namespace wpl
 			virtual int min_height(int for_width) const override;
 
 			// listview methods
-			virtual void set_columns_model(std::shared_ptr<columns_model> cmodel) override;
 			virtual void set_model(std::shared_ptr<table_model> model) override;
 
 			virtual void adjust_column_widths() override;
@@ -107,7 +106,7 @@ namespace wpl
 			bool is_visible(index_type item) const;
 
 		private:
-			std::shared_ptr<columns_model_base> _cmodel;
+			std::shared_ptr<columns_model> _cmodel;
 			std::shared_ptr<table_model> _model;
 			std::pair<table_model::index_type, table_model::index_type> _precached_range;
 			table_model::index_type _item_count;

@@ -36,6 +36,14 @@ namespace wpl
 		virtual void set_valign(agge::text_alignment value) = 0;
 	};
 
+	template <typename ModelT>
+	struct unimodel_control : control
+	{
+		typedef ModelT model_type;
+
+		virtual void set_model(std::shared_ptr<model_type> model) = 0;
+	};
+
 	struct label : control, text_container
 	{
 	};
@@ -60,14 +68,9 @@ namespace wpl
 		signal<void (model_t::index_type item)> selection_changed;
 	};
 
-	struct header : control
-	{
-		virtual void set_model(std::shared_ptr<columns_model> model) = 0;
-	};
-
 	struct listview : control
 	{
-		virtual void set_columns_model(std::shared_ptr<columns_model> model) = 0;
+		virtual void set_columns_model(std::shared_ptr<headers_model> model) = 0;
 		virtual void set_model(std::shared_ptr<table_model> model) = 0;
 
 		virtual void adjust_column_widths() = 0;
@@ -79,8 +82,6 @@ namespace wpl
 		signal<void (table_model::index_type /*item*/, bool /*became selected*/)> selection_changed;
 	};
 
-	struct scroller : control
-	{
-		virtual void set_model(std::shared_ptr<scroll_model> model) = 0;
-	};
+	typedef unimodel_control<headers_model> header;
+	typedef unimodel_control<scroll_model> scroller;
 }

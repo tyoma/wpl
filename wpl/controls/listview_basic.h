@@ -48,7 +48,7 @@ namespace wpl
 			virtual void draw_item(wpl::gcontext &ctx, wpl::gcontext::rasterizer_ptr &ras, const agge::rect_r &b,
 				index_type item, unsigned state) const override;
 			virtual void draw_subitem(wpl::gcontext &ctx, wpl::gcontext::rasterizer_ptr &rasterizer,
-				const agge::rect_r &box, index_type item, unsigned state, wpl::columns_model::index_type subitem,
+				const agge::rect_r &box, index_type item, unsigned state, wpl::headers_model::index_type subitem,
 				const std::string &text) const override;
 
 		private:
