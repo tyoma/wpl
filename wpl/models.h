@@ -93,7 +93,7 @@ namespace wpl
 	{
 		virtual index_type get_count() const throw() = 0;
 		virtual void get_text(index_type row, index_type column, std::string &text) const = 0;
-		virtual void set_order(index_type column, bool ascending) = 0;
+		virtual void set_order(index_type column, bool ascending);
 		virtual void precache(index_type from, index_type count);
 		virtual std::shared_ptr<const trackable> track(index_type row) const;
 
@@ -110,6 +110,9 @@ namespace wpl
 	inline std::shared_ptr<const trackable> list_model<ValueT>::track(index_type /*row*/) const
 	{	return std::shared_ptr<const trackable>();	}
 
+
+	inline void table_model::set_order(index_type /*column*/, bool /*ascending*/)
+	{	}
 
 	inline void table_model::precache(index_type /*from*/, index_type /*count*/)
 	{	}

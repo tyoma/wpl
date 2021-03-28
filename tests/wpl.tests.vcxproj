@@ -42,6 +42,7 @@
   <ItemGroup>
     <ClCompile Include="AnimatedModelsTests.cpp" />
     <ClCompile Include="DragHelperTests.cpp" />
+    <ClCompile Include="GroupHeadersModelTests.cpp" />
     <ClCompile Include="KeyboardRouterTests.cpp" />
     <ClCompile Include="MiscTests.cpp" />
     <ClCompile Include="MouseRouterTests.cpp" />

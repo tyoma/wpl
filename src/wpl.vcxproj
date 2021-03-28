@@ -150,6 +150,7 @@
     <ClInclude Include="..\wpl\factory.h" />
     <ClInclude Include="..\wpl\factory_context.h" />
     <ClInclude Include="..\wpl\form.h" />
+    <ClInclude Include="..\wpl\group_headers_model.h" />
     <ClInclude Include="..\wpl\helpers.h" />
     <ClInclude Include="..\wpl\input.h" />
     <ClInclude Include="..\wpl\keyboard_router.h" />

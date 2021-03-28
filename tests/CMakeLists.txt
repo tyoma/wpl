@@ -6,6 +6,7 @@ set(WPL_TEST_SOURCES
 	AnimatedModelsTests.cpp
 	DragHelperTests.cpp
 	FactoryTests.cpp
+	GroupHeadersModelTests.cpp
 	HeaderCoreTests.cpp
 	KeyboardRouterTests.cpp
 	LayoutTests.cpp

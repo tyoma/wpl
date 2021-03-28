@@ -280,6 +280,7 @@
       <Filter>win32</Filter>
     </ClInclude>
     <ClInclude Include="..\wpl\static_visitor.h" />
+    <ClInclude Include="..\wpl\group_headers_model.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="macos\form.mm">
