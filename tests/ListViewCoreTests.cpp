@@ -754,7 +754,7 @@ namespace wpl
 			}
 
 
-			test( OnlyVisibleAndPartiallyVisibleItemsAreDrawnIfWindowIsApplied2 )
+			test( OnlyVisibleAndPartiallyVisibleItemsAreDrawnIfVerticalWindowIsApplied )
 			{
 				// INIT
 				tracking_listview lv;
@@ -788,6 +788,72 @@ namespace wpl
 
 				// ASSERT
 				assert_is_empty(lv.events);
+			}
+
+
+			test( OnlyVisibleAndPartiallyVisibleItemsAreDrawnIfHorizontalWindowIsApplied )
+			{
+				// INIT
+				tracking_listview lv;
+				const auto sm = lv.get_hscroll_model();
+				column_t columns[] = {
+					{	"", 15	}, {	"", 30	}, {	"", 25	}, {	"", 55	}, {	"", 10	},
+				};
+				auto cm = mocks::headers_model::create(columns, headers_model::npos(), false);
+
+				lv.item_height = 10;
+				lv.reported_events = tracking_listview::subitem_self;
+				resize(lv, 100, 10);
+				lv.set_columns_model(cm);
+				lv.set_model(create_model(1, 5));
+
+				// ACT
+				sm->scroll_window(-30 /*first visible*/, 0 /*we don't care yet*/);
+				lv.events.clear();
+				lv.draw(*ctx, ras);
+
+				// ASSERT
+				tracking_listview::drawing_event reference1[] = {
+					tracking_listview::drawing_event(tracking_listview::subitem_self, *ctx, ras, create_rect(30.0, 0.0, 45.0, 10.0), 0, 0, 0),
+					tracking_listview::drawing_event(tracking_listview::subitem_self, *ctx, ras, create_rect(45.0, 0.0, 75.0, 10.0), 0, 0, 1),
+					tracking_listview::drawing_event(tracking_listview::subitem_self, *ctx, ras, create_rect(75.0, 0.0, 100.0, 10.0), 0, 0, 2),
+				};
+
+				assert_equal_pred(reference1, lv.events, listview_event_eq());
+
+				// INIT
+				lv.events.clear();
+
+				// ACT
+				sm->scroll_window(-25 /*first visible*/, 0 /*we don't care yet*/);
+				lv.events.clear();
+				lv.draw(*ctx, ras);
+
+				// ASSERT
+				tracking_listview::drawing_event reference2[] = {
+					tracking_listview::drawing_event(tracking_listview::subitem_self, *ctx, ras, create_rect(25.0, 0.0, 40.0, 10.0), 0, 0, 0),
+					tracking_listview::drawing_event(tracking_listview::subitem_self, *ctx, ras, create_rect(40.0, 0.0, 70.0, 10.0), 0, 0, 1),
+					tracking_listview::drawing_event(tracking_listview::subitem_self, *ctx, ras, create_rect(70.0, 0.0, 95.0, 10.0), 0, 0, 2),
+					tracking_listview::drawing_event(tracking_listview::subitem_self, *ctx, ras, create_rect(95.0, 0.0, 150.0, 10.0), 0, 0, 3),
+				};
+
+				assert_equal_pred(reference2, lv.events, listview_event_eq());
+
+				// INIT
+				lv.events.clear();
+
+				// ACT
+				sm->scroll_window(71 /*first visible*/, 0 /*we don't care yet*/);
+				lv.events.clear();
+				lv.draw(*ctx, ras);
+
+				// ASSERT
+				tracking_listview::drawing_event reference3[] = {
+					tracking_listview::drawing_event(tracking_listview::subitem_self, *ctx, ras, create_rect(-1.0, 0.0, 54.0, 10.0), 0, 0, 3),
+					tracking_listview::drawing_event(tracking_listview::subitem_self, *ctx, ras, create_rect(54.0, 0.0, 64.0, 10.0), 0, 0, 4),
+				};
+
+				assert_equal_pred(reference3, lv.events, listview_event_eq());
 			}
 
 

@@ -425,7 +425,7 @@ namespace wpl
 		{
 			auto visible_range = make_pair(headers_model::npos(), headers_model::index_type());
 			auto x = -static_cast<real_t>(_offset.dx);
-			const auto x_limit = static_cast<real_t>(get_last_size().w + _offset.dx);
+			const auto x_limit = get_last_size().w;
 
 			_total_width = real_t();
 			_subitem_positions.clear();
