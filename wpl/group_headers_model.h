@@ -40,7 +40,6 @@ namespace wpl
 
 		virtual index_type get_count() const throw() override;
 		virtual void get_value(index_type index, short &value) const override;
-		virtual void set_width(index_type index, short value) override;
 
 	protected:
 		void update_mapping(index_type count);
@@ -92,10 +91,6 @@ namespace wpl
 			value += v;
 		}
 	}
-
-	template <typename BaseT>
-	inline void group_headers_model<BaseT>::set_width(index_type /*index*/, short /*value*/)
-	{	throw 0;	}
 
 	template <typename BaseT>
 	inline void group_headers_model<BaseT>::update_mapping(index_type count)

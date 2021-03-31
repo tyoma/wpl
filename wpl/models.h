@@ -20,7 +20,6 @@
 
 #pragma once
 
-#include "concepts.h"
 #include "signal.h"
 
 #include <agge.text/richtext.h>
@@ -68,15 +67,15 @@ namespace wpl
 
 	struct columns_model : list_model<short int>
 	{
-		virtual void set_width(index_type index, short int width) = 0;
+		virtual void set_width(index_type index, short int width);
 	};
 
 
 	struct headers_model : columns_model
 	{
-		virtual std::pair<index_type, bool> get_sort_order() const throw() = 0;
+		virtual std::pair<index_type, bool> get_sort_order() const throw();
 		virtual void get_caption(index_type index, agge::richtext_t &caption) const = 0;
-		virtual void activate_column(index_type column) = 0;
+		virtual void activate_column(index_type column);
 
 		signal<void (index_type /*new_ordering_column*/, bool /*ascending*/)> sort_order_changed;
 	};
@@ -109,6 +108,17 @@ namespace wpl
 	template <typename ValueT>
 	inline std::shared_ptr<const trackable> list_model<ValueT>::track(index_type /*row*/) const
 	{	return std::shared_ptr<const trackable>();	}
+
+
+	inline void columns_model::set_width(index_type /*index*/, short int /*width*/)
+	{	}
+
+
+	inline std::pair<headers_model::index_type, bool> headers_model::get_sort_order() const throw()
+	{	return std::make_pair(npos(), false);	}
+
+	inline void headers_model::activate_column(index_type /*column*/)
+	{	}
 
 
 	inline void table_model::set_order(index_type /*column*/, bool /*ascending*/)
