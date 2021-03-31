@@ -70,7 +70,7 @@ namespace wpl
 
 			_caption_buffer.set_base_annotation(base_style);
 			adjust_column_widths();
-			invalidate(nullptr);
+			layout_changed(false);
 		}
 
 		void header_basic::draw(gcontext &ctx, gcontext::rasterizer_ptr &ras) const

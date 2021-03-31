@@ -65,7 +65,7 @@ namespace wpl
 			_stroke.width(1.0f);
 			_dash.add_dash(1.0f, 1.0f);
 			_dash.dash_start(0.5f);
-			invalidate(nullptr);
+			layout_changed(false);
 		}
 
 		void listview_basic::draw(gcontext &ctx, gcontext::rasterizer_ptr &ras) const

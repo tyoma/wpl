@@ -40,34 +40,36 @@ namespace wpl
 	namespace controls
 	{
 		label::label(shared_ptr<gcontext::text_engine_type> text_services)
-			: _text_services(text_services), _text(c_base_annotation), _layout(*_text_services),
-				_halign(align_near), _valign(align_center)
+			: _text_services(text_services), _text_buffer(c_base_annotation), _text(style_modifier::empty),
+				_layout(*_text_services), _halign(align_near), _valign(align_center)
 		{	}
 
 		void label::apply_styles(const stylesheet &stylesheet_)
 		{
 			font_style_annotation a = {	stylesheet_.get_font("text.label")->get_key(),	};
 
-			_text.set_base_annotation(a);
+			_text_buffer.set_base_annotation(a);
+			_text_buffer << _text;
 			_color = stylesheet_.get_color("text.label");
-			invalidate(nullptr);
+			layout_changed(false);
 		}
 
 		int label::min_height(int for_width) const
 		{
 			_layout.set_width_limit(static_cast<real_t>(for_width));
-			_layout.process(_text);
+			_layout.process(_text_buffer);
 			return static_cast<int>(_layout.get_box().h + 1.0);
 		}
 
 		int label::min_width(int /*for_width*/) const
-		{	return static_cast<int>(_text_services->measure(_text).w + 1.0);	}
+		{	return static_cast<int>(_text_services->measure(_text_buffer).w + 1.0);	}
 
 		void label::set_text(const richtext_modifier_t &text)
 		{
-			_text.clear();
-			_text << text;
-			invalidate(nullptr);
+			_text_buffer.clear();
+			_text = text;
+			_text_buffer << text;
+			layout_changed(false);
 		}
 
 		void label::set_halign(text_alignment value)
@@ -78,7 +80,7 @@ namespace wpl
 
 		void label::draw(gcontext &context, gcontext::rasterizer_ptr &rasterizer_) const
 		{
-			context.text_engine.render(*rasterizer_, _text, _halign, _valign,
+			context.text_engine.render(*rasterizer_, _text_buffer, _halign, _valign,
 				create_rect(0.0f, 0.0f, static_cast<real_t>(get_last_size().w), static_cast<real_t>(get_last_size().h)));
 			context(rasterizer_, blender(_color), winding<>());
 		}

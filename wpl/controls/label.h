@@ -54,7 +54,8 @@ namespace wpl
 
 		private:
 			const std::shared_ptr<gcontext::text_engine_type> _text_services;
-			agge::richtext_t _text;
+			agge::richtext_t _text_buffer;
+			agge::richtext_modifier_t _text;
 			agge::color _color;
 			mutable agge::layout _layout;
 			agge::text_alignment _halign, _valign;
