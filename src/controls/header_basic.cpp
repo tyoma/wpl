@@ -26,6 +26,7 @@
 #include <agge/blenders_simd.h>
 #include <agge/filling_rules.h>
 #include <agge/figures.h>
+#include <agge.text/limit_processors.h>
 #include <agge.text/text_engine.h>
 #include <wpl/helpers.h>
 #include <wpl/stylesheet.h>
@@ -95,7 +96,7 @@ namespace wpl
 			_caption_buffer.clear();
 			model.get_caption(item, _caption_buffer);
 
-			box_r bounds = _text_services->measure(_caption_buffer);
+			box_r bounds = _text_services->measure(_caption_buffer, limit::unlimited());
 
 			bounds.w += _separator_width + 3.0f * _padding;
 			bounds.w += agge_max(_up ? wpl::width(_up->bounds()) : 0.0f, _down ? wpl::width(_down->bounds()) : 0.0f);
@@ -137,7 +138,7 @@ namespace wpl
 			// 2. Draw text.
 			_caption_buffer.clear();
 			model.get_caption(item, _caption_buffer);
-			ctx.text_engine.render(*ras, _caption_buffer, halign_, align_near, box);
+			ctx.text_engine.render(*ras, _caption_buffer, halign_, align_near, box, limit::wrap(width(box)));
 			ctx(ras, blender(state & sorted ? _fg_sorted : _fg_normal), winding<>());
 
 			// 3. Draw right separator.

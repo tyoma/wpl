@@ -23,6 +23,7 @@
 #include <agge/blenders.h>
 #include <agge/blenders_simd.h>
 #include <agge/filling_rules.h>
+#include <agge.text/limit_processors.h>
 #include <agge.text/text_engine.h>
 #include <wpl/stylesheet.h>
 
@@ -41,7 +42,7 @@ namespace wpl
 	{
 		label::label(shared_ptr<gcontext::text_engine_type> text_services)
 			: _text_services(text_services), _text_buffer(c_base_annotation), _text(style_modifier::empty),
-				_layout(*_text_services), _halign(align_near), _valign(align_center)
+				_halign(align_near), _valign(align_center)
 		{	}
 
 		void label::apply_styles(const stylesheet &stylesheet_)
@@ -56,13 +57,12 @@ namespace wpl
 
 		int label::min_height(int for_width) const
 		{
-			_layout.set_width_limit(static_cast<real_t>(for_width));
-			_layout.process(_text_buffer);
-			return static_cast<int>(_layout.get_box().h + 1.0);
+			return static_cast<int>(_text_services->measure(_text_buffer, limit::wrap(static_cast<real_t>(for_width))).h
+				+ 1.0f);
 		}
 
 		int label::min_width(int /*for_width*/) const
-		{	return static_cast<int>(_text_services->measure(_text_buffer).w + 1.0);	}
+		{	return static_cast<int>(_text_services->measure(_text_buffer, limit::unlimited()).w + 1.0);	}
 
 		void label::set_text(const richtext_modifier_t &text)
 		{
@@ -81,7 +81,8 @@ namespace wpl
 		void label::draw(gcontext &context, gcontext::rasterizer_ptr &rasterizer_) const
 		{
 			context.text_engine.render(*rasterizer_, _text_buffer, _halign, _valign,
-				create_rect(0.0f, 0.0f, static_cast<real_t>(get_last_size().w), static_cast<real_t>(get_last_size().h)));
+				create_rect(0.0f, 0.0f, static_cast<real_t>(get_last_size().w), static_cast<real_t>(get_last_size().h)),
+				limit::wrap(static_cast<real_t>(get_last_size().w)));
 			context(rasterizer_, blender(_color), winding<>());
 		}
 	}

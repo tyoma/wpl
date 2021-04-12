@@ -25,6 +25,7 @@
 #include <agge/color.h>
 #include <agge/figures.h>
 #include <agge/filling_rules.h>
+#include <agge.text/limit_processors.h>
 #include <agge.text/text_engine.h>
 #include <wpl/helpers.h>
 
@@ -71,7 +72,7 @@ namespace wpl
 				}
 				_text << i->second.unit.c_str() << "\n";
 			}
-			const auto b = _text_services->measure(_text);
+			const auto b = _text_services->measure(_text, limit::unlimited());
 			const auto invalid = create_rect(0, 0, static_cast<int>(b.w) + 11, static_cast<int>(b.h) + 11);
 			auto full_invalid = invalid;
 
@@ -92,7 +93,7 @@ namespace wpl
 				add_path(*rasterizer_, rectangle(r.x1, r.y1, r.x2, r.y2));
 				context(rasterizer_, blender(color::make(64, 64, 64, 192)), winding<>());
 				inflate(r, -5.0f, -5.0f);
-				context.text_engine.render(*rasterizer_, _text, align_near, align_near, r);
+				context.text_engine.render(*rasterizer_, _text, align_near, align_near, r, limit::unlimited());
 				context(rasterizer_, blender(color::make(255, 255, 255)), winding<>());
 			}
 		}

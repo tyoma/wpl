@@ -24,7 +24,6 @@
 #include "integrated.h"
 
 #include <agge/color.h>
-#include <agge.text/layout.h>
 
 namespace wpl
 {
@@ -57,7 +56,6 @@ namespace wpl
 			agge::richtext_t _text_buffer;
 			agge::richtext_modifier_t _text;
 			agge::color _color;
-			mutable agge::layout _layout;
 			agge::text_alignment _halign, _valign;
 		};
 	}

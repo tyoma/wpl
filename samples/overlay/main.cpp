@@ -3,6 +3,7 @@
 #include <agge/figures.h>
 #include <agge/filling_rules.h>
 #include <agge/tools.h>
+#include <agge.text/limit_processors.h>
 #include <agge.text/richtext.h>
 #include <agge.text/text_engine.h>
 #include <samples/common/application.h>
@@ -30,7 +31,7 @@ namespace
 		{
 			_text.clear();
 			_text << text;
-			_box = text_services.measure(_text);
+			_box = text_services.measure(_text, agge::limit::unlimited());
 			_box.w += 10.0f, _box.h += 10.0f;
 			invalidate(nullptr);
 		}
@@ -49,7 +50,7 @@ namespace
 			agge::add_path(*rasterizer, agge::rectangle(r.x1, r.y1, r.x2, r.y2));
 			ctx(rasterizer, blender_t(agge::color::make(240, 240, 240)), agge::winding<>());
 			inflate(r, -4.999f, -5.0f);
-			ctx.text_engine.render(*rasterizer, _text, agge::align_center, agge::align_center, r);
+			ctx.text_engine.render(*rasterizer, _text, agge::align_center, agge::align_center, r, agge::limit::unlimited());
 			rasterizer->sort(true);
 			ctx(rasterizer, blender_t(agge::color::make(32, 32, 32)), agge::winding<>());
 		}
