@@ -23,7 +23,7 @@
 #include <agge/blenders.h>
 #include <agge/blenders_simd.h>
 #include <agge/filling_rules.h>
-#include <agge.text/limit_processors.h>
+#include <agge.text/limit.h>
 #include <agge.text/text_engine.h>
 #include <wpl/stylesheet.h>
 
@@ -62,7 +62,7 @@ namespace wpl
 		}
 
 		int label::min_width(int /*for_width*/) const
-		{	return static_cast<int>(_text_services->measure(_text_buffer, limit::unlimited()).w + 1.0);	}
+		{	return static_cast<int>(_text_services->measure(_text_buffer, limit::none()).w + 1.0);	}
 
 		void label::set_text(const richtext_modifier_t &text)
 		{

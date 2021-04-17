@@ -26,7 +26,7 @@
 #include <agge/blenders_simd.h>
 #include <agge/filling_rules.h>
 #include <agge/figures.h>
-#include <agge.text/limit_processors.h>
+#include <agge.text/limit.h>
 #include <agge.text/text_engine.h>
 #include <wpl/helpers.h>
 #include <wpl/stylesheet.h>
@@ -96,7 +96,7 @@ namespace wpl
 			_caption_buffer.clear();
 			model.get_caption(item, _caption_buffer);
 
-			box_r bounds = _text_services->measure(_caption_buffer, limit::unlimited());
+			box_r bounds = _text_services->measure(_caption_buffer, limit::none());
 
 			bounds.w += _separator_width + 3.0f * _padding;
 			bounds.w += agge_max(_up ? wpl::width(_up->bounds()) : 0.0f, _down ? wpl::width(_down->bounds()) : 0.0f);
