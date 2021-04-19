@@ -289,7 +289,7 @@ namespace wpl
 				hdr.mouse_up(mouse_input::left, 0, 3, 0);
 
 				// ASSERT
-				short int reference1[] = { 0, };
+				headers_model::index_type reference1[] = { 0, };
 
 				assert_equal(reference1, m->column_activation_log);
 
@@ -297,7 +297,7 @@ namespace wpl
 				hdr.mouse_up(mouse_input::left, 0, 46 + 3, 100);
 
 				// ASSERT
-				short int reference2[] = { 0, 2, };
+				headers_model::index_type reference2[] = { 0, 2, };
 
 				assert_equal(reference2, m->column_activation_log);
 
@@ -305,7 +305,7 @@ namespace wpl
 				hdr.mouse_up(mouse_input::left, 0, 17 - 4, 10);
 
 				// ASSERT
-				short int reference3[] = { 0, 2, 0, };
+				headers_model::index_type reference3[] = { 0, 2, 0, };
 
 				assert_equal(reference3, m->column_activation_log);
 
@@ -313,7 +313,7 @@ namespace wpl
 				hdr.mouse_up(mouse_input::left, 0, 17 + 3, 10);
 
 				// ASSERT
-				short int reference4[] = { 0, 2, 0, 1, };
+				headers_model::index_type reference4[] = { 0, 2, 0, 1, };
 
 				assert_equal(reference4, m->column_activation_log);
 
@@ -335,7 +335,7 @@ namespace wpl
 				hdr.mouse_up(mouse_input::left, 0, 64 + 3, 0); // shall be ignored
 
 				// ASSERT
-				short int reference5[] = { 0, 0, 1, 1, 2, 2, };
+				headers_model::index_type reference5[] = { 0, 0, 1, 1, 2, 2, };
 
 				assert_equal(reference5, m->column_activation_log);
 			}
@@ -737,7 +737,7 @@ namespace wpl
 				hdr.mouse_up(mouse_input::left, 0, 56, 0);
 
 				// ASSERT
-				short int reference[] = { 0, 1, 2, };
+				headers_model::index_type reference[] = { 0, 1, 2, };
 
 				assert_equal(reference, m->column_activation_log);
 			}
@@ -849,7 +849,7 @@ namespace wpl
 				hdr.adjust_column_widths();
 
 				// ACT
-				short reference1_ulog[] = {	1, 2,	};
+				headers_model::index_type reference1_ulog[] = {	1, 2,	};
 				column_t reference1_widths[] = {	{	"", 17	}, {	"", 200	}, {	"", 30	}, {	"", 29	},	};
 
 				assert_equal(reference1_ulog, m->column_update_log);
@@ -869,7 +869,7 @@ namespace wpl
 				hdr.adjust_column_widths();
 
 				// ACT
-				short reference2_ulog[] = {	0,	};
+				headers_model::index_type reference2_ulog[] = {	0,	};
 				column_t reference2_widths[] = {	{	"", 100	}, {	"", 200	}, {	"", 30	}, {	"", 29	},	};
 
 				assert_equal(reference2_ulog, m->column_update_log);
@@ -929,7 +929,7 @@ namespace wpl
 				m->invalidate(1);
 
 				// ACT
-				short reference1_ulog[] = {	1, 3,	};
+				headers_model::index_type reference1_ulog[] = {	1, 3,	};
 				column_t reference1_widths[] = {	{	"", 17	}, {	"", 153	}, {	"", 29	}, {	"", 31	},	};
 
 				assert_equal(reference1_ulog, m->column_update_log);
