@@ -57,7 +57,7 @@ namespace
 		pair<index_type, bool> _sort_order;
 	};
 
-	class my_model : public table_model
+	class my_model : public string_table_model
 	{
 	public:
 		my_model(const queue &queue_)

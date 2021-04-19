@@ -20,7 +20,7 @@ namespace wpl
 		{
 			typedef mocks::headers_model::column column_t;
 
-			mocks::autotrackable_table_model_ptr create_model(table_model::index_type count,
+			mocks::autotrackable_table_model_ptr create_model(string_table_model::index_type count,
 				headers_model::index_type columns_count = 1)
 			{	return mocks::autotrackable_table_model_ptr(new mocks::autotrackable_table_model(count, columns_count));	}
 
@@ -36,9 +36,9 @@ namespace wpl
 			shared_ptr<gcontext> ctx;
 			gcontext::rasterizer_ptr ras;
 
-			vector< pair<table_model::index_type, unsigned /*state*/> > get_visible_states_raw(tracking_listview &lv)
+			vector< pair<string_table_model::index_type, unsigned /*state*/> > get_visible_states_raw(tracking_listview &lv)
 			{
-				vector< pair<table_model::index_type, unsigned /*state*/> > selection;
+				vector< pair<string_table_model::index_type, unsigned /*state*/> > selection;
 
 				lv.events.clear();
 				lv.draw(*ctx, ras);
@@ -50,7 +50,7 @@ namespace wpl
 				return selection;
 			}
 
-			vector< pair<table_model::index_type, unsigned /*state*/> > get_visible_states(tracking_listview &lv)
+			vector< pair<string_table_model::index_type, unsigned /*state*/> > get_visible_states(tracking_listview &lv)
 			{
 				lv.item_height = 1;
 				lv.reported_events = tracking_listview::item_self;
@@ -116,7 +116,7 @@ namespace wpl
 				lv.select(0, true);
 
 				// ASSERT
-				pair<table_model::index_type, unsigned /*state*/> reference2[] = {
+				pair<string_table_model::index_type, unsigned /*state*/> reference2[] = {
 					make_pair(0, controls::listview_core::selected),
 				};
 
@@ -129,7 +129,7 @@ namespace wpl
 				lv.select(1, false);
 
 				// ASSERT
-				pair<table_model::index_type, unsigned /*state*/> reference3[] = {
+				pair<string_table_model::index_type, unsigned /*state*/> reference3[] = {
 					make_pair(0, controls::listview_core::selected),
 					make_pair(1, controls::listview_core::selected),
 				};
@@ -175,7 +175,7 @@ namespace wpl
 				assert_equal(1u, m->auto_trackables->count(31));
 
 				// ACT
-				lv.select(table_model::npos(), false); // does nothing
+				lv.select(string_table_model::npos(), false); // does nothing
 
 				// ASSERT
 				assert_equal(3u, m->auto_trackables->size());
@@ -189,7 +189,7 @@ namespace wpl
 
 				// ACT
 				lv.select(1, true);
-				lv.select(table_model::npos(), true);
+				lv.select(string_table_model::npos(), true);
 
 				// ASSERT
 				assert_is_empty(*m->auto_trackables);
@@ -218,7 +218,7 @@ namespace wpl
 				m->invalidate(1000);
 
 				// ASSERT
-				pair<table_model::index_type, unsigned /*state*/> reference1[] = {
+				pair<string_table_model::index_type, unsigned /*state*/> reference1[] = {
 					make_pair(1, controls::listview_core::selected),
 					make_pair(2, controls::listview_core::selected),
 					make_pair(3, controls::listview_core::selected),
@@ -232,7 +232,7 @@ namespace wpl
 				m->invalidate(1000);
 
 				// ASSERT
-				pair<table_model::index_type, unsigned /*state*/> reference2[] = {
+				pair<string_table_model::index_type, unsigned /*state*/> reference2[] = {
 					make_pair(2, controls::listview_core::selected),
 				};
 
@@ -242,7 +242,7 @@ namespace wpl
 				sm->scroll_window(10, 5.4);
 
 				// ASSERT
-				pair<table_model::index_type, unsigned /*state*/> reference3[] = {
+				pair<string_table_model::index_type, unsigned /*state*/> reference3[] = {
 					make_pair(10, controls::listview_core::selected),
 					make_pair(15, controls::listview_core::selected),
 				};
@@ -388,7 +388,7 @@ namespace wpl
 				m->invalidate(1000);
 
 				// ASSERT
-				pair<table_model::index_type, unsigned /*state*/> reference1[] = {
+				pair<string_table_model::index_type, unsigned /*state*/> reference1[] = {
 					make_pair(4, controls::listview_core::focused),
 				};
 
@@ -399,7 +399,7 @@ namespace wpl
 				m->invalidate(1000);
 
 				// ASSERT
-				pair<table_model::index_type, unsigned /*state*/> reference2[] = {
+				pair<string_table_model::index_type, unsigned /*state*/> reference2[] = {
 					make_pair(0, controls::listview_core::focused),
 				};
 
@@ -425,7 +425,7 @@ namespace wpl
 				const auto conn = lv.invalidate += [&] (const void *r) {	assert_null(r); invalidate++;	};
 
 				// ACT
-				lv.focus(table_model::npos());
+				lv.focus(string_table_model::npos());
 
 				// ASSERT
 				assert_is_empty(get_visible_states(lv));
@@ -484,7 +484,7 @@ namespace wpl
 					// ASSERT
 					invalidate++;
 
-					pair<table_model::index_type, unsigned /*state*/> reference[] = {
+					pair<string_table_model::index_type, unsigned /*state*/> reference[] = {
 						make_pair(3, controls::listview_core::selected),
 					};
 
@@ -498,7 +498,7 @@ namespace wpl
 				assert_equal(1, invalidate);
 
 				// ACT
-				lv.select(table_model::npos(), false);
+				lv.select(string_table_model::npos(), false);
 
 				// ASSERT
 				assert_equal(1, invalidate);
@@ -512,7 +512,7 @@ namespace wpl
 				};
 
 				// ACT
-				lv.select(table_model::npos(), true);
+				lv.select(string_table_model::npos(), true);
 
 				// ASSERT
 				assert_equal(2, invalidate);
@@ -531,7 +531,7 @@ namespace wpl
 				lv.key_down(keyboard_input::down, 0);
 
 				// ASSERT
-				pair<table_model::index_type, unsigned /*state*/> reference1[] = {
+				pair<string_table_model::index_type, unsigned /*state*/> reference1[] = {
 					make_pair(0, controls::listview_core::selected | controls::listview_core::focused),
 				};
 
@@ -541,7 +541,7 @@ namespace wpl
 				lv.key_down(keyboard_input::down, 0);
 
 				// ASSERT
-				pair<table_model::index_type, unsigned /*state*/> reference2[] = {
+				pair<string_table_model::index_type, unsigned /*state*/> reference2[] = {
 					make_pair(1, controls::listview_core::selected | controls::listview_core::focused),
 				};
 
@@ -551,7 +551,7 @@ namespace wpl
 				lv.key_down(keyboard_input::down, 0);
 
 				// ASSERT
-				pair<table_model::index_type, unsigned /*state*/> reference3[] = {
+				pair<string_table_model::index_type, unsigned /*state*/> reference3[] = {
 					make_pair(2, controls::listview_core::selected | controls::listview_core::focused),
 				};
 
@@ -580,7 +580,7 @@ namespace wpl
 				lv.key_down(keyboard_input::page_up, keyboard_input::control);
 
 				// ASSERT
-				pair<table_model::index_type, unsigned /*state*/> reference1[] = {
+				pair<string_table_model::index_type, unsigned /*state*/> reference1[] = {
 					make_pair(0, controls::listview_core::focused),
 				};
 
@@ -595,7 +595,7 @@ namespace wpl
 				lv.key_down(keyboard_input::page_up, 0);
 
 				// ASSERT
-				pair<table_model::index_type, unsigned /*state*/> reference2[] = {
+				pair<string_table_model::index_type, unsigned /*state*/> reference2[] = {
 					make_pair(29, controls::listview_core::selected | controls::listview_core::focused),
 				};
 
@@ -621,7 +621,7 @@ namespace wpl
 				lv.key_down(keyboard_input::page_up, keyboard_input::control);
 
 				// ASSERT
-				pair<table_model::index_type, unsigned /*state*/> reference[] = {
+				pair<string_table_model::index_type, unsigned /*state*/> reference[] = {
 					make_pair(10, controls::listview_core::focused),
 				};
 
@@ -646,7 +646,7 @@ namespace wpl
 				lv.key_down(keyboard_input::page_up, keyboard_input::control);
 
 				// ASSERT
-				pair<table_model::index_type, unsigned /*state*/> reference1[] = {
+				pair<string_table_model::index_type, unsigned /*state*/> reference1[] = {
 					make_pair(96, controls::listview_core::focused),
 				};
 
@@ -656,7 +656,7 @@ namespace wpl
 				lv.key_down(keyboard_input::page_up, 0);
 
 				// ASSERT
-				pair<table_model::index_type, unsigned /*state*/> reference2[] = {
+				pair<string_table_model::index_type, unsigned /*state*/> reference2[] = {
 					make_pair(92, controls::listview_core::selected | controls::listview_core::focused),
 				};
 
@@ -670,7 +670,7 @@ namespace wpl
 				lv.key_down(keyboard_input::page_up, keyboard_input::control);
 
 				// ASSERT
-				pair<table_model::index_type, unsigned /*state*/> reference3[] = {
+				pair<string_table_model::index_type, unsigned /*state*/> reference3[] = {
 					make_pair(56, controls::listview_core::focused),
 				};
 
@@ -695,7 +695,7 @@ namespace wpl
 				lv.key_down(keyboard_input::page_up, keyboard_input::control);
 
 				// ASSERT
-				pair<table_model::index_type, unsigned /*state*/> reference[] = {
+				pair<string_table_model::index_type, unsigned /*state*/> reference[] = {
 					make_pair(0, controls::listview_core::focused),
 				};
 
@@ -722,7 +722,7 @@ namespace wpl
 				lv.key_down(keyboard_input::page_up, keyboard_input::control);
 
 				// ASSERT
-				pair<table_model::index_type, unsigned /*state*/> reference[] = {
+				pair<string_table_model::index_type, unsigned /*state*/> reference[] = {
 					make_pair(0, controls::listview_core::focused),
 				};
 
@@ -745,7 +745,7 @@ namespace wpl
 				lv.key_down(keyboard_input::page_down, keyboard_input::control);
 
 				// ASSERT
-				pair<table_model::index_type, unsigned /*state*/> reference1[] = {
+				pair<string_table_model::index_type, unsigned /*state*/> reference1[] = {
 					make_pair(4, controls::listview_core::focused),
 				};
 
@@ -759,7 +759,7 @@ namespace wpl
 				lv.key_down(keyboard_input::page_down, 0);
 
 				// ASSERT
-				pair<table_model::index_type, unsigned /*state*/> reference2[] = {
+				pair<string_table_model::index_type, unsigned /*state*/> reference2[] = {
 					make_pair(17, controls::listview_core::selected | controls::listview_core::focused),
 				};
 
@@ -784,7 +784,7 @@ namespace wpl
 				lv.key_down(keyboard_input::page_down, keyboard_input::control);
 
 				// ASSERT
-				pair<table_model::index_type, unsigned /*state*/> reference[] = {
+				pair<string_table_model::index_type, unsigned /*state*/> reference[] = {
 					make_pair(51, controls::listview_core::focused),
 				};
 
@@ -809,7 +809,7 @@ namespace wpl
 				lv.key_down(keyboard_input::page_down, keyboard_input::control);
 
 				// ASSERT
-				pair<table_model::index_type, unsigned /*state*/> reference1[] = {
+				pair<string_table_model::index_type, unsigned /*state*/> reference1[] = {
 					make_pair(17, controls::listview_core::focused),
 				};
 
@@ -819,7 +819,7 @@ namespace wpl
 				lv.key_down(keyboard_input::page_down, 0);
 
 				// ASSERT
-				pair<table_model::index_type, unsigned /*state*/> reference2[] = {
+				pair<string_table_model::index_type, unsigned /*state*/> reference2[] = {
 					make_pair(24, controls::listview_core::selected | controls::listview_core::focused),
 				};
 
@@ -833,7 +833,7 @@ namespace wpl
 				lv.key_down(keyboard_input::page_down, keyboard_input::control);
 
 				// ASSERT
-				pair<table_model::index_type, unsigned /*state*/> reference3[] = {
+				pair<string_table_model::index_type, unsigned /*state*/> reference3[] = {
 					make_pair(67, controls::listview_core::focused),
 				};
 
@@ -858,7 +858,7 @@ namespace wpl
 				lv.key_down(keyboard_input::page_down, keyboard_input::control);
 
 				// ASSERT
-				pair<table_model::index_type, unsigned /*state*/> reference[] = {
+				pair<string_table_model::index_type, unsigned /*state*/> reference[] = {
 					make_pair(99, controls::listview_core::focused),
 				};
 
@@ -885,7 +885,7 @@ namespace wpl
 				lv.key_down(keyboard_input::page_down, keyboard_input::control);
 
 				// ASSERT
-				pair<table_model::index_type, unsigned /*state*/> reference[] = {
+				pair<string_table_model::index_type, unsigned /*state*/> reference[] = {
 					make_pair(99, controls::listview_core::focused),
 				};
 
@@ -915,7 +915,7 @@ namespace wpl
 				lv.key_up(keyboard_input::up, 0);
 
 				// ASSERT
-				pair<table_model::index_type, unsigned /*state*/> reference[] = {
+				pair<string_table_model::index_type, unsigned /*state*/> reference[] = {
 					make_pair(0, controls::listview_core::selected | controls::listview_core::focused),
 				};
 
@@ -944,7 +944,7 @@ namespace wpl
 				lv.key_up(keyboard_input::down, 0);
 
 				// ASSERT
-				pair<table_model::index_type, unsigned /*state*/> reference1[] = {
+				pair<string_table_model::index_type, unsigned /*state*/> reference1[] = {
 					make_pair(2, controls::listview_core::selected | controls::listview_core::focused),
 				};
 
@@ -958,7 +958,7 @@ namespace wpl
 				lv.key_up(keyboard_input::down, 0);
 
 				// ASSERT
-				pair<table_model::index_type, unsigned /*state*/> reference2[] = {
+				pair<string_table_model::index_type, unsigned /*state*/> reference2[] = {
 					make_pair(3, controls::listview_core::selected | controls::listview_core::focused),
 				};
 
@@ -979,7 +979,7 @@ namespace wpl
 				lv.key_down(keyboard_input::down, keyboard_input::control);
 
 				// ASSERT
-				pair<table_model::index_type, unsigned /*state*/> reference1[] = {
+				pair<string_table_model::index_type, unsigned /*state*/> reference1[] = {
 					make_pair(0, controls::listview_core::focused),
 					make_pair(1, controls::listview_core::selected),
 				};
@@ -990,7 +990,7 @@ namespace wpl
 				lv.key_down(keyboard_input::down, keyboard_input::control);
 
 				// ASSERT
-				pair<table_model::index_type, unsigned /*state*/> reference2[] = {
+				pair<string_table_model::index_type, unsigned /*state*/> reference2[] = {
 					make_pair(1, controls::listview_core::selected | controls::listview_core::focused),
 				};
 
@@ -1000,7 +1000,7 @@ namespace wpl
 				lv.key_down(keyboard_input::down, keyboard_input::control);
 
 				// ASSERT
-				pair<table_model::index_type, unsigned /*state*/> reference3[] = {
+				pair<string_table_model::index_type, unsigned /*state*/> reference3[] = {
 					make_pair(1, controls::listview_core::selected),
 					make_pair(2, controls::listview_core::focused),
 				};
@@ -1028,7 +1028,7 @@ namespace wpl
 				lv.key_up(keyboard_input::down, keyboard_input::control);
 
 				// ASSERT
-				pair<table_model::index_type, unsigned /*state*/> reference[] = {
+				pair<string_table_model::index_type, unsigned /*state*/> reference[] = {
 					make_pair(0, controls::listview_core::selected),
 				};
 
@@ -1074,7 +1074,7 @@ namespace wpl
 				const auto s1 = get_visible_states_raw(lv);
 
 				// ASSERT
-				pair<table_model::index_type, unsigned /*state*/> reference1[] = {
+				pair<string_table_model::index_type, unsigned /*state*/> reference1[] = {
 					make_pair(0, controls::listview_core::selected | controls::listview_core::focused),
 				};
 
@@ -1094,7 +1094,7 @@ namespace wpl
 				const auto s3 = get_visible_states_raw(lv);
 
 				// ASSERT
-				pair<table_model::index_type, unsigned /*state*/> reference3[] = {
+				pair<string_table_model::index_type, unsigned /*state*/> reference3[] = {
 					make_pair(1, controls::listview_core::selected | controls::listview_core::focused),
 				};
 
@@ -1106,7 +1106,7 @@ namespace wpl
 				const auto s4 = get_visible_states_raw(lv);
 
 				// ASSERT
-				pair<table_model::index_type, unsigned /*state*/> reference4[] = {
+				pair<string_table_model::index_type, unsigned /*state*/> reference4[] = {
 					make_pair(3, controls::listview_core::selected | controls::listview_core::focused),
 				};
 
@@ -1154,7 +1154,7 @@ namespace wpl
 				const auto s9 = get_visible_states_raw(lv);
 
 				// ASSERT
-				pair<table_model::index_type, unsigned /*state*/> reference9[] = {
+				pair<string_table_model::index_type, unsigned /*state*/> reference9[] = {
 					make_pair(2, controls::listview_core::selected | controls::listview_core::focused),
 				};
 
@@ -1218,7 +1218,7 @@ namespace wpl
 				const auto s1 = get_visible_states_raw(lv);
 
 				// ASSERT
-				pair<table_model::index_type, unsigned /*state*/> reference1[] = {
+				pair<string_table_model::index_type, unsigned /*state*/> reference1[] = {
 					make_pair(4, controls::listview_core::selected | controls::listview_core::focused),
 				};
 
@@ -1238,7 +1238,7 @@ namespace wpl
 				const auto s3 = get_visible_states_raw(lv);
 
 				// ASSERT
-				pair<table_model::index_type, unsigned /*state*/> reference3[] = {
+				pair<string_table_model::index_type, unsigned /*state*/> reference3[] = {
 					make_pair(5, controls::listview_core::selected | controls::listview_core::focused),
 				};
 
@@ -1250,7 +1250,7 @@ namespace wpl
 				const auto s4 = get_visible_states_raw(lv);
 
 				// ASSERT
-				pair<table_model::index_type, unsigned /*state*/> reference4[] = {
+				pair<string_table_model::index_type, unsigned /*state*/> reference4[] = {
 					make_pair(6, controls::listview_core::selected | controls::listview_core::focused),
 				};
 
@@ -1282,7 +1282,7 @@ namespace wpl
 				const auto s2 = get_visible_states_raw(lv);
 
 				// ASSERT
-				pair<table_model::index_type, unsigned /*state*/> reference2[] = {
+				pair<string_table_model::index_type, unsigned /*state*/> reference2[] = {
 					make_pair(0, controls::listview_core::selected | controls::listview_core::focused),
 				};
 
@@ -1300,7 +1300,7 @@ namespace wpl
 				const auto s4 = get_visible_states_raw(lv);
 
 				// ASSERT
-				pair<table_model::index_type, unsigned /*state*/> reference4[] = {
+				pair<string_table_model::index_type, unsigned /*state*/> reference4[] = {
 					make_pair(0, controls::listview_core::focused),
 				};
 
@@ -1318,7 +1318,7 @@ namespace wpl
 				const auto s6 = get_visible_states_raw(lv);
 
 				// ASSERT
-				pair<table_model::index_type, unsigned /*state*/> reference6[] = {
+				pair<string_table_model::index_type, unsigned /*state*/> reference6[] = {
 					make_pair(2, controls::listview_core::selected | controls::listview_core::focused),
 				};
 				assert_equal(reference6, s6);
@@ -1345,7 +1345,7 @@ namespace wpl
 				const auto s1 = get_visible_states_raw(lv);
 
 				// ASSERT
-				pair<table_model::index_type, unsigned /*state*/> reference1[] = {
+				pair<string_table_model::index_type, unsigned /*state*/> reference1[] = {
 					make_pair(0, controls::listview_core::selected),
 					make_pair(2, controls::listview_core::selected | controls::listview_core::focused),
 				};
@@ -1358,7 +1358,7 @@ namespace wpl
 				const auto s2 = get_visible_states_raw(lv);
 
 				// ASSERT
-				pair<table_model::index_type, unsigned /*state*/> reference2[] = {
+				pair<string_table_model::index_type, unsigned /*state*/> reference2[] = {
 					make_pair(0, controls::listview_core::selected),
 					make_pair(2, controls::listview_core::selected),
 					make_pair(3, controls::listview_core::selected | controls::listview_core::focused),
@@ -1508,8 +1508,8 @@ namespace wpl
 				lv.set_columns_model(mocks::headers_model::create("", 1));
 				lv.set_model(create_model(1000, 1));
 
-				vector< pair<table_model::index_type, bool> > selections;
-				auto c = lv.selection_changed += [&] (table_model::index_type item, bool selected) {
+				vector< pair<string_table_model::index_type, bool> > selections;
+				auto c = lv.selection_changed += [&] (string_table_model::index_type item, bool selected) {
 					selections.push_back(make_pair(item, selected));
 				};
 
@@ -1517,7 +1517,7 @@ namespace wpl
 				lv.select(10, true);
 
 				// ASSERT
-				pair<table_model::index_type, bool> reference1[] = {
+				pair<string_table_model::index_type, bool> reference1[] = {
 					make_pair(10u, true),
 				};
 
@@ -1531,7 +1531,7 @@ namespace wpl
 				lv.select(111, false);
 
 				// ASSERT
-				pair<table_model::index_type, bool> reference2[] = {
+				pair<string_table_model::index_type, bool> reference2[] = {
 					make_pair(11u, true),
 					make_pair(111u, true),
 				};
@@ -1545,7 +1545,7 @@ namespace wpl
 				lv.select(123, true);
 
 				// ASSERT
-				pair<table_model::index_type, bool> reference3[] = {
+				pair<string_table_model::index_type, bool> reference3[] = {
 					make_pair(10u, false),
 					make_pair(11u, false),
 					make_pair(111u, false),
@@ -1558,7 +1558,7 @@ namespace wpl
 				selections.clear();
 
 				// ACT
-				lv.select(table_model::npos(), false);
+				lv.select(string_table_model::npos(), false);
 
 				// ASSERT
 				assert_is_empty(selections);
@@ -1579,8 +1579,8 @@ namespace wpl
 				lv.select(11, false);
 				lv.select(147, false);
 
-				vector< pair<table_model::index_type, bool> > selections;
-				auto c = lv.selection_changed += [&] (table_model::index_type item, bool selected) {
+				vector< pair<string_table_model::index_type, bool> > selections;
+				auto c = lv.selection_changed += [&] (string_table_model::index_type item, bool selected) {
 					selections.push_back(make_pair(item, selected));
 				};
 
@@ -1589,7 +1589,7 @@ namespace wpl
 				lv.mouse_up(mouse_input::left, keyboard_input::control, 0, 6);
 
 				// ASSERT
-				pair<table_model::index_type, bool> reference1[] = {
+				pair<string_table_model::index_type, bool> reference1[] = {
 					make_pair(1u, true),
 				};
 
@@ -1607,7 +1607,7 @@ namespace wpl
 				lv.mouse_up(mouse_input::left, keyboard_input::control, 0, 6);
 
 				// ASSERT
-				pair<table_model::index_type, bool> reference2[] = {
+				pair<string_table_model::index_type, bool> reference2[] = {
 					make_pair(0u, true),
 					make_pair(1u, false),
 					make_pair(3u, true),

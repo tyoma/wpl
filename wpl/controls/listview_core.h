@@ -64,9 +64,7 @@ namespace wpl
 			virtual int min_height(int for_width) const override;
 
 			// listview methods
-			virtual void set_model(std::shared_ptr<table_model> model) override;
-
-			virtual void adjust_column_widths() override;
+			virtual void set_model(std::shared_ptr<string_table_model> model) override;
 
 			virtual void select(index_type item, bool reset_previous) override;
 			virtual void focus(index_type item) override;
@@ -107,9 +105,9 @@ namespace wpl
 
 		private:
 			std::shared_ptr<columns_model> _cmodel;
-			std::shared_ptr<table_model> _model;
-			std::pair<table_model::index_type, table_model::index_type> _precached_range;
-			table_model::index_type _item_count;
+			std::shared_ptr<string_table_model> _model;
+			std::pair<string_table_model::index_type, string_table_model::index_type> _precached_range;
+			string_table_model::index_type _item_count;
 			std::shared_ptr<vertical_scroll_model> _vsmodel;
 			std::shared_ptr<horizontal_scroll_model> _hsmodel;
 			slot_connection _model_invalidation, _cmodel_invalidation;

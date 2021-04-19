@@ -28,7 +28,7 @@ namespace wpl
 				gcontext *context;
 				gcontext::rasterizer_type *rasterizer;
 				agge::rect<double> box;
-				table_model::index_type item;
+				string_table_model::index_type item;
 				headers_model::index_type subitem;
 				unsigned state;
 				std::string text;

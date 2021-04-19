@@ -45,9 +45,7 @@ namespace wpl
 
 			// listview methods
 			virtual void set_columns_model(std::shared_ptr<headers_model> cm) override;
-			virtual void set_model(std::shared_ptr<table_model> model) override;
-
-			virtual void adjust_column_widths() override;
+			virtual void set_model(std::shared_ptr<string_table_model> model) override;
 
 			virtual void select(index_type item, bool reset_previous) override;
 			virtual void focus(index_type item) override;
@@ -74,7 +72,7 @@ namespace wpl
 			std::string _text_buffer;
 			utf_converter _converter;
 			std::shared_ptr<headers_model> _columns_model;
-			std::shared_ptr<table_model> _model;
+			std::shared_ptr<string_table_model> _model;
 			std::shared_ptr<void> _invalidated_connection, _sort_order_changed_connection;
 			headers_model::index_type _sort_column;
 			std::shared_ptr<const trackable> _focused_item;

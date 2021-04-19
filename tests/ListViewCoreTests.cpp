@@ -21,7 +21,7 @@ namespace wpl
 		{
 			typedef mocks::headers_model::column column_t;
 
-			mocks::autotrackable_table_model_ptr create_model(table_model::index_type count,
+			mocks::autotrackable_table_model_ptr create_model(string_table_model::index_type count,
 				headers_model::index_type columns_count = 1)
 			{	return mocks::autotrackable_table_model_ptr(new mocks::autotrackable_table_model(count, columns_count));	}
 
@@ -875,17 +875,17 @@ namespace wpl
 				};
 
 				// ACT
-				m->invalidate(table_model::npos());
+				m->invalidate(string_table_model::npos());
 
 				// ASSERT
 				assert_equal(1, invalidations);
 
 				// INIT
-				lv.set_model(shared_ptr<table_model>());
+				lv.set_model(shared_ptr<string_table_model>());
 				invalidations = 0;
 
 				// ACT
-				m->invalidate(table_model::npos());
+				m->invalidate(string_table_model::npos());
 
 				// ASSERT
 				assert_equal(0, invalidations);
@@ -1075,7 +1075,7 @@ namespace wpl
 				scroll_invalidations = 0;
 
 				// ACT
-				lv.make_visible(table_model::npos());
+				lv.make_visible(string_table_model::npos());
 
 				// ASSERT
 				assert_approx_equal(5.0, sm->get_window().first, 0.001);
@@ -1266,8 +1266,8 @@ namespace wpl
 				// INIT
 				tracking_listview lv;
 				const auto cm = mocks::headers_model::create("", 13);
-				vector<table_model::index_type> log;
-				const auto c = lv.item_activate += [&](table_model::index_type i) { log.push_back(i); };
+				vector<string_table_model::index_type> log;
+				const auto c = lv.item_activate += [&](string_table_model::index_type i) { log.push_back(i); };
 
 				lv.set_columns_model(cm);
 				lv.set_model(create_model(1000, 1));
@@ -1280,7 +1280,7 @@ namespace wpl
 				lv.mouse_double_click(mouse_input::left, 0, 13, 8);
 
 				// ASSERT
-				table_model::index_type reference1[] = { 1u, };
+				string_table_model::index_type reference1[] = { 1u, };
 
 				assert_equal(reference1, log);
 
@@ -1288,7 +1288,7 @@ namespace wpl
 				lv.mouse_double_click(mouse_input::left, 0, 18, 24);
 
 				// ASSERT
-				table_model::index_type reference2[] = { 1u, 3u, };
+				string_table_model::index_type reference2[] = { 1u, 3u, };
 
 				assert_equal(reference2, log);
 			}
@@ -1299,7 +1299,7 @@ namespace wpl
 				// INIT
 				tracking_listview lv;
 				const auto cm = mocks::headers_model::create("", 13);
-				vector<table_model::index_type> log;
+				vector<string_table_model::index_type> log;
 				const auto c = lv.item_activate += [&] (...) { assert_is_true(false); };
 
 				lv.set_columns_model(cm);
@@ -1499,7 +1499,7 @@ namespace wpl
 				lv.set_model(m);
 
 				// ASSERT
-				pair<table_model::index_type, table_model::index_type> reference1[] = {
+				pair<string_table_model::index_type, string_table_model::index_type> reference1[] = {
 					make_pair(0, 6),
 				};
 
@@ -1514,7 +1514,7 @@ namespace wpl
 				lv.set_model(m);
 
 				// ASSERT
-				pair<table_model::index_type, table_model::index_type> reference2[] = {
+				pair<string_table_model::index_type, string_table_model::index_type> reference2[] = {
 					make_pair(0, 5),
 				};
 
@@ -1529,7 +1529,7 @@ namespace wpl
 				lv.set_model(m);
 
 				// ASSERT
-				pair<table_model::index_type, table_model::index_type> reference3[] = {
+				pair<string_table_model::index_type, string_table_model::index_type> reference3[] = {
 					make_pair(0, 8),
 				};
 
@@ -1544,7 +1544,7 @@ namespace wpl
 				lv.set_model(m);
 
 				// ASSERT
-				pair<table_model::index_type, table_model::index_type> reference4[] = {
+				pair<string_table_model::index_type, string_table_model::index_type> reference4[] = {
 					make_pair(0, 8),
 				};
 
@@ -1559,7 +1559,7 @@ namespace wpl
 				lv.set_model(m);
 
 				// ASSERT
-				pair<table_model::index_type, table_model::index_type> reference5[] = {
+				pair<string_table_model::index_type, string_table_model::index_type> reference5[] = {
 					make_pair(2, 8),
 				};
 
@@ -1574,7 +1574,7 @@ namespace wpl
 				lv.set_model(m);
 
 				// ASSERT
-				pair<table_model::index_type, table_model::index_type> reference6[] = {
+				pair<string_table_model::index_type, string_table_model::index_type> reference6[] = {
 					make_pair(1, 9),
 				};
 
@@ -1598,7 +1598,7 @@ namespace wpl
 				lv.set_model(m);
 
 				// ASSERT
-				pair<table_model::index_type, table_model::index_type> reference1[] = {
+				pair<string_table_model::index_type, string_table_model::index_type> reference1[] = {
 					make_pair(0, 3),
 				};
 
@@ -1613,7 +1613,7 @@ namespace wpl
 				lv.set_model(m);
 
 				// ASSERT
-				pair<table_model::index_type, table_model::index_type> reference2[] = {
+				pair<string_table_model::index_type, string_table_model::index_type> reference2[] = {
 					make_pair(0, 0),
 				};
 
@@ -1639,7 +1639,7 @@ namespace wpl
 				lv.set_model(m);
 
 				// ASSERT
-				pair<table_model::index_type, table_model::index_type> reference3[] = {
+				pair<string_table_model::index_type, string_table_model::index_type> reference3[] = {
 					make_pair(9, 2),
 				};
 
@@ -1654,7 +1654,7 @@ namespace wpl
 				lv.set_model(m);
 
 				// ASSERT
-				pair<table_model::index_type, table_model::index_type> reference4[] = {
+				pair<string_table_model::index_type, string_table_model::index_type> reference4[] = {
 					make_pair(11, 0),
 				};
 
@@ -1692,7 +1692,7 @@ namespace wpl
 				lv.set_model(m);
 
 				// ASSERT
-				pair<table_model::index_type, table_model::index_type> reference[] = {
+				pair<string_table_model::index_type, string_table_model::index_type> reference[] = {
 					make_pair(0, 3),
 				};
 
@@ -1717,7 +1717,7 @@ namespace wpl
 				resize(lv, 100, 65);
 
 				// ASSERT
-				pair<table_model::index_type, table_model::index_type> reference1[] = {
+				pair<string_table_model::index_type, string_table_model::index_type> reference1[] = {
 					make_pair(0, 10),
 				};
 
@@ -1727,7 +1727,7 @@ namespace wpl
 				resize(lv, 100, 150);
 
 				// ASSERT
-				pair<table_model::index_type, table_model::index_type> reference2[] = {
+				pair<string_table_model::index_type, string_table_model::index_type> reference2[] = {
 					make_pair(0, 10), make_pair(0, 13),
 				};
 
@@ -1793,7 +1793,7 @@ namespace wpl
 				lv.get_vscroll_model()->scroll_window(4.9, 45.0 / 7);
 
 				// ASSERT
-				pair<table_model::index_type, table_model::index_type> reference1[] = {
+				pair<string_table_model::index_type, string_table_model::index_type> reference1[] = {
 					make_pair(4, 8),
 				};
 
@@ -1803,7 +1803,7 @@ namespace wpl
 				lv.get_vscroll_model()->scroll_window(2.1, 45.0 / 7);
 
 				// ASSERT
-				pair<table_model::index_type, table_model::index_type> reference2[] = {
+				pair<string_table_model::index_type, string_table_model::index_type> reference2[] = {
 					make_pair(4, 8), make_pair(2, 7),
 				};
 
@@ -1826,10 +1826,10 @@ namespace wpl
 
 				// ACT
 				m->items.resize(23, vector<string>(1));
-				m->invalidate(table_model::npos());
+				m->invalidate(string_table_model::npos());
 
 				// ASSERT
-				pair<table_model::index_type, table_model::index_type> reference1[] = {
+				pair<string_table_model::index_type, string_table_model::index_type> reference1[] = {
 					make_pair(0, 23),
 				};
 
@@ -1841,10 +1841,10 @@ namespace wpl
 
 				// ACT
 				m->items.resize(20, vector<string>(1));
-				m->invalidate(table_model::npos());
+				m->invalidate(string_table_model::npos());
 
 				// ASSERT
-				pair<table_model::index_type, table_model::index_type> reference2[] = {
+				pair<string_table_model::index_type, string_table_model::index_type> reference2[] = {
 					make_pair(2, 18),
 				};
 

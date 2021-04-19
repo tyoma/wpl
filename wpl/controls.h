@@ -71,15 +71,13 @@ namespace wpl
 	struct listview : control
 	{
 		virtual void set_columns_model(std::shared_ptr<headers_model> model) = 0;
-		virtual void set_model(std::shared_ptr<table_model> model) = 0;
+		virtual void set_model(std::shared_ptr<string_table_model> model) = 0;
 
-		virtual void adjust_column_widths() = 0;
+		virtual void select(string_table_model::index_type item, bool reset_previous) = 0;
+		virtual void focus(string_table_model::index_type item) = 0;
 
-		virtual void select(table_model::index_type item, bool reset_previous) = 0;
-		virtual void focus(table_model::index_type item) = 0;
-
-		signal<void (table_model::index_type /*item*/)> item_activate;
-		signal<void (table_model::index_type /*item*/, bool /*became selected*/)> selection_changed;
+		signal<void (string_table_model::index_type /*item*/)> item_activate;
+		signal<void (string_table_model::index_type /*item*/, bool /*became selected*/)> selection_changed;
 	};
 
 	typedef unimodel_control<headers_model> header;

@@ -82,7 +82,7 @@ namespace wpl
 			_columns_model = cm;
 		}
 
-		void listview::set_model(shared_ptr<table_model> model)
+		void listview::set_model(shared_ptr<string_table_model> model)
 		{
 			if (_columns_model && model)
 			{
@@ -98,12 +98,6 @@ namespace wpl
 			_visible_item.second.reset();
 			_model = model;
 			invalidate_view();
-		}
-
-		void listview::adjust_column_widths()
-		{
-			for (int i = 0, count = Header_GetItemCount(ListView_GetHeader(get_window())); i < count; ++i)
-				ListView_SetColumnWidth(get_window(), i, LVSCW_AUTOSIZE_USEHEADER);
 		}
 
 		void listview::select(index_type item, bool reset_previous)
@@ -232,7 +226,7 @@ namespace wpl
 				convert_cp(caption_plain, caption);
 				lvcolumn.mask = LVCF_SUBITEM | LVCF_TEXT | LVCF_WIDTH;
 				lvcolumn.pszText = (LPWSTR)caption_plain.c_str();
-				lvcolumn.iSubItem = i;
+				lvcolumn.iSubItem = static_cast<int>(i);
 				lvcolumn.cx = width;
 				::SendMessageW(hlistview, LVM_INSERTCOLUMNW, i, (LPARAM)&lvcolumn);
 			}

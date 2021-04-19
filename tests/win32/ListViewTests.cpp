@@ -267,7 +267,7 @@ namespace wpl
 				lv.first->set_model(m);
 
 				// ACT
-				lv.first->set_model(shared_ptr<table_model>());
+				lv.first->set_model(shared_ptr<string_table_model>());
 
 				// ASSERT
 				assert_equal(0, ListView_GetItemCount(lv.second));
@@ -565,7 +565,7 @@ namespace wpl
 				lv.first->set_columns_model(mocks::headers_model::create(columns, 1, false));
 
 				// ACT / ASSERT (must not throw)
-				lv.first->set_model(shared_ptr<table_model>());
+				lv.first->set_model(shared_ptr<string_table_model>());
 			}
 
 
@@ -716,10 +716,10 @@ namespace wpl
 			test( ItemActivationFiresCorrespondingEvent )
 			{
 				// INIT
-				vector<table_model::index_type> selections;
+				vector<string_table_model::index_type> selections;
 				auto lv = create_listview();
 				slot_connection c =
-					lv.first->item_activate += bind(&push_back<table_model::index_type>, ref(selections), _1);
+					lv.first->item_activate += bind(&push_back<string_table_model::index_type>, ref(selections), _1);
 				NMITEMACTIVATE nm = {	{	0, 0, LVN_ITEMACTIVATE	},	};
 
 				lv.first->set_model(mocks::model_ptr(new mocks::listview_model(10)));
@@ -751,11 +751,11 @@ namespace wpl
 			test( ItemChangeWithSelectionRemainingDoesNotFireEvent )
 			{
 				// INIT
-				vector<table_model::index_type> selection_indices;
+				vector<string_table_model::index_type> selection_indices;
 				vector<bool> selection_states;
 				auto lv = create_listview();
 				slot_connection
-					c1 = lv.first->selection_changed += bind(&push_back<table_model::index_type>, ref(selection_indices), _1),
+					c1 = lv.first->selection_changed += bind(&push_back<string_table_model::index_type>, ref(selection_indices), _1),
 					c2 = lv.first->selection_changed += bind(&push_back<bool>, ref(selection_states), _2);
 				NMLISTVIEW nmlv = {
 					{	0, 0, LVN_ITEMCHANGED	},
@@ -778,11 +778,11 @@ namespace wpl
 			test( ItemChangeWithSelectionChangingDoesFireEvent )
 			{
 				// INIT
-				vector<table_model::index_type> selection_indices;
+				vector<string_table_model::index_type> selection_indices;
 				vector<bool> selection_states;
 				auto lv = create_listview();
 				slot_connection
-					c1 = lv.first->selection_changed += bind(&push_back<table_model::index_type>, ref(selection_indices), _1),
+					c1 = lv.first->selection_changed += bind(&push_back<string_table_model::index_type>, ref(selection_indices), _1),
 					c2 = lv.first->selection_changed += bind(&push_back<bool>, ref(selection_states), _2);
 				NMLISTVIEW nmlv = {
 					{	0, 0, LVN_ITEMCHANGED	},
@@ -818,44 +818,6 @@ namespace wpl
 				assert_equal(4u, selection_states.size());
 				assert_equal(9u, selection_indices[3]);
 				assert_is_true(selection_states[3]);
-			}
-
-
-			test( AutoAdjustColumnWidths )
-			{
-				// INIT
-				auto lv1 = create_listview();
-				auto lv2 = create_listview();
-				column_t columns3[] = {
-					{	"_____ww", 10	},
-					{	"_____wwwwww", 10	},
-					{	"_____WW", 10	},
-				};
-				column_t columns2[] = {
-					{	"_____ii", 10	},
-					{	"_____iiii", 10	},
-				};
-
-				lv1.first->set_columns_model(mocks::headers_model::create(columns3, headers_model::npos(), false));
-				lv2.first->set_columns_model(mocks::headers_model::create(columns2, headers_model::npos(), false));
-
-				// ACT
-				lv1.first->adjust_column_widths();
-				lv2.first->adjust_column_widths();
-
-				// ASSERT
-				int w10 = get_column_width(lv1.second, 0);
-				int w11 = get_column_width(lv1.second, 1);
-				int w12 = get_column_width(lv1.second, 2);
-				int w20 = get_column_width(lv2.second, 0);
-				int w21 = get_column_width(lv2.second, 1);
-
-				assert_is_true(w10 < w11);
-				assert_is_true(w12 < w11);
-				assert_is_true(w10 < w12);
-
-				assert_is_true(w20 < w10);
-				assert_is_true(w20 < w21);
 			}
 
 
@@ -1061,7 +1023,7 @@ namespace wpl
 
 				// ACT
 				lv.first->select(1, false);
-				lv.first->select(table_model::npos(), true);
+				lv.first->select(string_table_model::npos(), true);
 
 				// ASSERT
 				assert_is_empty(get_matching_indices(lv.second, LVNI_SELECTED));
@@ -1069,7 +1031,7 @@ namespace wpl
 				// ACT
 				lv.first->select(2, false);
 				lv.first->select(3, false);
-				lv.first->select(table_model::npos(), true);
+				lv.first->select(string_table_model::npos(), true);
 
 				// ASSERT
 				assert_is_empty(get_matching_indices(lv.second, LVNI_SELECTED));
@@ -1256,7 +1218,7 @@ namespace wpl
 				m->trackables.clear();
 
 				// ACT
-				t->track_result = table_model::npos();
+				t->track_result = string_table_model::npos();
 				t.reset();
 				m->invalidate(100);
 
@@ -1290,7 +1252,7 @@ namespace wpl
 				m->invalidate(100);
 
 				// ASSERT
-				table_model::index_type expected1[] = {	5, 7, 21,	};
+				string_table_model::index_type expected1[] = {	5, 7, 21,	};
 
 				assert_equivalent(expected1, get_matching_indices(lv.second, LVNI_SELECTED));
 
@@ -1299,16 +1261,16 @@ namespace wpl
 				m->invalidate(100);
 
 				// ASSERT
-				table_model::index_type expected2[] = {	13, 7, 21,	};
+				string_table_model::index_type expected2[] = {	13, 7, 21,	};
 
 				assert_equivalent(expected2, get_matching_indices(lv.second, LVNI_SELECTED));
 
 				// ACT
-				t[1]->track_result = table_model::npos();
+				t[1]->track_result = string_table_model::npos();
 				m->invalidate(100);
 
 				// ASSERT
-				table_model::index_type expected3[] = {	13, 21,	};
+				string_table_model::index_type expected3[] = {	13, 21,	};
 
 				assert_equivalent(expected3, get_matching_indices(lv.second, LVNI_SELECTED));
 				assert_is_empty(m->tracking_requested);
@@ -1344,7 +1306,7 @@ namespace wpl
 				m->set_count(100);
 
 				// ASSERT
-				table_model::index_type expected1[] = {	5, 7, 3, 19, 47,	};
+				string_table_model::index_type expected1[] = {	5, 7, 3, 19, 47,	};
 
 				assert_equivalent(expected1, get_matching_indices(lv.second, LVNI_SELECTED));
 
@@ -1353,7 +1315,7 @@ namespace wpl
 				m->set_count(100);
 
 				// ASSERT
-				table_model::index_type expected2[] = {	5, 7, 3, 1, 47,	};
+				string_table_model::index_type expected2[] = {	5, 7, 3, 1, 47,	};
 
 				assert_equivalent(expected2, get_matching_indices(lv.second, LVNI_SELECTED));
 				assert_is_empty(m->tracking_requested);
@@ -1379,7 +1341,7 @@ namespace wpl
 				m->trackables.clear();
 
 				// ACT
-				t->track_result = table_model::npos();
+				t->track_result = string_table_model::npos();
 				t.reset();
 				m->set_count(99);
 
@@ -1442,7 +1404,7 @@ namespace wpl
 				m->set_count(100);
 
 				// ASSERT
-				table_model::index_type expected1[] = {	3, 7,	};
+				string_table_model::index_type expected1[] = {	3, 7,	};
 
 				assert_equivalent(expected1, get_matching_indices(lv.second, LVNI_SELECTED));
 
@@ -1452,7 +1414,7 @@ namespace wpl
 				m->set_count(100);
 
 				// ASSERT
-				table_model::index_type expected2[] = {	7,	};
+				string_table_model::index_type expected2[] = {	7,	};
 
 				assert_equivalent(expected2, get_matching_indices(lv.second, LVNI_SELECTED));
 			}
@@ -1523,7 +1485,7 @@ namespace wpl
 				m->set_count(100);
 
 				// ASSERT
-				table_model::index_type expected[] = {	7, 8,	};
+				string_table_model::index_type expected[] = {	7, 8,	};
 
 				assert_equivalent(expected, get_matching_indices(lv.second, LVNI_SELECTED));
 			}
@@ -1568,7 +1530,7 @@ namespace wpl
 				lv.first->focus(99);
 
 				// ASSERT
-				table_model::index_type reference1[] = { 99u, };
+				string_table_model::index_type reference1[] = { 99u, };
 
 				assert_equal(reference1, get_matching_indices(lv.second, LVNI_FOCUSED));
 
@@ -1576,12 +1538,12 @@ namespace wpl
 				lv.first->focus(49);
 
 				// ASSERT
-				table_model::index_type reference2[] = { 49u, };
+				string_table_model::index_type reference2[] = { 49u, };
 
 				assert_equal(reference2, get_matching_indices(lv.second, LVNI_FOCUSED));
 
 				// ACT
-				lv.first->focus(table_model::npos());
+				lv.first->focus(string_table_model::npos());
 
 				// ASSERT
 				assert_is_empty(get_matching_indices(lv.second, LVNI_FOCUSED));
@@ -1712,7 +1674,7 @@ namespace wpl
 				assert_is_false(is_item_visible(lv.second, 49));
 				assert_is_false(is_item_visible(lv.second, 0));
 
-				table_model::index_type reference1[] = { 99, };
+				string_table_model::index_type reference1[] = { 99, };
 
 				assert_equal(reference1, get_matching_indices(lv.second, LVNI_FOCUSED));
 
@@ -1725,7 +1687,7 @@ namespace wpl
 				assert_is_true(is_item_visible(lv.second, 49));
 				assert_is_false(is_item_visible(lv.second, 0));
 
-				table_model::index_type reference2[] = { 49, };
+				string_table_model::index_type reference2[] = { 49, };
 
 				assert_equal(reference2, get_matching_indices(lv.second, LVNI_FOCUSED));
 
@@ -1738,7 +1700,7 @@ namespace wpl
 				assert_is_false(is_item_visible(lv.second, 49));
 				assert_is_true(is_item_visible(lv.second, 0));
 
-				table_model::index_type reference3[] = { 0, };
+				string_table_model::index_type reference3[] = { 0, };
 
 				assert_equal(reference3, get_matching_indices(lv.second, LVNI_FOCUSED));
 			}
@@ -1765,7 +1727,7 @@ namespace wpl
 				assert_is_true(is_item_visible(lv.second, 49));
 				assert_is_false(is_item_visible(lv.second, 99));
 
-				table_model::index_type reference1[] = { 99, };
+				string_table_model::index_type reference1[] = { 99, };
 
 				assert_equal(reference1, get_matching_indices(lv.second, LVNI_FOCUSED));
 
@@ -1779,7 +1741,7 @@ namespace wpl
 				assert_is_false(is_item_visible(lv.second, 49));
 				assert_is_false(is_item_visible(lv.second, 99));
 
-				table_model::index_type reference2[] = { 49, };
+				string_table_model::index_type reference2[] = { 49, };
 
 				assert_equal(reference2, get_matching_indices(lv.second, LVNI_FOCUSED));
 			}
@@ -2040,8 +2002,8 @@ namespace wpl
 				// INIT
 				shared_ptr<listview> lv(new win32::listview);
 				HWND hparent2 = create_parent_window();
-				shared_ptr<table_model> model1(new mocks::listview_model(5, 1));
-				shared_ptr<table_model> model2(new mocks::listview_model(1311, 1));
+				shared_ptr<string_table_model> model1(new mocks::listview_model(5, 1));
+				shared_ptr<string_table_model> model2(new mocks::listview_model(1311, 1));
 
 				lv->set_columns_model(mocks::headers_model::create("Name", 100));
 				lv->set_model(model1);
@@ -2068,7 +2030,7 @@ namespace wpl
 				// INIT
 				shared_ptr<listview> lv(new win32::listview);
 				HWND hparent2 = create_parent_window();
-				shared_ptr<table_model> model(new mocks::listview_model(5, 1));
+				shared_ptr<string_table_model> model(new mocks::listview_model(5, 1));
 
 				lv->set_columns_model(mocks::headers_model::create("Name", 100));
 				lv->set_model(model);
@@ -2084,8 +2046,8 @@ namespace wpl
 				hwnd = get_window_and_resize(lv, hparent2);
 
 				// ASSERT
-				vector<table_model::index_type> selection = get_matching_indices(hwnd, LVNI_SELECTED);
-				table_model::index_type reference1[] = { 1, 3, };
+				vector<string_table_model::index_type> selection = get_matching_indices(hwnd, LVNI_SELECTED);
+				string_table_model::index_type reference1[] = { 1, 3, };
 
 				assert_equal(reference1, selection);
 
@@ -2097,7 +2059,7 @@ namespace wpl
 
 				// ASSERT
 				selection = get_matching_indices(hwnd, LVNI_SELECTED);
-				table_model::index_type reference2[] = { 2, };
+				string_table_model::index_type reference2[] = { 2, };
 
 				assert_equal(reference2, selection);
 			}
@@ -2108,7 +2070,7 @@ namespace wpl
 				// INIT
 				shared_ptr<listview> lv(new win32::listview);
 				shared_ptr<mocks::listview_model> model(new mocks::listview_model(5, 1));
-				vector<table_model::index_type> selections;
+				vector<string_table_model::index_type> selections;
 
 				lv->set_columns_model(mocks::headers_model::create("Name", 100));
 				lv->set_model(model);
@@ -2122,14 +2084,14 @@ namespace wpl
 				model->tracking_requested.clear();
 
 				// ACT
-				lv->select(table_model::npos(), false);
+				lv->select(string_table_model::npos(), false);
 
 				// ASSERT
 				assert_is_empty(model->tracking_requested);
 				assert_equal(2u, get_matching_indices(hwnd, LVNI_SELECTED).size());
 
 				// ACT
-				lv->select(table_model::npos(), true);
+				lv->select(string_table_model::npos(), true);
 
 				// ASSERT
 				assert_is_empty(model->tracking_requested);
@@ -2142,9 +2104,9 @@ namespace wpl
 				window_tracker wt;
 				shared_ptr<listview> lv(new win32::listview);
 				HWND hlv = get_window_and_resize(lv, hparent);
-				vector<table_model::index_type> selections;
+				vector<string_table_model::index_type> selections;
 				slot_connection c =
-					lv->selection_changed += bind(&push_back<table_model::index_type>, ref(selections), _1);
+					lv->selection_changed += bind(&push_back<string_table_model::index_type>, ref(selections), _1);
 
 				wt.checkpoint();
 
@@ -2166,7 +2128,7 @@ namespace wpl
 				emulate_click(hlv, rc.left, rc.top, mouse_input::left, 0);
 
 				// ASSERT
-				table_model::index_type reference1[] = { 0, };
+				string_table_model::index_type reference1[] = { 0, };
 
 				assert_equal(reference1, selections);
 
@@ -2177,7 +2139,7 @@ namespace wpl
 				emulate_click(hlv, rc.left, rc.top, mouse_input::left, 0);
 
 				// ASSERT
-				table_model::index_type reference2[] = { 0, table_model::npos(), 2, table_model::npos(), 1, };
+				string_table_model::index_type reference2[] = { 0, string_table_model::npos(), 2, string_table_model::npos(), 1, };
 
 				assert_equal(reference2, selections);
 			}

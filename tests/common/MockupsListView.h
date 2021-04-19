@@ -83,7 +83,7 @@ namespace wpl
 				virtual void activate_column(index_type column) override;
 			};
 
-			class listview_model : public table_model
+			class listview_model : public string_table_model
 			{
 			public:
 				listview_model(index_type count, index_type columns = 0);

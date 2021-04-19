@@ -54,11 +54,13 @@ namespace wpl
 	};
 
 
-	template <typename ValueT>
+	template <typename T>
 	struct list_model : index_traits
 	{
+		typedef T value_type;
+
 		virtual index_type get_count() const throw() = 0;
-		virtual void get_value(index_type index, ValueT &value) const = 0;
+		virtual void get_value(index_type index, value_type &value) const = 0;
 		virtual std::shared_ptr<const trackable> track(index_type item) const;
 
 		signal<void (index_type item)> invalidate;
@@ -88,11 +90,9 @@ namespace wpl
 	};
 
 
-	struct table_model : index_traits
+	struct table_model_base : index_traits
 	{
 		virtual index_type get_count() const throw() = 0;
-		virtual void get_text(index_type row, index_type column, std::string &text) const = 0;
-		virtual void set_order(index_type column, bool ascending);
 		virtual void precache(index_type from, index_type count);
 		virtual std::shared_ptr<const trackable> track(index_type row) const;
 
@@ -100,13 +100,26 @@ namespace wpl
 	};
 
 
+	template <typename T>
+	struct table_model : table_model_base
+	{
+		typedef T value_type;
+
+		virtual void get_text(index_type row, index_type column, value_type &value) const = 0;
+		virtual void set_order(index_type column, bool ascending);
+	};
+
+	typedef table_model<std::string> string_table_model;
+	typedef table_model<agge::richtext_t> richtext_table_model;
+
+
 
 	inline index_traits::index_type index_traits::npos()
 	{	return static_cast<index_type>(-1);	}
 
 
-	template <typename ValueT>
-	inline std::shared_ptr<const trackable> list_model<ValueT>::track(index_type /*row*/) const
+	template <typename T>
+	inline std::shared_ptr<const trackable> list_model<T>::track(index_type /*row*/) const
 	{	return std::shared_ptr<const trackable>();	}
 
 
@@ -121,12 +134,14 @@ namespace wpl
 	{	}
 
 
-	inline void table_model::set_order(index_type /*column*/, bool /*ascending*/)
+	inline void table_model_base::precache(index_type /*from*/, index_type /*count*/)
 	{	}
 
-	inline void table_model::precache(index_type /*from*/, index_type /*count*/)
-	{	}
-
-	inline std::shared_ptr<const trackable> table_model::track(index_type /*row*/) const
+	inline std::shared_ptr<const trackable> table_model_base::track(index_type /*row*/) const
 	{	return std::shared_ptr<trackable>();	}
+
+
+	template <typename T>
+	inline void table_model<T>::set_order(index_type /*column*/, bool /*ascending*/)
+	{	}
 }
