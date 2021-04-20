@@ -169,16 +169,6 @@ namespace wpl
 			_vsmodel->scroll_window(item < _offset.dy ? static_cast<double>(item) : item - visible + 1, visible);
 		}
 
-		void listview_core::set_columns_model(shared_ptr<columns_model> cmodel)
-		{
-			_cmodel_invalidation = cmodel ? cmodel->invalidate += [this] (columns_model::index_type /*column*/) {
-				invalidate_();
-				_hsmodel->invalidate(true);
-			} : nullptr;
-			_cmodel = cmodel;
-			_hsmodel->invalidate(true);
-		}
-
 		void listview_core::key_down(unsigned code, int modifiers)
 		{
 			if (_item_count)
@@ -295,8 +285,7 @@ namespace wpl
 				for (headers_model::index_type column = hrange.first, count = hrange.second; count; count--, column++)
 				{
 					subitem.x1 = _subitem_positions[column].first, subitem.x2 = _subitem_positions[column].second;
-					_model->get_text(row, column, _text_buffer);
-					draw_subitem(ctx, ras, subitem, row, state, column, _text_buffer);
+					draw_subitem(ctx, ras, subitem, row, state, column);
 				}
 			}
 		}
@@ -312,7 +301,17 @@ namespace wpl
 		int listview_core::min_height(int /*for_width*/) const
 		{	return static_cast<int>(ceil(get_minimal_item_height() * _item_count));	}
 
-		void listview_core::set_model(shared_ptr<string_table_model> model)
+		void listview_core::set_columns_model(shared_ptr<columns_model> cmodel)
+		{
+			_cmodel_invalidation = cmodel ? cmodel->invalidate += [this] (columns_model::index_type /*column*/) {
+				invalidate_();
+				_hsmodel->invalidate(true);
+			} : nullptr;
+			_cmodel = cmodel;
+			_hsmodel->invalidate(true);
+		}
+
+		void listview_core::set_model(shared_ptr<table_model_base> model)
 		{
 			const auto update_item_count = [this] {
 				const auto item_count = _model ? _model->get_count() : string_table_model::index_type();

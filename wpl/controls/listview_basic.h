@@ -39,24 +39,27 @@ namespace wpl
 		public:
 			void apply_styles(const stylesheet &stylesheet_);
 
+			virtual void set_model(std::shared_ptr<string_table_model> model) override;
+
 		protected:
 			virtual void draw(gcontext &ctx, gcontext::rasterizer_ptr &rasterizer) const override;
 
 			virtual agge::real_t get_minimal_item_height() const override;
-			virtual void draw_item_background(wpl::gcontext &ctx, wpl::gcontext::rasterizer_ptr &rasterizer,
-				const agge::rect_r &box, index_type item, unsigned state) const override;
-			virtual void draw_item(wpl::gcontext &ctx, wpl::gcontext::rasterizer_ptr &ras, const agge::rect_r &b,
+			virtual void draw_item_background(gcontext &ctx, gcontext::rasterizer_ptr &rasterizer, const agge::rect_r &box,
 				index_type item, unsigned state) const override;
-			virtual void draw_subitem(wpl::gcontext &ctx, wpl::gcontext::rasterizer_ptr &rasterizer,
-				const agge::rect_r &box, index_type item, unsigned state, wpl::headers_model::index_type subitem,
-				const std::string &text) const override;
+			virtual void draw_item(gcontext &ctx, gcontext::rasterizer_ptr &ras, const agge::rect_r &box, index_type item,
+				unsigned state) const override;
+			virtual void draw_subitem(gcontext &ctx, gcontext::rasterizer_ptr &rasterizer, const agge::rect_r &box,
+				index_type item, unsigned state, headers_model::index_type subitem) const override;
 
 		private:
+			std::shared_ptr<string_table_model> _model;
 			agge::real_t _item_height, _padding, _baseline_offset;
 			agge::font::ptr _font;
 			agge::color _bg, _bg_even, _bg_odd, _bg_selected, _fg_normal, _fg_selected, _fg_focus, _fg_focus_selected;
 			mutable agge::stroke _stroke;
 			mutable agge::dash _dash;
+			mutable std::string _text_buffer;
 		};
 	}
 }

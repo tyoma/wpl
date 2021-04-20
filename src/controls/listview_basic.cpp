@@ -68,6 +68,12 @@ namespace wpl
 			layout_changed(false);
 		}
 
+		void listview_basic::set_model(shared_ptr<string_table_model> model)
+		{
+			_model = model;
+			listview_core::set_model(model);
+		}
+
 		void listview_basic::draw(gcontext &ctx, gcontext::rasterizer_ptr &ras) const
 		{
 			if (_bg.a)
@@ -109,13 +115,15 @@ namespace wpl
 			}
 		}
 
-		void listview_basic::draw_subitem(gcontext &ctx, gcontext::rasterizer_ptr &ras, const rect_r &b_, index_type /*item*/,
-			unsigned state, headers_model::index_type /*subitem*/, const string &text) const
+		void listview_basic::draw_subitem(gcontext &ctx, gcontext::rasterizer_ptr &ras, const rect_r &b_,
+			index_type item, unsigned state, headers_model::index_type subitem) const
 		{
 			rect_r b(b_);
 
 			inflate(b, -_padding, -_padding);
-			render_string(*ras, text, ctx.text_engine, *_font, b, align_near, align_center);
+			_text_buffer.clear();
+			_model->get_text(item, subitem, _text_buffer);
+			render_string(*ras, _text_buffer, ctx.text_engine, *_font, b, align_near, align_center);
 			ras->sort(true);
 			ctx(ras, blender(state & selected ? _fg_selected : _fg_normal), winding<>());
 		}

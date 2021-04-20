@@ -46,7 +46,6 @@ namespace wpl
 			std::shared_ptr<scroll_model> get_vscroll_model();
 			std::shared_ptr<scroll_model> get_hscroll_model();
 			void make_visible(index_type item);
-			void set_columns_model(std::shared_ptr<columns_model> cmodel);
 
 			// keyboard_input methods
 			virtual void key_down(unsigned code, int modifiers) override;
@@ -64,7 +63,8 @@ namespace wpl
 			virtual int min_height(int for_width) const override;
 
 			// listview methods
-			virtual void set_model(std::shared_ptr<string_table_model> model) override;
+			void set_columns_model(std::shared_ptr<columns_model> cmodel);
+			void set_model(std::shared_ptr<table_model_base> model);
 
 			virtual void select(index_type item, bool reset_previous) override;
 			virtual void focus(index_type item) override;
@@ -89,7 +89,7 @@ namespace wpl
 				const agge::rect_r &box, index_type item, unsigned /*item_state_flags*/ state) const;
 			virtual void draw_subitem(gcontext &ctx, gcontext::rasterizer_ptr &rasterizer,
 				const agge::rect_r &box, index_type item, unsigned /*item_state_flags*/ state,
-				columns_model::index_type subitem, const std::string &text) const = 0;
+				columns_model::index_type subitem) const = 0;
 
 			void invalidate_();
 			void toggle_selection(index_type item);
@@ -105,7 +105,7 @@ namespace wpl
 
 		private:
 			std::shared_ptr<columns_model> _cmodel;
-			std::shared_ptr<string_table_model> _model;
+			std::shared_ptr<table_model_base> _model;
 			std::pair<string_table_model::index_type, string_table_model::index_type> _precached_range;
 			string_table_model::index_type _item_count;
 			std::shared_ptr<vertical_scroll_model> _vsmodel;
@@ -114,7 +114,6 @@ namespace wpl
 			agge::agge_vector<double> _offset;
 			mutable agge::real_t _total_width;
 			mutable std::vector< std::pair<agge::real_t /*x1*/, agge::real_t /*x2*/> > _subitem_positions;
-			mutable std::string _text_buffer;
 
 			trackable_ptr _focused;
 			trackables _selected;

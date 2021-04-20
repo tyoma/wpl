@@ -272,48 +272,6 @@ namespace wpl
 			}
 
 
-			test( ModelTextIsPassedToSubItem )
-			{
-				// INIT
-				tracking_listview lv;
-				column_t c[] = {	{"", 1	}, {	"", 1	},	};
-				const auto cm = mocks::headers_model::create(c, headers_model::npos(), true);
-				const auto m = create_model(2, 2);
-
-				resize(lv, 1000, 1000);
-				lv.item_height = 1;
-				lv.set_columns_model(cm);
-				lv.set_model(m);
-
-				m->items[0][0] = "one";
-				m->items[0][1] = "one two";
-				m->items[1][0] = "lorem ipsum";
-				m->items[1][1] = "dolor sit amet";
-
-				// ACT
-				lv.draw(*ctx, ras);
-
-				// ASSERT
-				tracking_listview::drawing_event reference[] = {
-					tracking_listview::drawing_event(tracking_listview::item_background, *ctx, ras, create_rect(0, 0, 2, 1), 0, 0),
-					tracking_listview::drawing_event(tracking_listview::subitem_background, *ctx, ras, create_rect(0, 0, 1, 1), 0, 0, 0),
-					tracking_listview::drawing_event(tracking_listview::subitem_background, *ctx, ras, create_rect(1, 0, 2, 1), 0, 0, 1),
-					tracking_listview::drawing_event(tracking_listview::item_self, *ctx, ras, create_rect(0, 0, 2, 1), 0, 0),
-					tracking_listview::drawing_event(tracking_listview::subitem_self, *ctx, ras, create_rect(0, 0, 1, 1), 0, 0, 0, "one"),
-					tracking_listview::drawing_event(tracking_listview::subitem_self, *ctx, ras, create_rect(1, 0, 2, 1), 0, 0, 1, "one two"),
-
-					tracking_listview::drawing_event(tracking_listview::item_background, *ctx, ras, create_rect(0, 1, 2, 2), 1, 0),
-					tracking_listview::drawing_event(tracking_listview::subitem_background, *ctx, ras, create_rect(0, 1, 1, 2), 1, 0, 0),
-					tracking_listview::drawing_event(tracking_listview::subitem_background, *ctx, ras, create_rect(1, 1, 2, 2), 1, 0, 1),
-					tracking_listview::drawing_event(tracking_listview::item_self, *ctx, ras, create_rect(0, 1, 2, 2), 1, 0),
-					tracking_listview::drawing_event(tracking_listview::subitem_self, *ctx, ras, create_rect(0, 1, 1, 2), 1, 0, 0, "lorem ipsum"),
-					tracking_listview::drawing_event(tracking_listview::subitem_self, *ctx, ras, create_rect(1, 1, 2, 2), 1, 0, 1, "dolor sit amet"),
-				};
-
-				assert_equal_pred(reference, lv.events, listview_event_eq());
-			}
-
-
 			test( OnlyVerticallyVisibleItemsGetsToRendering )
 			{
 				// INIT

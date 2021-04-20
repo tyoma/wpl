@@ -19,9 +19,9 @@ namespace wpl
 				template <typename T>
 				drawing_event(drawing_event_type type_, gcontext &context_,
 						const gcontext::rasterizer_ptr &rasterizer_, const agge::rect<T> &box_, index_type item_,
-						unsigned state_, headers_model::index_type subitem_ = 0u, std::string text_ = "")
+						unsigned state_, headers_model::index_type subitem_ = 0u)
 					: type(type_), context(&context_), rasterizer(rasterizer_.get()), item(item_),
-						subitem(subitem_), state(state_), text(text_)
+						subitem(subitem_), state(state_)
 				{	box.x1 = box_.x1, box.y1 = box_.y1, box.x2 = box_.x2, box.y2 = box_.y2; }
 
 				drawing_event_type type;
@@ -31,7 +31,6 @@ namespace wpl
 				string_table_model::index_type item;
 				headers_model::index_type subitem;
 				unsigned state;
-				std::string text;
 			};
 
 			using controls::listview_core::item_state_flags;
@@ -41,8 +40,11 @@ namespace wpl
 				: item_height(0), reported_events(item_background | subitem_background | item_self | subitem_self)
 			{	got_focus();	}
 
-			void set_columns_model(std::shared_ptr<headers_model> cmodel)
+			virtual void set_columns_model(std::shared_ptr<headers_model> cmodel) override
 			{	controls::listview_core::set_columns_model(cmodel);	}
+
+			virtual void set_model(std::shared_ptr<string_table_model> model) override
+			{	controls::listview_core::set_model(model);	}
 
 		public:
 			mutable std::vector<drawing_event> events;
@@ -75,10 +77,10 @@ namespace wpl
 			}
 
 			virtual void draw_subitem(gcontext &ctx, gcontext::rasterizer_ptr &rasterizer, const agge::rect_r &box,
-				index_type item, unsigned state, headers_model::index_type subitem, const std::string &text) const override
+				index_type item, unsigned state, headers_model::index_type subitem) const override
 			{
 				if (subitem_self & reported_events)
-					events.push_back(drawing_event(subitem_self, ctx, rasterizer, box, item, state, subitem, text));
+					events.push_back(drawing_event(subitem_self, ctx, rasterizer, box, item, state, subitem));
 			}
 		};
 
@@ -90,7 +92,7 @@ namespace wpl
 			{
 				return lhs.type == rhs.type && lhs.context == rhs.context && lhs.rasterizer == rhs.rasterizer
 					&& eq()(lhs.box, rhs.box) && lhs.item == rhs.item && lhs.state == rhs.state
-					&& lhs.subitem == rhs.subitem && lhs.text == rhs.text;
+					&& lhs.subitem == rhs.subitem;
 			}
 		};
 	}
