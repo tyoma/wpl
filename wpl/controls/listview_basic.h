@@ -45,12 +45,10 @@ namespace wpl
 			virtual void draw(gcontext &ctx, gcontext::rasterizer_ptr &rasterizer) const override;
 
 			virtual agge::real_t get_minimal_item_height() const override;
-			virtual void draw_item_background(gcontext &ctx, gcontext::rasterizer_ptr &rasterizer, const agge::rect_r &box,
-				index_type item, unsigned state) const override;
-			virtual void draw_item(gcontext &ctx, gcontext::rasterizer_ptr &ras, const agge::rect_r &box, index_type item,
-				unsigned state) const override;
+			virtual void draw_item(gcontext &ctx, gcontext::rasterizer_ptr &ras, const agge::rect_r &box,
+				unsigned layer, index_type row, unsigned state) const override;
 			virtual void draw_subitem(gcontext &ctx, gcontext::rasterizer_ptr &rasterizer, const agge::rect_r &box,
-				index_type item, unsigned state, headers_model::index_type subitem) const override;
+				unsigned layer, index_type row, unsigned state, headers_model::index_type column) const override;
 
 		private:
 			std::shared_ptr<string_table_model> _model;

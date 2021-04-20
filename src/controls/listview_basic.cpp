@@ -90,22 +90,20 @@ namespace wpl
 		real_t listview_basic::get_minimal_item_height() const
 		{	return _item_height;	}
 
-		void listview_basic::draw_item_background(gcontext &ctx, gcontext::rasterizer_ptr &ras, const rect_r &b,
-			index_type item, unsigned state) const
+		void listview_basic::draw_item(gcontext &ctx, gcontext::rasterizer_ptr &ras, const rect_r &b_,
+			unsigned layer, index_type row, unsigned state) const
 		{
-			const auto bg = state & selected ? _bg_selected : (item & 1) ? _bg_odd : _bg_even;
-
-			if (bg.a)
+			if (0u == layer)
 			{
-				add_path(*ras, rectangle(b.x1, b.y1, b.x2, b.y2));
-				ctx(ras, blender(bg), winding<>());
-			}
-		}
+				const auto bg = state & selected ? _bg_selected : (row & 1) ? _bg_odd : _bg_even;
 
-		void listview_basic::draw_item(gcontext &ctx, gcontext::rasterizer_ptr &ras, const rect_r &b_, index_type /*item*/,
-			unsigned state) const
-		{
-			if (state & focused)
+				if (bg.a)
+				{
+					add_path(*ras, rectangle(b_.x1, b_.y1, b_.x2, b_.y2));
+					ctx(ras, blender(bg), winding<>());
+				}
+			}
+			else if (1u == layer && (state & focused))
 			{
 				rect_r b(b_);
 
@@ -116,16 +114,19 @@ namespace wpl
 		}
 
 		void listview_basic::draw_subitem(gcontext &ctx, gcontext::rasterizer_ptr &ras, const rect_r &b_,
-			index_type item, unsigned state, headers_model::index_type subitem) const
+			unsigned layer, index_type row, unsigned state, headers_model::index_type column) const
 		{
-			rect_r b(b_);
+			if (1u == layer)
+			{
+				rect_r b(b_);
 
-			inflate(b, -_padding, -_padding);
-			_text_buffer.clear();
-			_model->get_text(item, subitem, _text_buffer);
-			render_string(*ras, _text_buffer, ctx.text_engine, *_font, b, align_near, align_center);
-			ras->sort(true);
-			ctx(ras, blender(state & selected ? _fg_selected : _fg_normal), winding<>());
+				inflate(b, -_padding, -_padding);
+				_text_buffer.clear();
+				_model->get_text(row, column, _text_buffer);
+				render_string(*ras, _text_buffer, ctx.text_engine, *_font, b, align_near, align_center);
+				ras->sort(true);
+				ctx(ras, blender(state & selected ? _fg_selected : _fg_normal), winding<>());
+			}
 		}
 	}
 }

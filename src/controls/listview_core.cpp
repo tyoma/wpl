@@ -275,17 +275,14 @@ namespace wpl
 					_total_width - static_cast<real_t>(_offset.dx), y2);
 				auto subitem = create_rect(0.0f, y1, 0.0f, y2);
 
-				draw_item_background(ctx, ras, item, row, state);
-				for (headers_model::index_type column = hrange.first, count = hrange.second; count; count--, column++)
+				for (auto layer = 0u; layer < 2u; ++layer)
 				{
-					subitem.x1 = _subitem_positions[column].first, subitem.x2 = _subitem_positions[column].second;
-					draw_subitem_background(ctx, ras, subitem, row, state, column);
-				}
-				draw_item(ctx, ras, item, row, state);
-				for (headers_model::index_type column = hrange.first, count = hrange.second; count; count--, column++)
-				{
-					subitem.x1 = _subitem_positions[column].first, subitem.x2 = _subitem_positions[column].second;
-					draw_subitem(ctx, ras, subitem, row, state, column);
+					draw_item(ctx, ras, item, layer, row, state);
+					for (headers_model::index_type column = hrange.first, count = hrange.second; count; count--, column++)
+					{
+						subitem.x1 = _subitem_positions[column].first, subitem.x2 = _subitem_positions[column].second;
+						draw_subitem(ctx, ras, subitem, layer, row, state, column);
+					}
 				}
 			}
 		}
@@ -370,15 +367,6 @@ namespace wpl
 			make_visible(item);
 			invalidate_();
 		}
-
-		void listview_core::draw_subitem_background(gcontext &/*ctx*/, gcontext::rasterizer_ptr &/*rasterizer*/,
-			const agge::rect_r &/*box*/, index_type /*item*/, unsigned /*state*/,
-			headers_model::index_type /*subitem*/) const
-		{	}
-
-		void listview_core::draw_item(gcontext &/*ctx*/, gcontext::rasterizer_ptr &/*rasterizer*/,
-			const agge::rect_r &/*box*/, index_type /*item*/, unsigned /*state*/) const
-		{	}
 
 		void listview_core::invalidate_()
 		{	visual::invalidate(nullptr);	}

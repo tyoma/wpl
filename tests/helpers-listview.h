@@ -55,32 +55,22 @@ namespace wpl
 			virtual agge::real_t get_minimal_item_height() const override
 			{	return (agge::real_t)item_height;	}
 
-			virtual void draw_item_background(gcontext &ctx, gcontext::rasterizer_ptr &rasterizer,
-				const agge::rect_r &box, index_type item, unsigned state) const override
+			virtual void draw_item(gcontext &ctx, gcontext::rasterizer_ptr &rasterizer, const agge::rect_r &box,
+				unsigned layer, index_type row, unsigned state) const override
 			{
-				if (item_background & reported_events)
-					events.push_back(drawing_event(item_background, ctx, rasterizer, box, item, state));
-			}
-
-			virtual void draw_subitem_background(gcontext &ctx, gcontext::rasterizer_ptr &rasterizer,
-				const agge::rect_r &box, index_type item, unsigned state, headers_model::index_type subitem) const override
-			{
-				if (subitem_background & reported_events)
-					events.push_back(drawing_event(subitem_background, ctx, rasterizer, box, item, state, subitem));
-			}
-
-			virtual void draw_item(gcontext &ctx, gcontext::rasterizer_ptr &rasterizer,
-				const agge::rect_r &box, index_type item, unsigned state) const override
-			{
-				if (item_self & reported_events)
-					events.push_back(drawing_event(item_self, ctx, rasterizer, box, item, state));
+				if (0u == layer && (item_background & reported_events))
+					events.push_back(drawing_event(item_background, ctx, rasterizer, box, row, state));
+				if (1u == layer && (item_self & reported_events))
+					events.push_back(drawing_event(item_self, ctx, rasterizer, box, row, state));
 			}
 
 			virtual void draw_subitem(gcontext &ctx, gcontext::rasterizer_ptr &rasterizer, const agge::rect_r &box,
-				index_type item, unsigned state, headers_model::index_type subitem) const override
+				unsigned layer, index_type row, unsigned state, headers_model::index_type column) const override
 			{
-				if (subitem_self & reported_events)
-					events.push_back(drawing_event(subitem_self, ctx, rasterizer, box, item, state, subitem));
+				if (0u == layer && (subitem_background & reported_events))
+					events.push_back(drawing_event(subitem_background, ctx, rasterizer, box, row, state, column));
+				if (1u == layer && (subitem_self & reported_events))
+					events.push_back(drawing_event(subitem_self, ctx, rasterizer, box, row, state, column));
 			}
 		};
 
