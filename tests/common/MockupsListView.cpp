@@ -70,10 +70,11 @@ namespace wpl
 			listview_model::index_type listview_model::get_count() const throw()
 			{	return static_cast<index_type>(items.size());	}
 
-			void listview_model::get_text(index_type row, index_type column, string &text) const
+			void listview_model::get_text(index_type row, index_type column, agge::richtext_t &text) const
 			{
 				assert_is_true(row < items.size());
-				text = items[row][column];
+				assert_is_true(text.empty());
+				text << items[row][column].c_str();
 			}
 
 			void listview_model::set_order(index_type column, bool ascending)

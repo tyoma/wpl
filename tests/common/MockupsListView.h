@@ -83,7 +83,7 @@ namespace wpl
 				virtual void activate_column(index_type column) override;
 			};
 
-			class listview_model : public string_table_model
+			class listview_model : public richtext_table_model
 			{
 			public:
 				listview_model(index_type count, index_type columns = 0);
@@ -99,7 +99,7 @@ namespace wpl
 
 			private:
 				virtual index_type get_count() const throw() override;
-				virtual void get_text(index_type row, index_type column, std::string &text) const override;
+				virtual void get_text(index_type row, index_type column, agge::richtext_t &text) const override;
 				virtual void set_order(index_type column, bool ascending) override;
 				virtual void precache(index_type from, index_type count) override;
 				virtual std::shared_ptr<const trackable> track(index_type row) const override;

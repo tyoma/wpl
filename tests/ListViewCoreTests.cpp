@@ -839,7 +839,7 @@ namespace wpl
 				assert_equal(1, invalidations);
 
 				// INIT
-				lv.set_model(shared_ptr<string_table_model>());
+				lv.set_model(shared_ptr<richtext_table_model>());
 				invalidations = 0;
 
 				// ACT

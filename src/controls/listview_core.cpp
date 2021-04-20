@@ -311,7 +311,7 @@ namespace wpl
 		void listview_core::set_model(shared_ptr<table_model_base> model)
 		{
 			const auto update_item_count = [this] {
-				const auto item_count = _model ? _model->get_count() : string_table_model::index_type();
+				const auto item_count = _model ? _model->get_count() : table_model_base::index_type();
 
 				if (item_count == _item_count)
 					return;
@@ -395,7 +395,7 @@ namespace wpl
 		real_t listview_core::get_visible_count() const
 		{	return get_last_size().h / (max)(get_minimal_item_height(), 0.001f);	}
 
-		pair<string_table_model::index_type, string_table_model::index_type> listview_core::get_visible_range() const
+		pair<table_model_base::index_type, table_model_base::index_type> listview_core::get_visible_range() const
 		{
 			const auto first = (min)(static_cast<index_type>((max)(floor(_offset.dy), 0.0)),
 				_item_count);
@@ -442,7 +442,7 @@ namespace wpl
 			const auto item_height = get_minimal_item_height();
 			const auto item = (y + _offset.dy * item_height + 0.5) / item_height;
 
-			return _model && 0 <= item && item < _item_count ? static_cast<index_type>(item) : string_table_model::npos();
+			return _model && 0 <= item && item < _item_count ? static_cast<index_type>(item) : table_model_base::npos();
 		}
 
 		bool listview_core::is_selected(index_type item) const

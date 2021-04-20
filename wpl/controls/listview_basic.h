@@ -37,9 +37,11 @@ namespace wpl
 		class listview_basic : public listview_core
 		{
 		public:
+			listview_basic();
+
 			void apply_styles(const stylesheet &stylesheet_);
 
-			virtual void set_model(std::shared_ptr<string_table_model> model) override;
+			virtual void set_model(std::shared_ptr<richtext_table_model> model) override;
 
 		protected:
 			virtual void draw(gcontext &ctx, gcontext::rasterizer_ptr &rasterizer) const override;
@@ -51,13 +53,12 @@ namespace wpl
 				unsigned layer, index_type row, unsigned state, headers_model::index_type column) const override;
 
 		private:
-			std::shared_ptr<string_table_model> _model;
+			std::shared_ptr<richtext_table_model> _model;
 			agge::real_t _item_height, _padding, _baseline_offset;
-			agge::font::ptr _font;
-			agge::color _bg, _bg_even, _bg_odd, _bg_selected, _fg_normal, _fg_selected, _fg_focus, _fg_focus_selected;
+			agge::color _bg, _bg_even, _bg_odd, _bg_selected, _fg_selected, _fg_focus, _fg_focus_selected;
 			mutable agge::stroke _stroke;
 			mutable agge::dash _dash;
-			mutable std::string _text_buffer;
+			mutable agge::richtext_t _text_buffer;
 		};
 	}
 }

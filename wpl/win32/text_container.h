@@ -59,10 +59,8 @@ namespace wpl
 		template <typename BaseT>
 		inline void text_container_impl<BaseT>::set_text(const agge::richtext_modifier_t &text)
 		{
-			_text.clear();
-			for (auto r = text.ranges_begin(); r != text.ranges_end(); ++r)
-				_text.append(r->begin(), r->end());
-			::SetWindowTextW(get_window(), _converter(_text.c_str()));
+			_text = text.underlying();
+			::SetWindowTextW(get_window(), _converter(text.underlying().c_str()));
 		}
 
 		template <typename BaseT>

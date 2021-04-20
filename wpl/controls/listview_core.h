@@ -101,8 +101,8 @@ namespace wpl
 		private:
 			std::shared_ptr<columns_model> _cmodel;
 			std::shared_ptr<table_model_base> _model;
-			std::pair<string_table_model::index_type, string_table_model::index_type> _precached_range;
-			string_table_model::index_type _item_count;
+			std::pair<table_model_base::index_type, table_model_base::index_type> _precached_range;
+			table_model_base::index_type _item_count;
 			std::shared_ptr<vertical_scroll_model> _vsmodel;
 			std::shared_ptr<horizontal_scroll_model> _hsmodel;
 			slot_connection _model_invalidation, _cmodel_invalidation;

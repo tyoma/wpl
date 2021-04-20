@@ -28,7 +28,7 @@ namespace wpl
 				gcontext *context;
 				gcontext::rasterizer_type *rasterizer;
 				agge::rect<double> box;
-				string_table_model::index_type item;
+				table_model_base::index_type item;
 				headers_model::index_type subitem;
 				unsigned state;
 			};
@@ -43,7 +43,7 @@ namespace wpl
 			virtual void set_columns_model(std::shared_ptr<headers_model> cmodel) override
 			{	controls::listview_core::set_columns_model(cmodel);	}
 
-			virtual void set_model(std::shared_ptr<string_table_model> model) override
+			virtual void set_model(std::shared_ptr<richtext_table_model> model) override
 			{	controls::listview_core::set_model(model);	}
 
 		public:

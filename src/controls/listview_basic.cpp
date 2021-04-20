@@ -25,6 +25,7 @@
 #include <agge/figures.h>
 #include <agge/filling_rules.h>
 #include <agge/stroke_features.h>
+#include <agge.text/limit.h>
 #include <agge.text/text_engine.h>
 #include <wpl/helpers.h>
 #include <wpl/stylesheet.h>
@@ -41,20 +42,26 @@ namespace wpl
 			typedef blender_solid_color<simd::blender_solid_color, platform_pixel_order> blender;
 		}
 
+		listview_basic::listview_basic()
+			: _text_buffer(agge::font_style_annotation())
+		{	}
+
 		void listview_basic::apply_styles(const stylesheet &ss)
 		{
-			_font = ss.get_font("text.listview");
+			shared_ptr<font> font_ = ss.get_font("text.listview");
+			font_style_annotation a = {	font_->get_key(), ss.get_color("text.listview"),	};
+
+			_text_buffer.set_base_annotation(a);
 
 			_bg = ss.get_color("background.listview");
 			_bg_even = ss.get_color("background.listview.even");
 			_bg_odd = ss.get_color("background.listview.odd");
 			_bg_selected = ss.get_color("background.selected.listview");
-			_fg_normal = ss.get_color("text.listview");
 			_fg_focus = ss.get_color("text.listview");
 			_fg_selected = ss.get_color("text.selected.listview");
 			_fg_focus_selected = ss.get_color("text.selected.listview");
 
-			auto m = _font->get_metrics();
+			auto m = font_->get_metrics();
 
 			_padding = ss.get_value("padding");
 			_baseline_offset = _padding + m.ascent;
@@ -68,7 +75,7 @@ namespace wpl
 			layout_changed(false);
 		}
 
-		void listview_basic::set_model(shared_ptr<string_table_model> model)
+		void listview_basic::set_model(shared_ptr<richtext_table_model> model)
 		{
 			_model = model;
 			listview_core::set_model(model);
@@ -123,9 +130,14 @@ namespace wpl
 				inflate(b, -_padding, -_padding);
 				_text_buffer.clear();
 				_model->get_text(row, column, _text_buffer);
-				render_string(*ras, _text_buffer, ctx.text_engine, *_font, b, align_near, align_center);
+
+				color c = (state & focused) && (state & selected) ? _fg_focus_selected :
+					(state & focused) ? _fg_focus :
+					(state & selected) ? _fg_selected : _text_buffer.current_annotation().foreground;
+
+				ctx.text_engine.render(*ras, _text_buffer, align_near, align_near, b, agge::limit::ellipsis(width(b)));
 				ras->sort(true);
-				ctx(ras, blender(state & selected ? _fg_selected : _fg_normal), winding<>());
+				ctx(ras, blender(c), winding<>());
 			}
 		}
 	}

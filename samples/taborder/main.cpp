@@ -45,7 +45,7 @@ namespace
 		pair<index_type, bool> _sort_order;
 	};
 
-	class my_model : public string_table_model
+	class my_model : public richtext_table_model
 	{
 	public:
 		my_model(const queue &queue_)
@@ -68,10 +68,11 @@ namespace
 		virtual index_type get_count() const throw() override
 		{	return 100u;	}
 
-		virtual void get_text(index_type row, index_type column, string &text) const override
+		virtual void get_text(index_type row, index_type column, agge::richtext_t &text) const override
 		{
 			row++, column++;
-			text = to_string(static_cast<long double>(row * _n + 13 * column * _n));
+			text << to_string(static_cast<long double>(row * _n + 13 * column * _n)).c_str()
+				<< agge::style::weight(agge::bold) << agge::style::height_scale(0.7) << "ms";
 		}
 
 		virtual void set_order(index_type /*column*/, bool /*ascending*/) override

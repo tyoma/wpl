@@ -41,19 +41,12 @@ namespace wpl
 				style = LVS_REPORT | LVS_SHOWSELALWAYS | LVS_OWNERDATA | WS_BORDER,
 				listview_style = LVS_EX_FULLROWSELECT | LVS_EX_DOUBLEBUFFER,
 			};
-
-			void convert_cp(wstring &to, const agge::richtext_t &from)
-			{
-				to.clear();
-				for (auto i = from.ranges_begin(); i != from.ranges_end(); ++i)
-					to.insert(to.end(), i->begin(), i->end());
-			}
 		}
 
 
 
 		listview::listview()
-			: native_view("text.listview")
+			: native_view("text.listview"), _text_buffer(agge::font_style_annotation())
 		{
 			_avoid_notifications = false,
 			_sort_column = headers_model::npos();
@@ -82,7 +75,7 @@ namespace wpl
 			_columns_model = cm;
 		}
 
-		void listview::set_model(shared_ptr<string_table_model> model)
+		void listview::set_model(shared_ptr<richtext_table_model> model)
 		{
 			if (_columns_model && model)
 			{
@@ -194,8 +187,9 @@ namespace wpl
 						if (const NMLVDISPINFOW *pdi = reinterpret_cast<const NMLVDISPINFOW *>(lparam))
 							if (pdi->item.mask & LVIF_TEXT)
 							{
+								_text_buffer.clear();
 								_model->get_text(pdi->item.iItem, pdi->item.iSubItem, _text_buffer);
-								wcsncpy_s(pdi->item.pszText, pdi->item.cchTextMax, _converter(_text_buffer.c_str()), _TRUNCATE);
+								wcsncpy_s(pdi->item.pszText, pdi->item.cchTextMax, _converter(_text_buffer.underlying().c_str()), _TRUNCATE);
 							}
 						return 0;
 
@@ -212,7 +206,6 @@ namespace wpl
 		{
 			short width;
 			agge::richtext_t caption((agge::font_style_annotation()));
-			wstring caption_plain;
 			LVCOLUMNW lvcolumn = { };
 			pair<headers_model::index_type, bool> sort_order = cm.get_sort_order();
 
@@ -220,12 +213,11 @@ namespace wpl
 				ListView_DeleteColumn(hlistview, i);
 			for (headers_model::index_type i = 0, count = cm.get_count(); i != count; ++i)
 			{
-				caption.clear();
+				_text_buffer.clear();
 				cm.get_value(i, width);
-				cm.get_caption(i, caption);
-				convert_cp(caption_plain, caption);
+				cm.get_caption(i, _text_buffer);
 				lvcolumn.mask = LVCF_SUBITEM | LVCF_TEXT | LVCF_WIDTH;
-				lvcolumn.pszText = (LPWSTR)caption_plain.c_str();
+				lvcolumn.pszText = (LPWSTR)(LPCWSTR)_converter(_text_buffer.underlying().c_str());
 				lvcolumn.iSubItem = static_cast<int>(i);
 				lvcolumn.cx = width;
 				::SendMessageW(hlistview, LVM_INSERTCOLUMNW, i, (LPARAM)&lvcolumn);

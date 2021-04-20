@@ -267,7 +267,7 @@ namespace wpl
 				lv.first->set_model(m);
 
 				// ACT
-				lv.first->set_model(shared_ptr<string_table_model>());
+				lv.first->set_model(shared_ptr<richtext_table_model>());
 
 				// ASSERT
 				assert_equal(0, ListView_GetItemCount(lv.second));
@@ -565,7 +565,7 @@ namespace wpl
 				lv.first->set_columns_model(mocks::headers_model::create(columns, 1, false));
 
 				// ACT / ASSERT (must not throw)
-				lv.first->set_model(shared_ptr<string_table_model>());
+				lv.first->set_model(shared_ptr<richtext_table_model>());
 			}
 
 
@@ -2002,8 +2002,8 @@ namespace wpl
 				// INIT
 				shared_ptr<listview> lv(new win32::listview);
 				HWND hparent2 = create_parent_window();
-				shared_ptr<string_table_model> model1(new mocks::listview_model(5, 1));
-				shared_ptr<string_table_model> model2(new mocks::listview_model(1311, 1));
+				shared_ptr<richtext_table_model> model1(new mocks::listview_model(5, 1));
+				shared_ptr<richtext_table_model> model2(new mocks::listview_model(1311, 1));
 
 				lv->set_columns_model(mocks::headers_model::create("Name", 100));
 				lv->set_model(model1);
@@ -2030,7 +2030,7 @@ namespace wpl
 				// INIT
 				shared_ptr<listview> lv(new win32::listview);
 				HWND hparent2 = create_parent_window();
-				shared_ptr<string_table_model> model(new mocks::listview_model(5, 1));
+				shared_ptr<richtext_table_model> model(new mocks::listview_model(5, 1));
 
 				lv->set_columns_model(mocks::headers_model::create("Name", 100));
 				lv->set_model(model);

@@ -20,10 +20,11 @@
 
 #pragma once
 
+#include "../controls.h"
 #include "native_view.h"
 #include "utf8.h"
 
-#include "../controls.h"
+#include <agge.text/richtext.h>
 
 namespace wpl
 {
@@ -45,7 +46,7 @@ namespace wpl
 
 			// listview methods
 			virtual void set_columns_model(std::shared_ptr<headers_model> cm) override;
-			virtual void set_model(std::shared_ptr<string_table_model> model) override;
+			virtual void set_model(std::shared_ptr<richtext_table_model> model) override;
 
 			virtual void select(index_type item, bool reset_previous) override;
 			virtual void focus(index_type item) override;
@@ -55,7 +56,7 @@ namespace wpl
 			virtual LRESULT on_message(UINT message, WPARAM wparam, LPARAM lparam,
 				const window::original_handler_t &previous) override;
 
-			static void setup_columns(HWND hlistview, const headers_model &cm);
+			void setup_columns(HWND hlistview, const headers_model &cm);
 			static void setup_data(HWND hlistview, index_type item_count);
 			static void setup_selection(HWND hlistview, const selection_trackers &selection);
 			void update_sort_order(headers_model::index_type new_ordering_column, bool ascending);
@@ -69,10 +70,10 @@ namespace wpl
 
 		private:
 			bool _avoid_notifications;
-			std::string _text_buffer;
+			agge::richtext_t _text_buffer;
 			utf_converter _converter;
 			std::shared_ptr<headers_model> _columns_model;
-			std::shared_ptr<string_table_model> _model;
+			std::shared_ptr<richtext_table_model> _model;
 			std::shared_ptr<void> _invalidated_connection, _sort_order_changed_connection;
 			headers_model::index_type _sort_column;
 			std::shared_ptr<const trackable> _focused_item;

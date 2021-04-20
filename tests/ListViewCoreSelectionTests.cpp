@@ -20,7 +20,7 @@ namespace wpl
 		{
 			typedef mocks::headers_model::column column_t;
 
-			mocks::autotrackable_table_model_ptr create_model(string_table_model::index_type count,
+			mocks::autotrackable_table_model_ptr create_model(table_model_base::index_type count,
 				headers_model::index_type columns_count = 1)
 			{	return mocks::autotrackable_table_model_ptr(new mocks::autotrackable_table_model(count, columns_count));	}
 
