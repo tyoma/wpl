@@ -43,6 +43,20 @@ namespace wpl
 		template <typename ContainerT, typename IteratorT>
 		IteratorT cycle_previous(ContainerT &container, IteratorT i)
 		{	return i = (i == container.begin() ? container.end() : i), --i;	}
+
+		void got_focus(keyboard_router_host &host, const placed_view &pv)
+		{
+			if (pv.regular)
+				pv.regular->got_focus();
+			else
+				host.set_focus(*pv.native);
+		}
+
+		void lost_focus(const placed_view &pv)
+		{
+			if (pv.regular)
+				pv.regular->lost_focus();
+		}
 	}
 
 	keyboard_router::keyboard_router(const vector<placed_view> &views, keyboard_router_host &host)
@@ -61,10 +75,7 @@ namespace wpl
 		_focus = _ordered.begin();
 		if (_focus == _ordered.end())
 			return;
-		if (_focus->regular)
-			_focus->regular->got_focus();
-		else
-			_host.set_focus(*_focus->native);
+		got_focus(_host, *_focus);
 	}
 
 	bool keyboard_router::set_focus(const keyboard_input *input)
@@ -83,7 +94,7 @@ namespace wpl
 
 		if (keyboard_input::tab == code)
 			switch_focus(m & keyboard_input::shift ? cycle_previous(_ordered, _focus) : cycle_next(_ordered, _focus));
-		else
+		else if (_focus->regular)
 			_focus->regular->key_down(code, m);
 	}
 
@@ -95,7 +106,7 @@ namespace wpl
 		if (_ordered.end() == _focus)
 			return;
 
-		if (keyboard_input::tab != code)
+		if (keyboard_input::tab != code && _focus->regular)
 			_focus->regular->key_up(code, modifiers);
 	}
 
@@ -103,12 +114,8 @@ namespace wpl
 	{
 		if (new_focus == _focus)
 			return;
-		if (_focus->regular)
-			_focus->regular->lost_focus();
-		if (new_focus->regular)
-			new_focus->regular->got_focus();
-		else
-			_host.set_focus(*new_focus->native);
+		lost_focus(*_focus);
+		got_focus(_host, *new_focus);
 		_focus = new_focus;
 	}
 }

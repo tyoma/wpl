@@ -116,6 +116,25 @@ namespace wpl
 				assert_equal(reference_nv, nv_log);
 				assert_equal(reference_in, v[1]->events);
 			}
+
+
+			test( NothingHappensWhenKeyMessagesAreSentToNativeView )
+			{
+				// INIT
+				keyboard_router kr(views, host);
+				const auto nv = make_shared<mocks::native_view_window>();
+				placed_view pv[] = {
+					{	nullptr, nv, {}, 1,	},
+				};
+
+				views.assign(begin(pv), end(pv));
+				kr.reload_views();
+
+				// ACT / ASSERT (must not crash)
+				kr.key_down(keyboard_input::enter, 0);
+				kr.key_up(keyboard_input::left, 0);
+				kr.character(L'A', 1, 0);
+			}
 		end_test_suite
 	}
 }
