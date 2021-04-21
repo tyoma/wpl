@@ -77,9 +77,6 @@ namespace wpl
 				text << items[row][column].c_str();
 			}
 
-			void listview_model::set_order(index_type column, bool ascending)
-			{	ordering.push_back(make_pair(column, ascending));	}
-
 			void listview_model::precache(index_type from, index_type count)
 			{	precached.push_back(make_pair(from, count));	}
 

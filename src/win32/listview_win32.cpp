@@ -62,12 +62,7 @@ namespace wpl
 			pair<headers_model::index_type, bool> sort_order = cm->get_sort_order();
 
 			if (headers_model::npos() != sort_order.first)
-			{
-				if (_model)
-					_model->set_order(sort_order.first, sort_order.second);
-				set_column_direction(get_window(), sort_order.first,
-					sort_order.second ? dir_ascending : dir_descending);
-			}
+				set_column_direction(get_window(), sort_order.first, sort_order.second ? dir_ascending : dir_descending);
 			_sort_column = sort_order.first;
 
 			_sort_order_changed_connection =
@@ -77,13 +72,6 @@ namespace wpl
 
 		void listview::set_model(shared_ptr<richtext_table_model> model)
 		{
-			if (_columns_model && model)
-			{
-				pair<headers_model::index_type, bool> sort_order = _columns_model->get_sort_order();
-
-				if (headers_model::npos() != sort_order.first)
-					model->set_order(sort_order.first, sort_order.second);
-			}
 			_invalidated_connection = model ?
 				model->invalidate += bind(&listview::invalidate_view, this) : slot_connection();
 			_focused_item.reset();
@@ -241,13 +229,10 @@ namespace wpl
 
 		void listview::update_sort_order(headers_model::index_type new_ordering_column, bool ascending)
 		{
-			if (_model)
-				_model->set_order(new_ordering_column, ascending);
 			if (headers_model::npos() != _sort_column)
 				set_column_direction(get_window(), _sort_column, dir_none);
 			set_column_direction(get_window(), new_ordering_column, ascending ? dir_ascending : dir_descending);
 			_sort_column = new_ordering_column;
-			ListView_RedrawItems(get_window(), 0, ListView_GetItemCount(get_window()));
 		}
 
 		void listview::invalidate_view()
@@ -326,8 +311,7 @@ namespace wpl
 			return true;
 		}
 
-		void listview::set_column_direction(HWND hlistview, headers_model::index_type column,
-			sort_direction dir) throw()
+		void listview::set_column_direction(HWND hlistview, headers_model::index_type column, sort_direction dir) throw()
 		{
 			HDITEM item = { };
 			HWND hheader = ListView_GetHeader(hlistview);

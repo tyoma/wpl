@@ -385,96 +385,6 @@ namespace wpl
 			}
 
 
-			test( ModelIsOrderedAccordinglyToColumnsModelSet )
-			{
-				// INIT
-				auto lv = create_listview();
-				column_t columns[] = {
-					{	"", 10	},
-					{	"", 10	},
-					{	"", 10	},
-				};
-				mocks::model_ptr m(new mocks::listview_model(0));
-
-				lv.first->set_model(m);
-
-				// ACT
-				lv.first->set_columns_model(mocks::headers_model::create(columns, 0, true));
-
-				// ASSERT
-				assert_equal(1u, m->ordering.size());
-				assert_equal(0u, m->ordering[0].first);
-				assert_equal(true, m->ordering[0].second);
-
-				// ACT
-				lv.first->set_columns_model(mocks::headers_model::create(columns, 2, false));
-				lv.first->set_columns_model(mocks::headers_model::create(columns, 1, true));
-
-				// ASSERT
-				assert_equal(3u, m->ordering.size());
-				assert_equal(2u, m->ordering[1].first);
-				assert_equal(false, m->ordering[1].second);
-				assert_equal(1u, m->ordering[2].first);
-				assert_equal(true, m->ordering[2].second);
-			}
-
-
-			test( ModelIsNotOrderedIfColumnsModelIsNotOrdered )
-			{
-				// INIT
-				auto lv = create_listview();
-				column_t columns[] = {
-					{	"", 10	},
-					{	"", 10	},
-				};
-				mocks::model_ptr m(new mocks::listview_model(0));
-
-				lv.first->set_model(m);
-
-				// ACT
-				lv.first->set_columns_model(mocks::headers_model::create(columns, headers_model::npos(), true));
-
-				// ASSERT
-				assert_is_empty(m->ordering);
-			}
-
-
-			test( ModelIsSortedOnSortOrderChangedEvent )
-			{
-				// INIT
-				auto lv = create_listview();
-				column_t columns[] = {
-					{	"", 10	},
-					{	"", 10	},
-					{	"", 10	},
-				};
-				mocks::model_ptr m(new mocks::listview_model(0));
-				mocks::columns_model_ptr cm(mocks::headers_model::create(columns, headers_model::npos(), false));
-
-				lv.first->set_model(m);
-				lv.first->set_columns_model(cm);
-
-				// ACT
-				cm->set_sort_order(1, false);
-
-				// ASSERT
-				assert_equal(1u, m->ordering.size());
-				assert_equal(1u, m->ordering[0].first);
-				assert_equal(false, m->ordering[0].second);
-
-				// ACT
-				cm->set_sort_order(2, false);
-				cm->set_sort_order(0, true);
-
-				// ASSERT
-				assert_equal(3u, m->ordering.size());
-				assert_equal(2u, m->ordering[1].first);
-				assert_equal(false, m->ordering[1].second);
-				assert_equal(0u, m->ordering[2].first);
-				assert_equal(true, m->ordering[2].second);
-			}
-
-
 			test( ClickingAColumnCausesColumnActivation )
 			{
 				// INIT
@@ -512,42 +422,6 @@ namespace wpl
 				assert_equal(3u, cm->column_activation_log.size());
 				assert_equal(0u, cm->column_activation_log[1]);
 				assert_equal(1u, cm->column_activation_log[2]);
-			}
-
-
-			test( PreorderingOnChangingModel )
-			{
-				// INIT
-				auto lv = create_listview();
-				column_t columns[] = {
-					{	"", 10	},
-					{	"", 10	},
-				};
-				mocks::model_ptr m1(new mocks::listview_model(0)), m2(new mocks::listview_model(0));
-				mocks::columns_model_ptr cm(mocks::headers_model::create(columns, 0, true));
-
-				lv.first->set_model(m1);
-				lv.first->set_columns_model(cm);
-
-				// ACT
-				lv.first->set_model(m2);
-
-				// ASSERT
-				assert_equal(1u, m2->ordering.size());
-				assert_equal(0u, m2->ordering[0].first);
-				assert_is_true(m2->ordering[0].second);
-
-				// INIT
-				cm->set_sort_order(1, false);
-				m1->ordering.clear();
-
-				// ACT
-				lv.first->set_model(m1);
-
-				// ASSERT
-				assert_equal(1u, m1->ordering.size());
-				assert_equal(1u, m1->ordering[0].first);
-				assert_is_false(m1->ordering[0].second);
 			}
 
 
@@ -674,42 +548,6 @@ namespace wpl
 				// ASSERT
 				assert_equal(dir_ascending, get_column_direction(lv.second, 0));
 				assert_equal(dir_none, get_column_direction(lv.second, 1));
-			}				
-
-
-			test( TheWholeListViewIsInvalidatedOnReorder )
-			{
-				// INIT
-				auto lv = create_listview();
-				column_t columns[] = {
-					{	"a", 23	},
-					{	"b", 15	},
-				};
-				mocks::columns_model_ptr cm(mocks::headers_model::create(columns, headers_model::npos(), false));
-				mocks::model_ptr m(new mocks::listview_model(1, 4));
-				RECT rc_invalidated = { };
-
-				lv.first->set_model(m);
-				lv.first->set_columns_model(cm);
-				::UpdateWindow(lv.second);
-
-				// ACT
-				cm->set_sort_order(1, true);
-
-				// ASSERT
-				::GetUpdateRect(lv.second, &rc_invalidated, FALSE);
-				assert_equal(get_visible_items_rect(lv.second), rc_invalidated);
-
-				// INIT
-				m->set_count(3);
-				::UpdateWindow(lv.second);
-
-				// ACT
-				cm->set_sort_order(0, false);
-
-				// ASSERT
-				::GetUpdateRect(lv.second, &rc_invalidated, FALSE);
-				assert_equal(get_visible_items_rect(lv.second), rc_invalidated);
 			}
 
 

@@ -106,7 +106,6 @@ namespace wpl
 		typedef T value_type;
 
 		virtual void get_text(index_type row, index_type column, value_type &value) const = 0;
-		virtual void set_order(index_type column, bool ascending);
 	};
 
 	typedef table_model<std::string> string_table_model;
@@ -139,9 +138,4 @@ namespace wpl
 
 	inline std::shared_ptr<const trackable> table_model_base::track(index_type /*row*/) const
 	{	return std::shared_ptr<trackable>();	}
-
-
-	template <typename T>
-	inline void table_model<T>::set_order(index_type /*column*/, bool /*ascending*/)
-	{	}
 }
