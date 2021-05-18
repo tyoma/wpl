@@ -75,9 +75,6 @@ namespace
 				<< agge::style::weight(agge::bold) << agge::style::height_scale(0.7) << "ms";
 		}
 
-		virtual void set_order(index_type /*column*/, bool /*ascending*/) override
-		{	}
-
 		virtual shared_ptr<const trackable> track(index_type row) const override
 		{
 			shared_ptr<my_trackable> t(new my_trackable);
