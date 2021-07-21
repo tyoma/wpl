@@ -425,6 +425,184 @@ namespace wpl
 
 				assert_equal(reference2_views, v);
 			}
+
+
+			test( RemovedChildDisappearsFromLayout )
+			{
+				// INIT
+				staggered l;
+				shared_ptr<mocks::control> ctls[] = {
+					make_shared<mocks::control>(), make_shared<mocks::control>(), make_shared<mocks::control>(),
+					make_shared<mocks::control>(), make_shared<mocks::control>(), make_shared<mocks::control>(),
+				};
+				placed_view pv = {	nullptr, nullptr_nv, zero(), 0, false	};
+				vector<placed_view> v;
+
+				ctls[0]->minimum_height = 40, pv.tab_order = 1, ctls[0]->views.push_back(pv), l.add(ctls[0]);
+				ctls[1]->minimum_height = 37, pv.tab_order = 2, ctls[1]->views.push_back(pv), l.add(ctls[1]);
+				ctls[2]->minimum_height = 51, pv.tab_order = 3, ctls[2]->views.push_back(pv), l.add(ctls[2]);
+				ctls[3]->minimum_height = 2, pv.tab_order = 4, ctls[3]->views.push_back(pv), l.add(ctls[3]);
+				ctls[4]->minimum_height = 10, pv.tab_order = 5, ctls[4]->views.push_back(pv), l.add(ctls[4]);
+				ctls[5]->minimum_height = 20, pv.tab_order = 6, ctls[5]->views.push_back(pv), l.add(ctls[5]);
+				l.set_base_width(pixels(20));
+
+				// ACT
+				l.remove(*ctls[3]);
+				l.layout(make_appender(v), create_box(60, 1000));
+
+				// ASSERT
+				placed_view reference1_views[] = {
+					{	nullptr, nullptr_nv, create_rect(0, 0, 0, 0), 1, false	},
+					{	nullptr, nullptr_nv, create_rect(20, 0, 20, 0), 2, false	},
+					{	nullptr, nullptr_nv, create_rect(40, 0, 40, 0), 3, false	},
+					{	nullptr, nullptr_nv, create_rect(20, 37, 20, 37), 5, false	},
+					{	nullptr, nullptr_nv, create_rect(0, 40, 0, 40), 6, false	},
+				};
+
+				assert_equal(reference1_views, v);
+
+				// INIT
+				v.clear();
+
+				// ACT
+				l.remove(*ctls[0]);
+				l.layout(make_appender(v), create_box(60, 1000));
+
+				// ASSERT
+				placed_view reference2_views[] = {
+					{	nullptr, nullptr_nv, create_rect(0, 0, 0, 0), 2, false	},
+					{	nullptr, nullptr_nv, create_rect(20, 0, 20, 0), 3, false	},
+					{	nullptr, nullptr_nv, create_rect(40, 0, 40, 0), 5, false	},
+					{	nullptr, nullptr_nv, create_rect(40, 10, 40, 10), 6, false	},
+				};
+
+				assert_equal(reference2_views, v);
+			}
+
+
+
+			test( ChildRemovalLeadsToLayoutNotification )
+			{
+				// INIT
+				staggered l;
+				shared_ptr<mocks::control> ctls[] = {
+					make_shared<mocks::control>(), make_shared<mocks::control>(), make_shared<mocks::control>(),
+					make_shared<mocks::control>(), make_shared<mocks::control>(), make_shared<mocks::control>(),
+				};
+				placed_view pv = {	nullptr, nullptr_nv, zero(), 0, false	};
+				vector<placed_view> v;
+				auto layout_changed = 0;
+
+				ctls[0]->minimum_height = 40, pv.tab_order = 1, ctls[0]->views.push_back(pv), l.add(ctls[0]);
+				ctls[1]->minimum_height = 37, pv.tab_order = 2, ctls[1]->views.push_back(pv), l.add(ctls[1]);
+				ctls[2]->minimum_height = 51, pv.tab_order = 3, ctls[2]->views.push_back(pv), l.add(ctls[2]);
+				ctls[3]->minimum_height = 2, pv.tab_order = 4, ctls[3]->views.push_back(pv), l.add(ctls[3]);
+				ctls[4]->minimum_height = 10, pv.tab_order = 5, ctls[4]->views.push_back(pv), l.add(ctls[4]);
+				ctls[5]->minimum_height = 20, pv.tab_order = 6, ctls[5]->views.push_back(pv), l.add(ctls[5]);
+				l.set_base_width(pixels(20));
+
+				auto conn = l.layout_changed += [&] (bool hierarchy_changed) {
+					vector<placed_view> v;
+
+					layout_changed++;
+
+				// ACT
+					l.layout(make_appender(v), create_box(60, 1000));
+
+				// ASSERT
+					placed_view reference_views[] = {
+						{	nullptr, nullptr_nv, create_rect(0, 0, 0, 0), 1, false	},
+						{	nullptr, nullptr_nv, create_rect(20, 0, 20, 0), 2, false	},
+						{	nullptr, nullptr_nv, create_rect(40, 0, 40, 0), 3, false	},
+						{	nullptr, nullptr_nv, create_rect(20, 37, 20, 37), 5, false	},
+						{	nullptr, nullptr_nv, create_rect(0, 40, 0, 40), 6, false	},
+					};
+
+					assert_is_true(hierarchy_changed);
+					assert_equal(reference_views, v);
+				};
+
+				// ACT
+				l.remove(*ctls[3]);
+				l.layout(make_appender(v), create_box(60, 1000));
+
+				// ASSERT
+				assert_equal(1, layout_changed);
+
+				// INIT
+				conn = l.layout_changed += [&] (bool hierarchy_changed) {
+					layout_changed++;
+
+				// ASSERT
+					assert_is_true(hierarchy_changed);
+				};
+
+				// ACT
+				l.remove(*ctls[0]);
+
+				// ASSERT
+				assert_equal(2, layout_changed);
+			}
+
+
+			test( LayoutChangedIsNoLongerBubbleUpAfterRemoval )
+			{
+				// INIT
+				staggered l;
+				shared_ptr<mocks::control> ctls[] = {
+					make_shared<mocks::control>(), make_shared<mocks::control>(), make_shared<mocks::control>(),
+					make_shared<mocks::control>(), make_shared<mocks::control>(), make_shared<mocks::control>(),
+				};
+				placed_view pv = {	nullptr, nullptr_nv, zero(), 0, false	};
+
+				ctls[0]->minimum_height = 40, pv.tab_order = 1, ctls[0]->views.push_back(pv), l.add(ctls[0]);
+				ctls[1]->minimum_height = 37, pv.tab_order = 2, ctls[1]->views.push_back(pv), l.add(ctls[1]);
+				ctls[2]->minimum_height = 51, pv.tab_order = 3, ctls[2]->views.push_back(pv), l.add(ctls[2]);
+				ctls[3]->minimum_height = 2, pv.tab_order = 4, ctls[3]->views.push_back(pv), l.add(ctls[3]);
+				ctls[4]->minimum_height = 10, pv.tab_order = 5, ctls[4]->views.push_back(pv), l.add(ctls[4]);
+				ctls[5]->minimum_height = 20, pv.tab_order = 6, ctls[5]->views.push_back(pv), l.add(ctls[5]);
+				l.set_base_width(pixels(20));
+
+				// ACT / ASSERT
+				l.remove(*ctls[1]);
+				auto conn = l.layout_changed += [] (bool) {	assert_is_false(true);	};
+				ctls[1]->layout_changed(true);
+				conn = slot_connection();
+				l.remove(*ctls[4]);
+				conn = l.layout_changed += [] (bool) {	assert_is_false(true);	};
+				ctls[4]->layout_changed(false);
+
+				// ASSERT
+				assert_equal(1, ctls[1].use_count());
+				assert_equal(1, ctls[4].use_count());
+			}
+
+
+			test( RemovalOfARemovedDoesNothing )
+			{
+				// INIT
+				staggered l;
+				shared_ptr<mocks::control> ctls[] = {
+					make_shared<mocks::control>(), make_shared<mocks::control>(), make_shared<mocks::control>(),
+					make_shared<mocks::control>(), make_shared<mocks::control>(), make_shared<mocks::control>(),
+				};
+				placed_view pv = {	nullptr, nullptr_nv, zero(), 0, false	};
+
+				ctls[0]->minimum_height = 40, pv.tab_order = 1, ctls[0]->views.push_back(pv), l.add(ctls[0]);
+				ctls[1]->minimum_height = 37, pv.tab_order = 2, ctls[1]->views.push_back(pv), l.add(ctls[1]);
+				ctls[2]->minimum_height = 51, pv.tab_order = 3, ctls[2]->views.push_back(pv), l.add(ctls[2]);
+				ctls[3]->minimum_height = 2, pv.tab_order = 4, ctls[3]->views.push_back(pv), l.add(ctls[3]);
+				ctls[4]->minimum_height = 10, pv.tab_order = 5, ctls[4]->views.push_back(pv), l.add(ctls[4]);
+				ctls[5]->minimum_height = 20, pv.tab_order = 6, ctls[5]->views.push_back(pv), l.add(ctls[5]);
+				l.set_base_width(pixels(20));
+
+				l.remove(*ctls[0]);
+				l.remove(*ctls[4]);
+
+				// ACT / ASSERT
+				l.remove(*ctls[0]);
+				l.remove(*ctls[4]);
+			}
 		end_test_suite
 	}
 }

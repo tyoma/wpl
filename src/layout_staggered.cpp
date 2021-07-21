@@ -101,4 +101,16 @@ namespace wpl
 			push_heap(_next_items_buffer.begin(), _next_items_buffer.end());
 		}
 	}
+
+	void staggered::remove(const control &child)
+	{
+		const auto i = find_if(_children.begin(), _children.end(), [&child] (const shared_ptr<control> &c) {
+			return c.get() == &child;
+		});
+
+		if (_children.end() == i)
+			return;
+		_children.erase(i);
+		container::remove(child);
+	}
 }

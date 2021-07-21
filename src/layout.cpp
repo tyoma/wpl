@@ -29,11 +29,22 @@ using namespace std;
 
 namespace wpl
 {
+	void container::remove(const control &child)
+	{
+		const auto i = find_if(_connections.begin(), _connections.end(),
+			[&child] (const pair<const control *, slot_connection> &e) {	return e.first == &child;	});
+
+		if (_connections.end() == i)
+			return;
+		_connections.erase(i);
+		layout_changed(true);
+	}
+
 	void container::add(control &child)
 	{
-		_connections.push_back(child.layout_changed += [this] (bool hierarchy_changed) {
+		_connections.push_back(make_pair(&child, child.layout_changed += [this] (bool hierarchy_changed) {
 			layout_changed(hierarchy_changed);
-		});
+		}));
 		layout_changed(true);
 	}
 

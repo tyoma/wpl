@@ -32,11 +32,14 @@ namespace wpl
 
 	class container : public control, noncopyable
 	{
+	public:
+		virtual void remove(const control &child);
+
 	protected:
 		void add(control &child);
 
 	private:
-		std::vector<wpl::slot_connection> _connections;
+		std::vector< std::pair<const control *, wpl::slot_connection> > _connections;
 	};
 
 
@@ -124,6 +127,9 @@ namespace wpl
 
 		// control methods
 		virtual void layout(const placed_view_appender &append_view, const agge::box<int> &box) override;
+
+		// container methods
+		virtual void remove(const control &child) override;
 
 	private:
 		struct next
