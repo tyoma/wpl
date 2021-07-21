@@ -46,8 +46,15 @@ namespace
 			}
 		}
 		virtual void set_width(index_type index, short int width) override { _widths[index] = width, invalidate(index); }
+		virtual agge::full_alignment get_alignment(index_type index) const override
+		{	return agge::full_alignment::create(index ? agge::align_far : agge::align_near, agge::align_center);	}
+
 		virtual pair<index_type, bool> get_sort_order() const throw() override { return _sort_order; }
-		virtual void activate_column(index_type index) override {
+		virtual agge::full_alignment get_header_alignment(index_type /*index*/) const override
+		{	return agge::full_alignment::create(agge::align_center, agge::align_center);	}
+
+		virtual void activate_column(index_type index) override
+		{
 			_sort_order.first = index, _sort_order.second = !_sort_order.second;
 			sort_order_changed(_sort_order.first, _sort_order.second);
 		}

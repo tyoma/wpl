@@ -74,6 +74,12 @@ namespace wpl
 			layout_changed(false);
 		}
 
+		void header_basic::set_model(shared_ptr<headers_model> model)
+		{
+			_model = model;
+			header_core::set_model(model);
+		}
+
 		void header_basic::draw(gcontext &ctx, gcontext::rasterizer_ptr &ras) const
 		{
 			if (_bg.a)
@@ -110,7 +116,7 @@ namespace wpl
 		void header_basic::draw_item(gcontext &ctx, gcontext::rasterizer_ptr &ras, const rect_r &b,
 			const headers_model &model, index_type item, unsigned /*item_state_flags*/ state) const
 		{
-			auto halign_ = /*item ? align_far :*/ align_near;
+			const auto a = _model->get_header_alignment(item);
 			auto box = b;
 
 			if ((state & sorted) && _bg_sorted.a)
@@ -128,7 +134,7 @@ namespace wpl
 			{
 				const auto gbox = g->bounds();
 
-				if (halign_ == align_far)
+				if (a.halign == align_far)
 					add_path(*ras, offset(*g, box.x1 - gbox.x1, box.y1 - gbox.y1)), box.x1 += wpl::width(gbox) + _padding;
 				else
 					add_path(*ras, offset(*g, box.x2 - gbox.x2, box.y1 - gbox.y1)), box.x2 -= wpl::width(gbox) + _padding;
@@ -138,7 +144,7 @@ namespace wpl
 			// 2. Draw text.
 			_caption_buffer.clear();
 			model.get_caption(item, _caption_buffer);
-			ctx.text_engine.render(*ras, _caption_buffer, halign_, align_near, box, limit::wrap(width(box)));
+			ctx.text_engine.render(*ras, _caption_buffer, a.halign, a.valign, box, limit::wrap(width(box)));
 			ctx(ras, blender(state & sorted ? _fg_sorted : _fg_normal), winding<>());
 
 			// 3. Draw right separator.

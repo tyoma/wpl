@@ -41,6 +41,7 @@ namespace wpl
 
 			void apply_styles(const stylesheet &stylesheet_);
 
+			void set_columns_model(std::shared_ptr<columns_model> model);
 			virtual void set_model(std::shared_ptr<richtext_table_model> model) override;
 
 		protected:
@@ -54,6 +55,7 @@ namespace wpl
 
 		private:
 			std::shared_ptr<richtext_table_model> _model;
+			std::shared_ptr<columns_model> _columns_model;
 			agge::real_t _item_height, _padding, _baseline_offset;
 			agge::color _bg, _bg_even, _bg_odd, _bg_selected, _fg_selected, _fg_focus, _fg_focus_selected;
 			mutable agge::stroke _stroke;

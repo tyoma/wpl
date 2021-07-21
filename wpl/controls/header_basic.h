@@ -42,6 +42,9 @@ namespace wpl
 
 			void apply_styles(const stylesheet &stylesheet_);
 
+			// header methods
+			virtual void set_model(std::shared_ptr<headers_model> model) override;
+
 		private:
 			// visual methods
 			virtual void draw(gcontext &ctx, gcontext::rasterizer_ptr &rasterizer) const override;
@@ -53,6 +56,7 @@ namespace wpl
 
 		private:
 			std::shared_ptr<gcontext::text_engine_type> _text_services;
+			std::shared_ptr<headers_model> _model;
 			agge::real_t _padding, _separator_width;
 			agge::color _bg, _bg_sorted, _fg_normal, _fg_sorted, _fg_separator, _fg_indicator;
 			std::unique_ptr<glyph> _up, _down;

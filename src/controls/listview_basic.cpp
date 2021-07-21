@@ -75,6 +75,12 @@ namespace wpl
 			layout_changed(false);
 		}
 
+		void listview_basic::set_columns_model(shared_ptr<columns_model> model)
+		{
+			_columns_model = model;
+			listview_core::set_columns_model(model);
+		}
+
 		void listview_basic::set_model(shared_ptr<richtext_table_model> model)
 		{
 			_model = model;
@@ -131,11 +137,12 @@ namespace wpl
 				_text_buffer.clear();
 				_model->get_text(row, column, _text_buffer);
 
-				color c = (state & focused) && (state & selected) ? _fg_focus_selected :
+				auto c = (state & focused) && (state & selected) ? _fg_focus_selected :
 					(state & focused) ? _fg_focus :
 					(state & selected) ? _fg_selected : _text_buffer.current_annotation().foreground;
+				auto a = _columns_model->get_alignment(column);
 
-				ctx.text_engine.render(*ras, _text_buffer, align_near, align_near, b, agge::limit::ellipsis(width(b)));
+				ctx.text_engine.render(*ras, _text_buffer, a.halign, a.valign, b, agge::limit::ellipsis(width(b)));
 				ras->sort(true);
 				ctx(ras, blender(c), winding<>());
 			}

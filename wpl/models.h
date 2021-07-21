@@ -70,12 +70,14 @@ namespace wpl
 	struct columns_model : list_model<short int>
 	{
 		virtual void set_width(index_type index, short int width);
+		virtual agge::full_alignment get_alignment(index_type index) const;
 	};
 
 
 	struct headers_model : columns_model
 	{
 		virtual std::pair<index_type, bool> get_sort_order() const throw();
+		virtual agge::full_alignment get_header_alignment(index_type index) const;
 		virtual void get_caption(index_type index, agge::richtext_t &caption) const = 0;
 		virtual void activate_column(index_type column);
 
@@ -125,9 +127,16 @@ namespace wpl
 	inline void columns_model::set_width(index_type /*index*/, short int /*width*/)
 	{	}
 
+	inline agge::full_alignment columns_model::get_alignment(index_type /*index*/) const
+	{	return agge::full_alignment::create(agge::align_near, agge::align_near);	}
+
+
 
 	inline std::pair<headers_model::index_type, bool> headers_model::get_sort_order() const throw()
 	{	return std::make_pair(npos(), false);	}
+
+	inline agge::full_alignment headers_model::get_header_alignment(index_type index) const
+	{	return get_alignment(index);	}
 
 	inline void headers_model::activate_column(index_type /*column*/)
 	{	}
