@@ -79,8 +79,8 @@ namespace wpl
 				_header->layout(append_view, agge::create_box(box.w, header_height));
 			}
 
-			virtual int min_height(int /*for_width*/) const override
-			{	return 0;	}
+			virtual int min_height(int for_width) const override
+			{	return _header->min_height(for_width) + BaseControlT::min_height(for_width);	}
 			
 			virtual void mouse_scroll(int depressed, int x, int y, int delta_x, int delta_y) override
 			{
