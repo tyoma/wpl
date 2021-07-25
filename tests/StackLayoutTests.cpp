@@ -1149,7 +1149,7 @@ namespace wpl
 				int reference_for_height[] = {	10, 10,	};
 
 				assert_equal(reference1_box, controls[0]->size_log);
-				assert_equal(reference_for_height, controls[0]->for_height_log);
+				assert_is_empty(controls[0]->for_height_log);
 				assert_equal(reference_for_height, controls[1]->for_height_log);
 				assert_is_empty(controls[0]->for_width_log);
 				assert_is_empty(controls[1]->for_width_log);
@@ -1162,14 +1162,14 @@ namespace wpl
 				int reference_for_width[] = {	115, 115,	};
 
 				assert_equal(reference2_box, controls[0]->size_log);
-				assert_equal(reference_for_height, controls[0]->for_height_log);
+				assert_is_empty(controls[0]->for_height_log);
 				assert_equal(reference_for_height, controls[1]->for_height_log);
-				assert_equal(reference_for_width, controls[0]->for_width_log);
+				assert_is_empty(controls[0]->for_width_log);
 				assert_equal(reference_for_width, controls[1]->for_width_log);
 			}
 
 
-			test( SharedMinSizeIsCalculatedAsSumOfMinAndOrFixedSizes )
+			test( SharedMinSizeIsCalculatedAsSumOfMinOrFixedSizes )
 			{
 				// INIT
 				shared_ptr<mocks::control> controls[] = {
@@ -1231,6 +1231,63 @@ namespace wpl
 				assert_equal(reference_for_width2, controls[0]->for_width_log);
 				assert_equal(reference_for_width2, controls[1]->for_width_log);
 				assert_equal(reference_for_width2, controls[2]->for_width_log);
+			}
+
+
+			test( OnlyFixSizedEntriesAreCountedTowardsNonRelativeOccupation )
+			{
+				// INIT
+				placed_view pv[] = {
+					{	nullptr, nullptr_nv, agge::zero(), 0,	},
+				};
+				shared_ptr<mocks::control> controls[] = {
+					make_shared<mocks::control>(),
+					make_shared<mocks::control>(),
+					make_shared<mocks::control>(),
+					make_shared<mocks::control>(),
+				};
+				vector<placed_view> vh, vv;
+				stack sh(true, cursor_manager_);
+				stack sv(false, cursor_manager_);
+
+				controls[0]->views = mkvector(pv);
+				controls[1]->views = mkvector(pv);
+				controls[1]->minimum_width = 19;
+				controls[1]->minimum_height = 13;
+				controls[2]->views = mkvector(pv);
+				controls[2]->minimum_width = 170;
+				controls[2]->minimum_height = 110;
+				controls[3]->views = mkvector(pv);
+
+				sh.add(controls[0], pixels(31));
+				sh.add(controls[1], pixels(10));
+				sh.add(controls[2], percents(100));
+				sh.add(controls[3], pixels(1));
+				sv.add(controls[0], pixels(32));
+				sv.add(controls[1], pixels(9));
+				sv.add(controls[2], percents(100));
+				sv.add(controls[3], pixels(1));
+
+				// ACT
+				sh.layout(make_appender(vh), make_box(105, 10));
+				sv.layout(make_appender(vv), make_box(10, 100));
+
+				// ASSERT
+				placed_view referenceh1_views[] = {
+					{	nullptr, nullptr_nv, create_rect(0, 0, 0, 0), 0	},
+					{	nullptr, nullptr_nv, create_rect(31, 0, 31, 0), 0	},
+					{	nullptr, nullptr_nv, create_rect(50, 0, 50, 0), 0	},
+					{	nullptr, nullptr_nv, create_rect(104, 0, 104, 0), 0	},
+				};
+				placed_view referencev1_views[] = {
+					{	nullptr, nullptr_nv, create_rect(0, 0, 0, 0), 0	},
+					{	nullptr, nullptr_nv, create_rect(0, 32, 0, 32), 0	},
+					{	nullptr, nullptr_nv, create_rect(0, 45, 0, 45), 0	},
+					{	nullptr, nullptr_nv, create_rect(0, 99, 0, 99), 0	},
+				};
+
+				assert_equal(referenceh1_views, vh);
+				assert_equal(referencev1_views, vv);
 			}
 
 		end_test_suite

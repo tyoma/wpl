@@ -37,21 +37,40 @@ namespace wpl
 {
 	namespace
 	{
+		template <typename T>
+		class fixed_size_calculator : public unit_visitor<int>
+		{
+		public:
+			fixed_size_calculator(T min_size_func)
+				: _min_size_func(min_size_func)
+			{	}
+
+			int visit_pixel(double value) const {	return (max)(_min_size_func(), static_cast<int>(value));	}
+			int visit_percent(double /*value*/) const {	return 0;	}
+
+		private:
+			void operator =(const fixed_size_calculator &rhs);
+
+		private:
+			T _min_size_func;
+		};
+
 		struct static_size : unit_visitor<int>
 		{
 			int visit_pixel(double value) const {	return static_cast<int>(value);	}
 			int visit_percent(double /*value*/) const {	return 0;	}
 		};
 
-		class calculate_size : public unit_visitor<int>, noncopyable
+		template <typename T>
+		class size_calculator : public unit_visitor<int>
 		{
 		public:
-			calculate_size(double remainder, double &correction)
-				: _remainder(remainder), _correction(correction)
+			size_calculator(double remainder, double &correction, T min_size_func)
+				: _remainder(remainder), _correction(correction), _min_size_func(min_size_func)
 			{	}
 
 			int visit_pixel(double value) const
-			{	return agge::iround(static_cast<agge::real_t>(value));	}
+			{	return (max)(_min_size_func(), agge::iround(static_cast<agge::real_t>(value)));	}
 
 			int visit_percent(double value) const
 			{
@@ -63,8 +82,12 @@ namespace wpl
 			}
 
 		private:
+			void operator =(const size_calculator &rhs);
+
+		private:
 			const double _remainder;
 			double &_correction;
+			T _min_size_func;
 		};
 
 		class limit_lower : public unit_visitor<double>
@@ -105,6 +128,16 @@ namespace wpl
 		private:
 			double _delta;
 		};
+
+
+
+		template <typename T>
+		fixed_size_calculator<T> fixed_size(T min_size_func)
+		{	return fixed_size_calculator<T>(min_size_func);	}
+
+		template <typename T>
+		size_calculator<T> calculate_size(double remainder, double &correction, T min_size_func)
+		{	return size_calculator<T>(remainder, correction, min_size_func);	}
 	}
 
 
@@ -192,12 +225,14 @@ namespace wpl
 		const auto splitter_rect = create_rect(0, 0, _horizontal ? _spacing : box.w, _horizontal ? box.h : _spacing);
 
 		for (auto i = _children.begin(); i != _children.end(); ++i)
-			dynamic_space -= (max)(i->size.apply(static_size()), i->min_size(_horizontal, common_size));
+			dynamic_space -= i->size.apply(fixed_size([this, common_size, i] {	return i->min_size(_horizontal, common_size);	}));
+
 		for (auto j = _children.begin(); j != _children.end(); location += _spacing)
 		{
 			const auto i = j++;
-			const auto item_size = (max)(i->size.apply(calculate_size(dynamic_space, correction)),
-				i->min_size(_horizontal, common_size));
+			const auto item_size = i->size.apply(calculate_size(dynamic_space, correction, [this, common_size, i] {
+				return i->min_size(_horizontal, common_size);
+			}));
 
 			// Add child's views to layout.
 			i->child->layout(offset(append_view, location, _horizontal, i->tab_order), create_box(item_size, box));
