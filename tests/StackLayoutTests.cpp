@@ -1188,10 +1188,16 @@ namespace wpl
 				controls[3]->minimum_height = 11;
 
 				sh.set_spacing(3);
+				sv.set_spacing(4);
+
+				// ACT / ASSERT
+				assert_equal(0, sh.min_width(100));
+				assert_equal(0, sv.min_height(111));
+
+				// INIT / ACT
 				sh.add(controls[0], pixels(31));
 				sh.add(controls[1], pixels(10));
 				sh.add(controls[2], percents(100));
-				sv.set_spacing(4);
 				sv.add(controls[0], pixels(32));
 				sv.add(controls[1], pixels(10));
 				sv.add(controls[2], percents(100));
@@ -1288,6 +1294,127 @@ namespace wpl
 
 				assert_equal(referenceh1_views, vh);
 				assert_equal(referencev1_views, vv);
+			}
+
+
+			test( MinCommonSizeIsCalculatedAsMaxOfItemsMinSize )
+			{
+				// INIT
+				stack sh(true, cursor_manager_);
+				stack sv(false, cursor_manager_);
+
+				// ACT / ASSERT
+				assert_equal(0, sh.min_height());
+				assert_equal(0, sh.min_height(10));
+				assert_equal(0, sv.min_width());
+				assert_equal(0, sv.min_width(10));
+
+				// INIT
+				shared_ptr<mocks::control> controls[] = {
+					make_shared<mocks::control>(), make_shared<mocks::control>(),
+					make_shared<mocks::control>(), make_shared<mocks::control>(),
+				};
+
+				controls[0]->minimum_width = 13;
+				controls[0]->minimum_height = 31;
+				controls[1]->minimum_width = 33;
+				controls[1]->minimum_height = 21;
+				controls[2]->minimum_width = 7;
+				controls[2]->minimum_height = 20;
+				controls[3]->minimum_width = 34;
+				controls[3]->minimum_height = 35;
+
+				sh.add(controls[0], pixels(0));
+				sv.add(controls[0], pixels(0));
+				sh.add(controls[1], pixels(0));
+				sv.add(controls[1], pixels(0));
+				sh.add(controls[2], pixels(0));
+				sv.add(controls[2], pixels(0));
+
+				// ACT / ASSERT
+				assert_equal(31, sh.min_height(10));
+				assert_equal(31, sh.min_height(100));
+				assert_equal(33, sv.min_width(10));
+				assert_equal(33, sv.min_width(100));
+
+				// INIT / ACT
+				sh.add(controls[3], pixels(0));
+				sv.add(controls[3], pixels(0));
+
+				// ACT / ASSERT
+				assert_equal(35, sh.min_height(10));
+				assert_equal(35, sh.min_height(100));
+				assert_equal(34, sv.min_width(10));
+				assert_equal(34, sv.min_width(100));
+			}
+
+
+			test( OppositeSizePassedToItemMinCommonsIsEvaluateFromOppositeSizePassedToParentMinCommon )
+			{
+				// INIT
+				stack sh(true, cursor_manager_);
+				stack sv(false, cursor_manager_);
+				shared_ptr<mocks::control> controls[] = {
+					make_shared<mocks::control>(), make_shared<mocks::control>(),
+					make_shared<mocks::control>(), make_shared<mocks::control>(),
+				};
+
+				controls[0]->minimum_width = 0;
+				controls[0]->minimum_height = 0;
+				controls[1]->minimum_width = 33;
+				controls[1]->minimum_height = 21;
+				controls[2]->minimum_width = 7;
+				controls[2]->minimum_height = 20;
+				controls[3]->minimum_width = 34;
+				controls[3]->minimum_height = 35;
+
+				sh.set_spacing(3);
+				sv.set_spacing(2);
+
+				sh.add(controls[0], pixels(17));
+				sv.add(controls[0], pixels(19));
+				sh.add(controls[1], pixels(0));
+				sv.add(controls[1], pixels(0));
+				sh.add(controls[2], percents(71));
+				sv.add(controls[2], percents(37));
+				sh.add(controls[3], percents(29));
+				sv.add(controls[3], percents(63));
+
+				// ACT
+				sh.min_height(159);
+
+				// ASSERT
+				int reference_common[] = {	maximum_size, maximum_size,	};
+				int reference1_shared[][1] = {	{	17,	}, {	33,	}, {	71,	}, {	29,	},	};
+
+				assert_equal(reference_common, controls[0]->for_height_log);
+				assert_equal(reference_common, controls[1]->for_height_log);
+				assert_is_empty(controls[2]->for_height_log);
+				assert_is_empty(controls[3]->for_height_log);
+				assert_equal(reference1_shared[0], controls[0]->for_width_log);
+				assert_equal(reference1_shared[1], controls[1]->for_width_log);
+				assert_equal(reference1_shared[2], controls[2]->for_width_log);
+				assert_equal(reference1_shared[3], controls[3]->for_width_log);
+
+				// INIT
+				controls[0]->for_height_log.clear(), controls[1]->for_height_log.clear();
+				controls[0]->for_width_log.clear(), controls[1]->for_width_log.clear();
+				controls[2]->for_width_log.clear(), controls[3]->for_width_log.clear();
+
+				// ACT
+				sv.min_width(246);
+
+				// ASSERT
+				int reference2_shared[][1] = {	{	19,	}, {	21,	}, {	74,	}, {	126,	},	};
+
+				assert_equal(reference_common, controls[0]->for_width_log);
+				assert_equal(reference_common, controls[1]->for_width_log);
+				assert_is_empty(controls[2]->for_width_log);
+				assert_is_empty(controls[3]->for_width_log);
+				assert_equal(reference2_shared[0], controls[0]->for_height_log);
+				assert_equal(reference2_shared[1], controls[1]->for_height_log);
+				assert_equal(reference2_shared[2], controls[2]->for_height_log);
+				assert_equal(reference2_shared[3], controls[3]->for_height_log);
 			}
 
 		end_test_suite

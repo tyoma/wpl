@@ -28,6 +28,7 @@
 #include <wpl/cursor.h>
 #include <wpl/drag_helper.h>
 #include <wpl/helpers.h>
+#include <wpl/layout_algorithm.h>
 #include <wpl/static_visitor.h>
 #include <wpl/view.h>
 
@@ -37,57 +38,10 @@ namespace wpl
 {
 	namespace
 	{
-		template <typename T>
-		class fixed_size_calculator : public unit_visitor<int>
-		{
-		public:
-			fixed_size_calculator(T min_size_func)
-				: _min_size_func(min_size_func)
-			{	}
-
-			int visit_pixel(double value) const {	return (max)(_min_size_func(), static_cast<int>(value));	}
-			int visit_percent(double /*value*/) const {	return 0;	}
-
-		private:
-			void operator =(const fixed_size_calculator &rhs);
-
-		private:
-			T _min_size_func;
-		};
-
 		struct static_size : unit_visitor<int>
 		{
 			int visit_pixel(double value) const {	return static_cast<int>(value);	}
 			int visit_percent(double /*value*/) const {	return 0;	}
-		};
-
-		template <typename T>
-		class size_calculator : public unit_visitor<int>
-		{
-		public:
-			size_calculator(double remainder, double &correction, T min_size_func)
-				: _remainder(remainder), _correction(correction), _min_size_func(min_size_func)
-			{	}
-
-			int visit_pixel(double value) const
-			{	return (max)(_min_size_func(), agge::iround(static_cast<agge::real_t>(value)));	}
-
-			int visit_percent(double value) const
-			{
-				const auto fsize = agge::agge_max(0.01 * value * _remainder, 0.0);
-				const auto ivalue = agge::iround(static_cast<agge::real_t>(fsize + _correction));
-
-				_correction += fsize - ivalue;
-				return ivalue;
-			}
-
-		private:
-			void operator =(const size_calculator &rhs);
-
-		private:
-			const double _remainder;
-			double &_correction;
-			T _min_size_func;
 		};
 
 		class limit_lower : public unit_visitor<double>
@@ -128,16 +82,6 @@ namespace wpl
 		private:
 			double _delta;
 		};
-
-
-
-		template <typename T>
-		fixed_size_calculator<T> fixed_size(T min_size_func)
-		{	return fixed_size_calculator<T>(min_size_func);	}
-
-		template <typename T>
-		size_calculator<T> calculate_size(double remainder, double &correction, T min_size_func)
-		{	return size_calculator<T>(remainder, correction, min_size_func);	}
 	}
 
 
@@ -218,42 +162,37 @@ namespace wpl
 	void stack::layout(const placed_view_appender &append_view, const agge::box<int> &box)
 	{
 		auto location = box.w - box.w;	// '0' in coordinates type
-		auto dynamic_space = (_horizontal ? box.w : box.h) - (static_cast<int>(_children.size()) - 1) * _spacing;
+		const auto shared_size = (_horizontal ? box.w : box.h) - (static_cast<int>(_children.size()) - 1) * _spacing;
 		auto splitter = _splitters.begin();
-		auto correction = 0.0;
 		const auto common_size = _horizontal ? box.h : box.w;
 		const auto splitter_rect = create_rect(0, 0, _horizontal ? _spacing : box.w, _horizontal ? box.h : _spacing);
 
-		for (auto i = _children.begin(); i != _children.end(); ++i)
-			dynamic_space -= i->size.apply(fixed_size([this, common_size, i] {	return i->min_size(_horizontal, common_size);	}));
-
-		for (auto j = _children.begin(); j != _children.end(); location += _spacing)
-		{
-			const auto i = j++;
-			const auto item_size = i->size.apply(calculate_size(dynamic_space, correction, [this, common_size, i] {
-				return i->min_size(_horizontal, common_size);
-			}));
-
+		_last_size = enumerate_sizes([&] (const item &i, int size, const item *next) {
 			// Add child's views to layout.
-			i->child->layout(offset(append_view, location, _horizontal, i->tab_order), create_box(item_size, box));
-			location += item_size;
+			i.child->layout(offset(append_view, location, _horizontal, i.tab_order), create_box(size, box));
+			location += size;
 
 			// Add splitter view to layout, if needed and possible.
-			if (i->resizable && (_children.end() != j && j->resizable))
+			if (i.resizable && next && next->resizable)
 			{
 				placed_view pv = {	*splitter++, shared_ptr<native_view>(), splitter_rect, 0	};
 
 				offset(append_view, location, _horizontal, 0)(pv);
 			}
-		}
-		_last_size = dynamic_space;
+
+			location += _spacing;
+		}, _children, shared_size, [] (const item &i) {
+			return i.size;
+		}, [this, common_size] (const item &i) {
+			return i.min_size(_horizontal, common_size);
+		});
 	}
 
 	int stack::min_height(int for_width) const
-	{	return _horizontal ? 0 : min_shared(for_width);	}
+	{	return _horizontal ? min_common(for_width) : min_shared(for_width);	}
 
 	int stack::min_width(int for_height) const
-	{	return _horizontal ? min_shared(for_height) : 0;	}
+	{	return _horizontal ? min_shared(for_height) : min_common(for_height);	}
 
 	agge::box<int> stack::create_box(int item_size, const agge::box<int> &self) const
 	{	return _horizontal ? agge::create_box(item_size, self.h) : agge::create_box(self.w, item_size);	}
@@ -272,10 +211,28 @@ namespace wpl
 
 	int stack::min_shared(int for_opposite) const
 	{
-		auto value = (static_cast<int>(_children.size()) - 1) * _spacing;
+		if (_children.empty())
+			return 0;
 
+		auto shared_size = (static_cast<int>(_children.size()) - 1) * _spacing;
+		
 		for (auto i = _children.begin(); i != _children.end(); ++i)
-			value += (max)(i->min_size(_horizontal, for_opposite), i->size.apply(static_size()));
-		return value;
+			shared_size += (max)(i->min_size(_horizontal, for_opposite), i->size.apply(static_size()));
+		return shared_size;
+	}
+
+	int stack::min_common(int for_opposite) const
+	{
+		auto common_size = 0;
+		const auto shared_size = for_opposite - (static_cast<int>(_children.size()) - 1) * _spacing;
+
+		enumerate_sizes([&] (const item &i, int size, const void *) {
+			common_size = (max)(common_size, i.min_size(!_horizontal, size));
+		}, _children, shared_size, [] (const item &i) {
+			return i.size;
+		}, [this] (const item &i) {
+			return i.min_size(_horizontal, maximum_size);
+		});
+		return common_size;
 	}
 }

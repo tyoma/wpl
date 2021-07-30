@@ -281,6 +281,7 @@
     </ClInclude>
     <ClInclude Include="..\wpl\static_visitor.h" />
     <ClInclude Include="..\wpl\group_headers_model.h" />
+    <ClInclude Include="..\wpl\layout_algorithm.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="macos\form.mm">

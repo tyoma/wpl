@@ -74,6 +74,7 @@ namespace wpl
 		double get_rsize() const;
 		void move_splitter(size_t index, double delta);
 		int min_shared(int for_opposite) const;
+		int min_common(int for_opposite) const;
 
 	private:
 		std::vector<item> _children;
