@@ -23,6 +23,8 @@
 #include "../concepts.h"
 #include "../types.h"
 
+#include <vector>
+#include <wpl/win32/utf8.h>
 #include <windows.h>
 
 namespace wpl
@@ -74,6 +76,18 @@ namespace wpl
 
 			private:
 				HWND _hwnd;
+			};
+
+			class window_text
+			{
+			public:
+				void get(std::string &value, HWND hwnd) const;
+				void set(HWND hwnd, const std::string &value) const;
+				const wchar_t *convert(const std::string &value) const;
+
+			private:
+				mutable std::vector<wchar_t> _buffer;
+				mutable utf_converter _converter;
 			};
 		};
 

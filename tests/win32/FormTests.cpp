@@ -210,13 +210,13 @@ namespace wpl
 				f.first->set_caption("Dialog #1...");
 
 				// ASSERT
-				assert_equal("Dialog #1...", get_window_text(f.second));
+				assert_equal(L"Dialog #1...", get_window_text(f.second));
 
 				// ACT
 				f.first->set_caption("Are you sure?");
 
 				// ASSERT
-				assert_equal("Are you sure?", get_window_text(f.second));
+				assert_equal(L"Are you sure?", get_window_text(f.second));
 			}
 
 

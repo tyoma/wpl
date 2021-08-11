@@ -21,7 +21,7 @@
 #pragma once
 
 #include "text_container.h"
-#include "utf8.h"
+#include "helpers.h"
 
 #include "../controls.h"
 #include <memory>
@@ -64,6 +64,27 @@ namespace wpl
 
 		private:
 			utf_converter _converter;
+		};
+
+
+		class editbox : public wpl::editbox, public native_view
+		{
+		public:
+			editbox();
+
+			virtual bool get_value(value_type &value) const override;
+			virtual void set_value(const value_type &value) override;
+
+		private:
+			virtual void layout(const placed_view_appender &append_view, const agge::box<int> &box) override;
+
+			virtual HWND materialize(HWND hparent) override;
+			virtual LRESULT on_message(UINT message, WPARAM wparam, LPARAM lparam,
+				const window::original_handler_t &handler) override;
+
+		private:
+			std::string _text;
+			helpers::window_text _converter;
 		};
 	}
 }

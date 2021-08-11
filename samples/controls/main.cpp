@@ -112,6 +112,10 @@ int main()
 			vstack->add(cb, pixels(40), false);
 			cb->set_model(shared_ptr<my_model>(new my_model(app.get_application_queue())));
 
+			auto eb = fct->create_control<editbox>("editbox");
+			vstack->add(eb, pixels(40), false);
+			auto conn = eb->translate_char += [] (wchar_t &c) {	c = towupper(c);	};
+
 			auto scrl = fct->create_control<scroller>("hscroller");
 			vstack->add(scrl, pixels(20), false);
 			scrl->set_model(scrl_model);

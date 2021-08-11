@@ -103,6 +103,9 @@ namespace wpl
 		factory_.register_control("combobox", [font_manager] (const factory &, const control_context &context) {
 			return apply_stylesheet(make_shared<win32::combobox>(), *context.stylesheet_, font_manager);
 		});
+		factory_.register_control("editbox", [font_manager](const wpl::factory&, const wpl::control_context& context) {
+			return apply_stylesheet(make_shared<win32::editbox>(), *context.stylesheet_, font_manager);
+		});
 		factory_.register_control("header", [] (const factory &, const control_context &context) {
 			return apply_stylesheet(make_shared<controls::header_basic>(context.text_services, context.cursor_manager_),
 				*context.stylesheet_);

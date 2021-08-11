@@ -36,6 +36,17 @@ namespace wpl
 		virtual void set_valign(agge::text_alignment value) = 0;
 	};
 
+	template <typename ValueT>
+	struct value_editor
+	{
+		typedef ValueT value_type;
+
+		virtual bool get_value(value_type &value) const = 0;
+		virtual void set_value(const value_type &value) = 0;
+
+		signal<void ()> changed;
+	};
+
 	template <typename ModelT>
 	struct unimodel_control : control
 	{
@@ -56,6 +67,12 @@ namespace wpl
 	struct link : control, text_container
 	{
 		signal<void (size_t item, const std::string &link_text)> clicked;
+	};
+
+	struct editbox : control, value_editor<std::string>
+	{
+		signal<void (value_type &value)> accept;
+		signal<void (wchar_t &character)> translate_char;
 	};
 
 	struct combobox : control

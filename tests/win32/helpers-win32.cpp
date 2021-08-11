@@ -101,13 +101,12 @@ namespace wpl
 			return rc;
 		}
 
-		string get_window_text(HWND hwnd)
+		wstring get_window_text(HWND hwnd)
 		{
-			win32::utf_converter c;
 			vector<wchar_t> text(::GetWindowTextLength(hwnd) + 1);
 
 			::GetWindowTextW(hwnd, &text[0], static_cast<int>(text.size()));
-			return c(&text[0]);
+			return text.data();
 		}
 
 		bool has_style(HWND hwnd, int style)

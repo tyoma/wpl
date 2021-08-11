@@ -97,5 +97,54 @@ namespace wpl
 			::SetWindowLong(get_window(), GWL_STYLE, helpers::update_flag(::GetWindowLong(get_window(), GWL_STYLE),
 				agge::align_far == _halign, LWS_RIGHT));
 		}
+
+
+		editbox::editbox()
+			: native_view("text.edit")
+		{	}
+
+		bool editbox::get_value(value_type &value) const
+		{	return _converter.get(value, get_window()), true;	}
+
+		void editbox::set_value(const value_type &value)
+		{	_converter.set(get_window(), _text = value);	}
+
+		void editbox::layout(const placed_view_appender &append_view, const agge::box<int> &box)
+		{	native_view::layout(append_view, box);	}
+
+		HWND editbox::materialize(HWND hparent)
+		{
+			return ::CreateWindowW(WC_EDITW, _converter.convert(_text), WS_CHILD | WS_VISIBLE, 0, 0, 100, 100, hparent,
+				NULL, NULL, NULL);
+		}
+
+		LRESULT editbox::on_message(UINT message, WPARAM wparam, LPARAM lparam, const window::original_handler_t &handler)
+		{
+			wchar_t c;
+
+			switch (message)
+			{
+			case WM_CHAR:
+				c = static_cast<wchar_t>(wparam);
+				translate_char(c);
+				wparam = c;
+				break;
+
+			case WM_KEYDOWN:
+				if (VK_RETURN == wparam)
+				{
+					_converter.get(_text, get_window());
+					accept(_text);
+					_converter.set(get_window(), _text);
+				}
+				break;
+
+			case OCM_COMMAND:
+				if (HIWORD(wparam) == EN_CHANGE)
+					changed();
+				return 0;
+			}
+			return handler(message, wparam, lparam);
+		}
 	}
 }

@@ -40,7 +40,7 @@ namespace wpl
 		agge::box<int> get_client_size(HWND hwnd);
 		rect_i get_update_rect(HWND hwnd);
 		RECT rect(int left, int top, int width, int height);
-		std::string get_window_text(HWND hwnd);
+		std::wstring get_window_text(HWND hwnd);
 		bool has_style(HWND hwnd, int style);
 		bool has_no_style(HWND hwnd, int style);
 		unsigned int pack_coordinates(int x, int y);

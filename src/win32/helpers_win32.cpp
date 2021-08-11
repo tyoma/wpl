@@ -22,6 +22,8 @@
 
 #include <wpl/helpers.h>
 
+using namespace std;
+
 namespace wpl
 {
 	namespace win32
@@ -89,9 +91,24 @@ namespace wpl
 		}
 
 		HWND helpers::window_handle::release() throw()
-		{	return std::move(_hwnd);	}
+		{	return move(_hwnd);	}
 
 		helpers::window_handle::operator HWND() const throw()
 		{	return _hwnd;	}
+
+
+		void helpers::window_text::get(string &value, HWND hwnd) const
+		{
+			_buffer.resize(::GetWindowTextLengthW(hwnd) + 1);
+			_buffer.back() = L'\0';
+			::GetWindowTextW(hwnd, _buffer.data(), static_cast<int>(_buffer.size()));
+			value = _converter(_buffer.data());
+		}
+
+		void helpers::window_text::set(HWND hwnd, const string &value) const
+		{	::SetWindowTextW(hwnd, _converter(value.c_str()));	}
+
+		const wchar_t *helpers::window_text::convert(const string &value) const
+		{	return _converter(value.c_str());	}
 	}
 }
