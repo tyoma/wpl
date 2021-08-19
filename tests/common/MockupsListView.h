@@ -109,6 +109,7 @@ namespace wpl
 				autotrackable_table_model(index_type count, index_type columns = 0);
 
 				void move_tracking(index_type position, index_type new_position);
+				std::vector<index_type> get_trackables() const;
 
 			public:
 				std::shared_ptr<trackables_map> auto_trackables;

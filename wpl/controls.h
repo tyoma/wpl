@@ -88,13 +88,12 @@ namespace wpl
 	struct listview : control
 	{
 		virtual void set_columns_model(std::shared_ptr<headers_model> model) = 0;
+		virtual void set_selection_model(std::shared_ptr<dynamic_set_model> model) = 0;
 		virtual void set_model(std::shared_ptr<richtext_table_model> model) = 0;
 
-		virtual void select(table_model_base::index_type item, bool reset_previous) = 0;
 		virtual void focus(table_model_base::index_type item) = 0;
 
 		signal<void (table_model_base::index_type /*item*/)> item_activate;
-		signal<void (table_model_base::index_type /*item*/, bool /*became selected*/)> selection_changed;
 	};
 
 	typedef unimodel_control<headers_model> header;

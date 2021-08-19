@@ -308,6 +308,14 @@ namespace wpl
 			_hsmodel->invalidate(true);
 		}
 
+		void listview_core::set_selection_model(shared_ptr<dynamic_set_model> model)
+		{
+			_selection = model;
+			_selection_invalidation = model ? model->invalidate += [this] (dynamic_set_model::index_type /*index*/) {
+				invalidate_();
+			} : nullptr;
+		}
+
 		void listview_core::set_model(shared_ptr<table_model_base> model)
 		{
 			const auto update_item_count = [this] {
@@ -322,7 +330,6 @@ namespace wpl
 			};
 			const auto on_invalidate = [this, update_item_count] (index_type /*row*/) {
 				update_item_count();
-				sort(_selected.begin(), _selected.end(), listview_core::trackable_less());
 				if (_focused && _state_keep_focus_visible)
 					make_visible(_focused->index());
 				invalidate_();
@@ -333,28 +340,9 @@ namespace wpl
 			_model_invalidation = model ? model->invalidate += on_invalidate : nullptr;
 			_model = model;
 			_focused = nullptr;
-			_selected.clear();
 			_precached_range = make_pair(npos(), 0);
 			update_item_count();
 			precache_model();
-			invalidate_();
-		}
-
-		void listview_core::select(index_type item, bool reset_previous)
-		{
-			if (npos() == item && !reset_previous)
-				return;
-			if (reset_previous)
-			{
-				for (auto i = _selected.begin(); i != _selected.end(); ++i)
-					selection_changed((*i)->index(), false);
-				_selected.clear();
-			}
-			if (const trackable_ptr t = npos() != item ? _model->track(item) : nullptr)
-			{
-				_selected.insert(upper_bound(_selected.begin(), _selected.end(), t, trackable_less()), t);
-				selection_changed(item, true);
-			}
 			invalidate_();
 		}
 
@@ -371,14 +359,23 @@ namespace wpl
 		void listview_core::invalidate_()
 		{	visual::invalidate(nullptr);	}
 
+		void listview_core::select(index_type item, bool reset_previous)
+		{
+			if (!_selection)
+				return;
+			if (reset_previous)
+				_selection->clear();
+			_selection->add(item);
+		}
+
 		void listview_core::toggle_selection(index_type item)
 		{
-			trackables::iterator i = lower_bound(_selected.begin(), _selected.end(), item, trackable_less());
-
-			if (i != _selected.end() && (*i)->index() == item)
-				_selected.erase(i), selection_changed(item, false);
+			if (!_selection)
+				return;
+			if (_selection->contains(item))
+				_selection->remove(item);
 			else
-				select(item, false);
+				_selection->add(item);
 		}
 
 		void listview_core::precache_model()
@@ -446,7 +443,7 @@ namespace wpl
 		}
 
 		bool listview_core::is_selected(index_type item) const
-		{	return binary_search(_selected.begin(), _selected.end(), item, trackable_less());	}
+		{	return _selection && _selection->contains(item);	}
 
 		bool listview_core::is_visible(index_type item) const
 		{

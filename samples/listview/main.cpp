@@ -1,4 +1,5 @@
 #include <samples/common/application.h>
+#include <set>
 #include <wpl/controls.h>
 #include <wpl/factory.h>
 #include <wpl/form.h>
@@ -12,6 +13,16 @@ namespace
 {
 	agge::richtext_t &operator <<(agge::richtext_t &lhs, const char *rhs)
 	{	return lhs.append(rhs, rhs + strlen(rhs)), lhs;	}
+
+	class my_selection : public dynamic_set_model
+	{
+		virtual void clear() throw() override {	selection.clear(), invalidate(npos());	}
+		virtual void add(index_type item) override {	selection.insert(item), invalidate(npos());	}
+		virtual void remove(index_type item) override {	selection.erase(item), invalidate(npos());	}
+		virtual bool contains(index_type item) const throw() override {	return !!selection.count(item);	}
+
+		std::set<index_type> selection;
+	};
 
 	class my_columns : public headers_model
 	{
@@ -138,11 +149,11 @@ int main()
 
 	lv->set_columns_model(cm);
 	lv->set_model(m);
+	lv->set_selection_model(make_shared<my_selection>());
 
 	f->set_root(root);
 	f->set_location(l);
 	f->set_visible(true);
-	lv->select(1, true);
 
 	app.run();
 }

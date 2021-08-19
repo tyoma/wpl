@@ -586,77 +586,77 @@ namespace wpl
 			}
 
 
-			test( ItemChangeWithSelectionRemainingDoesNotFireEvent )
-			{
-				// INIT
-				vector<string_table_model::index_type> selection_indices;
-				vector<bool> selection_states;
-				auto lv = create_listview();
-				slot_connection
-					c1 = lv.first->selection_changed += bind(&push_back<string_table_model::index_type>, ref(selection_indices), _1),
-					c2 = lv.first->selection_changed += bind(&push_back<bool>, ref(selection_states), _2);
-				NMLISTVIEW nmlv = {
-					{	0, 0, LVN_ITEMCHANGED	},
-					/* iItem = */ 0, /* iSubItem = */ 0,
-				};
+			//test( ItemChangeWithSelectionRemainingDoesNotFireEvent )
+			//{
+			//	// INIT
+			//	vector<string_table_model::index_type> selection_indices;
+			//	vector<bool> selection_states;
+			//	auto lv = create_listview();
+			//	slot_connection
+			//		c1 = lv.first->selection_changed += bind(&push_back<string_table_model::index_type>, ref(selection_indices), _1),
+			//		c2 = lv.first->selection_changed += bind(&push_back<bool>, ref(selection_states), _2);
+			//	NMLISTVIEW nmlv = {
+			//		{	0, 0, LVN_ITEMCHANGED	},
+			//		/* iItem = */ 0, /* iSubItem = */ 0,
+			//	};
 
-				// ACT
-				nmlv.iItem = 0, nmlv.uOldState = LVIS_FOCUSED, nmlv.uNewState = 0;
-				::SendMessage(lv.second, OCM_NOTIFY, 0, reinterpret_cast<LPARAM>(&nmlv));
-				nmlv.iItem = 1, nmlv.uOldState = 0, nmlv.uNewState = LVIS_FOCUSED;
-				::SendMessage(lv.second, OCM_NOTIFY, 0, reinterpret_cast<LPARAM>(&nmlv));
-				nmlv.iItem = 3, nmlv.uOldState = LVIS_FOCUSED | LVIS_SELECTED, nmlv.uNewState = LVIS_SELECTED;
-				::SendMessage(lv.second, OCM_NOTIFY, 0, reinterpret_cast<LPARAM>(&nmlv));
+			//	// ACT
+			//	nmlv.iItem = 0, nmlv.uOldState = LVIS_FOCUSED, nmlv.uNewState = 0;
+			//	::SendMessage(lv.second, OCM_NOTIFY, 0, reinterpret_cast<LPARAM>(&nmlv));
+			//	nmlv.iItem = 1, nmlv.uOldState = 0, nmlv.uNewState = LVIS_FOCUSED;
+			//	::SendMessage(lv.second, OCM_NOTIFY, 0, reinterpret_cast<LPARAM>(&nmlv));
+			//	nmlv.iItem = 3, nmlv.uOldState = LVIS_FOCUSED | LVIS_SELECTED, nmlv.uNewState = LVIS_SELECTED;
+			//	::SendMessage(lv.second, OCM_NOTIFY, 0, reinterpret_cast<LPARAM>(&nmlv));
 
-				// ASSERT
-				assert_is_empty(selection_indices);
-			}
+			//	// ASSERT
+			//	assert_is_empty(selection_indices);
+			//}
 
 
-			test( ItemChangeWithSelectionChangingDoesFireEvent )
-			{
-				// INIT
-				vector<string_table_model::index_type> selection_indices;
-				vector<bool> selection_states;
-				auto lv = create_listview();
-				slot_connection
-					c1 = lv.first->selection_changed += bind(&push_back<string_table_model::index_type>, ref(selection_indices), _1),
-					c2 = lv.first->selection_changed += bind(&push_back<bool>, ref(selection_states), _2);
-				NMLISTVIEW nmlv = {
-					{	0, 0, LVN_ITEMCHANGED	},
-					/* iItem = */ 0, /* iSubItem = */ 0,
-				};
+			//test( ItemChangeWithSelectionChangingDoesFireEvent )
+			//{
+			//	// INIT
+			//	vector<string_table_model::index_type> selection_indices;
+			//	vector<bool> selection_states;
+			//	auto lv = create_listview();
+			//	slot_connection
+			//		c1 = lv.first->selection_changed += bind(&push_back<string_table_model::index_type>, ref(selection_indices), _1),
+			//		c2 = lv.first->selection_changed += bind(&push_back<bool>, ref(selection_states), _2);
+			//	NMLISTVIEW nmlv = {
+			//		{	0, 0, LVN_ITEMCHANGED	},
+			//		/* iItem = */ 0, /* iSubItem = */ 0,
+			//	};
 
-				lv.first->set_model(mocks::model_ptr(new mocks::listview_model(10)));
+			//	lv.first->set_model(mocks::model_ptr(new mocks::listview_model(10)));
 
-				// ACT
-				nmlv.iItem = 1, nmlv.uOldState = LVIS_FOCUSED | LVIS_SELECTED, nmlv.uNewState = 0;
-				::SendMessage(lv.second, OCM_NOTIFY, 0, reinterpret_cast<LPARAM>(&nmlv));
-				nmlv.iItem = 2, nmlv.uOldState = LVIS_SELECTED, nmlv.uNewState = LVIS_FOCUSED;
-				::SendMessage(lv.second, OCM_NOTIFY, 0, reinterpret_cast<LPARAM>(&nmlv));
-				nmlv.iItem = 7, nmlv.uOldState = LVIS_FOCUSED, nmlv.uNewState = LVIS_FOCUSED | LVIS_SELECTED;
-				::SendMessage(lv.second, OCM_NOTIFY, 0, reinterpret_cast<LPARAM>(&nmlv));
+			//	// ACT
+			//	nmlv.iItem = 1, nmlv.uOldState = LVIS_FOCUSED | LVIS_SELECTED, nmlv.uNewState = 0;
+			//	::SendMessage(lv.second, OCM_NOTIFY, 0, reinterpret_cast<LPARAM>(&nmlv));
+			//	nmlv.iItem = 2, nmlv.uOldState = LVIS_SELECTED, nmlv.uNewState = LVIS_FOCUSED;
+			//	::SendMessage(lv.second, OCM_NOTIFY, 0, reinterpret_cast<LPARAM>(&nmlv));
+			//	nmlv.iItem = 7, nmlv.uOldState = LVIS_FOCUSED, nmlv.uNewState = LVIS_FOCUSED | LVIS_SELECTED;
+			//	::SendMessage(lv.second, OCM_NOTIFY, 0, reinterpret_cast<LPARAM>(&nmlv));
 
-				// ASSERT
-				assert_equal(3u, selection_indices.size());
-				assert_equal(3u, selection_states.size());
-				assert_equal(1u, selection_indices[0]);
-				assert_is_false(selection_states[0]);
-				assert_equal(2u, selection_indices[1]);
-				assert_is_false(selection_states[1]);
-				assert_equal(7u, selection_indices[2]);
-				assert_is_true(selection_states[2]);
+			//	// ASSERT
+			//	assert_equal(3u, selection_indices.size());
+			//	assert_equal(3u, selection_states.size());
+			//	assert_equal(1u, selection_indices[0]);
+			//	assert_is_false(selection_states[0]);
+			//	assert_equal(2u, selection_indices[1]);
+			//	assert_is_false(selection_states[1]);
+			//	assert_equal(7u, selection_indices[2]);
+			//	assert_is_true(selection_states[2]);
 
-				// ACT
-				nmlv.iItem = 9, nmlv.uOldState = 0, nmlv.uNewState = LVIS_SELECTED;
-				::SendMessage(lv.second, OCM_NOTIFY, 0, reinterpret_cast<LPARAM>(&nmlv));
+			//	// ACT
+			//	nmlv.iItem = 9, nmlv.uOldState = 0, nmlv.uNewState = LVIS_SELECTED;
+			//	::SendMessage(lv.second, OCM_NOTIFY, 0, reinterpret_cast<LPARAM>(&nmlv));
 
-				// ASSERT
-				assert_equal(4u, selection_indices.size());
-				assert_equal(4u, selection_states.size());
-				assert_equal(9u, selection_indices[3]);
-				assert_is_true(selection_states[3]);
-			}
+			//	// ASSERT
+			//	assert_equal(4u, selection_indices.size());
+			//	assert_equal(4u, selection_states.size());
+			//	assert_equal(9u, selection_indices[3]);
+			//	assert_is_true(selection_states[3]);
+			//}
 
 
 			test( ColumnWidthIsSetInPixelsIfSpecifiedInColumn )
@@ -775,105 +775,105 @@ namespace wpl
 			}
 
 
-			test( ResetSelection )
-			{
-				// INIT
-				auto lv = create_listview();
-				vector<size_t> selection;
+			//test( ResetSelection )
+			//{
+			//	// INIT
+			//	auto lv = create_listview();
+			//	vector<size_t> selection;
 
-				lv.first->set_model(mocks::model_ptr(new mocks::listview_model(7)));
+			//	lv.first->set_model(mocks::model_ptr(new mocks::listview_model(7)));
 
-				// ACT
-				lv.first->select(0, true);
+			//	// ACT
+			//	lv.first->select(0, true);
 
-				// ASSERT
-				selection = get_matching_indices(lv.second, LVNI_SELECTED);
+			//	// ASSERT
+			//	selection = get_matching_indices(lv.second, LVNI_SELECTED);
 
-				assert_equal(1u, selection.size());
-				assert_equal(0u, selection[0]);
+			//	assert_equal(1u, selection.size());
+			//	assert_equal(0u, selection[0]);
 
-				// ACT
-				lv.first->select(3, true);
+			//	// ACT
+			//	lv.first->select(3, true);
 
-				// ASSERT
-				selection = get_matching_indices(lv.second, LVNI_SELECTED);
+			//	// ASSERT
+			//	selection = get_matching_indices(lv.second, LVNI_SELECTED);
 
-				assert_equal(1u, selection.size());
-				assert_equal(3u, selection[0]);
+			//	assert_equal(1u, selection.size());
+			//	assert_equal(3u, selection[0]);
 
-				// ACT
-				lv.first->select(5, true);
+			//	// ACT
+			//	lv.first->select(5, true);
 
-				// ASSERT
-				selection = get_matching_indices(lv.second, LVNI_SELECTED);
+			//	// ASSERT
+			//	selection = get_matching_indices(lv.second, LVNI_SELECTED);
 
-				assert_equal(1u, selection.size());
-				assert_equal(5u, selection[0]);
-			}
-
-
-			test( AppendSelection )
-			{
-				// INIT
-				auto lv = create_listview();
-				vector<size_t> selection;
-
-				lv.first->set_model(mocks::model_ptr(new mocks::listview_model(7)));
-
-				// ACT
-				lv.first->select(1, false);
-
-				// ASSERT
-				selection = get_matching_indices(lv.second, LVNI_SELECTED);
-
-				assert_equal(1u, selection.size());
-				assert_equal(1u, selection[0]);
-
-				// ACT
-				lv.first->select(2, false);
-
-				// ASSERT
-				selection = get_matching_indices(lv.second, LVNI_SELECTED);
-
-				assert_equal(2u, selection.size());
-				assert_equal(1u, selection[0]);
-				assert_equal(2u, selection[1]);
-
-				// ACT
-				lv.first->select(6, false);
-
-				// ASSERT
-				selection = get_matching_indices(lv.second, LVNI_SELECTED);
-
-				assert_equal(3u, selection.size());
-				assert_equal(1u, selection[0]);
-				assert_equal(2u, selection[1]);
-				assert_equal(6u, selection[2]);
-			}
+			//	assert_equal(1u, selection.size());
+			//	assert_equal(5u, selection[0]);
+			//}
 
 
-			test( ClearNonEmptySelection )
-			{
-				// INIT
-				auto lv = create_listview();
+			//test( AppendSelection )
+			//{
+			//	// INIT
+			//	auto lv = create_listview();
+			//	vector<size_t> selection;
 
-				lv.first->set_model(mocks::model_ptr(new mocks::listview_model(7)));
+			//	lv.first->set_model(mocks::model_ptr(new mocks::listview_model(7)));
 
-				// ACT
-				lv.first->select(1, false);
-				lv.first->select(string_table_model::npos(), true);
+			//	// ACT
+			//	lv.first->select(1, false);
 
-				// ASSERT
-				assert_is_empty(get_matching_indices(lv.second, LVNI_SELECTED));
+			//	// ASSERT
+			//	selection = get_matching_indices(lv.second, LVNI_SELECTED);
 
-				// ACT
-				lv.first->select(2, false);
-				lv.first->select(3, false);
-				lv.first->select(string_table_model::npos(), true);
+			//	assert_equal(1u, selection.size());
+			//	assert_equal(1u, selection[0]);
 
-				// ASSERT
-				assert_is_empty(get_matching_indices(lv.second, LVNI_SELECTED));
-			}
+			//	// ACT
+			//	lv.first->select(2, false);
+
+			//	// ASSERT
+			//	selection = get_matching_indices(lv.second, LVNI_SELECTED);
+
+			//	assert_equal(2u, selection.size());
+			//	assert_equal(1u, selection[0]);
+			//	assert_equal(2u, selection[1]);
+
+			//	// ACT
+			//	lv.first->select(6, false);
+
+			//	// ASSERT
+			//	selection = get_matching_indices(lv.second, LVNI_SELECTED);
+
+			//	assert_equal(3u, selection.size());
+			//	assert_equal(1u, selection[0]);
+			//	assert_equal(2u, selection[1]);
+			//	assert_equal(6u, selection[2]);
+			//}
+
+
+			//test( ClearNonEmptySelection )
+			//{
+			//	// INIT
+			//	auto lv = create_listview();
+
+			//	lv.first->set_model(mocks::model_ptr(new mocks::listview_model(7)));
+
+			//	// ACT
+			//	lv.first->select(1, false);
+			//	lv.first->select(string_table_model::npos(), true);
+
+			//	// ASSERT
+			//	assert_is_empty(get_matching_indices(lv.second, LVNI_SELECTED));
+
+			//	// ACT
+			//	lv.first->select(2, false);
+			//	lv.first->select(3, false);
+			//	lv.first->select(string_table_model::npos(), true);
+
+			//	// ASSERT
+			//	assert_is_empty(get_matching_indices(lv.second, LVNI_SELECTED));
+			//}
 
 
 			test( RequestProperTrackableOnFocusChange )
@@ -1863,124 +1863,124 @@ namespace wpl
 			}
 
 
-			test( SelectionIsPreservedOnWindowRecreation )
-			{
-				// INIT
-				shared_ptr<listview> lv(new win32::listview);
-				HWND hparent2 = create_parent_window();
-				shared_ptr<richtext_table_model> model(new mocks::listview_model(5, 1));
+			//test( SelectionIsPreservedOnWindowRecreation )
+			//{
+			//	// INIT
+			//	shared_ptr<listview> lv(new win32::listview);
+			//	HWND hparent2 = create_parent_window();
+			//	shared_ptr<richtext_table_model> model(new mocks::listview_model(5, 1));
 
-				lv->set_columns_model(mocks::headers_model::create("Name", 100));
-				lv->set_model(model);
+			//	lv->set_columns_model(mocks::headers_model::create("Name", 100));
+			//	lv->set_model(model);
 
-				HWND hwnd = get_window_and_resize(lv, hparent);
+			//	HWND hwnd = get_window_and_resize(lv, hparent);
 
-				::SetWindowLong(hwnd, GWL_STYLE, ::GetWindowLong(hwnd, GWL_STYLE) & ~LVS_SINGLESEL);
+			//	::SetWindowLong(hwnd, GWL_STYLE, ::GetWindowLong(hwnd, GWL_STYLE) & ~LVS_SINGLESEL);
 
-				lv->select(1, true);
-				lv->select(3, false);
+			//	lv->select(1, true);
+			//	lv->select(3, false);
 
-				// ACT
-				hwnd = get_window_and_resize(lv, hparent2);
+			//	// ACT
+			//	hwnd = get_window_and_resize(lv, hparent2);
 
-				// ASSERT
-				vector<string_table_model::index_type> selection = get_matching_indices(hwnd, LVNI_SELECTED);
-				string_table_model::index_type reference1[] = { 1, 3, };
+			//	// ASSERT
+			//	vector<string_table_model::index_type> selection = get_matching_indices(hwnd, LVNI_SELECTED);
+			//	string_table_model::index_type reference1[] = { 1, 3, };
 
-				assert_equal(reference1, selection);
+			//	assert_equal(reference1, selection);
 
-				// INIT
-				lv->select(2, true);
+			//	// INIT
+			//	lv->select(2, true);
 
-				// ACT
-				hwnd = get_window_and_resize(lv, hparent);
+			//	// ACT
+			//	hwnd = get_window_and_resize(lv, hparent);
 
-				// ASSERT
-				selection = get_matching_indices(hwnd, LVNI_SELECTED);
-				string_table_model::index_type reference2[] = { 2, };
+			//	// ASSERT
+			//	selection = get_matching_indices(hwnd, LVNI_SELECTED);
+			//	string_table_model::index_type reference2[] = { 2, };
 
-				assert_equal(reference2, selection);
-			}
-
-
-			test( SelectingNPosAcquiresNoTrackable )
-			{
-				// INIT
-				shared_ptr<listview> lv(new win32::listview);
-				shared_ptr<mocks::listview_model> model(new mocks::listview_model(5, 1));
-				vector<string_table_model::index_type> selections;
-
-				lv->set_columns_model(mocks::headers_model::create("Name", 100));
-				lv->set_model(model);
-
-				HWND hwnd = get_window_and_resize(lv, hparent);
-
-				::SetWindowLong(hwnd, GWL_STYLE, ::GetWindowLong(hwnd, GWL_STYLE) & ~LVS_SINGLESEL);
-
-				lv->select(1, true);
-				lv->select(3, false);
-				model->tracking_requested.clear();
-
-				// ACT
-				lv->select(string_table_model::npos(), false);
-
-				// ASSERT
-				assert_is_empty(model->tracking_requested);
-				assert_equal(2u, get_matching_indices(hwnd, LVNI_SELECTED).size());
-
-				// ACT
-				lv->select(string_table_model::npos(), true);
-
-				// ASSERT
-				assert_is_empty(model->tracking_requested);
-			}
+			//	assert_equal(reference2, selection);
+			//}
 
 
-			test( IndependtListViewHandlesNativeNotifications )
-			{
-				// INIT
-				window_tracker wt;
-				shared_ptr<listview> lv(new win32::listview);
-				HWND hlv = get_window_and_resize(lv, hparent);
-				vector<string_table_model::index_type> selections;
-				slot_connection c =
-					lv->selection_changed += bind(&push_back<string_table_model::index_type>, ref(selections), _1);
+			//test( SelectingNPosAcquiresNoTrackable )
+			//{
+			//	// INIT
+			//	shared_ptr<listview> lv(new win32::listview);
+			//	shared_ptr<mocks::listview_model> model(new mocks::listview_model(5, 1));
+			//	vector<string_table_model::index_type> selections;
 
-				wt.checkpoint();
+			//	lv->set_columns_model(mocks::headers_model::create("Name", 100));
+			//	lv->set_model(model);
 
-				RECT rc;
-				column_t columns[] = {
-					{	"", 100	},
-					{	"", 100	},
-					{	"", 50	},
-				};
-				mocks::columns_model_ptr cm(mocks::headers_model::create(columns, headers_model::npos(), false));
-				mocks::model_ptr m(new mocks::listview_model(3, 3));
+			//	HWND hwnd = get_window_and_resize(lv, hparent);
 
-				::MoveWindow(hlv, 0, 0, 300, 200, TRUE);
-				lv->set_columns_model(cm);
-				lv->set_model(m);
+			//	::SetWindowLong(hwnd, GWL_STYLE, ::GetWindowLong(hwnd, GWL_STYLE) & ~LVS_SINGLESEL);
 
-				// ACT
-				ListView_GetItemRect(hlv, 0, &rc, LVIR_SELECTBOUNDS);
-				emulate_click(hlv, rc.left, rc.top, mouse_input::left, 0);
+			//	lv->select(1, true);
+			//	lv->select(3, false);
+			//	model->tracking_requested.clear();
 
-				// ASSERT
-				string_table_model::index_type reference1[] = { 0, };
+			//	// ACT
+			//	lv->select(string_table_model::npos(), false);
 
-				assert_equal(reference1, selections);
+			//	// ASSERT
+			//	assert_is_empty(model->tracking_requested);
+			//	assert_equal(2u, get_matching_indices(hwnd, LVNI_SELECTED).size());
 
-				// ACT
-				ListView_GetItemRect(hlv, 2, &rc, LVIR_SELECTBOUNDS);
-				emulate_click(hlv, rc.left, rc.top, mouse_input::left, 0);
-				ListView_GetItemRect(hlv, 1, &rc, LVIR_SELECTBOUNDS);
-				emulate_click(hlv, rc.left, rc.top, mouse_input::left, 0);
+			//	// ACT
+			//	lv->select(string_table_model::npos(), true);
 
-				// ASSERT
-				string_table_model::index_type reference2[] = { 0, string_table_model::npos(), 2, string_table_model::npos(), 1, };
+			//	// ASSERT
+			//	assert_is_empty(model->tracking_requested);
+			//}
 
-				assert_equal(reference2, selections);
-			}
+
+			//test( IndependtListViewHandlesNativeNotifications )
+			//{
+			//	// INIT
+			//	window_tracker wt;
+			//	shared_ptr<listview> lv(new win32::listview);
+			//	HWND hlv = get_window_and_resize(lv, hparent);
+			//	vector<string_table_model::index_type> selections;
+			//	slot_connection c =
+			//		lv->selection_changed += bind(&push_back<string_table_model::index_type>, ref(selections), _1);
+
+			//	wt.checkpoint();
+
+			//	RECT rc;
+			//	column_t columns[] = {
+			//		{	"", 100	},
+			//		{	"", 100	},
+			//		{	"", 50	},
+			//	};
+			//	mocks::columns_model_ptr cm(mocks::headers_model::create(columns, headers_model::npos(), false));
+			//	mocks::model_ptr m(new mocks::listview_model(3, 3));
+
+			//	::MoveWindow(hlv, 0, 0, 300, 200, TRUE);
+			//	lv->set_columns_model(cm);
+			//	lv->set_model(m);
+
+			//	// ACT
+			//	ListView_GetItemRect(hlv, 0, &rc, LVIR_SELECTBOUNDS);
+			//	emulate_click(hlv, rc.left, rc.top, mouse_input::left, 0);
+
+			//	// ASSERT
+			//	string_table_model::index_type reference1[] = { 0, };
+
+			//	assert_equal(reference1, selections);
+
+			//	// ACT
+			//	ListView_GetItemRect(hlv, 2, &rc, LVIR_SELECTBOUNDS);
+			//	emulate_click(hlv, rc.left, rc.top, mouse_input::left, 0);
+			//	ListView_GetItemRect(hlv, 1, &rc, LVIR_SELECTBOUNDS);
+			//	emulate_click(hlv, rc.left, rc.top, mouse_input::left, 0);
+
+			//	// ASSERT
+			//	string_table_model::index_type reference2[] = { 0, string_table_model::npos(), 2, string_table_model::npos(), 1, };
+
+			//	assert_equal(reference2, selections);
+			//}
 		end_test_suite
 	}
 }

@@ -1,6 +1,7 @@
 #include <wpl/controls/listview_core.h>
 
 #include "helpers-listview.h"
+#include "mock-dynamic_set.h"
 
 #include <tests/common/helpers.h>
 #include <tests/common/helpers-visual.h>
@@ -30,6 +31,7 @@ namespace wpl
 
 		begin_test_suite( ListViewCoreTests )
 
+			shared_ptr<mocks::dynamic_set_model> selection;
 			mocks::font_loader fake_loader;
 			shared_ptr<gcontext::surface_type> surface;
 			shared_ptr<gcontext::renderer_type> ren;
@@ -37,8 +39,31 @@ namespace wpl
 			shared_ptr<gcontext> ctx;
 			gcontext::rasterizer_ptr ras;
 
+			vector< pair<string_table_model::index_type, unsigned /*state*/> > get_visible_states_raw(tracking_listview &lv)
+			{
+				vector< pair<string_table_model::index_type, unsigned /*state*/> > selection;
+
+				lv.events.clear();
+				lv.draw(*ctx, ras);
+				for (auto i = lv.events.begin(); i != lv.events.end(); ++i)
+				{
+					if (i->state)
+						selection.push_back(make_pair(i->item, i->state));
+				}
+				return selection;
+			}
+
+			vector< pair<string_table_model::index_type, unsigned /*state*/> > get_visible_states(tracking_listview &lv)
+			{
+				lv.item_height = 1;
+				lv.reported_events = tracking_listview::item_self;
+				resize(lv, 1, 1000);
+				return get_visible_states_raw(lv);
+			}
+
 			init( Init )
 			{
+				selection.reset(new mocks::dynamic_set_model);
 				surface.reset(new gcontext::surface_type(1000, 1000, 0));
 				ren.reset(new gcontext::renderer_type(1));
 				text_engine.reset(new gcontext::text_engine_type(fake_loader, 0));
@@ -815,6 +840,153 @@ namespace wpl
 			}
 
 
+			test( SelectedElementsHaveCorrespondingStateOnDraw )
+			{
+				// INIT
+				tracking_listview lv;
+
+				lv.item_height = 1;
+				lv.reported_events = tracking_listview::item_background | tracking_listview::subitem_background | tracking_listview::item_self | tracking_listview::subitem_self;
+				resize(lv, 1, 4);
+				lv.set_columns_model(mocks::headers_model::create("", 1));
+				lv.set_model(create_model(1000, 1));
+				lv.set_selection_model(selection);
+
+				// ACT
+				selection->items.insert(2);
+				lv.draw(*ctx, ras);
+
+				// ASSERT
+				tracking_listview::drawing_event reference1[] = {
+					tracking_listview::drawing_event(tracking_listview::item_background, *ctx, ras, create_rect(0, 0, 1, 1), 0, 0),
+					tracking_listview::drawing_event(tracking_listview::subitem_background, *ctx, ras, create_rect(0, 0, 1, 1), 0, 0),
+					tracking_listview::drawing_event(tracking_listview::item_self, *ctx, ras, create_rect(0, 0, 1, 1), 0, 0),
+					tracking_listview::drawing_event(tracking_listview::subitem_self, *ctx, ras, create_rect(0, 0, 1, 1), 0, 0),
+
+					tracking_listview::drawing_event(tracking_listview::item_background, *ctx, ras, create_rect(0, 1, 1, 2), 1, 0),
+					tracking_listview::drawing_event(tracking_listview::subitem_background, *ctx, ras, create_rect(0, 1, 1, 2), 1, 0),
+					tracking_listview::drawing_event(tracking_listview::item_self, *ctx, ras, create_rect(0, 1, 1, 2), 1, 0),
+					tracking_listview::drawing_event(tracking_listview::subitem_self, *ctx, ras, create_rect(0, 1, 1, 2), 1, 0),
+
+					tracking_listview::drawing_event(tracking_listview::item_background, *ctx, ras, create_rect(0, 2, 1, 3), 2, controls::listview_core::selected),
+					tracking_listview::drawing_event(tracking_listview::subitem_background, *ctx, ras, create_rect(0, 2, 1, 3), 2, controls::listview_core::selected),
+					tracking_listview::drawing_event(tracking_listview::item_self, *ctx, ras, create_rect(0, 2, 1, 3), 2, controls::listview_core::selected),
+					tracking_listview::drawing_event(tracking_listview::subitem_self, *ctx, ras, create_rect(0, 2, 1, 3), 2, controls::listview_core::selected),
+
+					tracking_listview::drawing_event(tracking_listview::item_background, *ctx, ras, create_rect(0, 3, 1, 4), 3, 0),
+					tracking_listview::drawing_event(tracking_listview::subitem_background, *ctx, ras, create_rect(0, 3, 1, 4), 3, 0),
+					tracking_listview::drawing_event(tracking_listview::item_self, *ctx, ras, create_rect(0, 3, 1, 4), 3, 0),
+					tracking_listview::drawing_event(tracking_listview::subitem_self, *ctx, ras, create_rect(0, 3, 1, 4), 3, 0),
+				};
+
+				assert_equal_pred(reference1, lv.events, listview_event_eq());
+
+				// INIT
+				lv.events.clear();
+				lv.reported_events = tracking_listview::item_self;
+
+				// ACT
+				selection->items.clear();
+				selection->items.insert(0);
+
+				// ASSERT
+				pair<string_table_model::index_type, unsigned /*state*/> reference2[] = {
+					make_pair(0, controls::listview_core::selected),
+				};
+
+				assert_equal(reference2, get_visible_states(lv));
+
+				// INIT
+				lv.events.clear();
+
+				// ACT
+				selection->items.insert(1);
+
+				// ASSERT
+				pair<string_table_model::index_type, unsigned /*state*/> reference3[] = {
+					make_pair(0, controls::listview_core::selected),
+					make_pair(1, controls::listview_core::selected),
+				};
+
+				assert_equal(reference3, get_visible_states(lv));
+			}
+
+
+			test( FocusedElementsHaveCorrespondingStateOnDraw )
+			{
+				// INIT
+				tracking_listview lv;
+				int invalidate = 0;
+
+				lv.item_height = 1;
+				lv.reported_events = tracking_listview::item_self;
+				resize(lv, 1, 4);
+				lv.set_columns_model(mocks::headers_model::create("", 1));
+				lv.set_model(create_model(1000, 1));
+				lv.set_selection_model(selection);
+
+				selection->items.insert(2);
+
+				const auto conn = lv.invalidate += [&] (const void *r) {	assert_null(r); invalidate++;	};
+
+				// ACT
+				lv.focus(1);
+				lv.draw(*ctx, ras);
+
+				// ASSERT
+				tracking_listview::drawing_event reference1[] = {
+					tracking_listview::drawing_event(tracking_listview::item_self, *ctx, ras, create_rect(0, 0, 1, 1), 0, 0),
+					tracking_listview::drawing_event(tracking_listview::item_self, *ctx, ras, create_rect(0, 1, 1, 2), 1, controls::listview_core::focused),
+					tracking_listview::drawing_event(tracking_listview::item_self, *ctx, ras, create_rect(0, 2, 1, 3), 2, controls::listview_core::selected),
+					tracking_listview::drawing_event(tracking_listview::item_self, *ctx, ras, create_rect(0, 3, 1, 4), 3, 0),
+				};
+
+				assert_equal_pred(reference1, lv.events, listview_event_eq());
+				assert_equal(1, invalidate);
+
+				// INIT
+				lv.events.clear();
+
+				// ACT
+				lv.focus(0);
+				lv.focus(3);
+				lv.draw(*ctx, ras);
+
+				// ASSERT
+				tracking_listview::drawing_event reference2[] = {
+					tracking_listview::drawing_event(tracking_listview::item_self, *ctx, ras, create_rect(0, 0, 1, 1), 0, 0),
+					tracking_listview::drawing_event(tracking_listview::item_self, *ctx, ras, create_rect(0, 1, 1, 2), 1, 0),
+					tracking_listview::drawing_event(tracking_listview::item_self, *ctx, ras, create_rect(0, 2, 1, 3), 2, controls::listview_core::selected),
+					tracking_listview::drawing_event(tracking_listview::item_self, *ctx, ras, create_rect(0, 3, 1, 4), 3, controls::listview_core::focused),
+				};
+
+				assert_equal_pred(reference2, lv.events, listview_event_eq());
+				assert_equal(3, invalidate);
+
+				// ACT
+				static_cast<keyboard_input &>(lv).lost_focus();
+
+				// ASSERT
+				assert_equal(4, invalidate);
+
+				// INIT
+				lv.events.clear();
+
+				// ACT
+				lv.draw(*ctx, ras);
+
+				// ASSERT
+				tracking_listview::drawing_event reference3[] = {
+					tracking_listview::drawing_event(tracking_listview::item_self, *ctx, ras, create_rect(0, 0, 1, 1), 0, 0),
+					tracking_listview::drawing_event(tracking_listview::item_self, *ctx, ras, create_rect(0, 1, 1, 2), 1, 0),
+					tracking_listview::drawing_event(tracking_listview::item_self, *ctx, ras, create_rect(0, 2, 1, 3), 2, controls::listview_core::selected),
+					tracking_listview::drawing_event(tracking_listview::item_self, *ctx, ras, create_rect(0, 3, 1, 4), 3, 0),
+				};
+
+				assert_equal_pred(reference3, lv.events, listview_event_eq());
+			}
+
+
 			test( ListViewIsInvalidatedOnModelInvalidation )
 			{
 				// INIT
@@ -1278,7 +1450,6 @@ namespace wpl
 				// INIT
 				tracking_listview lv;
 				const auto cm = mocks::headers_model::create("", 13);
-				const auto c1 = lv.selection_changed += [&] (...) { assert_is_true(false); };
 				const auto c2 = lv.item_activate += [&] (...) { assert_is_true(false); };
 
 				lv.set_columns_model(cm);
@@ -1301,7 +1472,6 @@ namespace wpl
 				tracking_listview lv;
 				const auto cm = mocks::headers_model::create("", 13);
 				const shared_ptr<mocks::listview_model> m(new mocks::listview_model(0, 1));
-				const auto c1 = lv.selection_changed += [&] (...) { assert_is_true(false); };
 				const auto c2 = lv.item_activate += [&] (...) { assert_is_true(false); };
 
 				lv.set_columns_model(cm);
@@ -1808,6 +1978,7 @@ namespace wpl
 
 				assert_equal(reference2, m->precached);
 			}
+
 		end_test_suite
 	}
 }

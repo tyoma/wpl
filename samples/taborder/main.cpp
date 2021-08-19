@@ -1,4 +1,5 @@
 #include <samples/common/application.h>
+#include <set>
 #include <wpl/controls.h>
 #include <wpl/factory.h>
 #include <wpl/form.h>
@@ -10,6 +11,16 @@ using namespace wpl;
 
 namespace
 {
+	class my_selection : public dynamic_set_model
+	{
+		virtual void clear() throw() override {	selection.clear(), invalidate(npos());	}
+		virtual void add(index_type item) override {	selection.insert(item), invalidate(npos());	}
+		virtual void remove(index_type item) override {	selection.erase(item), invalidate(npos());	}
+		virtual bool contains(index_type item) const throw() override {	return !!selection.count(item);	}
+
+		std::set<index_type> selection;
+	};
+
 	class my_columns : public headers_model
 	{
 	public:
@@ -118,6 +129,7 @@ int main()
 			const auto lv = fct->create_control<listview>("listview");
 			lv->set_columns_model(cm);
 			lv->set_model(m);
+			lv->set_selection_model(make_shared<my_selection>());
 			stk->add(lv, percents(100), false, 1);
 
 			auto btn1 = fct->create_control<button>("button");

@@ -104,6 +104,15 @@ namespace wpl
 				(*auto_trackables)[new_position] = t;
 			}
 
+			vector<autotrackable_table_model::index_type> autotrackable_table_model::get_trackables() const
+			{
+				vector<autotrackable_table_model::index_type> result;
+
+				for (auto i = auto_trackables->begin(); i != auto_trackables->end(); ++i)
+					result.push_back(i->first);
+				return result;
+			}
+
 			shared_ptr<const trackable> autotrackable_table_model::track(index_type row) const
 			{
 				pair<trackables_map::iterator, bool> i = auto_trackables->insert(make_pair(row, shared_ptr<listview_trackable>()));

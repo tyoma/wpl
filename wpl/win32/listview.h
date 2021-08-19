@@ -46,9 +46,9 @@ namespace wpl
 
 			// listview methods
 			virtual void set_columns_model(std::shared_ptr<headers_model> cm) override;
+			virtual void set_selection_model(std::shared_ptr<dynamic_set_model> model) override;
 			virtual void set_model(std::shared_ptr<richtext_table_model> model) override;
 
-			virtual void select(index_type item, bool reset_previous) override;
 			virtual void focus(index_type item) override;
 
 			// native_view methods
@@ -67,6 +67,10 @@ namespace wpl
 			bool is_item_visible(index_type item) const throw();
 			static void set_column_direction(HWND hlistview, headers_model::index_type column,
 				sort_direction direction) throw();
+
+			// TEMPORARY
+			/*virtual*/ void select(index_type item, bool reset_previous) /*override*/;
+			signal<void (table_model_base::index_type /*item*/, bool /*became selected*/)> selection_changed;
 
 		private:
 			bool _avoid_notifications;

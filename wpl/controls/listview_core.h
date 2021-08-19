@@ -62,16 +62,15 @@ namespace wpl
 			virtual void layout(const placed_view_appender &append_view, const agge::box<int> &box) override;
 			virtual int min_height(int for_width) const override;
 
-			// listview methods
+			// listview [proto]methods
 			void set_columns_model(std::shared_ptr<columns_model> cmodel);
+			virtual void set_selection_model(std::shared_ptr<dynamic_set_model> model) override;
 			void set_model(std::shared_ptr<table_model_base> model);
 
-			virtual void select(index_type item, bool reset_previous) override;
 			virtual void focus(index_type item) override;
 
 		private:
 			typedef std::shared_ptr<const trackable> trackable_ptr;
-			typedef std::vector<trackable_ptr> trackables;
 
 			struct trackable_less;
 			struct base_scroll_model;
@@ -87,6 +86,7 @@ namespace wpl
 				columns_model::index_type column) const = 0;
 
 			void invalidate_();
+			void select(index_type item, bool reset_previous);
 			void toggle_selection(index_type item);
 			void precache_model();
 			agge::real_t get_visible_count() const;
@@ -100,18 +100,18 @@ namespace wpl
 
 		private:
 			std::shared_ptr<columns_model> _cmodel;
+			std::shared_ptr<dynamic_set_model> _selection;
 			std::shared_ptr<table_model_base> _model;
 			std::pair<table_model_base::index_type, table_model_base::index_type> _precached_range;
 			table_model_base::index_type _item_count;
 			std::shared_ptr<vertical_scroll_model> _vsmodel;
 			std::shared_ptr<horizontal_scroll_model> _hsmodel;
-			slot_connection _model_invalidation, _cmodel_invalidation;
+			slot_connection _model_invalidation, _cmodel_invalidation, _selection_invalidation;
 			agge::agge_vector<double> _offset;
 			mutable agge::real_t _total_width;
 			mutable std::vector< std::pair<agge::real_t /*x1*/, agge::real_t /*x2*/> > _subitem_positions;
 
 			trackable_ptr _focused;
-			trackables _selected;
 
 			bool _state_vscrolling : 1;
 			bool _state_keep_focus_visible : 1;

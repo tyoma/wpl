@@ -70,6 +70,10 @@ namespace wpl
 			_columns_model = cm;
 		}
 
+		void listview::set_selection_model(shared_ptr<dynamic_set_model> /*model*/)
+		{
+		}
+
 		void listview::set_model(shared_ptr<richtext_table_model> model)
 		{
 			_invalidated_connection = model ?
