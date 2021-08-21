@@ -46,6 +46,7 @@
     <ClInclude Include="helpers-visual.h" />
     <ClInclude Include="helpers.h" />
     <ClInclude Include="mock-control.h" />
+    <ClInclude Include="mock-dynamic_set.h" />
     <ClInclude Include="mock-queue.h" />
     <ClInclude Include="mock-router_host.h" />
     <ClInclude Include="Mockups.h" />

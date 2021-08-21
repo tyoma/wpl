@@ -1,10 +1,10 @@
 #include <wpl/controls/listview_core.h>
 
 #include "helpers-listview.h"
-#include "mock-dynamic_set.h"
 
 #include <tests/common/helpers.h>
 #include <tests/common/helpers-visual.h>
+#include <tests/common/mock-dynamic_set.h>
 #include <tests/common/Mockups.h>
 #include <tests/common/MockupsListView.h>
 #include <tests/common/predicates.h>

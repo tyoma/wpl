@@ -1128,6 +1128,138 @@ namespace wpl
 				// ASSERT
 				assert_approx_equal(10.0, sm->get_window().first, 0.001);
 			}
+
+
+			test( ClickingAMouseWithShiftPressedSelectsARangeFromFocusToItem )
+			{
+				// INIT
+				tracking_listview lv;
+				const auto m = create_model(1000, 1);
+
+				lv.item_height = 5;
+				resize(lv, 100, 300);
+				lv.set_columns_model(mocks::headers_model::create("", 1));
+				lv.set_model(m);
+				lv.set_selection_model(selection);
+
+				// ACT
+				lv.mouse_down(mouse_input::left, keyboard_input::shift, 0, 5 * 2);
+
+				// ASSERT
+				assert_equivalent(plural + 0u + 1u + 2u, selection->items);
+				assert_equal(1u, m->auto_trackables->size());
+				assert_equal(1u, m->auto_trackables->count(2));
+
+				// INIT
+				lv.mouse_up(mouse_input::left, keyboard_input::shift, 0, 5 * 2);
+				lv.focus(25);
+				selection->items.clear();
+
+				// ACT
+				lv.mouse_down(mouse_input::left, keyboard_input::shift, 0, 5 * 31);
+
+				// ASSERT
+				assert_equivalent(plural + 25u + 26u + 27u + 28u + 29u + 30u + 31u, selection->items);
+				assert_equal(1u, m->auto_trackables->size());
+				assert_equal(1u, m->auto_trackables->count(31));
+
+				// INIT
+				lv.mouse_up(mouse_input::left, keyboard_input::shift, 0, 5 * 31);
+				selection->items.clear();
+
+				// ACT
+				lv.mouse_down(mouse_input::left, keyboard_input::shift, 0, 5 * 28);
+
+				// ASSERT
+				assert_equivalent(plural + 28u + 29u + 30u + 31u, selection->items);
+				assert_equal(1u, m->auto_trackables->size());
+				assert_equal(1u, m->auto_trackables->count(28));
+
+				// INIT
+				lv.mouse_up(mouse_input::left, keyboard_input::shift, 0, 5 * 28);
+				selection->items.clear();
+
+				// ACT
+				lv.mouse_down(mouse_input::left, keyboard_input::shift, 0, 5 * 28);
+
+				// ASSERT
+				assert_equivalent(plural + 28u, selection->items);
+				assert_equal(1u, m->auto_trackables->size());
+				assert_equal(1u, m->auto_trackables->count(28));
+			}
+
+
+			test( MultiRegionSelectionIsMadeWhenControlAndShiftAreDepressed )
+			{
+				// INIT
+				tracking_listview lv;
+				const auto m = create_model(1000, 1);
+
+				lv.item_height = 5;
+				resize(lv, 100, 300);
+				lv.set_columns_model(mocks::headers_model::create("", 1));
+				lv.set_model(m);
+				lv.set_selection_model(selection);
+				lv.focus(3);
+
+				// ACT
+				lv.mouse_down(mouse_input::left, keyboard_input::shift, 0, 5 * 5);
+				lv.mouse_up(mouse_input::left, keyboard_input::shift, 0, 5 * 5);
+				lv.mouse_down(mouse_input::left, keyboard_input::control, 0, 5 * 11);
+				lv.mouse_up(mouse_input::left, keyboard_input::control, 0, 5 * 11);
+				lv.mouse_down(mouse_input::left, keyboard_input::control | keyboard_input::shift, 0, 5 * 15);
+				lv.mouse_up(mouse_input::left, keyboard_input::control | keyboard_input::shift, 0, 5 * 15);
+
+				// ASSERT
+				assert_equivalent(plural + 3u + 4u + 5u + 11u + 12u + 13u + 14u + 15u, selection->items);
+				assert_equal(1u, m->auto_trackables->size());
+				assert_equal(1u, m->auto_trackables->count(15));
+			}
+
+			test( NothingHappensOnMouseEventsWithNoSelectionModel )
+			{
+				// INIT
+				tracking_listview lv;
+				const auto m = create_model(1000, 1);
+
+				lv.item_height = 5;
+				resize(lv, 100, 300);
+				lv.set_columns_model(mocks::headers_model::create("", 1));
+				lv.set_model(m);
+				lv.focus(20);
+
+				// ACT / ASSERT
+				lv.mouse_down(mouse_input::left, keyboard_input::shift, 0, 5 * 31);
+				lv.mouse_up(mouse_input::left, keyboard_input::shift, 0, 5 * 31);
+				lv.mouse_down(mouse_input::left, keyboard_input::control, 0, 5 * 31);
+				lv.mouse_up(mouse_input::left, keyboard_input::control, 0, 5 * 31);
+				lv.mouse_down(mouse_input::left, keyboard_input::control | keyboard_input::shift, 0, 5 * 31);
+				lv.mouse_up(mouse_input::left, keyboard_input::control | keyboard_input::shift, 0, 5 * 31);
+				lv.mouse_down(mouse_input::left, 0, 0, 5 * 31);
+				lv.mouse_up(mouse_input::left, 0, 0, 5 * 31);
+			}
+
+
+			test( NothingHappensOnKeyboardEventsWithNoSelectionModel )
+			{
+				// INIT
+				tracking_listview lv;
+				const auto m = create_model(1000, 1);
+
+				lv.item_height = 5;
+				resize(lv, 100, 300);
+				lv.set_columns_model(mocks::headers_model::create("", 1));
+				lv.set_model(m);
+				lv.focus(20);
+
+				// ACT / ASSERT
+				lv.key_down(keyboard_input::up, keyboard_input::control);
+				lv.key_up(keyboard_input::up, keyboard_input::control);
+				lv.key_down(keyboard_input::up, keyboard_input::control | keyboard_input::shift);
+				lv.key_up(keyboard_input::up, keyboard_input::control | keyboard_input::shift);
+				lv.key_down(keyboard_input::up, keyboard_input::shift);
+				lv.key_up(keyboard_input::up, keyboard_input::shift);
+			}
 		end_test_suite
 	}
 }

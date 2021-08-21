@@ -145,8 +145,6 @@ int main()
 		const auto lv = fct->create_control<listview>("listview");
 		root->add(pad_control(lv, 5, 5));
 
-		new int;
-
 	lv->set_columns_model(cm);
 	lv->set_model(m);
 	lv->set_selection_model(make_shared<my_selection>());

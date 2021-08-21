@@ -72,7 +72,6 @@ namespace wpl
 		private:
 			typedef std::shared_ptr<const trackable> trackable_ptr;
 
-			struct trackable_less;
 			struct base_scroll_model;
 			struct vertical_scroll_model;
 			struct horizontal_scroll_model;
@@ -86,8 +85,10 @@ namespace wpl
 				columns_model::index_type column) const = 0;
 
 			void invalidate_();
-			void select(index_type item, bool reset_previous);
-			void toggle_selection(index_type item);
+			void selection_clear();
+			void selection_add(index_type item);
+			void selection_remove(index_type item);
+			void selection_toggle(index_type item);
 			void precache_model();
 			agge::real_t get_visible_count() const;
 			std::pair<index_type, index_type> get_visible_range() const;
@@ -95,6 +96,7 @@ namespace wpl
 			index_type first_partially_visible() const;
 			index_type last_partially_visible() const;
 			index_type get_item(int y) const;
+			index_type get_focused() const;
 			bool is_selected(index_type item) const;
 			bool is_visible(index_type item) const;
 

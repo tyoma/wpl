@@ -345,7 +345,7 @@ namespace wpl
 		end_test_suite
 
 
-		begin_test_suite( AEditBoxTests )
+		begin_test_suite( EditBoxTests )
 
 			window_manager wmanager;
 			HWND parent;

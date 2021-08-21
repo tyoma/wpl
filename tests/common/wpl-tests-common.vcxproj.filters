@@ -24,6 +24,7 @@
     <ClInclude Include="MockupsListView.h" />
     <ClInclude Include="MockupsScroller.h" />
     <ClInclude Include="predicates.h" />
+    <ClInclude Include="mock-dynamic_set.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="src">

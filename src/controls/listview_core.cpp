@@ -36,20 +36,7 @@ namespace wpl
 		namespace
 		{
 			const real_t c_tolerance = 0.001f;
-
 		}
-
-		struct listview_core::trackable_less
-		{
-			bool operator ()(const trackable_ptr &lhs, const trackable_ptr &rhs)
-			{	return lhs->index() < rhs->index();	}
-
-			bool operator ()(const trackable_ptr &lhs, index_type rhs)
-			{	return lhs->index() < rhs;	}
-
-			bool operator ()(index_type lhs, const trackable_ptr &rhs)
-			{	return lhs < rhs->index();	}
-		};
 
 		struct listview_core::base_scroll_model : scroll_model
 		{
@@ -171,81 +158,104 @@ namespace wpl
 
 		void listview_core::key_down(unsigned code, int modifiers)
 		{
-			if (_item_count)
+			if (!_item_count)
+				return;
+
+			auto focused = get_focused();
+			const index_type scroll_size = agge::iround(get_last_size().h / get_minimal_item_height());
+			const index_type last = _item_count - 1;
+			const index_type first_visible = first_partially_visible();
+			const index_type last_visible = last_partially_visible();
+
+			switch (code)
 			{
-				index_type focused = _focused ? _focused->index() : npos();
-				const index_type scroll_size = agge::iround(get_last_size().h / get_minimal_item_height());
-				const index_type last = _item_count - 1;
-				const index_type first_visible = first_partially_visible();
-				const index_type last_visible = last_partially_visible();
+			case up:
+				if (npos() != focused && focused)
+					focused--;
+				break;
 
-				switch (code)
-				{
-				case up:
-					if (npos() != focused && focused)
-						focused--;
-					break;
+			case page_up:
+				if (npos() == focused)
+					focused = first_visible;
+				else if (npos() == first_visible)
+					focused = 0;
+				else if (focused > first_visible)
+					focused = first_visible;
+				else if (focused > scroll_size)
+					focused -= scroll_size;
+				else
+					focused = 0;
+				break;
 
-				case page_up:
-					if (npos() == focused)
-						focused = first_visible;
-					else if (npos() == first_visible)
-						focused = 0;
-					else if (focused > first_visible)
-						focused = first_visible;
-					else if (focused > scroll_size)
-						focused -= scroll_size;
-					else
-						focused = 0;
-					break;
+			case down:
+				if (npos() == focused)
+					focused = 0;
+				else if (focused < last)
+					focused++;
+				break;
 
-				case down:
-					if (npos() == focused)
-						focused = 0;
-					else if (focused < last)
-						focused++;
-					break;
-
-				case page_down:
-					if (npos() == focused)
-						focused = last_visible;
-					else if (npos() == last_visible)
-						focused = last;
-					else if (focused < last_visible)
-						focused = last_visible;
-					else if (focused + scroll_size < _item_count)
-						focused += scroll_size;
-					else
-						focused = last;
-					break;
-				}
-
-				focus(focused);
-				if (!(keyboard_input::control & modifiers))
-					select(focused, true);
+			case page_down:
+				if (npos() == focused)
+					focused = last_visible;
+				else if (npos() == last_visible)
+					focused = last;
+				else if (focused < last_visible)
+					focused = last_visible;
+				else if (focused + scroll_size < _item_count)
+					focused += scroll_size;
+				else
+					focused = last;
+				break;
 			}
+
+			focus(focused);
+			if (!(keyboard_input::control & modifiers))
+				selection_clear(), selection_add(focused);
 		}
 
 		void listview_core::mouse_down(mouse_buttons /*button*/, int depressed, int /*x*/, int y)
 		{
-			if (!(depressed & keyboard_input::control))
-			{
-				const index_type item = get_item(y);
+			const auto control = !!(depressed & keyboard_input::control);
+			const auto shift = !!(depressed & keyboard_input::shift);
 
-				focus(item);
-				select(item, true);
+			if (control && !shift)
+				return;
+
+			auto item = get_item(y);
+			auto from = get_focused();
+
+			focus(item);
+			if (!shift)
+				selection_clear();
+			if (npos() == item)
+				return;
+
+			if (!shift)
+			{
+				selection_add(item);
+				return;
 			}
+
+			if (npos() == from)
+				from = 0;
+			else if (item < from)
+				swap(item, from);
+			for (auto i = from; i <= item; ++i)
+				selection_add(i);
 		}
 
 		void listview_core::mouse_up(mouse_buttons /*button*/, int depressed, int /*x*/, int y)
 		{
-			if (depressed & keyboard_input::control)
-			{
-				const index_type item = get_item(y);
+			const auto control = !!(depressed & keyboard_input::control);
+			const auto shift = !!(depressed & keyboard_input::shift);
 
-				focus(item);
-				toggle_selection(item);
-			}
+			if (!control || shift)
+				return;
+
+			const auto item = get_item(y);
+
+			focus(item);
+			selection_toggle(item);
 		}
 
 		void listview_core::mouse_double_click(mouse_buttons /*button*/, int /*depressed*/, int /*x*/, int y)
@@ -264,7 +274,7 @@ namespace wpl
 			auto vrange = get_visible_range();
 			const auto hrange = update_horizontal_visible_range();
 			const auto item_height = static_cast<real_t>(get_minimal_item_height());
-			const auto focused_item = has_focus && _focused ? _focused->index() : npos();
+			const auto focused_item = has_focus ? get_focused() : npos();
 			auto y1 = item_height * static_cast<real_t>(vrange.first - _offset.dy);
 			auto y2 = y1 + item_height;
 
@@ -330,8 +340,8 @@ namespace wpl
 			};
 			const auto on_invalidate = [this, update_item_count] (index_type /*row*/) {
 				update_item_count();
-				if (_focused && _state_keep_focus_visible)
-					make_visible(_focused->index());
+				if (_state_keep_focus_visible)
+					make_visible(get_focused());
 				invalidate_();
 			};
 
@@ -359,16 +369,25 @@ namespace wpl
 		void listview_core::invalidate_()
 		{	visual::invalidate(nullptr);	}
 
-		void listview_core::select(index_type item, bool reset_previous)
+		void listview_core::selection_clear()
 		{
-			if (!_selection)
-				return;
-			if (reset_previous)
+			if (_selection)
 				_selection->clear();
-			_selection->add(item);
 		}
 
-		void listview_core::toggle_selection(index_type item)
+		void listview_core::selection_add(index_type item)
+		{
+			if (_selection)
+				_selection->add(item);
+		}
+
+		void listview_core::selection_remove(index_type item)
+		{
+			if (_selection)
+				_selection->remove(item);
+		}
+
+		void listview_core::selection_toggle(index_type item)
 		{
 			if (!_selection)
 				return;
@@ -441,6 +460,9 @@ namespace wpl
 
 			return _model && 0 <= item && item < _item_count ? static_cast<index_type>(item) : table_model_base::npos();
 		}
+
+		listview_core::index_type listview_core::get_focused() const
+		{	return _focused ? _focused->index() : npos();	}
 
 		bool listview_core::is_selected(index_type item) const
 		{	return _selection && _selection->contains(item);	}

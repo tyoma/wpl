@@ -70,8 +70,9 @@ namespace wpl
 			_columns_model = cm;
 		}
 
-		void listview::set_selection_model(shared_ptr<dynamic_set_model> /*model*/)
+		void listview::set_selection_model(shared_ptr<dynamic_set_model> model)
 		{
+			_selection = model;
 		}
 
 		void listview::set_model(shared_ptr<richtext_table_model> model)
@@ -79,23 +80,9 @@ namespace wpl
 			_invalidated_connection = model ?
 				model->invalidate += bind(&listview::invalidate_view, this) : slot_connection();
 			_focused_item.reset();
-			_selected_items.clear();
 			_visible_item.second.reset();
 			_model = model;
 			invalidate_view();
-		}
-
-		void listview::select(index_type item, bool reset_previous)
-		{
-			HWND hwnd = get_window();
-
-			if (reset_previous)
-			{
-				for (int i; i = ListView_GetNextItem(hwnd, -1, LVNI_ALL | LVNI_SELECTED), i != -1; )
-					ListView_SetItemState(hwnd, i, 0, LVIS_SELECTED);
-			}
-			if (npos() != item)
-				ListView_SetItemState(get_window(), item, LVIS_SELECTED, LVIS_SELECTED);
 		}
 
 		void listview::focus(index_type item)
@@ -117,11 +104,11 @@ namespace wpl
 			HWND hwnd = ::CreateWindow(WC_LISTVIEW, NULL, WS_CHILD | WS_VISIBLE | style, 0, 0, 1, 1, hparent, NULL, NULL, NULL);
 
 			ListView_SetExtendedListViewStyle(hwnd, listview_style | ListView_GetExtendedListViewStyle(hwnd));
+			ListView_SetCallbackMask(hwnd, LVIS_SELECTED);
 			if (_columns_model)
 				setup_columns(hwnd, *_columns_model);
 			if (_model)
 				setup_data(hwnd, _model->get_count());
-			setup_selection(hwnd, _selected_items);
 			return hwnd;
 		}
 
@@ -145,29 +132,35 @@ namespace wpl
 				if (_model && !_avoid_notifications)
 				{
 					UINT code = reinterpret_cast<const NMHDR *>(lparam)->code;
-					const NMLISTVIEW *pnmlv = reinterpret_cast<const NMLISTVIEW *>(lparam);
+					const auto pnmlv = reinterpret_cast<const NMLISTVIEW *>(lparam);
+					const auto podstate = reinterpret_cast<const NMLVODSTATECHANGE *>(lparam);
 
 					switch (code)
 					{
 					case LVN_ITEMCHANGED:
-						if ((pnmlv->uOldState & LVIS_FOCUSED) != (pnmlv->uNewState & LVIS_FOCUSED))
+						if ((pnmlv->uOldState ^ pnmlv->uNewState) & LVIS_FOCUSED)
 							_focused_item = pnmlv->uNewState & LVIS_FOCUSED ? _model->track(pnmlv->iItem) : shared_ptr<const trackable>();
-						if ((pnmlv->uOldState & LVIS_SELECTED) != (pnmlv->uNewState & LVIS_SELECTED))
+						if (_selection && ((pnmlv->uOldState ^ pnmlv->uNewState) & LVIS_SELECTED))
 						{
 							if (pnmlv->uNewState & LVIS_SELECTED)
-								_selected_items.push_back(make_pair(pnmlv->iItem, _model->track(pnmlv->iItem)));
-							else if (-1 != pnmlv->iItem)
-							{
-								for (selection_trackers::iterator i = _selected_items.begin(); i != _selected_items.end(); ++i)
-									if (static_cast<index_type>(pnmlv->iItem) == i->first)
-									{
-										_selected_items.erase(i);
-										break;
-									}
-							}
+								_selection->add(pnmlv->iItem);
+							else if (pnmlv->iItem != -1)
+								_selection->remove(pnmlv->iItem);
 							else
-								_selected_items.clear();
-							selection_changed(pnmlv->iItem, 0 != (pnmlv->uNewState & LVIS_SELECTED));
+								_selection->clear();
+						}
+						return 0;
+
+					case LVN_ODSTATECHANGED:
+						if (_selection && ((podstate->uOldState ^ podstate->uNewState) & LVIS_SELECTED))
+						{
+							for (int i = podstate->iFrom; i <= podstate->iTo; ++i)
+							{
+								if (podstate->uNewState & LVIS_SELECTED)
+									_selection->add(i);
+								else if (pnmlv->iItem != -1)
+									_selection->remove(i);
+							}
 						}
 						return 0;
 
@@ -176,13 +169,22 @@ namespace wpl
 						return 0;
 
 					case LVN_GETDISPINFOW:
-						if (const NMLVDISPINFOW *pdi = reinterpret_cast<const NMLVDISPINFOW *>(lparam))
+						if (const auto pdi = reinterpret_cast<NMLVDISPINFOW *>(lparam))
+						{
 							if (pdi->item.mask & LVIF_TEXT)
 							{
 								_text_buffer.clear();
 								_model->get_text(pdi->item.iItem, pdi->item.iSubItem, _text_buffer);
 								wcsncpy_s(pdi->item.pszText, pdi->item.cchTextMax, _converter(_text_buffer.underlying().c_str()), _TRUNCATE);
 							}
+							if (_selection && (pdi->item.mask & LVIF_STATE))
+							{
+								if (_selection->contains(pdi->item.iItem))
+									pdi->item.state |= LVIS_SELECTED;
+								else
+									pdi->item.state &= ~LVIS_SELECTED;
+							}
+						}
 						return 0;
 
 					case LVN_COLUMNCLICK:
@@ -225,12 +227,6 @@ namespace wpl
 				ListView_RedrawItems(hlistview, 0, item_count);
 		}
 
-		void listview::setup_selection(HWND hlistview, const selection_trackers &selection)
-		{
-			for (selection_trackers::const_iterator i = selection.begin(); i != selection.end(); ++i)
-				ListView_SetItemState(hlistview, i->first, LVIS_SELECTED, LVIS_SELECTED);
-		}
-
 		void listview::update_sort_order(headers_model::index_type new_ordering_column, bool ascending)
 		{
 			if (headers_model::npos() != _sort_column)
@@ -244,7 +240,6 @@ namespace wpl
 			setup_data(get_window(), _model ? _model->get_count() : 0);
 			_avoid_notifications = true;
 			update_focus();
-			update_selection();
 			ensure_tracked_visibility();
 			_avoid_notifications = false;
 		}
@@ -259,28 +254,6 @@ namespace wpl
 				if (npos() == new_focus)
 					_focused_item.reset();
 			}
-		}
-
-		void listview::update_selection()
-		{
-			vector<index_type> selection_before, selection_after, d;
-
-			if (get_window())
-				for (int i = -1; i = ListView_GetNextItem(get_window(), i, LVNI_ALL | LVNI_SELECTED), i != -1; )
-					selection_before.push_back(i);
-			for (selection_trackers::iterator i = _selected_items.begin(); i != _selected_items.end(); )
-				if (!i->second || (i->first = i->second->index()) != npos())
-					selection_after.push_back(i->first), ++i;
-				else
-					i = _selected_items.erase(i);
-			sort(selection_after.begin(), selection_after.end());
-			set_difference(selection_after.begin(), selection_after.end(), selection_before.begin(), selection_before.end(), back_inserter(d));
-			for (vector<index_type>::const_iterator i = d.begin(); i != d.end(); ++i)
-				ListView_SetItemState(get_window(), *i, LVIS_SELECTED, LVIS_SELECTED);
-			d.clear();
-			set_difference(selection_before.begin(), selection_before.end(), selection_after.begin(), selection_after.end(), back_inserter(d));
-			for (vector<index_type>::const_iterator i = d.begin(); i != d.end(); ++i)
-				ListView_SetItemState(get_window(), *i, 0, LVIS_SELECTED);
 		}
 
 		void listview::ensure_tracked_visibility()
