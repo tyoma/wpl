@@ -28,6 +28,13 @@
 
 namespace wpl
 {
+	template <typename T>
+	struct table_model;
+
+	typedef table_model<std::string> string_table_model;
+	typedef table_model<agge::richtext_t> richtext_table_model;
+
+
 	struct index_traits
 	{
 		typedef size_t index_type;
@@ -39,6 +46,17 @@ namespace wpl
 	struct trackable : index_traits
 	{
 		virtual index_type index() const = 0;
+	};
+
+
+	struct dynamic_set_model : index_traits
+	{
+		virtual void clear() throw() = 0;
+		virtual void add(index_type item) = 0;
+		virtual void remove(index_type item) = 0;
+		virtual bool contains(index_type item) const throw() = 0;
+
+		signal<void (index_type item)> invalidate; // Invalidate all for item == npos().
 	};
 
 
@@ -109,9 +127,6 @@ namespace wpl
 
 		virtual void get_text(index_type row, index_type column, value_type &value) const = 0;
 	};
-
-	typedef table_model<std::string> string_table_model;
-	typedef table_model<agge::richtext_t> richtext_table_model;
 
 
 
