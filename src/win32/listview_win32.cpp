@@ -241,6 +241,7 @@ namespace wpl
 			_avoid_notifications = true;
 			update_focus();
 			ensure_tracked_visibility();
+			::InvalidateRect(get_window(), NULL, FALSE);
 			_avoid_notifications = false;
 		}
 

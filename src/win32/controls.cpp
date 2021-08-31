@@ -114,7 +114,7 @@ namespace wpl
 
 		HWND editbox::materialize(HWND hparent)
 		{
-			return ::CreateWindowW(WC_EDITW, _converter.convert(_text), WS_CHILD | WS_VISIBLE, 0, 0, 100, 100, hparent,
+			return ::CreateWindowW(WC_EDITW, _converter.convert(_text), WS_BORDER | WS_CHILD | WS_VISIBLE, 0, 0, 100, 100, hparent,
 				NULL, NULL, NULL);
 		}
 
