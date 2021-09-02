@@ -41,16 +41,16 @@ namespace wpl
 
 			vector< pair<string_table_model::index_type, unsigned /*state*/> > get_visible_states_raw(tracking_listview &lv)
 			{
-				vector< pair<string_table_model::index_type, unsigned /*state*/> > selection;
+				vector< pair<string_table_model::index_type, unsigned /*state*/> > states;
 
 				lv.events.clear();
 				lv.draw(*ctx, ras);
 				for (auto i = lv.events.begin(); i != lv.events.end(); ++i)
 				{
 					if (i->state)
-						selection.push_back(make_pair(i->item, i->state));
+						states.push_back(make_pair(i->item, i->state));
 				}
-				return selection;
+				return states;
 			}
 
 			vector< pair<string_table_model::index_type, unsigned /*state*/> > get_visible_states(tracking_listview &lv)
