@@ -551,6 +551,32 @@ namespace wpl
 				assert_equal(f2.second, ::GetFocus());
 			}
 
+
+			test( FormIsCenteredOnRequest )
+			{
+				// INIT
+				form_and_handle parent(create_form_with_handle());
+				auto child = parent.first->create_child();
+
+				parent.first->set_location(create_rect(10, 45, 173, 150));
+				child->set_location(create_rect(60, 400, 240, 490));
+
+				// ACT
+				child->center_parent();
+
+				// ASSERT
+				assert_equal(create_rect(1, 52, 181, 142), child->get_location());
+
+				// INIT
+				parent.first->set_location(create_rect(210, 345, 453, 700));
+
+				// ACT
+				child->center_parent();
+
+				// ASSERT
+				assert_equal(create_rect(241, 477, 421, 567), child->get_location());
+			}
+
 		end_test_suite
 	}
 }

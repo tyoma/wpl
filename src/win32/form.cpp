@@ -42,6 +42,17 @@ namespace wpl
 
 				::SendMessage(hwnd, WM_SETICON, type, reinterpret_cast<LPARAM>(hicon));
 			}
+
+			rect_i get_window_rect(HWND hwnd)
+			{
+				RECT rc;
+
+				::GetWindowRect(hwnd, &rc);
+				return create_rect<int>(rc.left, rc.top, rc.right, rc.bottom);
+			}
+
+			point_i center_point(const rect_i &r)
+			{	return create_point((r.x1 + r.x2) / 2, (r.y1 + r.y2) / 2);	}
 		}
 
 
@@ -59,16 +70,21 @@ namespace wpl
 		{	_host->set_root(root);	}
 
 		rect_i form::get_location() const
-		{
-			RECT rc;
-
-			::GetWindowRect(_hwnd, &rc);
-			rect_i l = { rc.left, rc.top, rc.right, rc.bottom };
-			return l;
-		}
+		{	return get_window_rect(_hwnd);	}
 
 		void form::set_location(const rect_i &location)
 		{	::MoveWindow(_hwnd, location.x1, location.y1, width(location), height(location), TRUE);	}
+
+		void form::center_parent()
+		{
+			const auto hparent = reinterpret_cast<HWND>(::GetWindowLongPtr(_hwnd, GWLP_HWNDPARENT));
+			const auto pc = center_point(get_window_rect(hparent));
+			auto r = get_location();
+			const auto cc = center_point(r);
+
+			offset(r, pc.x - cc.x, pc.y - cc.y);
+			set_location(r);
+		}
 
 		void form::set_visible(bool value)
 		{

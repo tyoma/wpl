@@ -47,6 +47,7 @@ namespace wpl
 			// form methods
 			virtual rect_i get_location() const override;
 			virtual void set_location(const rect_i &location) override;
+			virtual void center_parent() override;
 			virtual void set_visible(bool value) override;
 			virtual void set_caption(const std::string &caption) override;
 			virtual void set_caption_icon(const gcontext::surface_type &icon) override;

@@ -38,6 +38,7 @@ namespace wpl
 
 		virtual rect_i get_location() const = 0;
 		virtual void set_location(const rect_i &location) = 0;
+		virtual void center_parent() = 0;
 		virtual void set_visible(bool value) = 0;
 		virtual void set_caption(const std::string &caption) = 0;
 		virtual void set_caption_icon(const gcontext::surface_type &icon) = 0;
