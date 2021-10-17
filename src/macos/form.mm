@@ -112,6 +112,9 @@ namespace wpl
 			
 		void form::set_location(const wpl::rect_i &location)
 		{	}
+
+		void form::center_parent()
+		{	}
 			
 		void form::set_visible(bool value)
 		{	[_window setIsVisible:value];	}
