@@ -20,7 +20,7 @@
 
 #include <wpl/win32/utf8.h>
 
-#include <agge.text/utf8.h>
+#include <utfia/iterator.h>
 
 namespace wpl
 {
@@ -69,7 +69,7 @@ namespace wpl
 		{
 			_utf16_buffer.clear();
 			for (const char *i = from, *e = end(from); i != e; )
-				_utf16_buffer.push_back(static_cast<wchar_t>(agge::utf8::next(i, e)));
+				_utf16_buffer.push_back(static_cast<wchar_t>(utfia::utf8::next(i, e)));
 			return _utf16_buffer.c_str();
 		}
 	}

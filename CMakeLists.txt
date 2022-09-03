@@ -2,6 +2,8 @@ cmake_minimum_required(VERSION 2.8)
 
 project(wpl)
 
+enable_testing()
+
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PROJECT_SOURCE_DIR}/modules)
 
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/_lib)
@@ -16,10 +18,8 @@ if (MSVC)
 endif()
 
 add_compile_options(
-	$<$<OR:$<CXX_COMPILER_ID:GNU>,$<CXX_COMPILER_ID:Clang>>:$<$<COMPILE_LANGUAGE:C>:-fPIC>>
-	$<$<OR:$<CXX_COMPILER_ID:GNU>,$<CXX_COMPILER_ID:Clang>>:$<$<COMPILE_LANGUAGE:CXX>:-fPIC>>
-	$<$<OR:$<CXX_COMPILER_ID:GNU>,$<CXX_COMPILER_ID:Clang>>:$<$<COMPILE_LANGUAGE:CXX>:-std=c++11>>
-	$<$<OR:$<CXX_COMPILER_ID:GNU>,$<CXX_COMPILER_ID:Clang>>:$<$<COMPILE_LANGUAGE:CXX>:-fno-rtti>>
+	"$<$<OR:$<CXX_COMPILER_ID:GNU>,$<CXX_COMPILER_ID:Clang>>:-fPIC>"
+	"$<$<OR:$<CXX_COMPILER_ID:GNU>,$<CXX_COMPILER_ID:Clang>>:$<$<COMPILE_LANGUAGE:CXX>:-std=c++11;-fno-rtti>>"
 )
 
 if (CMAKE_VERSION VERSION_GREATER_EQUAL 3.13.5)
@@ -35,6 +35,7 @@ endif()
 
 include_directories(.)
 include_directories(./libraries/agge)
+include_directories(./libraries/utfia)
 
 add_subdirectory(src)
 if (NOT TARGET agge)
@@ -48,6 +49,10 @@ if (NOT WPL_NO_TESTS)
 		add_subdirectory(libraries/utee)
 	endif()
 	add_subdirectory(tests)
+	add_test(NAME wpl.tests COMMAND $<TARGET_FILE:utee-runner> $<TARGET_FILE:wpl.tests> WORKING_DIRECTORY $<TARGET_FILE_DIR:wpl.tests>)
+	if (WIN32)
+		add_test(NAME wpl.win32.tests COMMAND $<TARGET_FILE:utee-runner> $<TARGET_FILE:wpl.win32.tests> WORKING_DIRECTORY $<TARGET_FILE_DIR:wpl.win32.tests>)
+	endif()
 	if (WIN32 OR APPLE)
 		add_subdirectory(samples)
 	endif()

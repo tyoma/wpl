@@ -20,7 +20,6 @@
 
 #include <wpl/win32/listview.h>
 
-#include <agge.text/utf8.h>
 #include <agge.text/richtext.h>
 #include <algorithm>
 #include <commctrl.h>

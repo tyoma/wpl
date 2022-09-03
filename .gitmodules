@@ -10,3 +10,7 @@
 	path = libraries/freetype2
 	url = ../freetype2.git
 	branch = master
+[submodule "libraries/utfia"]
+	path = libraries/utfia
+	url = ../utfia.git
+	branch = master
