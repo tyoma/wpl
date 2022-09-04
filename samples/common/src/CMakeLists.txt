@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 3.13)
 
 set(SAMPLES_COMMON_SOURCES
 	stylesheet.cpp
