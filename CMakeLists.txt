@@ -20,7 +20,7 @@ endif()
 
 add_compile_options(
 	"$<$<OR:$<CXX_COMPILER_ID:GNU>,$<CXX_COMPILER_ID:Clang>>:-fPIC>"
-	"$<$<OR:$<CXX_COMPILER_ID:GNU>,$<CXX_COMPILER_ID:Clang>>:$<$<COMPILE_LANGUAGE:CXX>:-std=c++11;-fno-rtti>>"
+	"$<$<OR:$<CXX_COMPILER_ID:GNU>,$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>>:$<$<COMPILE_LANGUAGE:CXX>:-std=c++11;-fno-rtti>>"
 )
 
 if (CMAKE_VERSION VERSION_GREATER_EQUAL 3.13.5)
