@@ -1,6 +1,4 @@
-cmake_minimum_required(VERSION 2.8)
-
-include(test)
+cmake_minimum_required(VERSION 3.13)
 
 set(WPL_TESTS_COMMON_SOURCES
 	helpers.cpp
@@ -10,3 +8,4 @@ set(WPL_TESTS_COMMON_SOURCES
 )
 
 add_library(wpl-tests-common STATIC ${WPL_TESTS_COMMON_SOURCES})
+target_link_libraries(wpl-tests-common agge utfia utee)

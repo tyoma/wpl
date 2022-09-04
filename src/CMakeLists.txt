@@ -39,3 +39,4 @@ elseif(APPLE)
 endif()
 
 target_link_libraries(wpl agge.text agge freetype)
+target_include_directories(wpl PUBLIC ..)

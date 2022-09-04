@@ -20,3 +20,4 @@ set(WPL_WIN32_SOURCES
 )
 
 add_library(wpl.win32 STATIC ${WPL_WIN32_SOURCES})
+target_link_libraries(wpl.win32 agge utfia)
