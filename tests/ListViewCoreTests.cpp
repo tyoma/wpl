@@ -383,7 +383,7 @@ namespace wpl
 
 				// ACT / ASSERT
 				sm->scrolling(true); // nothing happens
-				sm->scroll_window(2, 10); // nothing happends
+				sm->set_window(2, 10); // nothing happends
 				assert_equal_pred(make_pair(0, 0), sm->get_range(), eq());
 				assert_equal_pred(make_pair(0, 0), sm->get_window(), eq());
 			}
@@ -406,7 +406,7 @@ namespace wpl
 
 				// ACT / ASSERT
 				sm->scrolling(true); // nothing happens
-				sm->scroll_window(2, 10); // nothing happends
+				sm->set_window(2, 10); // nothing happends
 				assert_equal_pred(make_pair(0, 0), sm->get_range(), eq());
 				assert_equal_pred(make_pair(0, 0), sm->get_window(), eq());
 			}
@@ -615,7 +615,7 @@ namespace wpl
 				lv.set_model(create_model(1, 1));
 
 				// ACT
-				sm->scroll_window(-0.8, 0 /*we don't care yet*/);
+				sm->set_window(-0.8, 0 /*we don't care yet*/);
 				lv.draw(*ctx, ras);
 
 				// ASSERT
@@ -632,7 +632,7 @@ namespace wpl
 				lv.events.clear();
 
 				// ACT
-				sm->scroll_window(0.31, 0);
+				sm->set_window(0.31, 0);
 				lv.draw(*ctx, ras);
 
 				// ASSERT
@@ -664,7 +664,7 @@ namespace wpl
 				lv.set_model(create_model(1, 3));
 
 				// ACT
-				sm->scroll_window(-13, 0 /*we don't care yet*/);
+				sm->set_window(-13, 0 /*we don't care yet*/);
 				lv.draw(*ctx, ras);
 
 				// ASSERT
@@ -681,7 +681,7 @@ namespace wpl
 				lv.events.clear();
 
 				// ACT
-				sm->scroll_window(0, 0 /*we don't care yet*/);
+				sm->set_window(0, 0 /*we don't care yet*/);
 				lv.draw(*ctx, ras);
 
 				// ASSERT
@@ -701,7 +701,7 @@ namespace wpl
 				lv.events.clear();
 
 				// ACT
-				sm->scroll_window(7.4, 0 /*we don't care yet*/);
+				sm->set_window(7.4, 0 /*we don't care yet*/);
 				lv.draw(*ctx, ras);
 
 				// ASSERT
@@ -722,7 +722,7 @@ namespace wpl
 				lv.events.clear();
 
 				// ACT
-				sm->scroll_window(30, 0 /*we don't care yet*/);
+				sm->set_window(30, 0 /*we don't care yet*/);
 				lv.draw(*ctx, ras);
 
 				// ASSERT
@@ -750,7 +750,7 @@ namespace wpl
 				lv.set_model(create_model(100, 1));
 
 				// ACT
-				sm->scroll_window(98.3 /*first visible*/, 0 /*we don't care yet*/);
+				sm->set_window(98.3 /*first visible*/, 0 /*we don't care yet*/);
 				lv.events.clear();
 				lv.draw(*ctx, ras);
 
@@ -766,7 +766,7 @@ namespace wpl
 				lv.events.clear();
 
 				// ACT
-				sm->scroll_window(101, 0);
+				sm->set_window(101, 0);
 				lv.draw(*ctx, ras);
 
 				// ASSERT
@@ -791,7 +791,7 @@ namespace wpl
 				lv.set_model(create_model(1, 5));
 
 				// ACT
-				sm->scroll_window(-30 /*first visible*/, 0 /*we don't care yet*/);
+				sm->set_window(-30 /*first visible*/, 0 /*we don't care yet*/);
 				lv.events.clear();
 				lv.draw(*ctx, ras);
 
@@ -808,7 +808,7 @@ namespace wpl
 				lv.events.clear();
 
 				// ACT
-				sm->scroll_window(-25 /*first visible*/, 0 /*we don't care yet*/);
+				sm->set_window(-25 /*first visible*/, 0 /*we don't care yet*/);
 				lv.events.clear();
 				lv.draw(*ctx, ras);
 
@@ -826,7 +826,7 @@ namespace wpl
 				lv.events.clear();
 
 				// ACT
-				sm->scroll_window(71 /*first visible*/, 0 /*we don't care yet*/);
+				sm->set_window(71 /*first visible*/, 0 /*we don't care yet*/);
 				lv.events.clear();
 				lv.draw(*ctx, ras);
 
@@ -1112,14 +1112,14 @@ namespace wpl
 				};
 
 				// ACT
-				sm->scroll_window(10, 0);
+				sm->set_window(10, 0);
 
 				// ASSERT
 				assert_equal(1, invalidations);
 				assert_equal(1, scroll_invalidations);
 
 				// ACT
-				sm->scroll_window(100, 0);
+				sm->set_window(100, 0);
 
 				// ASSERT
 				assert_equal(2, invalidations);
@@ -1368,7 +1368,7 @@ namespace wpl
 				};
 
 				// ACT
-				sm->scroll_window(10, 101);
+				sm->set_window(10, 101);
 
 				// ACT / ASSERT
 				assert_equal_pred(make_pair(10, 101), sm->get_window(), eq());
@@ -1376,13 +1376,13 @@ namespace wpl
 				assert_equal(1, sinvalidations);
 
 				// ACT
-				sm->scroll_window(71.37, 101);
+				sm->set_window(71.37, 101);
 
 				// ACT / ASSERT
 				assert_equal_pred(make_pair(71.37, 101), sm->get_window(), eq());
 
 				// ACT
-				sm->scroll_window(-50, 101);
+				sm->set_window(-50, 101);
 
 				// ACT / ASSERT
 				assert_equal_pred(make_pair(-50, 101), sm->get_window(), eq());
@@ -1680,7 +1680,7 @@ namespace wpl
 
 				// INIT
 				lv.set_model(nullptr);
-				lv.get_vscroll_model()->scroll_window(2, 8);
+				lv.get_vscroll_model()->set_window(2, 8);
 				m->precached.clear();
 
 				// ACT
@@ -1695,7 +1695,7 @@ namespace wpl
 
 				// INIT
 				lv.set_model(nullptr);
-				lv.get_vscroll_model()->scroll_window(1.5, 8);
+				lv.get_vscroll_model()->set_window(1.5, 8);
 				m->precached.clear();
 
 				// ACT
@@ -1719,7 +1719,7 @@ namespace wpl
 
 				lv.item_height = 7;
 				lv.set_columns_model(cm);
-				lv.get_vscroll_model()->scroll_window(-3.3, 40.0 / 7);
+				lv.get_vscroll_model()->set_window(-3.3, 40.0 / 7);
 				resize(lv, 100, 40);
 
 				// ACT
@@ -1734,7 +1734,7 @@ namespace wpl
 
 				// INIT
 				lv.set_model(nullptr);
-				lv.get_vscroll_model()->scroll_window(-5.7143, 40.0 / 7);
+				lv.get_vscroll_model()->set_window(-5.7143, 40.0 / 7);
 				m->precached.clear();
 
 				// ACT
@@ -1749,7 +1749,7 @@ namespace wpl
 
 				// INIT
 				lv.set_model(nullptr);
-				lv.get_vscroll_model()->scroll_window(-50, 40.0 / 7);
+				lv.get_vscroll_model()->set_window(-50, 40.0 / 7);
 				m->precached.clear();
 
 				// ACT
@@ -1760,7 +1760,7 @@ namespace wpl
 
 				// INIT
 				lv.set_model(nullptr);
-				lv.get_vscroll_model()->scroll_window(9.3, 40.0 / 7);
+				lv.get_vscroll_model()->set_window(9.3, 40.0 / 7);
 				m->precached.clear();
 
 				// ACT
@@ -1775,7 +1775,7 @@ namespace wpl
 
 				// INIT
 				lv.set_model(nullptr);
-				lv.get_vscroll_model()->scroll_window(11.0, 40.0 / 7);
+				lv.get_vscroll_model()->set_window(11.0, 40.0 / 7);
 				m->precached.clear();
 
 				// ACT
@@ -1790,7 +1790,7 @@ namespace wpl
 
 				// INIT
 				lv.set_model(nullptr);
-				lv.get_vscroll_model()->scroll_window(13.0, 40.0 / 7);
+				lv.get_vscroll_model()->set_window(13.0, 40.0 / 7);
 				m->precached.clear();
 
 				// ACT
@@ -1810,7 +1810,7 @@ namespace wpl
 
 				lv.item_height = 7;
 				lv.set_columns_model(cm);
-				lv.get_vscroll_model()->scroll_window(-3.3, 40.0 / 7);
+				lv.get_vscroll_model()->set_window(-3.3, 40.0 / 7);
 				resize(lv, 100, 40);
 				lv.set_model(m);
 				lv.set_model(nullptr);
@@ -1895,7 +1895,7 @@ namespace wpl
 
 				// INIT
 				lv.set_model(nullptr);
-				lv.get_vscroll_model()->scroll_window(4.9, 140.0 / 7);
+				lv.get_vscroll_model()->set_window(4.9, 140.0 / 7);
 				lv.set_model(m);
 				m->precached.clear();
 
@@ -1918,7 +1918,7 @@ namespace wpl
 				m->precached.clear();
 
 				// ACT
-				lv.get_vscroll_model()->scroll_window(4.9, 45.0 / 7);
+				lv.get_vscroll_model()->set_window(4.9, 45.0 / 7);
 
 				// ASSERT
 				pair<string_table_model::index_type, string_table_model::index_type> reference1[] = {
@@ -1928,7 +1928,7 @@ namespace wpl
 				assert_equal(reference1, m->precached);
 
 				// ACT
-				lv.get_vscroll_model()->scroll_window(2.1, 45.0 / 7);
+				lv.get_vscroll_model()->set_window(2.1, 45.0 / 7);
 
 				// ASSERT
 				pair<string_table_model::index_type, string_table_model::index_type> reference2[] = {
@@ -1964,7 +1964,7 @@ namespace wpl
 				assert_equal(reference1, m->precached);
 
 				// INIT
-				lv.get_vscroll_model()->scroll_window(2.7, 400.0 / 7);
+				lv.get_vscroll_model()->set_window(2.7, 400.0 / 7);
 				m->precached.clear();
 
 				// ACT

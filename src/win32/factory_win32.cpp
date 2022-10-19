@@ -25,6 +25,7 @@
 #include <wpl/controls/label.h>
 #include <wpl/controls/listview_composite.h>
 #include <wpl/controls/listview_basic.h>
+#include <wpl/controls/range_slider.h>
 #include <wpl/controls/scroller.h>
 #include <wpl/layout.h>
 #include <wpl/stylesheet_helpers.h>
@@ -128,6 +129,9 @@ namespace wpl
 		});
 		factory_.register_control("vstack", [] (const factory &, const control_context &context) {
 			return shared_ptr<control>(new stack(false, context.cursor_manager_));
+		});
+		factory_.register_control("range_slider", [] (const factory &, const control_context &/*context*/) {
+			return shared_ptr<control>(new controls::range_slider());
 		});
 	}
 }

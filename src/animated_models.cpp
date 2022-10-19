@@ -61,7 +61,7 @@ namespace wpl
 		}
 	}
 
-	void animated_scroll_model::scroll_window(double window_min, double /*window_width*/)
+	void animated_scroll_model::set_window(double window_min, double /*window_width*/)
 	{
 		const auto r = _underlying->get_range();
 		const auto w = _underlying->get_window().second;
@@ -86,7 +86,7 @@ namespace wpl
 		{
 			_excess = 0;
 		}
-		_underlying->scroll_window(window_min, w);
+		_underlying->set_window(window_min, w);
 	}
 
 	void animated_scroll_model::animate()
@@ -97,7 +97,7 @@ namespace wpl
 		const double target = _excess < 0 ? r.first : r.first + r.second - uw.second;
 		const auto proceed = _release_animation(progress, 0.001 * (_clock() - _animation_start));
 
-		_underlying->scroll_window(target + (1.0 - progress) * _excess, uw.second);
+		_underlying->set_window(target + (1.0 - progress) * _excess, uw.second);
 		if (proceed)
 			_queue([this] {	animate();	}, 10);
 		else
@@ -118,7 +118,7 @@ namespace wpl
 			if (uw.first < r.first)
 				uw.first = r.first, require_scroll = true;
 			if (require_scroll)
-				_underlying->scroll_window(uw.first, uw.second);
+				_underlying->set_window(uw.first, uw.second);
 		}
 		invalidate(invalidate_range);
 	}

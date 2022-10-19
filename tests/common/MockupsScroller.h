@@ -31,7 +31,7 @@ namespace wpl
 						on_scrolling(begins);
 				}
 
-				virtual void scroll_window(double window_min, double window_width) override
+				virtual void set_window(double window_min, double window_width) override
 				{
 					if (on_scroll)
 						on_scroll(window_min, window_width);

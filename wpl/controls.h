@@ -97,5 +97,6 @@ namespace wpl
 	};
 
 	typedef unimodel_control<headers_model> header;
+	typedef unimodel_control<sliding_window_model> range_slider;
 	typedef unimodel_control<scroll_model> scroller;
 }

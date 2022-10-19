@@ -49,7 +49,7 @@ namespace wpl
 			virtual range get_range() const override
 			{	return make_pair(0, owner ? get_max() : 0);	}
 
-			virtual void scroll_window(double window_min, double /*window_width*/) override
+			virtual void set_window(double window_min, double /*window_width*/) override
 			{
 				if (!owner)
 					return;
@@ -89,6 +89,8 @@ namespace wpl
 				owner->_offset.dy = window_min;
 				owner->precache_model();
 			}
+
+			using scroll_model::set_window;
 		};
 
 		struct listview_core::horizontal_scroll_model : base_scroll_model
@@ -153,7 +155,7 @@ namespace wpl
 
 			const auto visible = get_visible_count();
 
-			_vsmodel->scroll_window(item < _offset.dy ? static_cast<double>(item) : item - visible + 1, visible);
+			_vsmodel->set_window(item < _offset.dy ? static_cast<double>(item) : item - visible + 1, visible);
 		}
 
 		void listview_core::key_down(unsigned code, int modifiers)

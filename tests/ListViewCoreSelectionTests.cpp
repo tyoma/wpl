@@ -391,7 +391,7 @@ namespace wpl
 				lv.set_columns_model(mocks::headers_model::create("", 1));
 				lv.set_model(model);
 
-				sm->scroll_window(-1, 4.71);
+				sm->set_window(-1, 4.71);
 				lv.focus(2);
 
 				// ACT
@@ -553,7 +553,7 @@ namespace wpl
 				lv.set_columns_model(mocks::headers_model::create("", 1));
 				lv.set_model(model);
 
-				sm->scroll_window(96, 4.71);
+				sm->set_window(96, 4.71);
 				lv.focus(96);
 
 				// ACT
@@ -860,7 +860,7 @@ namespace wpl
 				lv.item_height = 4.3;
 				lv.reported_events = tracking_listview::item_self;
 				resize(lv, 100, 25);
-				sm->scroll_window(3.8, 0);
+				sm->set_window(3.8, 0);
 
 				// ACT
 				lv.mouse_down(mouse_input::left, 0, 10, 1);
@@ -1088,7 +1088,7 @@ namespace wpl
 
 				// ACT
 				sm->scrolling(true);
-				sm->scroll_window(40, 33.0 / 5);
+				sm->set_window(40, 33.0 / 5);
 				m->move_tracking(25, 100);
 				m->invalidate(1000);
 

@@ -37,7 +37,7 @@ namespace wpl
 		virtual std::pair<double, double> get_window() const override;
 		virtual double get_increment() const override;
 		virtual void scrolling(bool begins) override;
-		virtual void scroll_window(double window_min, double window_width) override;
+		virtual void set_window(double window_min, double window_width) override;
 
 	private:
 		void animate();

@@ -108,8 +108,8 @@ namespace wpl
 
 				// ACT
 				m.scrolling(true);
-				m.scroll_window(15.6, 10.7);
-				m.scroll_window(25.6, 10.7);
+				m.set_window(15.6, 10.7);
+				m.set_window(25.6, 10.7);
 				m.scrolling(false);
 
 				// ASSERT
@@ -124,7 +124,7 @@ namespace wpl
 
 				// ACT
 				m.scrolling(true);
-				m.scroll_window(50.1, 10.7);
+				m.set_window(50.1, 10.7);
 				m.scrolling(false);
 
 				// ASSERT
@@ -235,8 +235,8 @@ namespace wpl
 
 				// ACT
 				m.scrolling(true);
-				m.scroll_window(0, 0 /*irrelevant*/);
-				m.scroll_window(-1000000, 123 /*irrelevant*/);
+				m.set_window(0, 0 /*irrelevant*/);
+				m.set_window(-1000000, 123 /*irrelevant*/);
 
 				// ASSERT
 				pair<double, double> reference1[] = {
@@ -250,7 +250,7 @@ namespace wpl
 				u->window = make_pair(-10, 10);
 
 				// ACT
-				m.scroll_window(-10, 0 /*irrelevant*/);
+				m.set_window(-10, 0 /*irrelevant*/);
 
 				// ASSERT
 				pair<double, double> reference2[] = {
@@ -264,7 +264,7 @@ namespace wpl
 				u->window = make_pair(0, 5);
 
 				// ACT
-				m.scroll_window(-15, 0 /*irrelevant*/);
+				m.set_window(-15, 0 /*irrelevant*/);
 
 				// ASSERT
 				pair<double, double> reference3[] = {
@@ -288,8 +288,8 @@ namespace wpl
 
 				// ACT
 				m.scrolling(true);
-				m.scroll_window(89, 0 /*irrelevant*/);
-				m.scroll_window(1000000, 123 /*irrelevant*/);
+				m.set_window(89, 0 /*irrelevant*/);
+				m.set_window(1000000, 123 /*irrelevant*/);
 
 				// ASSERT
 				pair<double, double> reference1[] = {
@@ -303,7 +303,7 @@ namespace wpl
 				u->window = make_pair(10, 10);
 
 				// ACT
-				m.scroll_window(100, 0 /*irrelevant*/);
+				m.set_window(100, 0 /*irrelevant*/);
 
 				// ASSERT
 				pair<double, double> reference2[] = {
@@ -317,7 +317,7 @@ namespace wpl
 				u->window = make_pair(0, 5);
 
 				// ACT
-				m.scroll_window(110, 0 /*irrelevant*/);
+				m.set_window(110, 0 /*irrelevant*/);
 
 				// ASSERT
 				pair<double, double> reference3[] = {
@@ -342,9 +342,9 @@ namespace wpl
 
 				// ACT
 				m.scrolling(true);
-				m.scroll_window(0, 11);
-				m.scroll_window(89, 11);
-				m.scroll_window(50, 11);
+				m.set_window(0, 11);
+				m.set_window(89, 11);
+				m.set_window(50, 11);
 				m.scrolling(false);
 
 				// ASSERT
@@ -360,9 +360,9 @@ namespace wpl
 
 				// ACT
 				m.scrolling(true);
-				m.scroll_window(1000, 5);
-				m.scroll_window(1045, 5);
-				m.scroll_window(1010, 5);
+				m.set_window(1000, 5);
+				m.set_window(1045, 5);
+				m.set_window(1010, 5);
 				m.scrolling(false);
 
 				// ASSERT
@@ -386,7 +386,7 @@ namespace wpl
 
 				// ACT
 				m1.scrolling(true);
-				m1.scroll_window(-10, 10);
+				m1.set_window(-10, 10);
 				m1.scrolling(false);
 
 				// ASSERT
@@ -402,7 +402,7 @@ namespace wpl
 
 				// ACT
 				m2.scrolling(true);
-				m2.scroll_window(-10, 10);
+				m2.set_window(-10, 10);
 				m2.scrolling(false);
 
 				// ASSERT
@@ -439,7 +439,7 @@ namespace wpl
 				};
 
 				m.scrolling(true);
-				m.scroll_window(150, 7);
+				m.set_window(150, 7);
 				m.scrolling(false);
 
 				// ACT

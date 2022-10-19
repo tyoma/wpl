@@ -95,7 +95,7 @@ namespace wpl
 						const pair<double, double> r(_model->get_range());
 						const double delta = (_orientation == horizontal ? dx : dy) * _rextent * r.second;
 
-						_model->scroll_window(initial_window.first + delta, initial_window.second);
+						_model->set_window(initial_window.first + delta, initial_window.second);
 					}, capture, button_, x, y);
 					_model->scrolling(true);
 				}
@@ -120,7 +120,7 @@ namespace wpl
 
 				w.first -= increment * delta;
 				_model->scrolling(true);
-				_model->scroll_window(w.first, w.second);
+				_model->set_window(w.first, w.second);
 				_model->scrolling(false);
 			}
 		}
@@ -169,7 +169,7 @@ namespace wpl
 			pair<double, double> r(_model->get_range()), w(_model->get_window());
 
 			w.first = (max)(r.first, w.first - w.second);
-			_model->scroll_window(w.first, w.second);
+			_model->set_window(w.first, w.second);
 		}
 
 		void scroller::page_more()
@@ -177,7 +177,7 @@ namespace wpl
 			pair<double, double> r(_model->get_range()), w(_model->get_window());
 
 			w.first = (min)(r.first + r.second - w.second, w.first + w.second);
-			_model->scroll_window(w.first, w.second);
+			_model->set_window(w.first, w.second);
 		}
 
 		real_t scroller::to_screen(const pair<double, double> &range_, double c) const

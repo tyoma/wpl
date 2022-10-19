@@ -60,15 +60,20 @@ namespace wpl
 	};
 
 
-	struct scroll_model
+	struct sliding_window_model
 	{
 		virtual std::pair<double /*range_min*/, double /*range_width*/> get_range() const = 0;
 		virtual std::pair<double /*window_min*/, double /*window_width*/> get_window() const = 0;
-		virtual double get_increment() const = 0;
 		virtual void scrolling(bool begins) = 0;
-		virtual void scroll_window(double window_min, double window_width) = 0;
+		virtual void set_window(double window_min, double window_width) = 0;
 
 		signal<void (bool invalidate_range)> invalidate;
+	};
+
+
+	struct scroll_model : sliding_window_model
+	{
+		virtual double get_increment() const = 0;
 	};
 
 

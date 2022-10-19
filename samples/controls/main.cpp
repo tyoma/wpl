@@ -82,7 +82,32 @@ namespace
 		virtual void scrolling(bool /*begins*/) override
 		{	}
 
-		virtual void scroll_window(double window_min, double window_width) override
+		virtual void set_window(double window_min, double window_width) override
+		{
+			_window = make_pair(window_min, window_width);
+			invalidate(false);
+		}
+
+	private:
+		pair<double, double> _window;
+	};
+
+	struct my_slider_model : sliding_window_model
+	{
+		my_slider_model()
+			: _window(0, 7)
+		{	}
+
+		virtual pair<double /*range_min*/, double /*range_width*/> get_range() const override
+		{	return make_pair(0, 100);	}
+
+		virtual pair<double /*window_min*/, double /*window_width*/> get_window() const override
+		{	return _window;	}
+
+		virtual void scrolling(bool /*begins*/) override
+		{	}
+
+		virtual void set_window(double window_min, double window_width) override
 		{
 			_window = make_pair(window_min, window_width);
 			invalidate(false);
@@ -98,9 +123,10 @@ int main()
 	application app;
 	const auto fct = app.create_default_factory();
 	const rect_i l = { 100, 100, 400, 300 };
-	shared_ptr<form> f = fct->create_form();
-	slot_connection c = f->close += [&app] {	app.exit();	};
-	shared_ptr<my_scroll_model> scrl_model(new my_scroll_model);
+	const auto f = fct->create_form();
+	const auto c = f->close += [&app] {	app.exit();	};
+	const auto scrl_model = make_shared<my_scroll_model>();
+	const auto sldr_model = make_shared<my_slider_model>();
 
 	const auto root = make_shared<overlay>();
 		root->add(fct->create_control<control>("background"));
@@ -126,6 +152,10 @@ int main()
 				auto scrl2 = fct->create_control<scroller>("vscroller");
 				fill->add(scrl2, pixels(8), false);
 				scrl2->set_model(scrl_model);
+
+			auto sldr = fct->create_control<range_slider>("range_slider");
+				sldr->set_model(sldr_model);
+				vstack->add(sldr, pixels(70), false);
 
 	f->set_root(root);
 	f->set_location(l);

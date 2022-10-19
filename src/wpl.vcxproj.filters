@@ -160,6 +160,9 @@
     <ClCompile Include="win32\utf8.cpp">
       <Filter>src\win32</Filter>
     </ClCompile>
+    <ClCompile Include="controls\range_slider.cpp">
+      <Filter>src\controls</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\wpl\controls\listview_core.h">
@@ -282,6 +285,9 @@
     <ClInclude Include="..\wpl\static_visitor.h" />
     <ClInclude Include="..\wpl\group_headers_model.h" />
     <ClInclude Include="..\wpl\layout_algorithm.h" />
+    <ClInclude Include="..\wpl\controls\range_slider.h">
+      <Filter>controls</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="macos\form.mm">
