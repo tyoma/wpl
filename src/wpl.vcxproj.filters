@@ -163,6 +163,9 @@
     <ClCompile Include="controls\range_slider.cpp">
       <Filter>src\controls</Filter>
     </ClCompile>
+    <ClCompile Include="drag_helper.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\wpl\controls\listview_core.h">

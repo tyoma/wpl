@@ -46,6 +46,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="controls\range_slider.cpp" />
+    <ClCompile Include="drag_helper.cpp" />
     <ClCompile Include="misc\statistics_view.cpp" />
     <ClCompile Include="animated_models.cpp" />
     <ClCompile Include="animation.cpp" />

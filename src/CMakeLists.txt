@@ -3,6 +3,7 @@ cmake_minimum_required(VERSION 3.13)
 set(WPL_SOURCES
 	animated_models.cpp
 	animation.cpp
+	drag_helper.cpp
 	factory.cpp
 	glyphs.cpp
 	helpers.cpp
@@ -22,6 +23,7 @@ set(WPL_SOURCES
 	controls/label.cpp
 	controls/listview_basic.cpp
 	controls/listview_core.cpp
+	controls/range_slider.cpp
 	controls/scroller.cpp
 	misc/statistics_view.cpp
 

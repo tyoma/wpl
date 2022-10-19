@@ -18,40 +18,25 @@
 //	OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //	THE SOFTWARE.
 
-#pragma once
-
-#include "input.h"
+#include <wpl/drag_helper.h>
 
 namespace wpl
 {
-	class drag_helper
+	bool drag_helper::mouse_move(int x, int y)
+	{	return _on_drag ? _on_drag(x - _x, y - _y), true : false;	}
+
+	bool drag_helper::mouse_up(mouse_input::mouse_buttons button_)
+	{	return _button == button_ && _on_drag ? reset(), true : false;	}
+
+	void drag_helper::cancel()
 	{
-	public:
-		template <typename CaptureFn, typename OnDragFn>
-		void start(const OnDragFn &on_drag, const CaptureFn &capture, mouse_input::mouse_buttons button_, int x, int y);
-		bool mouse_move(int x, int y);
-		bool mouse_up(mouse_input::mouse_buttons button_);
-		void cancel();
+		if (_on_drag)
+			_on_drag(0, 0), reset();
+	}
 
-	private:
-		void reset();
-
-	private:
-		std::function<void (int dx, int dy)> _on_drag;
-		std::shared_ptr<void> _capture_handle;
-		mouse_input::mouse_buttons _button;
-		int _x, _y;
-	};
-
-
-
-	template <typename CaptureFn, typename OnDragFn>
-	inline void drag_helper::start(const OnDragFn &on_drag, const CaptureFn &capture, mouse_input::mouse_buttons button_,
-		int x, int y)
+	void drag_helper::reset()
 	{
-		_on_drag = on_drag;
-		capture(_capture_handle);
-		_button = button_;
-		_x = x, _y = y;
+		_capture_handle.reset();
+		_on_drag = std::function<void(int, int)>();
 	}
 }
