@@ -37,7 +37,7 @@ namespace wpl
 		virtual void draw(gcontext &ctx, gcontext::rasterizer_ptr &rasterizer) const override;
 
 		virtual void mouse_move(int depressed, int x, int y) override;
-		virtual void mouse_leave() override;
+		virtual void mouse_leave() throw() override;
 
 		void update_animation();
 

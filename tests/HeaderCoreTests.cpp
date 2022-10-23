@@ -1,5 +1,7 @@
 #include <wpl/controls/header_core.h>
 
+#include "helpers.h"
+
 #include <tests/common/helpers.h>
 #include <tests/common/helpers-visual.h>
 #include <tests/common/Mockups.h>
@@ -88,6 +90,7 @@ namespace wpl
 			shared_ptr<gcontext> ctx;
 			gcontext::rasterizer_ptr ras;
 			shared_ptr<mocks::cursor_manager> cursor_manager_;
+			capture_source captured;
 
 			init( Init )
 			{
@@ -348,21 +351,25 @@ namespace wpl
 				column_t c[] = {	{	"", 17	}, {	"", 13	}, {	"", 29	},	};
 				const auto m = mocks::headers_model::create(c, headers_model::npos(), true);
 
+				captured.attach_to(hdr);
 				resize(hdr, 1000, 33);
 				hdr.set_model(m);
 
 				// ACT
 				hdr.mouse_down(mouse_input::left, 0, 17, 0);
-				hdr.mouse_move(mouse_input::left, 16, 10);
+				captured.target()->mouse_move(mouse_input::left, 16, 10);
 
 				// ASSERT
 				assert_equal(16, m->columns[0].width);
 
 				// ACT
-				hdr.mouse_move(mouse_input::left, 37, 100);
+				captured.target()->mouse_move(mouse_input::left, 37, 100);
 
 				// ASSERT
 				assert_equal(37, m->columns[0].width);
+
+				// INIT
+				captured.target()->mouse_up(mouse_input::left, 0, 0, 0);
 
 				// ACT
 				hdr.mouse_down(mouse_input::left, 0, 81, 0);
@@ -373,7 +380,7 @@ namespace wpl
 				assert_equal(29, m->columns[2].width);
 
 				// ACT
-				hdr.mouse_move(mouse_input::left, 74, 10);
+				captured.target()->mouse_move(mouse_input::left, 74, 10);
 
 				// ASSERT
 				assert_equal(37, m->columns[0].width);
@@ -390,6 +397,7 @@ namespace wpl
 
 				resize(hdr, 1000, 33);
 				hdr.set_model(m);
+				captured.attach_to(hdr);
 
 				hdr.on_measure_item = [&] (const headers_model &m_, headers_model::index_type index) -> agge::box<int> {
 					assert_equal(m.get(), &m_);
@@ -402,19 +410,19 @@ namespace wpl
 
 				// ACT
 				hdr.mouse_down(mouse_input::left, 0, 17, 0);
-				hdr.mouse_move(mouse_input::left, 5, 10);
+				captured.target()->mouse_move(mouse_input::left, 5, 10);
 
 				// ASSERT
 				assert_equal(11, m->columns[0].width);
 
 				// ACT
-				hdr.mouse_move(mouse_input::left, 25, 10);
+				captured.target()->mouse_move(mouse_input::left, 25, 10);
 
 				// ASSERT
 				assert_equal(25, m->columns[0].width);
 
 				// INIT
-				hdr.mouse_up(mouse_input::left, 0, 25, 10);
+				captured.target()->mouse_up(mouse_input::left, 0, 25, 10);
 				hdr.on_measure_item = [&] (const headers_model &, headers_model::index_type index) -> agge::box<int> {
 					switch (index)
 					{
@@ -425,7 +433,7 @@ namespace wpl
 
 				// ACT
 				hdr.mouse_down(mouse_input::left, 0, 67, 0);
-				hdr.mouse_move(mouse_input::left, 0, 10);
+				captured.target()->mouse_move(mouse_input::left, 0, 10);
 
 				// ASSERT
 				assert_equal(23, m->columns[2].width);
@@ -498,15 +506,8 @@ namespace wpl
 				tracking_header hdr(cursor_manager_);
 				column_t c[] = {	{	"", 17	}, {	"", 13	}, {	"", 29	},	};
 				const auto m = mocks::headers_model::create(c, headers_model::npos(), true);
-				auto capture = 0;
-				auto release = 0;
-				auto conn = hdr.capture += [&] (shared_ptr<void> &handle) {
-					capture++;
-					handle.reset(new int, [&] (int *p) {
-						release++;
-						delete p;
-					});
-				};
+
+				captured.attach_to(hdr);
 
 				resize(hdr, 1000, 33);
 				hdr.set_model(m);
@@ -515,22 +516,13 @@ namespace wpl
 				hdr.mouse_down(mouse_input::left, 0, 17, 0);
 
 				// ASSERT
-				assert_equal(1, capture);
-				assert_equal(0, release);
+				assert_not_null(captured.target());
 
 				// ACT
-				hdr.mouse_move(0, 25, 0);
+				captured.target()->mouse_up(mouse_input::left, 0, 25, 0);
 
 				// ASSERT
-				assert_equal(1, capture);
-				assert_equal(0, release);
-
-				// ACT
-				hdr.mouse_up(mouse_input::left, 0, 25, 0);
-
-				// ASSERT
-				assert_equal(1, capture);
-				assert_equal(1, release);
+				assert_null(captured.target());
 			}
 
 
@@ -540,15 +532,8 @@ namespace wpl
 				tracking_header hdr(cursor_manager_);
 				column_t c[] = {	{	"", 17	}, {	"", 13	}, {	"", 29	},	};
 				const auto m = mocks::headers_model::create(c, headers_model::npos(), true);
-				auto capture = 0;
-				auto conn = hdr.capture += [&] (shared_ptr<void> &handle) {
-					capture++;
-					handle.reset(new int, [&] (int *p) {
-						capture--;
-						delete p;
-					});
-				};
 
+				captured.attach_to(hdr);
 				resize(hdr, 1000, 33);
 				hdr.set_model(m);
 				hdr.mouse_down(mouse_input::left, 0, 17, 0);
@@ -557,13 +542,7 @@ namespace wpl
 				hdr.set_model(nullptr);
 
 				// ASSERT
-				assert_equal(0, capture);
-
-				// ACT
-				hdr.mouse_move(0, 20, 0);
-
-				// ASSERT
-				assert_equal(17, m->columns[0].width);
+				assert_null(captured.target());
 			}
 
 
@@ -576,16 +555,17 @@ namespace wpl
 
 				resize(hdr, 1000, 33);
 				hdr.set_model(m);
+				captured.attach_to(hdr);
 
 				hdr.mouse_down(mouse_input::left, 0, 17, 0);
-				hdr.mouse_move(mouse_input::left, 10, 10);
+				captured.target()->mouse_move(mouse_input::left, 10, 10);
 
 				// ACT
-				hdr.mouse_up(mouse_input::left, 0, 10, 0);
-				hdr.mouse_move(0, 100, 10);
+				captured.target()->mouse_up(mouse_input::left, 0, 10, 0);
 
 				// ASSERT
 				assert_equal(10, m->columns[0].width);
+				assert_null(captured.target());
 			}
 
 

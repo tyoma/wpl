@@ -37,10 +37,19 @@ namespace wpl
 	class mouse_router : noncopyable
 	{
 	public:
+		struct view_and_target
+		{
+			operator bool() const;
+
+			std::shared_ptr<view> over;
+			mouse_input *events_target;
+		};
+
+	public:
 		mouse_router(const std::vector<placed_view> &views, mouse_router_host &host);
 
 		void reload_views();
-		std::shared_ptr<view> from(agge::point<int> &point) const;
+		view_and_target from(agge::point<int> &point) const;
 
 		// mouse_input methods
 		void mouse_leave();
@@ -50,10 +59,15 @@ namespace wpl
 		void mouse_scroll(int depressed, agge::point<int> point, int delta_x, int delta_y);
 
 	private:
-		typedef std::pair<std::shared_ptr<void> /*handle*/, size_t /*index*/> capture_target;
-	
+		struct capture_target
+		{
+			std::shared_ptr<void> handle;
+			const placed_view &originator;
+			mouse_input *target;
+		};
+
 	private:
-		std::shared_ptr<view> switch_mouse_over(agge::point<int> &point);
+		view_and_target switch_mouse_over(agge::point<int> &point);
 
 	private:
 		const std::vector<placed_view> &_views;

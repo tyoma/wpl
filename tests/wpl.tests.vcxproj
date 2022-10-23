@@ -63,6 +63,8 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="helpers-listview.h" />
+    <ClInclude Include="helpers.h" />
+    <ClInclude Include="mock-dynamic_set.h" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\src\wpl.vcxproj">

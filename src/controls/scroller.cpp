@@ -73,11 +73,11 @@ namespace wpl
 
 		void scroller::mouse_down(mouse_buttons button_, int /*depressed*/, int x, int y)
 		{
-			const thumb t =  get_thumb();
+			const auto t = get_thumb();
 
 			if (t.active)
 			{
-				const int c = _orientation == horizontal ? x : y;
+				const auto c = _orientation == horizontal ? x : y;
 
 				if (c < static_cast<int>(t.lbound))
 				{
@@ -96,27 +96,20 @@ namespace wpl
 						const double delta = (_orientation == horizontal ? dx : dy) * _rextent * r.second;
 
 						_model->set_window(initial_window.first + delta, initial_window.second);
+					}, [this] {
+						_model->scrolling(false);
 					}, capture, button_, x, y);
 					_model->scrolling(true);
 				}
 			}
 		}
 
-		void scroller::mouse_move(int /*depressed*/, int x, int y)
-		{	_scroll.mouse_move(x, y);	}
-
-		void scroller::mouse_up(mouse_buttons button_, int /*depressed*/, int /*x*/, int /*y*/)
-		{
-			if (_scroll.mouse_up(button_))
-				_model->scrolling(false);
-		}
-
 		void scroller::mouse_scroll(int /*depressed*/, int /*x*/, int /*y*/, int delta_x, int delta_y)
 		{
 			if (const int delta = _orientation == horizontal ? delta_x : delta_y)
 			{
-				pair<double, double> w(_model->get_window());
-				const double increment = _model->get_increment();
+				auto w = _model->get_window();
+				const auto increment = _model->get_increment();
 
 				w.first -= increment * delta;
 				_model->scrolling(true);
@@ -129,13 +122,13 @@ namespace wpl
 		{
 			typedef blender_solid_color<simd::blender_solid_color, platform_pixel_order> blender_t;
 
-			const thumb t = get_thumb();
+			const auto t = get_thumb();
 
 			if (t.active)
 			{
-				const bool horz = _orientation == horizontal;
-				const real_t hw = 0.5f * _width;
-				const pair<real_t, real_t> c(hw, _extent - hw);
+				const auto horz = _orientation == horizontal;
+				const auto hw = 0.5f * _width;
+				const auto c = make_pair(hw, _extent - hw);
 				line l_channel(horz ? c.first : hw, horz ? hw : c.first, horz ? c.second : hw, horz ? hw : c.second);
 				line l_thumb(horz ? t.lbound : hw, horz ? hw : t.lbound, horz ? t.ubound : hw, horz ? hw : t.ubound);
 				const color clr_channel = { 255, 255, 255, 192 };

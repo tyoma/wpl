@@ -372,7 +372,7 @@ namespace wpl
 				// ACT
 				ctl->layout_changed(false);
 				::ValidateRect(hwnd, NULL);
-				v->capture(capture_handle);
+				v->capture(capture_handle, *v);
 				v->invalidate(nullptr);
 
 				// ASSERT
@@ -409,7 +409,7 @@ namespace wpl
 				::ValidateRect(hwnd, NULL);
 
 				// ACT
-				v->capture(capture_handle);
+				v->capture(capture_handle, *v);
 				v->invalidate(nullptr);
 
 				// ASSERT
@@ -669,7 +669,7 @@ namespace wpl
 				vh.set_root(ctl);
 
 				// ACT
-				v->capture(h);
+				v->capture(h, *v);
 
 				// ASSERT
 				assert_equal(hwnd, ::GetCapture());

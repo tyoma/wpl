@@ -97,18 +97,15 @@ namespace wpl
 		void header_core::mouse_enter()
 		{	_cursor_manager->push(_cursor_manager->get(cursor_manager::arrow));	}
 
-		void header_core::mouse_leave()
+		void header_core::mouse_leave() throw()
 		{	_cursor_manager->pop();	}
 
-		void header_core::mouse_move(int /*depressed*/, int x, int y)
+		void header_core::mouse_move(int /*depressed*/, int x, int /*y*/)
 		{
-			if (!_resize.mouse_move(x, y))
-			{
-				const auto h = handle_from_point(x);
+			const auto h = handle_from_point(x);
 
-				_cursor_manager->set(_cursor_manager->get(h.second == resize_handle ? cursor_manager::h_resize
-					: h.second == column_handle ? cursor_manager::hand : cursor_manager::arrow));
-			}
+			_cursor_manager->set(_cursor_manager->get(h.second == resize_handle ? cursor_manager::h_resize
+				: h.second == column_handle ? cursor_manager::hand : cursor_manager::arrow));
 		}
 
 		void header_core::mouse_down(mouse_buttons button_, int /*depressed*/, int x, int y)
@@ -125,19 +122,16 @@ namespace wpl
 					auto w = (max<int>)(initial_width + dx, measure_item(*_model, index).w);
 
 					_model->set_width(index, static_cast<short>(w));
-				}, capture, button_, x, y);
+				}, [] {	}, capture, button_, x, y);
 			}
 		}
 
-		void header_core::mouse_up(mouse_buttons button_, int /*depressed*/, int x, int /*y*/)
+		void header_core::mouse_up(mouse_buttons /*button_*/, int /*depressed*/, int x, int /*y*/)
 		{
-			if (!_resize.mouse_up(button_))
-			{
-				auto h = handle_from_point(x);
+			auto h = handle_from_point(x);
 
-				if (h.second == column_handle)
-					_model->activate_column(h.first);
-			}
+			if (h.second == column_handle)
+				_model->activate_column(h.first);
 		}
 
 		void header_core::draw(gcontext &ctx, gcontext::rasterizer_ptr &rasterizer_) const

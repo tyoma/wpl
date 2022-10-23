@@ -1,5 +1,7 @@
 #include <wpl/layout.h>
 
+#include "helpers.h"
+
 #include <tests/common/helpers.h>
 #include <tests/common/helpers-visual.h>
 #include <tests/common/mock-control.h>
@@ -28,8 +30,8 @@ namespace wpl
 		}
 
 		begin_test_suite( StackLayoutTests )
-
 			shared_ptr<mocks::cursor_manager> cursor_manager_;
+			capture_source captured;
 
 			init( Init )
 			{
@@ -782,6 +784,8 @@ namespace wpl
 					assert_is_false(hierarchy_changed);
 				};
 
+				captured.attach_to(*splitter);
+
 				// ACT
 				splitter->mouse_down(mouse_input::left, 0, 0, 0);
 
@@ -789,7 +793,7 @@ namespace wpl
 				assert_equal(0, layout_invalidations);
 
 				// ACT
-				splitter->mouse_move(mouse_input::left, 1000, 1);
+				captured.target()->mouse_move(mouse_input::left, 1000, 1);
 
 				// ASSERT
 				agge::box<int> reference1_box[] = {	{ 100, 34 }, { 100, 66 },	};
@@ -802,7 +806,7 @@ namespace wpl
 				assert_equal(1, layout_invalidations);
 
 				// ACT
-				splitter->mouse_move(mouse_input::left, 1000, -13);
+				captured.target()->mouse_move(mouse_input::left, 1000, -13);
 
 				// ASSERT
 				agge::box<int> reference2_box[] = {	{ 100, 21 }, { 100, 79 },	};
@@ -838,6 +842,8 @@ namespace wpl
 					assert_is_false(hierarchy_changed);
 				};
 
+				captured.attach_to(*splitter);
+
 				// ACT
 				splitter->mouse_down(mouse_input::left, 0, 0, 0);
 
@@ -845,7 +851,7 @@ namespace wpl
 				assert_equal(0, layout_invalidations);
 
 				// ACT
-				splitter->mouse_move(mouse_input::left, -20, 1000);
+				captured.target()->mouse_move(mouse_input::left, -20, 1000);
 
 				// ASSERT
 				agge::box<int> reference1_box[] = {	{ 50, 105 }, { 81, 105 }, { 170, 105 },	};
@@ -993,10 +999,11 @@ namespace wpl
 
 				auto splitter = v[1].regular;
 
+				captured.attach_to(*splitter);
 				splitter->mouse_down(mouse_input::left, 0, 0, 0);
 
 				// ACT
-				splitter->mouse_move(0, -200, 0);
+				captured.target()->mouse_move(0, -200, 0);
 
 				// ASSERT
 				agge::box<int> reference1_box[] = {	{ 0, 10 }, { 147, 10 },	};
@@ -1008,7 +1015,7 @@ namespace wpl
 				assert_equal(reference1_box, c->size_log);
 
 				// ACT
-				splitter->mouse_move(0, 200, 0);
+				captured.target()->mouse_move(0, 200, 0);
 
 				// ASSERT
 				agge::box<int> reference2_box[] = {	{ 95, 10 }, { 0, 10 },	};
@@ -1039,10 +1046,11 @@ namespace wpl
 
 				auto splitter = v[3].regular;
 
+				captured.attach_to(*splitter);
 				splitter->mouse_down(mouse_input::left, 0, 0, 0);
 
 				// ACT
-				splitter->mouse_move(0, 7, 0);
+				captured.target()->mouse_move(0, 7, 0);
 
 				// ASSERT
 				agge::box<int> reference_box[] = {	{ 25, 10 }, { 25, 10 }, { 37, 10 }, { 13, 10 },	};

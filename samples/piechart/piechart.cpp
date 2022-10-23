@@ -99,7 +99,7 @@ namespace wpl
 		}
 	}
 
-	void piechart::mouse_leave()
+	void piechart::mouse_leave() throw()
 	{
 		for (segments_t::iterator i = _segments.begin(); i != _segments.end(); ++i)
 			i->aline.run(0.0f, 200, _clock());

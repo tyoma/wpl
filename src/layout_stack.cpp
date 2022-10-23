@@ -93,10 +93,8 @@ namespace wpl
 
 	private:
 		virtual void mouse_enter() override;
-		virtual void mouse_leave() override;
-		virtual void mouse_move(int /*depressed*/, int x, int y) override;
+		virtual void mouse_leave() throw() override;
 		virtual void mouse_down(mouse_buttons button_, int /*depressed*/, int x, int y) override;
-		virtual void mouse_up(mouse_buttons button_, int /*depressed*/, int /*x*/, int /*y*/) override;
 
 	private:
 		drag_helper _drag_helper;
@@ -119,11 +117,8 @@ namespace wpl
 	void stack::splitter::mouse_enter()
 	{	_cursor_manager->push(_cursor_manager->get(_horizontal ? cursor_manager::h_resize : cursor_manager::v_resize));	}
 
-	void stack::splitter::mouse_leave()
+	void stack::splitter::mouse_leave() throw()
 	{	_cursor_manager->pop();	}
-
-	void stack::splitter::mouse_move(int /*depressed*/, int x, int y)
-	{	_drag_helper.mouse_move(x, y);	}
 
 	void stack::splitter::mouse_down(mouse_buttons button_, int /*depressed*/, int x, int y)
 	{
@@ -131,12 +126,9 @@ namespace wpl
 		{
 			_drag_helper.start([this, delta] (int dx, int dy) {
 				_owner.move_splitter(_index, delta * (_horizontal ? dx : dy));
-			}, capture, button_, x, y);
+			}, [] {	}, capture, button_, x, y);
 		}
 	}
-
-	void stack::splitter::mouse_up(mouse_buttons button_, int /*depressed*/, int /*x*/, int /*y*/)
-	{	_drag_helper.mouse_up(button_);	}
 
 
 	stack::stack(bool horizontal, shared_ptr<cursor_manager> cursor_manager_)

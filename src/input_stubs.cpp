@@ -41,7 +41,7 @@ namespace wpl
 	void mouse_input::mouse_enter()
 	{	}
 
-	void mouse_input::mouse_leave()
+	void mouse_input::mouse_leave() throw()
 	{	}
 
 	void mouse_input::mouse_move(int /*buttons*/, int /*x*/, int /*y*/)

@@ -64,12 +64,9 @@ namespace wpl
 
 			default:
 				_drag.start([] (int, int) {
-				}, capture, button_, x, y);
+				}, [] {	}, capture, button_, x, y);
 			}
 		}
-
-		void range_slider_core::mouse_up(mouse_buttons button_, int /*depressed*/, int /*x*/, int /*y*/)
-		{	_drag.mouse_up(button_);	}
 
 		void range_slider_core::draw(gcontext &ctx, gcontext::rasterizer_ptr &rasterizer_) const
 		{	draw(_state, ctx, rasterizer_);	}

@@ -1,5 +1,7 @@
 #include <wpl/controls/scroller.h>
 
+#include "helpers.h"
+
 #include <tests/common/helpers-visual.h>
 #include <tests/common/Mockups.h>
 #include <tests/common/MockupsScroller.h>
@@ -52,6 +54,7 @@ namespace wpl
 			typedef vector< pair<bool, agge::rect_i> > invalidations_log;
 
 			mocks::font_loader fake_loader;
+			capture_source captured;
 
 			static void invalidate_cb(invalidations_log *log, const agge::rect_i *w)
 			{	log->push_back(w ? make_pair(true, *w) : make_pair(false, agge::rect_i()));	}
@@ -99,17 +102,27 @@ namespace wpl
 			{
 				// INIT / ACT
 				controls::scroller s(controls::scroller::horizontal);
-				slot_connection c = s.capture += [] (shared_ptr<void> &) { assert_is_true(false); };
 
+				captured.attach_to(s);
 				resize(s, 100, 10);
 
 				// ACT / ASSERT (no crashes)
 				s.mouse_down(mouse_input::left, 0, 0, 5);
-				s.mouse_up(mouse_input::left, 0, 0, 5);
+
+				// ASSERT
+				assert_null(captured.target());
+
+				// ACT
 				s.mouse_down(mouse_input::left, 0, 50, 5);
-				s.mouse_up(mouse_input::left, 0, 50, 5);
+
+				// ASSERT
+				assert_null(captured.target());
+
+				// ACT
 				s.mouse_down(mouse_input::left, 0, 99, 5);
-				s.mouse_up(mouse_input::left, 0, 99, 5);
+
+				// ASSERT
+				assert_null(captured.target());
 			}
 
 
@@ -312,9 +325,9 @@ namespace wpl
 
 				slot_connection connections[] = {
 					sh.invalidate += log_invalidates(ilog),
-					sh.capture += [] (shared_ptr<void> &/*handle*/) { assert_is_true(false); },
+					sh.capture += [] (shared_ptr<void> &/*handle*/, mouse_input &/*target*/) { assert_is_true(false); },
 					sv.invalidate += log_invalidates(ilog),
-					sv.capture += [] (shared_ptr<void> &/*handle*/) { assert_is_true(false); },
+					sv.capture += [] (shared_ptr<void> &/*handle*/, mouse_input &/*target*/) { assert_is_true(false); },
 				};
 				connections;
 
@@ -433,7 +446,7 @@ namespace wpl
 				resize(s, 100, 10);
 				s.set_model(m);
 
-				slot_connection c = s.capture += [] (shared_ptr<void> &/*handle*/) { assert_is_true(false); };
+				auto c = s.capture += [] (shared_ptr<void> &/*handle*/, mouse_input &/*target*/) { assert_is_true(false); };
 
 				// ACT
 				s.mouse_down(mouse_input::left, 0, 0, 0); // one page less
@@ -492,7 +505,6 @@ namespace wpl
 			test( NothingHappensOnClickWhenThumbIsInactive )
 			{
 				// INIT
-				mocks::capture_provider cp;
 				invalidations_log ilog;
 				shared_ptr<mocks::scroll_model> m(new mocks::scroll_model);
 				controls::scroller s(controls::scroller::vertical);
@@ -501,6 +513,7 @@ namespace wpl
 				m->window = make_pair(0, 57);
 				resize(s, 30, 280);
 				s.set_model(m);
+				captured.attach_to(s);
 
 				// ASSERT
 				m->on_scrolling = [&] (bool) { assert_is_true(false);	};
@@ -508,103 +521,79 @@ namespace wpl
 
 				// ACT
 				s.mouse_down(mouse_input::left, 0, 15, 140);
-				s.mouse_down(mouse_input::left, 0, 15, 140);
 
 				// ASSERT
-				assert_is_empty(cp.log);
-
-				// ACT
-				s.mouse_move(mouse_input::left, 15, 138);
-
-				// ASSERT
-				assert_is_empty(cp.log);
-
-				// ACT
-				s.mouse_up(mouse_input::left, 0, 15, 138);
-
-				// ASSERT
-				assert_is_empty(cp.log);
+				assert_null(captured.target());
 			}
 
 
-			test( LButtonCycleWithinThumbCapturesReleasesMouse )
+			test( LButtonCycleWithinThumbCapturesReleasesMouseHorizontal )
 			{
 				// INIT
-				mocks::capture_provider cp;
-				invalidations_log ilog;
 				shared_ptr<mocks::scroll_model> m(new mocks::scroll_model);
-				controls::scroller sh(controls::scroller::horizontal), sv(controls::scroller::vertical);
-				bool scrolling = false;
+				controls::scroller sh(controls::scroller::horizontal);
+				auto scrolling = false;
 
 				m->range = make_pair(0, 500);
 				m->window = make_pair(50, 40);
-				m->on_scrolling = [&] (bool begins) {
-					scrolling = begins;
-				};
+				m->on_scrolling = [&] (bool begins) {	scrolling = begins;	};
 				m->on_scroll = [&] (double, double) { assert_is_true(false); };
 
+				captured.attach_to(sh);
 				resize(sh, 110, 10);
 				sh.set_model(m);
-				resize(sv, 30, 280);
-				sv.set_model(m);
-
-				cp.add_view(sh);
-				cp.add_view(sv);
 
 				// ACT
 				sh.mouse_down(mouse_input::left, 0, 10 + 5 /*lower draggable*/, 5);
 
 				// ASSERT
-				pair<view *, bool> reference1[] = { make_pair(&sh, true), };
-
 				assert_is_true(scrolling);
-				assert_equal(reference1, cp.log);
+				assert_not_null(captured.target());
 
 				// INIT
-				cp.log.clear();
-				scrolling = false;
+				m->on_scrolling = [&] (bool begins) {	scrolling = begins;	};
+
+				// ACT
+				captured.target()->mouse_up(mouse_input::left, 0, 10, 5);
+
+				// ASSERT
+				assert_is_false(scrolling);
+				assert_null(captured.target());
+			}
+
+
+			test( LButtonCycleWithinThumbCapturesReleasesMouseVertical )
+			{
+				// INIT
+				shared_ptr<mocks::scroll_model> m(new mocks::scroll_model);
+				controls::scroller sv(controls::scroller::vertical);
+				auto scrolling = false;
+
+				m->range = make_pair(0, 500);
+				m->window = make_pair(50, 40);
+				m->on_scrolling = [&] (bool begins) {	scrolling = begins;	};
+				m->on_scroll = [&] (double, double) { assert_is_true(false); };
+
+				captured.attach_to(sv);
+				resize(sv, 30, 280);
+				sv.set_model(m);
 
 				// ACT
 				sv.mouse_down(mouse_input::left, 0, 15, 25 + 15 /*lower draggable*/);
 
 				// ASSERT
-				pair<view *, bool> reference2[] = { make_pair(&sv, true), };
-
 				assert_is_true(scrolling);
-				assert_equal(reference2, cp.log);
+				assert_not_null(captured.target());
 
 				// INIT
-				m->on_scrolling = [&] (bool begins) {
-					scrolling = begins;
-					if (!begins)
-					{
-						assert_is_false(cp.log.empty());
-						assert_is_false(cp.log.back().second);
-					}
-				};
+				m->on_scrolling = [&] (bool begins) {	scrolling = begins;	};
 
 				// ACT
-				sh.mouse_up(mouse_input::left, 0, 10, 5);
+				captured.target()->mouse_up(mouse_input::left, 0, 15, 25);
 
 				// ASSERT
-				pair<view *, bool> reference3[] = { make_pair(&sv, true), make_pair(&sh, false), };
-
 				assert_is_false(scrolling);
-				assert_equal(reference3, cp.log);
-
-				// INIT
-				scrolling = true;
-
-				// ACT
-				sv.mouse_up(mouse_input::left, 0, 15, 25);
-
-				// ASSERT
-				pair<view *, bool> reference4[] = {
-					make_pair(&sv, true), make_pair(&sh, false), make_pair(&sv, false),
-				};
-
-				assert_is_false(scrolling);
-				assert_equal(reference4, cp.log);
+				assert_null(captured.target());
 			}
 
 
@@ -631,9 +620,8 @@ namespace wpl
 			test( MovingMouseWhileCapturedMovesTheWindow )
 			{
 				// INIT
-				mocks::capture_provider cp;
 				vector< pair<double, double> > log;
-				shared_ptr<mocks::scroll_model> m(new mocks::scroll_model);
+				const auto m = make_shared<mocks::scroll_model>();
 				controls::scroller sh(controls::scroller::horizontal), sv(controls::scroller::vertical);
 
 				m->range = make_pair(10, 101);
@@ -641,20 +629,14 @@ namespace wpl
 				m->on_scroll = [&] (double m, double w) { log.push_back(make_pair(m, w)); };
 
 				resize(sh, 110, 10);
-				cp.add_view(sh);
 				sh.set_model(m);
-				resize(sv, 10, 310);
-				cp.add_view(sv);
-				sv.set_model(m);
 
+				captured.attach_to(sh);
 				sh.mouse_down(mouse_input::left, 0, 50 + 5, 5);
-				sv.mouse_down(mouse_input::left, 0, 5, 150 + 5);
-
-				assert_equal(2u, cp.log.size());
 
 				// ACT
 				m->window = make_pair(52, 21); // try to spoil the results - make sure the initial window is stored.
-				sh.mouse_move(mouse_input::left, 49 + 5, 100);
+				captured.target()->mouse_move(mouse_input::left, 49 + 5, 100);
 
 				// ASSERT
 				pair<double, double> reference1[] = { make_pair(50 - 1.01, 20), };
@@ -663,7 +645,7 @@ namespace wpl
 
 				// ACT
 				m->window = make_pair(12, 1);
-				sh.mouse_move(mouse_input::left, 40 + 5, 100);
+				captured.target()->mouse_move(mouse_input::left, 40 + 5, 100);
 
 				// ASSERT
 				pair<double, double> reference2[] = {
@@ -674,7 +656,7 @@ namespace wpl
 				assert_equal_pred(reference2, log, eq2());
 
 				// ACT
-				sh.mouse_move(mouse_input::left, 61 + 5, -10);
+				captured.target()->mouse_move(mouse_input::left, 61 + 5, -10);
 
 				// ASSERT
 				pair<double, double> reference3[] = {
@@ -685,8 +667,17 @@ namespace wpl
 
 				assert_equal_pred(reference3, log, eq2());
 
+				// INIT
+				captured.target()->mouse_up(mouse_input::left, 0, 0, 0);
+				captured.attach_to(sv);
+				m->range = make_pair(10, 101);
+				m->window = make_pair(50, 20);
+				resize(sv, 10, 310);
+				sv.set_model(m);
+				sv.mouse_down(mouse_input::left, 0, 5, 150 + 5);
+
 				// ACT
-				sv.mouse_move(mouse_input::left, 5, 152 + 5);
+				captured.target()->mouse_move(mouse_input::left, 5, 152 + 5);
 
 				// ASSERT
 				pair<double, double> reference4[] = {

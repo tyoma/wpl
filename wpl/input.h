@@ -66,7 +66,7 @@ namespace wpl
 		};
 
 		virtual void mouse_enter();
-		virtual void mouse_leave();
+		virtual void mouse_leave() throw();
 
 		virtual void mouse_move(int depressed, int x, int y);
 
@@ -76,6 +76,6 @@ namespace wpl
 
 		virtual void mouse_scroll(int depressed, int x, int y, int delta_x, int delta_y);
 
-		signal<void (std::shared_ptr<void> &handle)> capture;
+		signal<void (std::shared_ptr<void> &handle, mouse_input &target)> capture;
 	};
 }

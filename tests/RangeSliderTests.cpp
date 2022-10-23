@@ -1,5 +1,7 @@
 #include <wpl/controls/range_slider.h>
 
+#include "helpers.h"
+
 #include <tests/common/Mockups.h>
 #include <tests/common/helpers-visual.h>
 #include <tests/common/predicates.h>
@@ -104,6 +106,7 @@ namespace wpl
 			unique_ptr<gcontext::text_engine_type> text_engine;
 			gcontext::rasterizer_ptr rasterizer_;
 			unique_ptr<gcontext> ctx;
+			capture_source captured;
 
 
 			init( Init )
@@ -121,9 +124,8 @@ namespace wpl
 				// INIT
 				auto slider = make_shared<range_slider>();
 				shared_ptr<mouse_input> v = slider;
-				weak_ptr<void> wh;
-				auto c = v->capture += [&] (shared_ptr<void> &h) {	wh = h = make_shared<bool>();	};
 
+				captured.attach_to(*v);
 				slider->next_hit_test = controls::range_slider_core::part_near;
 
 				// ACT
@@ -135,19 +137,19 @@ namespace wpl
 				};
 
 				assert_equal(reference1, slider->hit_test_log);
-				assert_is_false(wh.expired());
+				assert_not_null(captured.target());
 
 				// ACT
-				v->mouse_up(mouse_input::right, 0, 1000, 1000);
+				captured.target()->mouse_up(mouse_input::right, 0, 1000, 1000);
 
 				// ASSERT
-				assert_is_false(wh.expired());
+				assert_not_null(captured.target());
 
 				// ACT
-				v->mouse_up(mouse_input::left, 0, 1000, 1000);
+				captured.target()->mouse_up(mouse_input::left, 0, 1000, 1000);
 
 				// ASSERT
-				assert_is_true(wh.expired());
+				assert_null(captured.target());
 
 				// INIT
 				slider->next_hit_test = controls::range_slider_core::part_far;
@@ -162,13 +164,13 @@ namespace wpl
 				};
 
 				assert_equal(reference2, slider->hit_test_log);
-				assert_is_false(wh.expired());
+				assert_not_null(captured.target());
 
 				// ACT
-				v->mouse_up(mouse_input::left, 0, 0, 0);
+				captured.target()->mouse_up(mouse_input::left, 0, 0, 0);
 
 				// ASSERT
-				assert_is_true(wh.expired());
+				assert_null(captured.target());
 
 				// INIT
 				slider->next_hit_test = controls::range_slider_core::part_shaft;
@@ -184,7 +186,7 @@ namespace wpl
 				};
 
 				assert_equal(reference3, slider->hit_test_log);
-				assert_is_false(wh.expired());
+				assert_not_null(captured.target());
 			}
 
 
@@ -194,7 +196,7 @@ namespace wpl
 				auto slider = make_shared<range_slider>();
 				shared_ptr<view> v = slider;
 				auto captured = false;
-				auto c = v->capture += [&] (shared_ptr<void> &) {	captured = true;	};
+				auto c = v->capture += [&] (shared_ptr<void> &, mouse_input &/*target*/) {	captured = true;	};
 
 				slider->next_hit_test = controls::range_slider_core::part_none;
 
@@ -285,7 +287,7 @@ namespace wpl
 				// INIT
 				auto slider = make_shared<range_slider>();
 				shared_ptr<mouse_input> v = slider;
-				auto c = v->capture += [&] (shared_ptr<void> &h) {	h = make_shared<bool>();	};
+				auto c = v->capture += [&] (shared_ptr<void> &h, mouse_input &/*target*/) {	h = make_shared<bool>();	};
 				auto m = make_shared<mocks::slider_model>();
 
 				m->range = make_pair(10.0, 100.0);

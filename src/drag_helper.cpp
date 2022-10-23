@@ -22,21 +22,34 @@
 
 namespace wpl
 {
-	bool drag_helper::mouse_move(int x, int y)
-	{	return _on_drag ? _on_drag(x - _x, y - _y), true : false;	}
+	void drag_helper::mouse_move(int /*depressed*/, int x, int y)
+	{
+		if (_on_drag)
+			_on_drag(x - _x, y - _y);
+	}
 
-	bool drag_helper::mouse_up(mouse_input::mouse_buttons button_)
-	{	return _button == button_ && _on_drag ? reset(), true : false;	}
+	void drag_helper::mouse_up(mouse_buttons button_, int /*depressed*/, int /*x*/, int /*y*/)
+	{
+		if (_button == button_)
+		{
+			_on_complete();
+			reset();
+		}
+	}
 
 	void drag_helper::cancel()
 	{
 		if (_on_drag)
-			_on_drag(0, 0), reset();
+		{
+			_on_drag(0, 0);
+			reset();
+		}
 	}
 
 	void drag_helper::reset()
 	{
 		_capture_handle.reset();
-		_on_drag = std::function<void(int, int)>();
+		_on_drag = std::function<void (int, int)>();
+		_on_complete = std::function<void ()>();
 	}
 }

@@ -42,35 +42,6 @@ namespace wpl
 			};
 
 
-			class capture_provider
-			{
-			public:
-				void add_view(view &v)
-				{
-					_views[&v] = v.capture += [this, &v] (std::shared_ptr<void> &ch) {
-						std::vector< std::pair<view *, bool> > &log_ = this->log;
-						std::map< view *, std::weak_ptr<void> > &log2_ = this->log2;
-						view &v2 = v;
-
-						log_.push_back(std::make_pair(&v, true));
-						ch.reset(new bool, [&log_, &log2_, &v2] (bool *p) {
-							delete p;
-							log_.push_back(std::make_pair(&v2, false));
-							log2_.erase(&v2);
-						});
-						log2_[&v] = ch;
-					};
-				}
-
-			public:
-				std::vector< std::pair<view *, bool> > log;
-				std::map<view *, std::weak_ptr<void> > log2;
-
-			private:
-				std::map<view *, slot_connection> _views;
-			};
-
-
 			class blender
 			{
 			public:
@@ -159,7 +130,7 @@ namespace wpl
 
 			private:
 				virtual void mouse_enter() override;
-				virtual void mouse_leave() override;
+				virtual void mouse_leave() throw() override;
 				virtual void mouse_move(int depressed, int x, int y) override;
 				virtual void mouse_down(mouse_input::mouse_buttons button_, int depressed, int x, int y) override;
 				virtual void mouse_up(mouse_input::mouse_buttons button_, int depressed, int x, int y) override;
@@ -275,7 +246,7 @@ namespace wpl
 			{	events_log.push_back(me_enter());	}
 
 			template <typename BaseT>
-			inline void logging_mouse_input<BaseT>::mouse_leave()
+			inline void logging_mouse_input<BaseT>::mouse_leave() throw()
 			{	events_log.push_back(me_leave());	}
 
 			template <typename BaseT>

@@ -10,21 +10,11 @@ namespace wpl
 	namespace tests
 	{
 		begin_test_suite( DragHelperTests )
-			test( NewHelperIsNotActive )
-			{
-				// INIT
-				drag_helper dh;
-
-				// ACT / ASSERT
-				assert_is_false(dh.mouse_move(10, 11));
-			}
-
-
 			test( StartingDragObtainsCapture )
 			{
 				// INIT
 				auto captured = 0;
-				const auto on_capture = [&] (shared_ptr<void> &h) {
+				const auto on_capture = [&] (shared_ptr<void> &h, mouse_input &/*target*/) {
 					captured++;
 					h.reset(new int, [&] (int *p) {
 						captured--;
@@ -34,10 +24,7 @@ namespace wpl
 				drag_helper dh;
 
 				// ACT
-				dh.start([] (int, int) {}, on_capture, mouse_input::left, 0, 0);
-
-				// ACT / ASSERT
-				assert_is_true(dh.mouse_move(10, 11));
+				dh.start([] (int, int) {}, [] {	}, on_capture, mouse_input::left, 0, 0);
 
 				// ASSERT
 				assert_equal(1, captured);
@@ -48,25 +35,25 @@ namespace wpl
 			{
 				// INIT
 				auto captured = 0;
-				const auto on_capture = [&] (shared_ptr<void> &h) {
+				const auto on_capture = [&] (shared_ptr<void> &h, mouse_input &/*target*/) {
 					captured++;
 					h.reset(new int, [&] (int *p) {
 						captured--;
 						delete p;
 					});
 				};
+				auto complete = make_shared<bool>(false);
 				drag_helper dh;
 
-				dh.start([] (int, int) {}, on_capture, mouse_input::left, 0, 0);
+				dh.start([] (int, int) {}, [complete] {	*complete = true;	}, on_capture, mouse_input::left, 0, 0);
 
 				// ACT
 				dh.cancel();
 
-				// ACT / ASSERT
-				assert_is_false(dh.mouse_move(10, 11));
-
 				// ASSERT
 				assert_equal(0, captured);
+				assert_is_false(*complete);
+				assert_equal(1, complete.use_count());
 			}
 
 
@@ -74,26 +61,32 @@ namespace wpl
 			{
 				// INIT
 				auto captured = 0;
-				const auto on_capture = [&] (shared_ptr<void> &h) {
+				mouse_input *target = nullptr;
+				const auto on_capture = [&] (shared_ptr<void> &h, mouse_input &target_) {
 					captured++;
+					target = &target_;
 					h.reset(new int, [&] (int *p) {
 						captured--;
 						delete p;
 					});
 				};
+				auto complete = make_shared<bool>(false);
 				drag_helper dh;
 
-				dh.start([] (int, int) {}, on_capture, mouse_input::left, 0, 0);
+				// INIT / ACT
+				dh.start([] (int, int) {}, [complete] {	*complete = true;	}, on_capture, mouse_input::left, 0, 0);
 
-				// ACT / ASSERT
-				assert_is_true(dh.mouse_up(mouse_input::left));
-				assert_is_false(dh.mouse_move(10, 11));
+				// ASSERT
+				assert_is_false(*complete);
+				assert_is_true(complete.use_count() > 1);
+
+				// ACT
+				target->mouse_up(mouse_input::left, 0, 0, 0);
 
 				// ASSERT
 				assert_equal(0, captured);
-
-				// ACT / ASSERT
-				assert_is_false(dh.mouse_up(mouse_input::left));
+				assert_is_true(*complete);
+				assert_equal(1, complete.use_count());
 			}
 
 
@@ -101,8 +94,10 @@ namespace wpl
 			{
 				// INIT
 				auto captured = 0;
-				const auto on_capture = [&] (shared_ptr<void> &h) {
+				mouse_input *target = nullptr;
+				const auto on_capture = [&] (shared_ptr<void> &h, mouse_input &target_) {
 					captured++;
+					target = &target_;
 					h.reset(new int, [&] (int *p) {
 						captured--;
 						delete p;
@@ -110,29 +105,26 @@ namespace wpl
 				};
 				drag_helper dh;
 
-				dh.start([] (int, int) {}, on_capture, mouse_input::left, 0, 0);
+				dh.start([] (int, int) {}, [] {	}, on_capture, mouse_input::right, 0, 0);
 
 				// ACT
-				dh.mouse_up(mouse_input::right);
-
-				// ACT / ASSERT
-				assert_is_true(dh.mouse_move(10, 11));
+				target->mouse_up(mouse_input::left, 0, 0, 0);
 
 				// ASSERT
 				assert_equal(1, captured);
 
 				// ACT
-				dh.mouse_up(mouse_input::middle);
+				target->mouse_up(mouse_input::middle, 0, 0, 0);
 
 				// ASSERT
 				assert_equal(1, captured);
 
 				// INIT
-				dh.mouse_up(mouse_input::left);
-				dh.start([] (int, int) {}, on_capture, mouse_input::right, 0, 0);
+				target->mouse_up(mouse_input::right, 0, 0, 0);
+				dh.start([] (int, int) {}, [] {	}, on_capture, mouse_input::middle, 0, 0);
 
 				// ACT
-				dh.mouse_up(mouse_input::left);
+				target->mouse_up(mouse_input::left, 0, 0, 0);
 
 				// ASSERT
 				assert_equal(1, captured);
@@ -143,15 +135,18 @@ namespace wpl
 			{
 				// INIT
 				vector< pair<int, int> > log;
+				mouse_input *target = nullptr;
 				const auto on_drag = [&] (int dx, int dy) {
 					log.push_back(make_pair(dx, dy));
 				};
 				drag_helper dh;
 
-				dh.start(on_drag, [] (shared_ptr<void> &) { }, mouse_input::left, 11, 19);
+				dh.start(on_drag, [] {	}, [&] (shared_ptr<void> &, mouse_input &target_) {
+					target = &target_;
+				}, mouse_input::left, 11, 19);
 
 				// ACT / ASSERT
-				assert_is_true(dh.mouse_move(100, 100));
+				target->mouse_move(mouse_input::left, 100, 100);
 
 				// ASSERT
 				pair<int, int> reference1[] = {	make_pair(89, 81),	};
@@ -159,7 +154,7 @@ namespace wpl
 				assert_equal(reference1, log);
 
 				// ACT
-				dh.mouse_move(10, 10);
+				target->mouse_move(mouse_input::right | mouse_input::middle, 10, 10);
 
 				// ASSERT
 				pair<int, int> reference2[] = {	make_pair(89, 81), make_pair(-1, -9),	};
@@ -167,11 +162,13 @@ namespace wpl
 				assert_equal(reference2, log);
 
 				// INIT
-				dh.start(on_drag, [] (shared_ptr<void> &) { }, mouse_input::left, 100, 100);
+				dh.start(on_drag, [] {	}, [&] (shared_ptr<void> &, mouse_input &target_) {
+					target = &target_;
+				}, mouse_input::left, 100, 100);
 				log.clear();
 
 				// ACT
-				dh.mouse_move(10, 10);
+				target->mouse_move(mouse_input::right, 10, 10);
 
 				// ASSERT
 				pair<int, int> reference3[] = {	make_pair(-90, -90),	};
@@ -184,13 +181,16 @@ namespace wpl
 			{
 				// INIT
 				vector< pair<int, int> > log;
+				mouse_input *target = nullptr;
 				const auto on_drag = [&] (int dx, int dy) {
 					log.push_back(make_pair(dx, dy));
 				};
 				drag_helper dh;
 
-				dh.start(on_drag, [] (shared_ptr<void> &) { }, mouse_input::left, 11, 19);
-				dh.mouse_move(100, 100);
+				dh.start(on_drag, [] {	}, [&] (shared_ptr<void> &, mouse_input &target_) {
+					target = &target_;
+				}, mouse_input::left, 11, 19);
+				target->mouse_move(0, 100, 100);
 
 				// ACT
 				dh.cancel();

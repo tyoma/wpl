@@ -24,33 +24,38 @@
 
 namespace wpl
 {
-	class drag_helper
+	class drag_helper : mouse_input
 	{
 	public:
-		template <typename CaptureFn, typename OnDragFn>
-		void start(const OnDragFn &on_drag, const CaptureFn &capture, mouse_input::mouse_buttons button_, int x, int y);
-		bool mouse_move(int x, int y);
-		bool mouse_up(mouse_input::mouse_buttons button_);
+		template <typename OnDragFn, typename OnCompleteFn, typename CaptureFn>
+		void start(const OnDragFn &on_drag, const OnCompleteFn &on_complete, const CaptureFn &capture,
+			mouse_input::mouse_buttons button_, int x, int y);
 		void cancel();
 
 	private:
+		// mouse_input methods
+		virtual void mouse_move(int depressed, int x, int y) override;
+		virtual void mouse_up(mouse_buttons button_, int depressed, int x, int y) override;
+
 		void reset();
 
 	private:
 		std::function<void (int dx, int dy)> _on_drag;
+		std::function<void ()> _on_complete;
 		std::shared_ptr<void> _capture_handle;
-		mouse_input::mouse_buttons _button;
+		mouse_buttons _button;
 		int _x, _y;
 	};
 
 
 
-	template <typename CaptureFn, typename OnDragFn>
-	inline void drag_helper::start(const OnDragFn &on_drag, const CaptureFn &capture, mouse_input::mouse_buttons button_,
-		int x, int y)
+	template <typename OnDragFn, typename OnCompleteFn, typename CaptureFn>
+	inline void drag_helper::start(const OnDragFn &on_drag, const OnCompleteFn &on_complete, const CaptureFn &capture,
+		mouse_input::mouse_buttons button_, int x, int y)
 	{
 		_on_drag = on_drag;
-		capture(_capture_handle);
+		_on_complete = on_complete;
+		capture(_capture_handle, *this);
 		_button = button_;
 		_x = x, _y = y;
 	}

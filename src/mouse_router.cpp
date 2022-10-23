@@ -26,6 +26,24 @@ using namespace std;
 
 namespace wpl
 {
+	namespace
+	{
+		const placed_view *find(const vector<placed_view> &views, const agge::point<int> &point)
+		{
+			for (auto i = views.rbegin(); i != views.rend(); ++i)
+			{
+				const auto &w = i->location;
+
+				if (w.x1 <= point.x && point.x < w.x2 && w.y1 <= point.y && point.y < w.y2)
+					return &*i;
+			}
+			return nullptr;
+		}
+	}
+
+	mouse_router::view_and_target::operator bool() const
+	{	return !!events_target;	}
+
 	mouse_router::mouse_router(const vector<placed_view> &views, mouse_router_host &host)
 		: _views(views), _host(host)
 	{	}
@@ -37,10 +55,25 @@ namespace wpl
 		_connections.clear();
 		for (auto i = _views.begin(); i != _views.end(); ++i, ++index)
 		{
-			if (const auto m = i->regular)
+			if (const auto &v = i->regular)
 			{
-				_connections.push_back(m->capture += [this, index] (shared_ptr<void> &handle) {
-					const auto p = make_shared<mouse_router::capture_target>(_host.capture_mouse(), index);
+				const auto &originator = *i;
+
+				_connections.push_back(v->capture += [this, &originator] (shared_ptr<void> &handle, mouse_input &target) {
+					typedef mouse_router::capture_target capture_target_;
+
+					capture_target_ t = {	_host.capture_mouse(), originator, &target	};
+					auto *self = this;
+					const shared_ptr<capture_target_> p(new capture_target_(t), [self] (capture_target_ *p) {
+						if (self->_mouse_over != p->originator.regular)
+						{
+							if (p->originator.regular)
+								p->originator.regular->mouse_leave();
+							if (self->_mouse_over)
+								self->_mouse_over->mouse_enter();
+						}
+						delete p;
+					});
 
 					handle = p;
 					_capture_target = p;
@@ -49,37 +82,33 @@ namespace wpl
 		}
 	}
 
-	shared_ptr<view> mouse_router::from(agge::point<int> &point) const
+	mouse_router::view_and_target mouse_router::from(agge::point<int> &point) const
 	{
+		const auto match = find(_views, point);
+		view_and_target result = {	match ? match->regular : nullptr, nullptr	};
+		const rect_i *reference = nullptr;
+
 		if (const auto capture = _capture_target.lock())
-		{
-			const auto &pv = _views[capture->second];
+			result.events_target = capture->target, reference = &capture->originator.location;
+		else if (match)
+			result.events_target = match->regular.get(), reference = &match->location;
 
-			return point.x -= pv.location.x1, point.y -= pv.location.y1, pv.regular;
-		}
-		for (auto i = _views.rbegin(); i != _views.rend(); ++i)
-		{
-			const auto &w = i->location;
-
-			if (w.x1 <= point.x && point.x < w.x2 && w.y1 <= point.y && point.y < w.y2)
-				return point.x -= w.x1, point.y -= w.y1, i->regular;
-		}
-		return shared_ptr<view>();
+		if (reference)
+			point.x -= reference->x1, point.y -= reference->y1;
+		return result;
 	}
 
 	void mouse_router::mouse_leave()
 	{
-		if (_mouse_over)
-		{
+		if (/*_capture_target.expired() &&*/ _mouse_over)
 			_mouse_over->mouse_leave();
-			_mouse_over = shared_ptr<view>();
-		}
+		_mouse_over = shared_ptr<view>();
 	}
 
 	void mouse_router::mouse_move(int depressed, agge::point<int> point)
 	{
 		if (const auto m = switch_mouse_over(point))
-			m->mouse_move(depressed, point.x, point.y);
+			m.events_target->mouse_move(depressed, point.x, point.y);
 	}
 
 	void mouse_router::mouse_click(void (mouse_input::*fn)(mouse_input::mouse_buttons button, int depressed,
@@ -87,28 +116,29 @@ namespace wpl
 	{
 		if (const auto m = switch_mouse_over(point))
 		{
-			_host.request_focus(m);
-			((*m).*fn)(button_, depressed, point.x, point.y);
+			_host.request_focus(m.over); // TODO: use pair - mouse_input + keyboard_input.
+			((*m.events_target).*fn)(button_, depressed, point.x, point.y);
 		}
 	}
 
 	void mouse_router::mouse_scroll(int depressed, agge::point<int> point, int delta_x, int delta_y)
 	{
 		if (const auto m = switch_mouse_over(point))
-			m->mouse_scroll(depressed, point.x, point.y, delta_x, delta_y);
+			m.events_target->mouse_scroll(depressed, point.x, point.y, delta_x, delta_y);
 	}
 
-	shared_ptr<view> mouse_router::switch_mouse_over(agge::point<int> &point)
+	mouse_router::view_and_target mouse_router::switch_mouse_over(agge::point<int> &point)
 	{
 		const auto mouse_over = from(point);
+		const auto notify = _capture_target.expired();
 
-		if (mouse_over != _mouse_over)
+		if (mouse_over.over != _mouse_over)
 		{
-			if (_mouse_over)
+			if (notify && _mouse_over)
 				_mouse_over->mouse_leave();
-			if (mouse_over)
-				mouse_over->mouse_enter();
-			_mouse_over = mouse_over;
+			_mouse_over = mouse_over.over;
+			if (notify && _mouse_over)
+				_mouse_over->mouse_enter();
 		}
 		return mouse_over;
 	}

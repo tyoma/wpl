@@ -57,7 +57,6 @@ namespace wpl
 		private:
 			// mouse_input methods
 			virtual void mouse_down(mouse_buttons button_, int depressed, int x, int y) override;
-			virtual void mouse_up(mouse_buttons button_, int depressed, int x, int y) override;
 
 			// visual methods
 			virtual void draw(gcontext &ctx, gcontext::rasterizer_ptr &rasterizer) const override;

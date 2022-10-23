@@ -98,7 +98,7 @@ namespace
 		virtual void mouse_enter() override
 		{	_hint = make_shared<hint>(), layout_changed(true);	}
 
-		virtual void mouse_leave() override
+		virtual void mouse_leave() throw() override
 		{	_hint.reset(), layout_changed(true);	}
 
 		virtual void mouse_move(int /*depressed*/, int x, int y) override
