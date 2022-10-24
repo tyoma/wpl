@@ -124,9 +124,11 @@ namespace wpl
 				// INIT
 				auto slider = make_shared<range_slider>();
 				shared_ptr<mouse_input> v = slider;
+				auto m = make_shared<mocks::slider_model>();
 
 				captured.attach_to(*v);
 				slider->next_hit_test = controls::range_slider_core::part_near;
+				slider->set_model(m);
 
 				// ACT
 				v->mouse_down(mouse_input::left, 0, 10, 13);
@@ -195,16 +197,14 @@ namespace wpl
 				// INIT
 				auto slider = make_shared<range_slider>();
 				shared_ptr<view> v = slider;
-				auto captured = false;
-				auto c = v->capture += [&] (shared_ptr<void> &, mouse_input &/*target*/) {	captured = true;	};
-
+				captured.attach_to(*v);
 				slider->next_hit_test = controls::range_slider_core::part_none;
 
 				// ACT
 				v->mouse_down(mouse_input::left, 0, 10, 13);
 
 				// ASSERT
-				assert_is_false(captured);
+				assert_null(captured.target());
 			}
 
 
@@ -287,13 +287,13 @@ namespace wpl
 				// INIT
 				auto slider = make_shared<range_slider>();
 				shared_ptr<mouse_input> v = slider;
-				auto c = v->capture += [&] (shared_ptr<void> &h, mouse_input &/*target*/) {	h = make_shared<bool>();	};
 				auto m = make_shared<mocks::slider_model>();
 
+				captured.attach_to(*v);
 				m->range = make_pair(10.0, 100.0);
 				m->window = make_pair(10.0, 100.0);
-
 				slider->next_thumb = make_descriptor(12.3f, 5.3f, 107.0f, 0.0f, 0.0f);
+				slider->next_hit_test = range_slider::part_near;
 				resize(*slider, 300, 170);
 				slider->set_model(m);
 
@@ -308,7 +308,7 @@ namespace wpl
 				assert_equal_pred(reference1, slider->hit_test_states_log, thumb_eq());
 
 				// INIT
-				v->mouse_up(mouse_input::left, 0, 10, 13);
+				captured.target()->mouse_up(mouse_input::left, 0, 10, 13);
 				m->window = make_pair(31.4, 29.1);
 				m->invalidate(false);
 
@@ -322,6 +322,238 @@ namespace wpl
 				};
 
 				assert_equal_pred(reference2, slider->hit_test_states_log, thumb_eq());
+			}
+
+
+			test( DraggingLeftSliderUpdatesLowerBoundOnly )
+			{
+				// INIT
+				auto slider = make_shared<range_slider>();
+				shared_ptr<mouse_input> v = slider;
+				vector< pair<double, double> > log;
+				auto m = make_shared<mocks::slider_model>();
+
+				captured.attach_to(*v);
+				m->range = make_pair(0.0, 100.0);
+				m->window = make_pair(10.3, 53.0);
+				m->on_scroll = [&] (double window_min, double window_width) {
+					log.push_back(make_pair(window_min, window_width));
+				};
+				slider->next_thumb = make_descriptor(12.3f, 5.3f, 107.0f, 0.0f, 0.0f);
+				slider->next_hit_test = range_slider::part_near;
+				slider->set_model(m);
+				resize(*slider, 300, 170); // thumb: 15.775+69.676
+				captured.attach_to(*v);
+
+				// ACT
+				v->mouse_down(mouse_input::left, 0, 16, 12);
+				m->range = make_pair(1.3, 1.0); // Try to confuse slider - set weird range.
+				captured.target()->mouse_move(0, 20, 1000); // +4px == 3.9331
+
+				// ASSERT
+				pair<double, double> reference1[] = {
+					make_pair(14.233, 49.067),
+				};
+
+				assert_equal_pred(reference1, log, eq());
+
+				// ACT
+				captured.target()->mouse_move(0, 21, 7);
+				captured.target()->mouse_move(0, 0, 10);
+
+				// ASSERT
+				pair<double, double> reference2[] = {
+					make_pair(14.233, 49.067),
+					make_pair(15.216, 48.084),
+					make_pair(-5.4325, 68.733),
+				};
+
+				assert_equal_pred(reference2, log, eq());
+			}
+
+
+			test( DraggingRightSliderUpdatesUpperBoundOnly )
+			{
+				// INIT
+				auto slider = make_shared<range_slider>();
+				shared_ptr<mouse_input> v = slider;
+				vector< pair<double, double> > log;
+				auto m = make_shared<mocks::slider_model>();
+
+				captured.attach_to(*v);
+				m->range = make_pair(0.0, 80.0);
+				m->window = make_pair(10.3, 53.0);
+				m->on_scroll = [&] (double window_min, double window_width) {
+					log.push_back(make_pair(window_min, window_width));
+				};
+				slider->next_thumb = make_descriptor(30.0f, 5.3f, 105.3f, 0.0f, 0.0f);
+				slider->next_hit_test = range_slider::part_shaft;
+				slider->set_model(m);
+				resize(*slider, 300, 170); // thumb: 15.775+69.676
+				captured.attach_to(*v);
+
+				// ACT
+				v->mouse_down(mouse_input::left, 0, 70, 30);
+				m->range = make_pair(1.3, 1.0); // Try to confuse slider - set weird range.
+				captured.target()->mouse_move(0, 81, 1000); // +11px == 8.8
+
+				// ASSERT
+				pair<double, double> reference1[] = {
+					make_pair(19.100, 53.000),
+				};
+
+				assert_equal_pred(reference1, log, eq());
+
+				// ACT
+				captured.target()->mouse_move(0, 13, 1000);
+				captured.target()->mouse_move(0, 140, 1000);
+
+				// ASSERT
+				pair<double, double> reference2[] = {
+					make_pair(19.100, 53.000),
+					make_pair(-35.300, 53.000),
+					make_pair(66.300, 53.000),
+				};
+
+				assert_equal_pred(reference2, log, eq());
+			}
+
+
+			test( SettingModelInvalidatesView )
+			{
+				// INIT
+				auto invalidates = 0;
+				auto slider = make_shared<range_slider>();
+				shared_ptr<view> v = slider;
+				auto m = make_shared<mocks::slider_model>();
+				auto c = v->invalidate += [&] (const void *window) {
+					assert_null(window);
+					invalidates++;
+				};
+
+				m->range = make_pair(0.0, 10.0);
+				m->window = make_pair(2.3, 1.7);
+				slider->next_thumb = make_descriptor(10.0f, 0.0f, 100.0f, 0.0f, 0.0f);
+				resize(*slider, 100, 100);
+
+				// ACT
+				slider->set_model(m);
+
+				// ASSERT
+				assert_equal(1, invalidates);
+
+				// ACT
+				slider->set_model(nullptr);
+
+				// ASSERT
+				assert_equal(2, invalidates);
+
+				// ACT
+				m->invalidate(false);
+
+				// ASSERT
+				assert_equal(2, invalidates);
+			}
+
+
+			test( ViewIsInvalidatesOnModelInvalidate )
+			{
+				// INIT
+				auto invalidates = 0;
+				auto slider = make_shared<range_slider>();
+				shared_ptr<view> v = slider;
+				auto m = make_shared<mocks::slider_model>();
+				auto c = v->invalidate += [&] (const void *window) {
+					assert_null(window);
+					invalidates++;
+				};
+
+				m->range = make_pair(0.0, 10.0);
+				m->window = make_pair(2.3, 1.7);
+				slider->next_thumb = make_descriptor(10.0f, 0.0f, 100.0f, 0.0f, 0.0f);
+				resize(*slider, 100, 100);
+				slider->set_model(m);
+				invalidates = 0;
+
+				// ACT
+				m->invalidate(false);
+
+				// ASSERT
+				assert_equal(1, invalidates);
+
+				// ACT
+				m->invalidate(false);
+				m->invalidate(true);
+
+				// ASSERT
+				assert_equal(3, invalidates);
+			}
+
+
+			test( ScrollingBracketsAreNotifiedUponOnDragStart )
+			{
+				// INIT
+				auto slider = make_shared<range_slider>();
+				shared_ptr<view> v = slider;
+				auto m = make_shared<mocks::slider_model>();
+				vector<bool> log;
+
+				slider->next_hit_test = range_slider::part_near;
+				resize(*slider, 100, 100);
+				slider->set_model(m);
+				captured.attach_to(*v);
+				m->on_scrolling = [&] (bool begins) {	log.push_back(begins);	};
+
+				// ACT
+				v->mouse_down(mouse_input::left, 0, 0, 0);
+
+				// ASSERT
+				assert_equal(plural + true, log);
+
+				// ACT
+				captured.target()->mouse_up(mouse_input::left, 0, 0, 0);
+
+				// ASSERT
+				assert_equal(plural + true + false, log);
+
+				// INIT
+				slider->next_hit_test = range_slider::part_shaft;
+
+				// ACT
+				v->mouse_down(mouse_input::left, 0, 0, 0);
+
+				// ASSERT
+				assert_equal(plural + true + false + true, log);
+
+				// ACT
+				captured.target()->mouse_up(mouse_input::left, 0, 0, 0);
+
+				// ASSERT
+				assert_equal(plural + true + false + true + false, log);
+
+				// INIT
+				slider->next_hit_test = range_slider::part_far;
+
+				// ACT
+				v->mouse_down(mouse_input::left, 0, 0, 0);
+
+				// ASSERT
+				assert_equal(plural + true + false + true + false + true, log);
+
+				// ACT
+				captured.target()->mouse_up(mouse_input::left, 0, 0, 0);
+
+				// ASSERT
+				assert_equal(plural + true + false + true + false + true + false, log);
+
+				// INIT
+				slider->next_hit_test = range_slider::part_none;
+
+				// ACT
+				v->mouse_down(mouse_input::left, 0, 0, 0);
+
+				// ASSERT
+				assert_equal(plural + true + false + true + false + true + false, log);
 			}
 		end_test_suite
 	}

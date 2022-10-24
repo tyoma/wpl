@@ -31,6 +31,7 @@ namespace wpl
 		ss->set_value("padding", 3);
 		ss->set_value("border", 1);
 		ss->set_value("separator", 1);
+		ss->set_value("thumb.width.slider", 14);
 		return ss;
 	}
 }

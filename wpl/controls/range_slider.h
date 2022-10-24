@@ -28,6 +28,8 @@
 
 namespace wpl
 {
+	struct stylesheet;
+
 	namespace controls
 	{
 		class range_slider_core : public integrated_control<wpl::range_slider>
@@ -65,6 +67,8 @@ namespace wpl
 			virtual void draw(const descriptor &state, gcontext &ctx, gcontext::rasterizer_ptr &rasterizer) const = 0;
 			virtual thumb_part hit_test(const descriptor &state, agge::point_r point) = 0;
 
+			template <typename F>
+			void start_drag(mouse_buttons button_, int x, int y, const F &calculate_window);
 			static void recalculate(descriptor &state, const sliding_window_model &model);
 
 		private:
@@ -77,11 +81,16 @@ namespace wpl
 
 		class range_slider : public range_slider_core
 		{
+		public:
+			void apply_styles(const stylesheet &stylesheet_);
+
+		private:
 			virtual descriptor initialize(agge::box_r box) const override;
 			virtual void draw(const descriptor &state, gcontext &ctx, gcontext::rasterizer_ptr &rasterizer) const override;
 			virtual thumb_part hit_test(const descriptor &state, agge::point_r point) override;
 
 		private:
+			agge::real_t _thumb_width;
 			mutable agge::stroke _stroke[2];
 		};
 	}

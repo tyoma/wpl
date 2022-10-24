@@ -130,8 +130,8 @@ namespace wpl
 		factory_.register_control("vstack", [] (const factory &, const control_context &context) {
 			return shared_ptr<control>(new stack(false, context.cursor_manager_));
 		});
-		factory_.register_control("range_slider", [] (const factory &, const control_context &/*context*/) {
-			return shared_ptr<control>(new controls::range_slider());
+		factory_.register_control("range_slider", [] (const factory &, const control_context &context) {
+			return apply_stylesheet(make_shared<controls::range_slider>(), *context.stylesheet_);
 		});
 	}
 }
