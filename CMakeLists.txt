@@ -7,6 +7,7 @@ cmake_policy(SET CMP0079 NEW)
 
 option(WPL_NO_TESTS "Do not build test modules." OFF)
 
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PROJECT_SOURCE_DIR}/build.props)
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/_lib)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/_bin)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/_bin)
@@ -34,9 +35,6 @@ if (UNIX)
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread")
 endif()
 
-if (NOT TARGET freetype)
-	add_subdirectory(libraries/freetype2)
-endif()
 if (NOT TARGET utfia)
 	set(UTFIA_NO_TESTS ON)
 	add_subdirectory(libraries/utfia)

@@ -22,7 +22,7 @@
 
 #include <agge/curves.h>
 #include <algorithm>
-#include <ft2build.h>
+#include <freetype2/ft2build.h>
 #include FT_FREETYPE_H
 #include <stdexcept>
 
