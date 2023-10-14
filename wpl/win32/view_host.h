@@ -22,10 +22,10 @@
 
 #include "../concepts.h"
 #include "../factory_context.h"
-#include "../keyboard_router.h"
 #include "../view_host.h"
 
 #include "helpers.h"
+#include "keyboard_router.h"
 #include "mouse_router.h"
 #include "visual_router.h"
 #include "window.h"
@@ -62,9 +62,6 @@ namespace wpl
 			LRESULT wndproc_overlay(UINT message, WPARAM wparam, LPARAM lparam,
 				const window::original_handler_t &previous);
 
-			void dispatch_key(UINT message, WPARAM wparam, LPARAM lparam);
-			bool update_modifier(UINT message, unsigned code);
-
 			void layout_views(const agge::box<int> &box);
 
 		private:
@@ -77,7 +74,6 @@ namespace wpl
 			std::vector<placed_view> _views, _overlay_views;
 			slot_connection _layout_changed_connection;
 			std::weak_ptr<bool> _capture_handle;
-			unsigned _input_modifiers;
 			visual_router _visual_router, _visual_router_overlay;
 			mouse_router _mouse_router;
 			keyboard_router _keyboard_router;

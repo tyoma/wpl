@@ -126,19 +126,22 @@ int main()
 		const auto stk = fct->create_control<stack>("vstack");
 		stk->set_spacing(5);
 		root->add(pad_control(stk, 5, 5));
+			auto eb1 = fct->create_control<button>("editbox");
+			stk->add(eb1, pixels(20), false, 10);
+
 			const auto lv = fct->create_control<listview>("listview");
 			lv->set_columns_model(cm);
 			lv->set_model(m);
 			lv->set_selection_model(make_shared<my_selection>());
-			stk->add(lv, percents(100), false, 1);
+			stk->add(lv, percents(100), false, 100);
 
 			auto btn1 = fct->create_control<button>("button");
 			btn1->set_text(agge::style_modifier::empty + "first");
-			stk->add(btn1, pixels(20), false, 2);
+			stk->add(btn1, pixels(20), false, 200);
 
 			auto btn2 = fct->create_control<button>("button");
 			btn2->set_text(agge::style_modifier::empty + "second");
-			stk->add(btn2, pixels(20), false, 3);
+			stk->add(btn2, pixels(20), false, 201);
 
 	f->set_root(root);
 	f->set_location(l);

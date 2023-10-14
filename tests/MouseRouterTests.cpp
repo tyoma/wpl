@@ -514,8 +514,17 @@ namespace wpl
 
 				assert_equal(reference1, log);
 
+				// ACT (these do not cause requests)
+				mr.mouse_click(&mouse_input::mouse_up, mouse_input::left, 0, create_point(10, 2));
+				mr.mouse_click(&mouse_input::mouse_double_click, mouse_input::right, 0, create_point(10, 2));
+				mr.mouse_click(&mouse_input::mouse_up, mouse_input::left, 0, create_point(10, 2));
+
+				// ASSERT
+				assert_equal(reference1, log);
+
 				// ACT
-				mr.mouse_click(&mouse_input::mouse_double_click, mouse_input::right, 0, create_point(31, 62));
+				mr.mouse_click(&mouse_input::mouse_down, mouse_input::right, 0, create_point(31, 62));
+				mr.mouse_click(&mouse_input::mouse_up, mouse_input::right, 0, create_point(31, 62));
 
 				// ASSERT
 				shared_ptr<keyboard_input> reference2[] = { v[0], v[2], };
@@ -523,6 +532,7 @@ namespace wpl
 				assert_equal(reference2, log);
 
 				// ACT
+				mr.mouse_click(&mouse_input::mouse_down, mouse_input::middle, 0, create_point(75, 59));
 				mr.mouse_click(&mouse_input::mouse_up, mouse_input::middle, 0, create_point(75, 59));
 
 				// ASSERT

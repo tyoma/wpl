@@ -116,7 +116,8 @@ namespace wpl
 	{
 		if (const auto m = switch_mouse_over(point))
 		{
-			_host.request_focus(m.over); // TODO: use pair - mouse_input + keyboard_input.
+			if (&mouse_input::mouse_down == fn)
+				_host.request_focus(m.over); // TODO: use pair - mouse_input + keyboard_input.
 			((*m.events_target).*fn)(button_, depressed, point.x, point.y);
 		}
 	}
