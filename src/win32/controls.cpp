@@ -41,12 +41,11 @@ namespace wpl
 
 		HWND button::materialize(HWND hparent)
 		{
-			return ::CreateWindowW(WC_BUTTON, _converter(_text.c_str()), WS_CHILD | WS_VISIBLE, 0, 0, 100, 100, hparent,
-				NULL, NULL, NULL);
+			return ::CreateWindowW(WC_BUTTON, _converter(_text.c_str()), WS_CHILD | WS_VISIBLE | BS_NOTIFY, 0, 0, 100, 100,
+				hparent, NULL, NULL, NULL);
 		}
 
-		LRESULT button::on_message(UINT message, WPARAM wparam, LPARAM lparam,
-			const window::original_handler_t &handler)
+		LRESULT button::on_message(UINT message, WPARAM wparam, LPARAM lparam, const window::original_handler_t &handler)
 		{
 			switch (message)
 			{
@@ -74,8 +73,7 @@ namespace wpl
 				agge::align_far == _halign, LWS_RIGHT), 0, 0, 100, 100, hparent, NULL, NULL, NULL);
 		}
 
-		LRESULT link::on_message(UINT message, WPARAM wparam, LPARAM lparam,
-			const window::original_handler_t &handler)
+		LRESULT link::on_message(UINT message, WPARAM wparam, LPARAM lparam, const window::original_handler_t &handler)
 		{
 			switch (message)
 			{

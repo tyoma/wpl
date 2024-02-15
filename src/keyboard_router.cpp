@@ -20,7 +20,6 @@
 
 #include <wpl/keyboard_router.h>
 
-#include <algorithm>
 #include <iterator>
 #include <wpl/view.h>
 
@@ -66,36 +65,46 @@ namespace wpl
 	void keyboard_router::reload_views()
 	{
 		_ordered.clear();
-		copy_if(_views.begin(), _views.end(), back_inserter(_ordered),
-			[] (const placed_view &pv) {
-
+		copy_if(_views.begin(), _views.end(), back_inserter(_ordered), [] (const placed_view &pv) {
 			return !!pv.tab_order && (pv.regular || pv.native);
 		});
 		stable_sort(_ordered.begin(), _ordered.end(), tab_order_less());
 		_focus = _ordered.begin();
-		if (_focus == _ordered.end())
-			return;
-		got_focus(_host, *_focus);
+		if (_focus != _ordered.end())
+			got_focus(_host, *_focus);
 	}
 
 	bool keyboard_router::set_focus(const keyboard_input *input)
 	{
-		const auto new_focus = find_if(_ordered.begin(), _ordered.end(), [input] (const placed_view &pv) {
+		return move_focus([input] (const placed_view& pv) {
 			return pv.regular.get() == input;
+		}, [this] (placed_views::const_iterator prev_focus, placed_views::const_iterator new_focus) {
+			lost_focus(*prev_focus);
+			got_focus(_host, *new_focus);
 		});
-
-		return _ordered.end() != new_focus ? switch_focus(new_focus), true : false;
 	}
 
 	void keyboard_router::key_down(unsigned code, int m)
 	{
 		if (_ordered.end() == _focus)
+		{
 			return;
+		}
+		else if (keyboard_input::tab == code)
+		{
+			auto new_focus = m & keyboard_input::shift ? cycle_previous(_ordered, _focus) : cycle_next(_ordered, _focus);
 
-		if (keyboard_input::tab == code)
-			switch_focus(m & keyboard_input::shift ? cycle_previous(_ordered, _focus) : cycle_next(_ordered, _focus));
+			if (new_focus != _focus)
+			{
+				lost_focus(*_focus);
+				got_focus(_host, *new_focus);
+				_focus = new_focus;
+			}
+		}
 		else if (_focus->regular)
+		{
 			_focus->regular->key_down(code, m);
+		}
 	}
 
 	void keyboard_router::character(wchar_t /*symbol*/, unsigned /*repeats*/, int /*modifiers*/)
@@ -105,17 +114,7 @@ namespace wpl
 	{
 		if (_ordered.end() == _focus)
 			return;
-
-		if (keyboard_input::tab != code && _focus->regular)
+		else if (keyboard_input::tab != code && _focus->regular)
 			_focus->regular->key_up(code, modifiers);
-	}
-
-	void keyboard_router::switch_focus(placed_views::const_iterator new_focus)
-	{
-		if (new_focus == _focus)
-			return;
-		lost_focus(*_focus);
-		got_focus(_host, *new_focus);
-		_focus = new_focus;
 	}
 }

@@ -39,10 +39,19 @@ namespace wpl
 {
 	namespace win32
 	{
+		namespace
+		{
+			struct empty_root : control
+			{
+				virtual void layout(const placed_view_appender& /*append_view*/, const agge::box<int>& /*box*/) override
+				{	}
+			};
+		}
+
 		view_host::view_host(HWND hwnd, const form_context &context_, const window::user_handler_t &user_handler)
 			: context(context_), _hwnd(hwnd), _hoverlay(::CreateWindowEx(0, _T("static"), NULL, WS_POPUP, 0, 0, 1, 1, hwnd,
-				NULL, NULL, NULL)), _user_handler(user_handler), _visual_router(hwnd, _views, context_),
-				_visual_router_overlay(_hoverlay, _overlay_views, context_),
+				NULL, NULL, NULL)), _user_handler(user_handler), _root(make_shared<empty_root>()),
+				_visual_router(hwnd, _views, context_), _visual_router_overlay(_hoverlay, _overlay_views, context_),
 				_mouse_router(_views, *this, context_.cursor_manager_), _keyboard_router(_views, *this)
 		{
 			_window = window::attach(hwnd, bind(&view_host::wndproc, this, _1, _2, _3, _4));
@@ -54,27 +63,23 @@ namespace wpl
 
 		void view_host::set_root(shared_ptr<control> root)
 		{
-			const auto layout = [this] {
+			const auto layout = [this] (bool hierarchy_changed) {
 				RECT rc;
 
 				::GetClientRect(_hwnd, &rc);
 				layout_views(create_box<int>(rc.right, rc.bottom));
-			};
-			const auto reload = [this] {
-				_visual_router.reload_views();
-				_visual_router_overlay.reload_views();
-				_mouse_router.reload_views();
-				_keyboard_router.reload_views();
+				if (hierarchy_changed)
+				{
+					_visual_router.reload_views();
+					_visual_router_overlay.reload_views();
+					_mouse_router.reload_views();
+					_keyboard_router.reload_views();
+				}
 			};
 
-			_root = root;
-			layout();
-			reload();
-			_layout_changed_connection = root ? root->layout_changed += [layout, reload] (bool hierarchy_changed) {
-				layout();
-				if (hierarchy_changed)
-					reload();
-			} : slot_connection();
+			_root = root ? root : make_shared<empty_root>();
+			layout(true);
+			_layout_changed_connection = _root->layout_changed += layout;
 		}
 
 		void view_host::request_focus(shared_ptr<keyboard_input> input)
@@ -154,12 +159,9 @@ namespace wpl
 		{
 			_views.clear();
 			_overlay_views.clear();
-			if (_root)
-			{
-				_root->layout([this] (const placed_view &pv) {
-					(pv.overlay ? _overlay_views : _views).emplace_back(pv);
-				}, box_);
-			}
+			_root->layout([this] (const placed_view &pv) {
+				(pv.overlay ? _overlay_views : _views).emplace_back(pv);
+			}, box_);
 
 			helpers::defer_window_pos dwp(count_if(_views.begin(), _views.end(), [] (const placed_view &pv) {
 				return !!pv.native;

@@ -56,6 +56,12 @@ namespace wpl
 					w.reset();
 				return previous(message, wparam, lparam);
 			}
+
+			bool msg_eq(MSG lhs, MSG rhs)
+			{
+				return lhs.hwnd == rhs.hwnd && lhs.message == rhs.message && lhs.wParam == rhs.wParam
+					&& lhs.lParam == rhs.lParam;
+			}
 		}
 
 		begin_test_suite( WindowingTests )
@@ -398,6 +404,108 @@ namespace wpl
 				assert_is_true(ww[1].expired());
 			}
 
+
+			test( FocusAndKeyboardMessagesAreForwardedToParentWindow )
+			{
+				// INIT
+				HWND hparent = windowManager.create_window();
+				HWND hwnd[] = {
+					windowManager.create_window(L"edit", hparent, WS_CHILD | WS_VISIBLE, 0),
+					windowManager.create_window(L"button", hparent, WS_CHILD, 0),
+				};
+				vector<MSG> messages;
+				auto w = win32::window::attach(hparent, [&] (UINT m, WPARAM w, LPARAM l, const win32::window& prev) {
+					if (win32::window::WM_FORWARDED == m)
+						messages.push_back(*reinterpret_cast<const MSG *>(w));
+					return prev(m, w, l);
+				});
+				auto w1 = win32::window::attach(hwnd[0], passthrough);
+				auto w2 = win32::window::attach(hwnd[1], passthrough);
+
+				// ACT
+				::SendMessage(hwnd[0], WM_KEYDOWN, VK_UP, 10);
+				::SendMessage(hwnd[1], WM_KEYUP, VK_RETURN, 3120);
+				::SendMessage(hwnd[1], WM_SETFOCUS, (WPARAM)hwnd[0], 0);
+
+				// ASSERT
+				MSG reference1[] = {
+					{	hwnd[0], WM_KEYDOWN, VK_UP, 10,	},
+					{	hwnd[1], WM_KEYUP, VK_RETURN, 3120,	},
+					{	hwnd[1], WM_SETFOCUS, (WPARAM)hwnd[0], 0,	},
+				};
+
+				assert_equal_pred(reference1, messages, msg_eq);
+
+				// ACT
+				::SendMessage(hwnd[0], WM_SETFOCUS, (WPARAM)hwnd[1], 0);
+
+				// ASSERT
+				MSG reference2[] = {
+					{	hwnd[0], WM_KEYDOWN, VK_UP, 10,	},
+					{	hwnd[1], WM_KEYUP, VK_RETURN, 3120,	},
+					{	hwnd[1], WM_SETFOCUS, (WPARAM)hwnd[0], 0,	},
+					{	hwnd[0], WM_SETFOCUS, (WPARAM)hwnd[1], 0,	},
+				};
+
+				assert_equal_pred(reference2, messages, msg_eq);
+
+				// ACT
+				::SendMessage(hwnd[0], WM_LBUTTONDOWN, 0, 0);
+				::SendMessage(hwnd[0], WM_RBUTTONUP, 0, 0);
+
+				// ASSERT
+				assert_equal_pred(reference2, messages, msg_eq);
+			}
+
+
+			test( ForwardedMessagesCanBeInhibitedUponRequest )
+			{
+				// INIT
+				HWND hparent = windowManager.create_window();
+				HWND hwnd[] = {
+					windowManager.create_window(L"edit", hparent, WS_CHILD | WS_VISIBLE, 0),
+					windowManager.create_window(L"button", hparent, WS_CHILD, 0),
+				};
+				bool inhibit = false;
+				vector<HWND> messages;
+				auto w = win32::window::attach(hparent, [&] (UINT m, WPARAM w, LPARAM l, const win32::window& prev) {
+					if (win32::window::WM_FORWARDED == m)
+						*reinterpret_cast<bool*>(l) = inhibit;
+					return prev(m, w, l);
+				});
+				auto w1 = win32::window::attach(hwnd[0], [&] (UINT m, WPARAM w, LPARAM l, const win32::window& prev) {
+					messages.push_back(hwnd[0]);
+					return prev(m, w, l);
+				});
+				auto w2 = win32::window::attach(hwnd[1], [&] (UINT m, WPARAM w, LPARAM l, const win32::window& prev) {
+					messages.push_back(hwnd[1]);
+					return prev(m, w, l);
+				});
+
+				// ACT
+				::SendMessage(hwnd[0], WM_KEYDOWN, VK_UP, 10);
+				inhibit = true;
+				::SendMessage(hwnd[1], WM_KEYUP, VK_RETURN, 3120);
+				::SendMessage(hwnd[1], WM_SETFOCUS, (WPARAM)hwnd[0], 0);
+				inhibit = false;
+
+				// ASSERT
+				HWND reference1[] = {	hwnd[0], hwnd[1] /*WM_SETFOCUS cannot be inhibited*/,	};
+
+				assert_equal(reference1, messages);
+
+				// ACT
+				inhibit = true;
+				::SendMessage(hwnd[0], WM_KEYDOWN, VK_UP, 10);
+				inhibit = false;
+				::SendMessage(hwnd[1], WM_KEYUP, VK_RETURN, 3120);
+				::SendMessage(hwnd[0], WM_SETFOCUS, (WPARAM)hwnd[0], 0);
+
+				// ASSERT
+				HWND reference2[] = {	hwnd[0], hwnd[1], hwnd[1], hwnd[0],	};
+
+				assert_equal(reference2, messages);
+			}
 		end_test_suite
 	}
 }

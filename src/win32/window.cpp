@@ -23,7 +23,6 @@
 #include <stdexcept>
 
 using namespace std;
-using namespace std::placeholders;
 
 namespace wpl
 {
@@ -92,40 +91,63 @@ namespace wpl
 
 		shared_ptr<window> window::attach(HWND hwnd, const user_handler_t &user_handler)
 		{
-			if (::IsWindow(hwnd))
-			{
-				unique_ptr<window> w(new window(hwnd, user_handler));
+			if (!::IsWindow(hwnd))
+				throw invalid_argument("");
 
-				w->map();
-				return shared_ptr<window>(w.release(), bind(&window::detach, _1));
-			}
-			throw invalid_argument("");
+			unique_ptr<window> w(new window(hwnd, user_handler));
+
+			w->map();
+			return shared_ptr<window>(w.release(), [] (window *w) {
+				w->_user_handler = window::user_handler_t();
+				if (!w->_hwnd || w->unmap(false))
+					delete w;
+			});
 		}
 
 		LRESULT window::operator ()(UINT message, WPARAM wparam, LPARAM lparam) const
 		{	return ::CallWindowProc(_wndproc, _hwnd, message, wparam, lparam);	}
 
 		LRESULT CALLBACK window::windowproc_proxy(HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam)
+		{	return !forward(hwnd, message, wparam, lparam) ? get_window(hwnd)->windowproc(message, wparam, lparam) : 0;	}
+
+		bool window::forward(HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam)
 		{
-			window *w = get_window(hwnd);
+			switch (message)
+			{
+			case WM_SETFOCUS:
+			case WM_KEYDOWN:
+			case WM_KEYUP:
+				auto inhibit = false;
+				const MSG m = { hwnd, message, wparam, lparam, };
 
+				if (const auto hparent = ::GetParent(hwnd))
+					::SendMessage(hparent, WM_FORWARDED, reinterpret_cast<WPARAM>(&m), reinterpret_cast<LPARAM>(&inhibit));
+				if (inhibit && WM_SETFOCUS != message)
+					return true;
+				break;
+			}
+			return false;
+		}
+
+		LRESULT window::windowproc(UINT message, WPARAM wparam, LPARAM lparam)
+		{
 			if (WM_NCDESTROY == message)
-				w->unmap(true);
+				unmap(true);
 
-			LRESULT result = w->_user_handler ? w->_user_handler(message, wparam, lparam, *w) : (*w)(message, wparam, lparam);
+			auto result = _user_handler ? _user_handler(message, wparam, lparam, *this) : (*this)(message, wparam, lparam);
 
 			if (WM_NCDESTROY == message)
 			{
-				w->_hwnd = 0;
-				if (!w->_user_handler)
-					delete w;
+				_hwnd = 0;
+				if (!_user_handler)
+					delete this;
 			}
 			return result;
 		}
 
 		void window::map()
 		{
-			if (windows_map *m = _windows->get())
+			if (const auto m = _windows->get())
 			{
 				if (get_window(_hwnd))
 					throw logic_error("A window is already subclassed!");
@@ -143,9 +165,9 @@ namespace wpl
 
 		window *window::get_window(HWND hwnd) throw()
 		{
-			if (windows_map *m = _windows_s->get())
+			if (const auto m = _windows_s->get())
 			{
-				windows_map::const_iterator i = m->find(hwnd);
+				const auto i = m->find(hwnd);
 
 				if (i != m->end())
 					return i->second;
@@ -155,9 +177,9 @@ namespace wpl
 
 		bool window::unmap(bool force) throw()
 		{
-			if (windows_map *m = _windows->get())
+			if (const auto m = _windows->get())
 			{
-				const windows_map::const_iterator i = m->find(_hwnd);
+				const auto i = m->find(_hwnd);
 
 				if (i != m->end() && (force || &windowproc_proxy == get_wndproc(i->second->_hwnd)))
 				{
@@ -172,13 +194,6 @@ namespace wpl
 				}
 			}
 			return false;
-		}
-
-		void window::detach()
-		{
-			_user_handler = window::user_handler_t();
-			if (!_hwnd || unmap(false))
-				delete this;
 		}
 	}
 }

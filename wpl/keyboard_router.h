@@ -23,6 +23,7 @@
 #include "concepts.h"
 #include "control.h"
 
+#include <algorithm>
 #include <vector>
 
 namespace wpl
@@ -47,11 +48,12 @@ namespace wpl
 		void character(wchar_t symbol, unsigned repeats, int modifiers);
 		void key_up(unsigned code, int modifiers);
 
-	private:
+	protected:
 		typedef std::vector<placed_view> placed_views;
 
-	private:
-		void switch_focus(placed_views::const_iterator new_focus);
+	protected:
+		template <typename PredicateT, typename SwitchT>
+		bool move_focus(const PredicateT &predicate, const SwitchT &switch_op);
 
 	private:
 		const std::vector<placed_view> &_views;
@@ -59,4 +61,19 @@ namespace wpl
 		placed_views _ordered;
 		placed_views::const_iterator _focus;
 	};
+
+
+
+	template <typename PredicateT, typename SwitchT>
+	inline bool keyboard_router::move_focus(const PredicateT &predicate, const SwitchT &switch_op)
+	{
+		const auto new_focus = std::find_if(_ordered.begin(), _ordered.end(), predicate);
+
+		if (_ordered.end() == new_focus)
+			return false;
+		if (new_focus != _focus)
+			switch_op(_focus, new_focus);
+		_focus = new_focus;
+		return true;
+	}
 }

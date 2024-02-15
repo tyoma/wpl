@@ -35,6 +35,8 @@ namespace wpl
 			typedef window original_handler_t;
 			typedef std::function<LRESULT (UINT message, WPARAM wparam, LPARAM lparam, const original_handler_t &handler)> user_handler_t;
 
+			enum {	WM_FORWARDED = WM_USER + 0x1110,	};
+
 		public:
 			static std::shared_ptr<window> attach(HWND hwnd, const user_handler_t &user_handler);
 
@@ -52,10 +54,11 @@ namespace wpl
 			const window &operator =(const window &rhs);
 
 			static LRESULT CALLBACK windowproc_proxy(HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam);
+			static bool forward(HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam);
+			LRESULT windowproc(UINT message, WPARAM wparam, LPARAM lparam);
 			void map();
 			static window *get_window(HWND hwnd) throw();
 			bool unmap(bool force) throw();
-			void detach();
 
 		private:
 			static std::shared_ptr< tls<windows_map> > _windows_s;
