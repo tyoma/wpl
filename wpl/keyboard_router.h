@@ -54,6 +54,8 @@ namespace wpl
 	protected:
 		template <typename PredicateT, typename SwitchT>
 		bool move_focus(const PredicateT &predicate, const SwitchT &switch_op);
+		void notify_got_focus();
+		void notify_lost_focus();
 
 	private:
 		const std::vector<placed_view> &_views;

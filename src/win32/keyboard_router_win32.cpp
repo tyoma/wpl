@@ -16,8 +16,12 @@ namespace wpl
 		{
 			switch (message)
 			{
+			case WM_SETFOCUS:
+				notify_got_focus();
+				return true;
+
 			case WM_KILLFOCUS:
-				set_focus(nullptr);
+				notify_lost_focus();
 				return true;
 
 			case WM_KEYDOWN:

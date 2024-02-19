@@ -117,4 +117,16 @@ namespace wpl
 		else if (keyboard_input::tab != code && _focus->regular)
 			_focus->regular->key_up(code, modifiers);
 	}
+
+	void keyboard_router::notify_got_focus()
+	{
+		if (_ordered.end() != _focus && _focus->regular)
+			_focus->regular->got_focus();
+	}
+
+	void keyboard_router::notify_lost_focus()
+	{
+		if (_ordered.end() != _focus && _focus->regular)
+			_focus->regular->lost_focus();
+	}
 }

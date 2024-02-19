@@ -1175,7 +1175,6 @@ namespace wpl
 				const auto ctl = make_shared<mocks::control>();
 				const auto hwnd = create_window(true, 100, 100);
 				win32::view_host vh(hwnd, context);
-//				mouse_router_host &mrhost = vh;
 
 				ctl->views.assign(begin(pv), end(pv));
 				vh.set_root(ctl);
@@ -1191,6 +1190,56 @@ namespace wpl
 				};
 
 				assert_equal(reference, v->events);
+			}
+
+
+			test( PreviouslyFocusedViewObtainsFocusWhenWindowObtainsFocus )
+			{
+				// INIT
+				shared_ptr< mocks::logging_key_input<view> > v[] = {
+					make_shared< mocks::logging_key_input<view> >(), make_shared< mocks::logging_key_input<view> >(),
+				};
+				const placed_view pv[] = {
+					{	v[0], nullptr, create_rect(100, 1, 191, 201), 1	},
+					{	nullptr, make_shared<mocks::native_view_window>(), create_rect(1, 1, 191, 201), 2	},
+					{	v[1], nullptr, create_rect(10, 100, 90, 250), 1	},
+				};
+				const auto ctl = make_shared<mocks::control>();
+				const auto hwnd = create_window(true, 300, 300);
+				const auto another_hwnd = wm.create_window(L"static", hwnd, WS_CHILD, 0);
+				win32::view_host vh(hwnd, context);
+
+				ctl->views.assign(begin(pv), end(pv));
+				vh.set_root(ctl);
+				::SetFocus(another_hwnd);
+
+				v[0]->events.clear();
+				v[1]->events.clear();
+
+				// ACT
+				::SetFocus(hwnd);
+
+				// ASSERT
+				mocks::keyboard_event reference[] = {
+					{ mocks::keyboard_event::focusin, 0, 0 },
+				};
+
+				assert_equal(reference, v[0]->events);
+				assert_is_empty(v[1]->events);
+
+				// INIT
+				::SendMessage(hwnd, WM_LBUTTONDOWN, 0, pack_coordinates(10, 100));
+				::SendMessage(hwnd, WM_LBUTTONUP, 0, pack_coordinates(10, 100));
+				::SetFocus(another_hwnd);
+				v[0]->events.clear();
+				v[1]->events.clear();
+
+				// ACT
+				::SetFocus(hwnd);
+
+				// ASSERT
+				assert_is_empty(v[0]->events);
+				assert_equal(reference, v[1]->events);
 			}
 
 
