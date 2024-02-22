@@ -28,6 +28,6 @@ if(WIN32)
 	add_subdirectory(win32)
 endif()
 
-add_library(wpl.tests SHARED ${WPL_TEST_SOURCES})
+add_library(wpl.generic.tests SHARED ${WPL_TEST_SOURCES})
 
-target_link_libraries(wpl.tests wpl-tests-common wpl agge.text agge)
+target_link_libraries(wpl.generic.tests wpl-tests-common wpl.generic)

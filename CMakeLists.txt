@@ -54,7 +54,7 @@ if (NOT WPL_NO_TESTS)
 
 	add_subdirectory(tests)
 
-	add_utee_test(wpl.tests)
+	add_utee_test(wpl.generic.tests)
 	if (WIN32)
 		add_utee_test(wpl.win32.tests)
 	endif()

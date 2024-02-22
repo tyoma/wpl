@@ -134,4 +134,12 @@ namespace wpl
 			return apply_stylesheet(make_shared<controls::range_slider>(), *context.stylesheet_);
 		});
 	}
+
+	shared_ptr<factory> factory::create_default(const form_context &context_)
+	{
+		shared_ptr<factory> f(new factory(context_));
+
+		setup_default(*f);
+		return f;
+	}
 }

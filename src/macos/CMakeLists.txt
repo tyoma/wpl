@@ -13,5 +13,5 @@ set(WPL_MACOS_SOURCES
 
 add_library(wpl.macos STATIC ${WPL_MACOS_SOURCES})
 
-target_link_libraries(wpl.macos "-framework Foundation -framework Cocoa")
+target_link_libraries(wpl.macos "-framework Foundation")
 target_link_libraries(wpl.macos agge agge.text)

@@ -81,4 +81,12 @@ namespace wpl
 			return shared_ptr<control>(new stack(false, context.cursor_manager_));
 		});
 	}
+
+	shared_ptr<factory> factory::create_default(const form_context &context_)
+	{
+		shared_ptr<factory> f(new factory(context_));
+
+		setup_default(*f);
+		return f;
+	}
 }

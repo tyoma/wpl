@@ -38,12 +38,4 @@ namespace wpl
 			return i->second(*this, context_);
 		throw invalid_argument("");
 	}
-
-	shared_ptr<factory> factory::create_default(const form_context &context_)
-	{
-		shared_ptr<factory> f(new factory(context_));
-
-		setup_default(*f);
-		return f;
-	}
 }
