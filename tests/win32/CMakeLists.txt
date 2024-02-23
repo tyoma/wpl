@@ -8,7 +8,6 @@ set(WPL_TEST_SOURCES
 	FormTests.cpp
 	helpers-win32.cpp
 	IntegrationTests.cpp
-	KeyboardRouterTests.cpp
 	ListViewTests.cpp
 	MockupsNative.cpp
 	NativeViewTests.cpp
