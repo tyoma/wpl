@@ -1216,6 +1216,39 @@ namespace wpl
 				assert_equal(1u, m->auto_trackables->count(15));
 			}
 
+
+			test( UnexpectedButtonsDoNotChangeSelection )
+			{
+				// INIT
+				tracking_listview lv;
+				const auto m = create_model(1000, 1);
+
+				lv.item_height = 5;
+				resize(lv, 100, 300);
+				lv.set_columns_model(mocks::headers_model::create("", 1));
+				lv.set_model(m);
+				lv.set_selection_model(selection);
+				lv.focus(3);
+
+				lv.mouse_down(mouse_input::left, keyboard_input::shift, 0, 5 * 5);
+				lv.mouse_up(mouse_input::left, keyboard_input::shift, 0, 5 * 5);
+				lv.mouse_down(mouse_input::left, keyboard_input::control, 0, 5 * 11);
+				lv.mouse_up(mouse_input::left, keyboard_input::control, 0, 5 * 11);
+				lv.mouse_down(mouse_input::left, keyboard_input::control | keyboard_input::shift, 0, 5 * 15);
+				lv.mouse_up(mouse_input::left, keyboard_input::control | keyboard_input::shift, 0, 5 * 15);
+
+				// ACT
+				lv.key_down('a', 0);
+				lv.key_down('A', 0);
+				lv.key_down('z', 0);
+				lv.key_down(0x10 /*shift*/, 0);
+				lv.key_down(0x11 /*control*/, 0);
+
+				// ASSERT
+				assert_equivalent(plural + 3u + 4u + 5u + 11u + 12u + 13u + 14u + 15u, selection->items);
+			}
+
+
 			test( NothingHappensOnMouseEventsWithNoSelectionModel )
 			{
 				// INIT

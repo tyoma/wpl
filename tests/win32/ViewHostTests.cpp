@@ -20,6 +20,34 @@ namespace wpl
 	{
 		namespace
 		{
+			class hold_key : noncopyable
+			{
+			public:
+				hold_key(uint8_t key_code)
+					: _key_code(key_code)
+				{
+					BYTE keys[256] = { 0 };
+
+					::GetKeyboardState(keys);
+					_previous_state = keys[_key_code];
+					keys[_key_code] |= 0x80;
+					::SetKeyboardState(keys);
+				}
+
+				~hold_key()
+				{
+					BYTE keys[256] = { 0 };
+
+					::GetKeyboardState(keys);
+					keys[_key_code] = _previous_state;
+					::SetKeyboardState(keys);
+				}
+
+			private:
+				const uint8_t _key_code;
+				uint8_t _previous_state;
+			};
+
 			rect_i get_client_rect(HWND hwnd)
 			{
 				RECT rc;
@@ -830,28 +858,6 @@ namespace wpl
 			}
 
 
-			test( ControlAndShiftAreNotDeliveredAsKeyDownAndKeyUp )
-			{
-				// INIT
-				const auto v = make_shared< mocks::logging_key_input<view> >();
-				const placed_view pv = {	v, nullptr, create_rect(0, 0, 100, 50), 1	};
-				const auto ctl = make_shared<mocks::control>();
-				const auto hwnd = create_window(true);
-				win32::view_host vh(hwnd, context);
-
-				ctl->views.push_back(pv);
-				vh.set_root(ctl);
-				v->events.clear();
-
-				// ACT
-				::SendMessage(hwnd, WM_KEYDOWN, VK_CONTROL, 0);
-				::SendMessage(hwnd, WM_KEYUP, VK_SHIFT, 0);
-
-				// ASSERT
-				assert_is_empty(v->events);
-			}
-
-
 			test( KeyMessageIsAccompaniedWithShiftAndControl )
 			{
 				// INIT
@@ -866,7 +872,7 @@ namespace wpl
 				v->events.clear();
 
 				// ACT
-				::SendMessage(hwnd, WM_KEYDOWN, VK_CONTROL, 0);
+				hold_key hk_control(VK_CONTROL);
 				::SendMessage(hwnd, WM_KEYDOWN, 'A', 0);
 				::SendMessage(hwnd, WM_KEYUP, VK_LEFT, 0);
 
@@ -879,7 +885,7 @@ namespace wpl
 				assert_equal(reference1, v->events);
 
 				// ACT
-				::SendMessage(hwnd, WM_KEYDOWN, VK_SHIFT, 0);
+				hold_key hk_shift(VK_SHIFT);
 				::SendMessage(hwnd, WM_KEYDOWN, 'B', 0);
 				::SendMessage(hwnd, WM_KEYUP, 'N', 0);
 
@@ -889,52 +895,6 @@ namespace wpl
 					{ mocks::keyboard_event::keyup, keyboard_input::left, keyboard_input::control },
 					{ mocks::keyboard_event::keydown, 'B', keyboard_input::control | keyboard_input::shift },
 					{ mocks::keyboard_event::keyup, 'N', keyboard_input::control | keyboard_input::shift },
-				};
-
-				assert_equal(reference2, v->events);
-			}
-
-
-			test( KeyMessageIsNotAccompaniedWithShiftAndControlAfterShiftAndControlAreReleased )
-			{
-				// INIT
-				const auto v = make_shared< mocks::logging_key_input<view> >();
-				const placed_view pv = {	v, nullptr, create_rect(0, 0, 100, 50), 1	};
-				const auto ctl = make_shared<mocks::control>();
-				const auto hwnd = create_window(true);
-				win32::view_host vh(hwnd, context);
-
-				ctl->views.push_back(pv);
-				vh.set_root(ctl);
-				v->events.clear();
-
-				::SendMessage(hwnd, WM_KEYDOWN, VK_CONTROL, 0);
-				::SendMessage(hwnd, WM_KEYDOWN, VK_SHIFT, 0);
-
-				// ACT
-				::SendMessage(hwnd, WM_KEYUP, VK_CONTROL, 0);
-				::SendMessage(hwnd, WM_KEYDOWN, 'T', 0);
-				::SendMessage(hwnd, WM_KEYUP, VK_HOME, 0);
-
-				// ASSERT
-				mocks::keyboard_event reference1[] = {
-					{ mocks::keyboard_event::keydown, 'T', keyboard_input::shift },
-					{ mocks::keyboard_event::keyup, keyboard_input::home, keyboard_input::shift },
-				};
-
-				assert_equal(reference1, v->events);
-
-				// ACT
-				::SendMessage(hwnd, WM_KEYUP, VK_SHIFT, 0);
-				::SendMessage(hwnd, WM_KEYDOWN, VK_RETURN, 0);
-				::SendMessage(hwnd, WM_KEYDOWN, VK_END, 0);
-
-				// ASSERT
-				mocks::keyboard_event reference2[] = {
-					{ mocks::keyboard_event::keydown, 'T', keyboard_input::shift },
-					{ mocks::keyboard_event::keyup, keyboard_input::home, keyboard_input::shift },
-					{ mocks::keyboard_event::keydown, keyboard_input::enter, 0 },
-					{ mocks::keyboard_event::keydown, keyboard_input::end, 0 },
 				};
 
 				assert_equal(reference2, v->events);
@@ -1069,9 +1029,8 @@ namespace wpl
 				assert_is_empty(v[2]->events);
 
 				// ACT
-				::SendMessage(hwnd, WM_KEYDOWN, VK_SHIFT, 0);
+				hold_key hk_shift(VK_SHIFT);
 				::SendMessage(hwnd, WM_KEYDOWN, VK_TAB, 0);
-				::SendMessage(hwnd, WM_KEYUP, VK_SHIFT, 0);
 
 				// ASSERT
 				mocks::keyboard_event reference_inoutin[] = {
@@ -1358,6 +1317,31 @@ namespace wpl
 
 				// INIT / ASSERT
 				assert_equal(nv->get_window(), ::GetFocus());
+			}
+
+
+			test( FocusResetDuringDestructionIsIgnored )
+			{
+				// INIT
+				const auto hwnd = create_window(true, 100, 100);
+				auto vh = make_shared<win32::view_host>(hwnd, context);
+
+				{
+					const auto v = make_shared<view>();
+					const auto nv = make_shared<mocks::native_view_window>();
+					placed_view pv[] = {
+						{	v, nullptr, {}, 1	},
+						{	nullptr, nv, create_rect(10, 17, 110, 151), 2	},
+					};
+					const auto ctl = make_shared<mocks::control>();
+
+					ctl->views.assign(begin(pv), end(pv));
+					vh->set_root(ctl);
+					::SetFocus(nv->get_window());
+				}
+
+				// ACT / ASSERT (must not crash)
+				vh.reset();
 			}
 
 		end_test_suite

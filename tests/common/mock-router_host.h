@@ -13,9 +13,10 @@ namespace wpl
 			class keyboard_router_host : public wpl::keyboard_router_host
 			{
 			public:
-				std::function<void (native_view &nview)> on_set_focus;
+				std::function<void (native_view *nview)> on_set_focus;
 
 			private:
+				virtual void set_focus() override;
 				virtual void set_focus(native_view &nview) override;
 			};
 
@@ -43,10 +44,16 @@ namespace wpl
 
 
 
+			inline void keyboard_router_host::set_focus()
+			{
+				if (on_set_focus)
+					on_set_focus(nullptr);
+			}
+
 			inline void keyboard_router_host::set_focus(native_view &nview)
 			{
 				if (on_set_focus)
-					on_set_focus(nview);
+					on_set_focus(&nview);
 			}
 
 

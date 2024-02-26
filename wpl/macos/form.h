@@ -58,6 +58,7 @@ namespace wpl
 			routers_host(NSView *native_view);
 			
 		private:
+			virtual void set_focus() override;
 			virtual void set_focus(native_view &nview) override;
 			virtual void request_focus(std::shared_ptr<keyboard_input> input) override;
 			virtual std::shared_ptr<void> capture_mouse() override;

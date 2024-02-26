@@ -59,7 +59,7 @@ namespace wpl
 	}
 
 	keyboard_router::keyboard_router(const vector<placed_view> &views, keyboard_router_host &host)
-		: _views(views), _host(host), _focus(_ordered.end())
+		: _views(views), _host(host), _has_focus(false), _focus(end(_ordered))
 	{	}
 
 	void keyboard_router::reload_views()
@@ -68,38 +68,33 @@ namespace wpl
 		copy_if(_views.begin(), _views.end(), back_inserter(_ordered), [] (const placed_view &pv) {
 			return !!pv.tab_order && (pv.regular || pv.native);
 		});
-		stable_sort(_ordered.begin(), _ordered.end(), tab_order_less());
-		_focus = _ordered.begin();
-		if (_focus != _ordered.end())
-			got_focus(_host, *_focus);
+		stable_sort(begin(_ordered), end(_ordered), tab_order_less());
+		_focus = begin(_ordered);
+		if (_has_focus && _focus != end(_ordered))
+			wpl::got_focus(_host, *_focus);
 	}
 
-	bool keyboard_router::set_focus(const keyboard_input *input)
+	void keyboard_router::set_focus(const keyboard_input *input)
 	{
-		return move_focus([input] (const placed_view& pv) {
+		const auto new_focus = find_if(begin(_ordered), end(_ordered), [input] (const placed_view &pv) {
 			return pv.regular.get() == input;
-		}, [this] (placed_views::const_iterator prev_focus, placed_views::const_iterator new_focus) {
-			lost_focus(*prev_focus);
-			got_focus(_host, *new_focus);
 		});
+
+		if (end(_ordered) != new_focus)
+			move_focus(new_focus);
 	}
 
 	void keyboard_router::key_down(unsigned code, int m)
 	{
-		if (_ordered.end() == _focus)
-		{
+		if (end(_ordered) == _focus)
 			return;
-		}
-		else if (keyboard_input::tab == code)
+
+		if (keyboard_input::tab == code)
 		{
 			auto new_focus = m & keyboard_input::shift ? cycle_previous(_ordered, _focus) : cycle_next(_ordered, _focus);
 
 			if (new_focus != _focus)
-			{
-				lost_focus(*_focus);
-				got_focus(_host, *new_focus);
-				_focus = new_focus;
-			}
+				move_focus(new_focus);
 		}
 		else if (_focus->regular)
 		{
@@ -112,21 +107,38 @@ namespace wpl
 
 	void keyboard_router::key_up(unsigned code, int modifiers)
 	{
-		if (_ordered.end() == _focus)
+		if (end(_ordered) == _focus)
 			return;
-		else if (keyboard_input::tab != code && _focus->regular)
+
+		if (keyboard_input::tab != code && _focus->regular)
 			_focus->regular->key_up(code, modifiers);
 	}
 
-	void keyboard_router::notify_got_focus()
+	void keyboard_router::got_focus()
 	{
-		if (_ordered.end() != _focus && _focus->regular)
+		_has_focus = true;
+		if (end(_ordered) != _focus && _focus->regular)
 			_focus->regular->got_focus();
 	}
 
-	void keyboard_router::notify_lost_focus()
+	void keyboard_router::lost_focus()
 	{
-		if (_ordered.end() != _focus && _focus->regular)
+		_has_focus = false;
+		if (end(_ordered) != _focus && _focus->regular)
 			_focus->regular->lost_focus();
+	}
+
+	void keyboard_router::move_focus(placed_views::const_iterator to)
+	{
+		const auto current = _focus;
+
+		if (current == to)
+			return;
+		else if (to->native)
+			_host.set_focus(*to->native);
+		else if (current->native)
+			_focus = to, _host.set_focus();
+		else
+			current->regular->lost_focus(), to->regular->got_focus(), _focus = to;
 	}
 }

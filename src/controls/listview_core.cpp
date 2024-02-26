@@ -171,6 +171,9 @@ namespace wpl
 
 			switch (code)
 			{
+			default:
+				return;
+
 			case up:
 				if (npos() != focused && focused)
 					focused--;

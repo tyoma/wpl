@@ -32,6 +32,7 @@ namespace wpl
 
 	struct keyboard_router_host
 	{
+		virtual void set_focus() = 0;
 		virtual void set_focus(native_view &nview) = 0;
 	};
 
@@ -41,41 +42,41 @@ namespace wpl
 		keyboard_router(const std::vector<placed_view> &views, keyboard_router_host &host);
 
 		void reload_views();
-		bool set_focus(const keyboard_input *input);
+		void set_focus(const keyboard_input *input);
 
 		// keyboard_input methods
 		void key_down(unsigned code, int modifiers);
 		void character(wchar_t symbol, unsigned repeats, int modifiers);
 		void key_up(unsigned code, int modifiers);
 
+		template <typename PredicateT>
+		void got_native_focus(const PredicateT &predicate);
+		void got_focus();
+		void lost_focus();
+
 	protected:
 		typedef std::vector<placed_view> placed_views;
 
-	protected:
-		template <typename PredicateT, typename SwitchT>
-		bool move_focus(const PredicateT &predicate, const SwitchT &switch_op);
-		void notify_got_focus();
-		void notify_lost_focus();
+	private:
+		void move_focus(placed_views::const_iterator to);
 
 	private:
-		const std::vector<placed_view> &_views;
+		const placed_views &_views;
 		keyboard_router_host &_host;
+		bool _has_focus;
 		placed_views _ordered;
 		placed_views::const_iterator _focus;
 	};
 
 
 
-	template <typename PredicateT, typename SwitchT>
-	inline bool keyboard_router::move_focus(const PredicateT &predicate, const SwitchT &switch_op)
+	template <typename PredicateT>
+	inline void keyboard_router::got_native_focus(const PredicateT &predicate)
 	{
-		const auto new_focus = std::find_if(_ordered.begin(), _ordered.end(), predicate);
+		const auto new_focus = std::find_if(_ordered.begin(), _ordered.end(), [predicate] (const placed_view &pv) {
+			return pv.native && predicate(*pv.native);
+		});
 
-		if (_ordered.end() == new_focus)
-			return false;
-		if (new_focus != _focus)
-			switch_op(_focus, new_focus);
 		_focus = new_focus;
-		return true;
 	}
 }

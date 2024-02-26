@@ -49,13 +49,20 @@ namespace wpl
 		}
 
 		view_host::view_host(HWND hwnd, const form_context &context_, const window::user_handler_t &user_handler)
-			: context(context_), _hwnd(hwnd), _hoverlay(::CreateWindowEx(0, _T("static"), NULL, WS_POPUP, 0, 0, 1, 1, hwnd,
-				NULL, NULL, NULL)), _user_handler(user_handler), _root(make_shared<empty_root>()),
-				_visual_router(hwnd, _views, context_), _visual_router_overlay(_hoverlay, _overlay_views, context_),
-				_mouse_router(_views, *this, context_.cursor_manager_), _keyboard_router(_views, *this)
+			: context(context_),
+				_hwnd(hwnd),
+				_hoverlay(::CreateWindowEx(0, _T("static"), NULL, WS_POPUP, 0, 0, 1, 1, hwnd, NULL, NULL, NULL)),
+				_user_handler(user_handler),
+				_root(make_shared<empty_root>()),
+				_visual_router(hwnd, _views, context_),
+				_visual_router_overlay(_hoverlay, _overlay_views, context_),
+				_mouse_router(_views, *this, context_.cursor_manager_),
+				_keyboard_router(_views, *this),
+				_window(window::attach(hwnd, bind(&view_host::wndproc, this, _1, _2, _3, _4))),
+				_window_overlay(window::attach(_hoverlay, bind(&view_host::wndproc_overlay, this, _1, _2, _3, _4)))
 		{
-			_window = window::attach(hwnd, bind(&view_host::wndproc, this, _1, _2, _3, _4));
-			_window_overlay = window::attach(_hoverlay, bind(&view_host::wndproc_overlay, this, _1, _2, _3, _4));
+			if (::GetFocus() == _hwnd)
+				_keyboard_router.got_focus();
 		}
 
 		view_host::~view_host()
@@ -83,10 +90,7 @@ namespace wpl
 		}
 
 		void view_host::request_focus(shared_ptr<keyboard_input> input)
-		{
-			if (_keyboard_router.set_focus(input.get()))
-				::SetFocus(_hwnd);
-		}
+		{	_keyboard_router.set_focus(input.get());	}
 
 		shared_ptr<void> view_host::capture_mouse()
 		{
@@ -99,6 +103,9 @@ namespace wpl
 			::SetCapture(_hwnd);
 			return *h = true, _capture_handle = h, h;
 		}
+
+		void view_host::set_focus()
+		{	::SetFocus(_hwnd);	}
 
 		void view_host::set_focus(native_view &nview)
 		{	::SetFocus(nview.get_window());	}

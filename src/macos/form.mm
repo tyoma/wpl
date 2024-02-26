@@ -61,7 +61,10 @@ namespace wpl
 		routers_host::routers_host(NSView *native_view)
 			: _native_view(native_view)
 		{	}
-	
+
+		void routers_host::set_focus()
+		{	}
+
 		void routers_host::set_focus(native_view &nview)
 		{	}
 		

@@ -114,7 +114,7 @@ int main()
 {
 	application app;
 	const auto fct = app.create_default_factory();
-	const rect_i l = { 100, 100, 400, 300 };
+	const rect_i l = { 100, 100, 500, 600 };
 	const auto f = fct->create_form();
 	const auto conn = f->close += [&app] {	app.exit();	};
 	shared_ptr<my_columns> cm(new my_columns);

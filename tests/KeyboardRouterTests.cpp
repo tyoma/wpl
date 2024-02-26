@@ -1,5 +1,7 @@
 #include <wpl/keyboard_router.h>
 
+#include "mock-native_view.h"
+
 #include <tests/common/mock-router_host.h>
 #include <tests/common/Mockups.h>
 
@@ -10,20 +12,119 @@ using namespace std;
 
 namespace wpl
 {
-	class native_view
-	{
-	};
-
 	namespace tests
 	{
 		namespace
 		{
-			const auto nullptr_nv = shared_ptr<native_view>();
+			class monitored_key_input : public view
+			{
+			public:
+				function<void (mocks::keyboard_event::event_type type, int key_code, int modifiers)> on_event;
+
+			private:
+				virtual void key_down(unsigned code, int modifiers) override
+				{	on_event(mocks::keyboard_event::keydown, (int)code, modifiers);	}
+
+				virtual void character(wchar_t symbol, unsigned repeats, int modifiers) override
+				{	}
+
+				virtual void key_up(unsigned code, int modifiers) override
+				{	on_event(mocks::keyboard_event::keyup, (int)code, modifiers);	}
+
+				virtual void got_focus() override
+				{	on_event(mocks::keyboard_event::focusin, 0, 0);	}
+
+				virtual void lost_focus() override
+				{	on_event(mocks::keyboard_event::focusout, 0, 0);	}
+			};
+
+			void cycle_forward(keyboard_router &router)
+			{
+				router.key_down(keyboard_input::tab, 0);
+				router.key_up(keyboard_input::tab, 0);
+			}
+
+			void cycle_backward(keyboard_router& router)
+			{
+				router.key_down(keyboard_input::tab, keyboard_input::shift);
+				router.key_up(keyboard_input::tab, keyboard_input::shift);
+			}
 		}
 
 		begin_test_suite( KeyboardRouterTests )
 			vector<placed_view> views;
 			mocks::keyboard_router_host host;
+
+
+			test( FocusIsSetOnFirstControlIfRouterHasAFocus )
+			{
+				// INIT
+				keyboard_router kr(views, host);
+				shared_ptr< mocks::logging_key_input<view> > v[] = {
+					make_shared< mocks::logging_key_input<view> >(),
+				};
+				placed_view pv[] = {
+					{	v[0], nullptr, {}, 13,	},
+				};
+
+				views.assign(begin(pv), end(pv));
+
+				// ACT
+				kr.got_focus();
+				kr.reload_views();
+
+				// ASSERT
+				mocks::keyboard_event reference[] = {
+					{	mocks::keyboard_event::focusin, 0, 0	},
+				};
+
+				assert_equal(reference, v[0]->events);
+			}
+
+
+			test( FocusIsNotSetOnFirstControlIfRouterHasNoFocus )
+			{
+				// INIT
+				keyboard_router kr(views, host);
+				shared_ptr< mocks::logging_key_input<view> > v[] = {
+					make_shared< mocks::logging_key_input<view> >(),
+				};
+				placed_view pv[] = {
+					{	v[0], nullptr, {}, 13,	},
+				};
+
+				views.assign(begin(pv), end(pv));
+
+				// ACT
+				kr.reload_views();
+
+				// ASSERT
+				assert_is_empty(v[0]->events);
+			}
+
+
+			test( FocusIsNotSetOnFirstControlIfRouterHasLostFocus )
+			{
+				// INIT
+				keyboard_router kr(views, host);
+				shared_ptr< mocks::logging_key_input<view> > v[] = {
+					make_shared< mocks::logging_key_input<view> >(),
+				};
+				placed_view pv[] = {
+					{	v[0], nullptr, {}, 13,	},
+				};
+
+				views.assign(begin(pv), end(pv));
+
+				// ACT
+				kr.got_focus();
+				kr.lost_focus();
+				kr.reload_views();
+
+				// ASSERT
+				assert_is_empty(v[0]->events);
+			}
+
 
 			test( KeyboardInputIsRedirectedToTheInputWithLowestTabOrderOnReload )
 			{
@@ -37,13 +138,15 @@ namespace wpl
 					make_shared< mocks::logging_key_input<view> >(),
 				};
 				placed_view pv[] = {
-					{	v[0], nullptr_nv, {}, 13,	},
-					{	v[1], nullptr_nv, {}, 15,	},
-					{	v[2], nullptr_nv, {}, 10,	},
-					{	v[3], nullptr_nv, {}, 14,	},
+					{	v[0], nullptr, {}, 13,	},
+					{	v[1], nullptr, {}, 15,	},
+					{	v[2], nullptr, {}, 10,	},
+					{	v[3], nullptr, {}, 14,	},
 				};
 
 				views.assign(begin(pv), end(pv));
+				kr1.got_focus();
+				kr2.got_focus();
 
 				// ACT
 				kr1.reload_views();
@@ -100,18 +203,18 @@ namespace wpl
 					make_shared< mocks::logging_key_input<view> >(),
 				};
 				placed_view pv[] = {
-					{	v[0], nullptr_nv, {}, 13,	},
-					{	v[1], nullptr_nv, {}, 15,	},
-					{	v[2], nullptr_nv, {}, 10,	},
-					{	v[3], nullptr_nv, {}, 14,	},
+					{	v[0], nullptr, {}, 13,	},
+					{	v[1], nullptr, {}, 15,	},
+					{	v[2], nullptr, {}, 10,	},
+					{	v[3], nullptr, {}, 14,	},
 				};
 
+				kr.got_focus();
 				views.assign(begin(pv), end(pv));
 				kr.reload_views();
 
 				// ACT
-				kr.key_down(keyboard_input::tab, 0);
-				kr.key_up(keyboard_input::tab, 0);
+				cycle_forward(kr);
 
 				// ASSERT
 				mocks::keyboard_event reference_in[] = {
@@ -165,18 +268,18 @@ namespace wpl
 					make_shared< mocks::logging_key_input<view> >(),
 				};
 				placed_view pv[] = {
-					{	v[0], nullptr_nv, {}, 13,	},
-					{	v[1], nullptr_nv, {}, 15,	},
-					{	v[2], nullptr_nv, {}, 10,	},
-					{	v[3], nullptr_nv, {}, 14,	},
+					{	v[0], nullptr, {}, 13,	},
+					{	v[1], nullptr, {}, 15,	},
+					{	v[2], nullptr, {}, 10,	},
+					{	v[3], nullptr, {}, 14,	},
 				};
 
+				kr.got_focus();
 				views.assign(begin(pv), end(pv));
 				kr.reload_views();
 
 				// ACT
-				kr.key_down(keyboard_input::tab, keyboard_input::shift);
-				kr.key_up(keyboard_input::tab, keyboard_input::shift);
+				cycle_backward(kr);
 
 				// ASSERT
 				mocks::keyboard_event reference_in[] = {
@@ -230,16 +333,17 @@ namespace wpl
 					make_shared< mocks::logging_key_input<view> >(),
 				};
 				placed_view pv[] = {
-					{	v[0], nullptr_nv, {}, 13,	},
-					{	v[1], nullptr_nv, {}, 15,	},
-					{	v[2], nullptr_nv, {}, 10,	},
+					{	v[0], nullptr, {}, 13,	},
+					{	v[1], nullptr, {}, 15,	},
+					{	v[2], nullptr, {}, 10,	},
 				};
 
+				kr.got_focus();
 				views.assign(begin(pv), end(pv));
 				kr.reload_views();
 
-				// ACT / ASSERT
-				assert_is_true(kr.set_focus(v[1].get()));
+				// ACT
+				kr.set_focus(v[1].get());
 
 				// ASSERT
 				mocks::keyboard_event reference_inout[] = {
@@ -254,8 +358,8 @@ namespace wpl
 				assert_equal(reference_in, v[1]->events);
 				assert_equal(reference_inout, v[2]->events);
 
-				// ACT / ASSERT
-				assert_is_true(kr.set_focus(v[0].get()));
+				// ACT
+				kr.set_focus(v[0].get());
 
 				// ASSERT
 				assert_equal(reference_in, v[0]->events);
@@ -263,7 +367,7 @@ namespace wpl
 				assert_equal(reference_inout, v[2]->events);
 
 				// ACT / ASSERT
-				assert_is_false(kr.set_focus(v[3].get()));
+				kr.set_focus(v[3].get());
 
 				// ASSERT
 				assert_equal(reference_in, v[0]->events);
@@ -282,9 +386,9 @@ namespace wpl
 					make_shared< mocks::logging_key_input<view> >(),
 				};
 				placed_view pv[] = {
-					{	v[0], nullptr_nv, {}, 1,	},
-					{	v[1], nullptr_nv, {}, 2,	},
-					{	v[2], nullptr_nv, {}, 3,	},
+					{	v[0], nullptr, {}, 1,	},
+					{	v[1], nullptr, {}, 2,	},
+					{	v[2], nullptr, {}, 3,	},
 				};
 
 				views.assign(begin(pv), end(pv));
@@ -310,10 +414,8 @@ namespace wpl
 
 				// ACT / ASSERT (no crash)
 				kr.reload_views();
-				kr.key_down(keyboard_input::tab, 0);
-				kr.key_up(keyboard_input::tab, 0);
-				kr.key_down(keyboard_input::tab, keyboard_input::shift);
-				kr.key_up(keyboard_input::tab, keyboard_input::shift);
+				cycle_forward(kr);
+				cycle_backward(kr);
 				kr.key_down('a', 0);
 				kr.key_up('a', 0);
 			}
@@ -329,9 +431,9 @@ namespace wpl
 					make_shared< mocks::logging_key_input<view> >(),
 				};
 				placed_view pv[] = {
-					{	v[0], nullptr_nv, {}, 0,	},
-					{	v[1], nullptr_nv, {}, 2,	},
-					{	v[2], nullptr_nv, {}, 0,	},
+					{	v[0], nullptr, {}, 0,	},
+					{	v[1], nullptr, {}, 2,	},
+					{	v[2], nullptr, {}, 0,	},
 				};
 
 				views.assign(begin(pv), end(pv));
@@ -339,7 +441,7 @@ namespace wpl
 				v[1]->events.clear();
 
 				// ACT
-				kr.key_down(keyboard_input::tab, 0);
+				cycle_forward(kr);
 
 				// ASSERT
 				assert_is_empty(v[0]->events);
@@ -354,7 +456,7 @@ namespace wpl
 				keyboard_router kr(views, host);
 				const auto v = make_shared< mocks::logging_key_input<view> >();
 				placed_view pv[] = {
-					{	v, nullptr_nv, {}, 1,	},
+					{	v, nullptr, {}, 1,	},
 				};
 
 				views.assign(begin(pv), end(pv));
@@ -363,14 +465,14 @@ namespace wpl
 				// ACT
 				kr.reload_views();
 				v->events.clear();
-				kr.key_down(keyboard_input::tab, 0);
+				cycle_forward(kr);
 
 				// ASSERT
 				assert_is_empty(v->events);
 			}
 
 
-			test(NativeViewFocusIsSetOnReload)
+			test( NativeViewFocusIsSetOnReload )
 			{
 				// INIT
 				keyboard_router kr(views, host);
@@ -382,8 +484,9 @@ namespace wpl
 				};
 				vector<native_view*> nv_log;
 
+				kr.got_focus();
 				views.assign(begin(pv), end(pv));
-				host.on_set_focus = [&](native_view& nv) {	nv_log.push_back(&nv);	};
+				host.on_set_focus = [&] (native_view *nv) {	nv_log.push_back(nv);	};
 
 				// ACT
 				kr.reload_views();
@@ -406,71 +509,18 @@ namespace wpl
 				};
 
 				views.assign(begin(pv), end(pv));
-				host.on_set_focus = [](native_view&/*nv*/) {
+				host.on_set_focus = [] (native_view * /*nv*/) {
 
 					// ASSERT
 					assert_is_true(false);
-					};
+				};
 
 				// ACT
 				kr.reload_views();
 			}
 
 
-			test(NativeViewIsPassedToHostForFocus)
-			{
-				// INIT
-				keyboard_router kr(views, host);
-				shared_ptr< mocks::logging_key_input<view> > v[] = {
-					make_shared< mocks::logging_key_input<view> >(),
-					make_shared< mocks::logging_key_input<view> >(),
-				};
-				const auto nv = make_shared<native_view>();
-				placed_view pv[] = {
-					{	v[0], nullptr, {}, 1,	},
-					{	nullptr, nv, {}, 2,	},
-					{	v[1], nullptr, {}, 3,	},
-				};
-				vector<native_view*> nv_log;
-
-				views.assign(begin(pv), end(pv));
-				host.on_set_focus = [&](native_view& nv) {	nv_log.push_back(&nv);	};
-
-				// ACT
-				kr.reload_views();
-
-				// ASSERT
-				assert_is_empty(nv_log);
-
-				// ACT
-				kr.key_down(keyboard_input::tab, 0);
-
-				// ASSERT
-				mocks::keyboard_event reference_inout[] = {
-					{ mocks::keyboard_event::focusin, 0, 0 },
-					{ mocks::keyboard_event::focusout, 0, 0 },
-				};
-				native_view* reference_nv[] = { nv.get(), };
-
-				assert_equal(reference_inout, v[0]->events);
-				assert_equal(reference_nv, nv_log);
-				assert_is_empty(v[1]->events);
-
-				// ACT
-				kr.key_down(keyboard_input::tab, 0);
-
-				// ASSERT
-				mocks::keyboard_event reference_in[] = {
-					{ mocks::keyboard_event::focusin, 0, 0 },
-				};
-
-				assert_equal(reference_inout, v[0]->events);
-				assert_equal(reference_nv, nv_log);
-				assert_equal(reference_in, v[1]->events);
-			}
-
-
-			test(NothingHappensWhenKeyMessagesAreSentToNativeView)
+			test( NothingHappensWhenKeyMessagesAreSentToNativeView )
 			{
 				// INIT
 				keyboard_router kr(views, host);
@@ -488,6 +538,118 @@ namespace wpl
 				kr.character(L'A', 1, 0);
 			}
 
+
+			test( FocusIsCycledThroughMixedViews )
+			{
+				// INIT
+				vector< tuple<int, mocks::keyboard_event::event_type> > log;
+				keyboard_router kr(views, host);
+				shared_ptr<monitored_key_input> v[] = {
+					make_shared<monitored_key_input>(), make_shared<monitored_key_input>(),
+					make_shared<monitored_key_input>(),
+				};
+				shared_ptr<native_view> nv[] = {
+					make_shared<native_view>(), make_shared<native_view>(),
+				};
+				placed_view pv[] = {
+					{	v[0], nullptr, {}, 1,	},
+					{	nullptr, nv[0], {}, 2,	},
+					{	nullptr, nv[1], {}, 3,	},
+					{	v[1], nullptr, {}, 4,	},
+					{	v[2], nullptr, {}, 5,	},
+				};
+
+				kr.got_focus();
+				host.on_set_focus = [&] (native_view *nview) {
+					log.push_back(make_tuple(nview ? nview == nv[0].get() ? 2 : 3 : 0, mocks::keyboard_event::focusin));
+				};
+				v[0]->on_event = [&] (mocks::keyboard_event::event_type e, int, int) {	log.push_back(make_tuple(1, e)); };
+				v[1]->on_event = [&] (mocks::keyboard_event::event_type e, int, int) {	log.push_back(make_tuple(4, e)); };
+				v[2]->on_event = [&] (mocks::keyboard_event::event_type e, int, int) {	log.push_back(make_tuple(5, e)); };
+
+				views.assign(begin(pv), end(pv));
+
+				// ACT
+				kr.reload_views();
+
+				// ASSERT
+				assert_equal(plural
+					+ make_tuple(1, mocks::keyboard_event::focusin), log);
+
+				// INIT
+				log.clear();
+
+				// ACT
+				cycle_forward(kr);
+
+				// ASSERT
+				assert_equal(plural
+					+ make_tuple(2, mocks::keyboard_event::focusin), log);
+
+				// ACT
+				kr.lost_focus();
+
+				// ASSERT
+				assert_equal(plural
+					+ make_tuple(2, mocks::keyboard_event::focusin)
+					+ make_tuple(1, mocks::keyboard_event::focusout), log);
+
+				// ACT
+				kr.got_native_focus([&] (native_view &v) {	return &v == nv[0].get();	});
+				kr.lost_focus(); // does nothing
+
+				// ASSERT
+				assert_equal(plural
+					+ make_tuple(2, mocks::keyboard_event::focusin)
+					+ make_tuple(1, mocks::keyboard_event::focusout), log);
+
+				// ACT
+				cycle_forward(kr);
+				kr.got_native_focus([&] (native_view &v) {	return &v == nv[1].get();	});
+
+				// ASSERT
+				assert_equal(plural
+					+ make_tuple(2, mocks::keyboard_event::focusin)
+					+ make_tuple(1, mocks::keyboard_event::focusout)
+					+ make_tuple(3, mocks::keyboard_event::focusin), log);
+
+				// ACT
+				cycle_forward(kr);
+
+				// ASSERT
+				assert_equal(plural
+					+ make_tuple(2, mocks::keyboard_event::focusin)
+					+ make_tuple(1, mocks::keyboard_event::focusout)
+					+ make_tuple(3, mocks::keyboard_event::focusin)
+					+ make_tuple(0, mocks::keyboard_event::focusin), log);
+
+				// ACT
+				kr.got_focus();
+
+				// ASSERT
+				assert_equal(plural
+					+ make_tuple(2, mocks::keyboard_event::focusin)
+					+ make_tuple(1, mocks::keyboard_event::focusout)
+					+ make_tuple(3, mocks::keyboard_event::focusin)
+					+ make_tuple(0, mocks::keyboard_event::focusin)
+					+ make_tuple(4, mocks::keyboard_event::focusin), log);
+
+				// ACT
+				cycle_forward(kr);
+				cycle_forward(kr);
+
+				// ASSERT
+				assert_equal(plural
+					+ make_tuple(2, mocks::keyboard_event::focusin)
+					+ make_tuple(1, mocks::keyboard_event::focusout)
+					+ make_tuple(3, mocks::keyboard_event::focusin)
+					+ make_tuple(0, mocks::keyboard_event::focusin)
+					+ make_tuple(4, mocks::keyboard_event::focusin)
+					+ make_tuple(4, mocks::keyboard_event::focusout)
+					+ make_tuple(5, mocks::keyboard_event::focusin)
+					+ make_tuple(5, mocks::keyboard_event::focusout)
+					+ make_tuple(1, mocks::keyboard_event::focusin), log);
+			}
 		end_test_suite
 	}
 }

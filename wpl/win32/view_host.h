@@ -49,6 +49,7 @@ namespace wpl
 			virtual std::shared_ptr<void> capture_mouse() override;
 
 			// keyboard_router_host methods
+			virtual void set_focus() override;
 			virtual void set_focus(native_view &nview) override;
 
 			static LRESULT passthrough(UINT message, WPARAM wparam, LPARAM lparam,
@@ -69,7 +70,6 @@ namespace wpl
 			const helpers::window_handle _hoverlay;
 
 			window::user_handler_t _user_handler;
-			std::shared_ptr<window> _window, _window_overlay;
 			std::shared_ptr<control> _root;
 			std::vector<placed_view> _views, _overlay_views;
 			slot_connection _layout_changed_connection;
@@ -77,6 +77,7 @@ namespace wpl
 			visual_router _visual_router, _visual_router_overlay;
 			mouse_router _mouse_router;
 			keyboard_router _keyboard_router;
+			std::shared_ptr<window> _window, _window_overlay;
 		};
 	}
 }
