@@ -20,7 +20,7 @@
 
 #include <wpl/keyboard_router.h>
 
-#include <iterator>
+#include <wpl/iterator.h>
 #include <wpl/view.h>
 
 using namespace std;
@@ -35,26 +35,12 @@ namespace wpl
 			{	return lhs.tab_order < rhs.tab_order;	}
 		};
 
-		template <typename ContainerT, typename IteratorT>
-		IteratorT cycle_next(ContainerT &container, IteratorT i)
-		{	return ++i == container.end() ? container.begin() : i;	}
-
-		template <typename ContainerT, typename IteratorT>
-		IteratorT cycle_previous(ContainerT &container, IteratorT i)
-		{	return i = (i == container.begin() ? container.end() : i), --i;	}
-
 		void got_focus(keyboard_router_host &host, const placed_view &pv)
 		{
 			if (pv.regular)
 				pv.regular->got_focus();
 			else
 				host.set_focus(*pv.native);
-		}
-
-		void lost_focus(const placed_view &pv)
-		{
-			if (pv.regular)
-				pv.regular->lost_focus();
 		}
 	}
 
@@ -65,13 +51,12 @@ namespace wpl
 	void keyboard_router::reload_views()
 	{
 		_ordered.clear();
-		copy_if(_views.begin(), _views.end(), back_inserter(_ordered), [] (const placed_view &pv) {
+		copy_if(begin(_views), end(_views), back_inserter(_ordered), [] (const placed_view &pv) {
 			return !!pv.tab_order && (pv.regular || pv.native);
 		});
 		stable_sort(begin(_ordered), end(_ordered), tab_order_less());
-		_focus = begin(_ordered);
-		if (_has_focus && _focus != end(_ordered))
-			wpl::got_focus(_host, *_focus);
+		_focus = end(_ordered);
+		move_focus(begin(_ordered));
 	}
 
 	void keyboard_router::set_focus(const keyboard_input *input)
@@ -131,14 +116,26 @@ namespace wpl
 	void keyboard_router::move_focus(placed_views::const_iterator to)
 	{
 		const auto current = _focus;
+		const auto move_focus_worker = [this] (placed_views::const_iterator to) {
+			if (to->native)
+			{
+				_host.set_focus(*to->native);
+			}
+			else
+			{
+				if (_has_focus)
+					to->regular->got_focus();
+				_focus = to;
+			}
+		};
 
 		if (current == to)
 			return;
-		else if (to->native)
-			_host.set_focus(*to->native);
+		else if (current == end(_ordered) || to->native)
+			move_focus_worker(to);
 		else if (current->native)
 			_focus = to, _host.set_focus();
 		else
-			current->regular->lost_focus(), to->regular->got_focus(), _focus = to;
+			current->regular->lost_focus(), move_focus_worker(to);
 	}
 }

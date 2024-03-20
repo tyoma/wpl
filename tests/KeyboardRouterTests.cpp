@@ -56,15 +56,56 @@ namespace wpl
 			mocks::keyboard_router_host host;
 
 
+			test( NothingHappensWhenGotFocusOnEmptyViewSet )
+			{
+				// INIT
+				keyboard_router kr(views, host);
+
+				// ACT / ASSERT
+				kr.reload_views();
+
+				// ACT / ASSERT
+				kr.got_focus();
+			}
+
+
+			test( FocusIsNotSetOnReloadImplicitely )
+			{
+				// INIT
+				keyboard_router kr(views, host);
+				shared_ptr< mocks::logging_key_input<view> > v[] = {
+					make_shared< mocks::logging_key_input<view> >(),
+					make_shared< mocks::logging_key_input<view> >(),
+				};
+				placed_view pv[] = {
+					{	v[0], nullptr, {}, 13,	},
+					{	v[1], nullptr, {}, 14,	},
+				};
+
+				views.assign(begin(pv), end(pv));
+
+				// ACT
+				kr.reload_views();
+
+				// ASSERT
+				assert_is_empty(v[0]->events);
+				assert_is_empty(v[1]->events);
+			}
+
+
 			test( FocusIsSetOnFirstControlIfRouterHasAFocus )
 			{
 				// INIT
 				keyboard_router kr(views, host);
 				shared_ptr< mocks::logging_key_input<view> > v[] = {
 					make_shared< mocks::logging_key_input<view> >(),
+					make_shared< mocks::logging_key_input<view> >(),
+					make_shared< mocks::logging_key_input<view> >(),
 				};
 				placed_view pv[] = {
 					{	v[0], nullptr, {}, 13,	},
+					{	v[1], nullptr, {}, 14,	},
+					{	v[2], nullptr, {}, 91,	},
 				};
 
 				views.assign(begin(pv), end(pv));
@@ -79,6 +120,8 @@ namespace wpl
 				};
 
 				assert_equal(reference, v[0]->events);
+				assert_is_empty(v[1]->events);
+				assert_is_empty(v[2]->events);
 			}
 
 

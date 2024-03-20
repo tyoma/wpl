@@ -73,10 +73,8 @@ namespace wpl
 	template <typename PredicateT>
 	inline void keyboard_router::got_native_focus(const PredicateT &predicate)
 	{
-		const auto new_focus = std::find_if(_ordered.begin(), _ordered.end(), [predicate] (const placed_view &pv) {
+		_focus = std::find_if(_ordered.begin(), _ordered.end(), [predicate] (const placed_view &pv) {
 			return pv.native && predicate(*pv.native);
 		});
-
-		_focus = new_focus;
 	}
 }
