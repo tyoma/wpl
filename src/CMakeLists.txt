@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.13)
 
-include(freetype2.include)
+find_package(freetype REQUIRED)
 
 set(WPL_SOURCES
 	animated_models.cpp
@@ -34,7 +34,7 @@ set(WPL_SOURCES
 
 add_library(wpl.generic STATIC ${WPL_SOURCES})
 target_link_libraries(wpl.generic PUBLIC agge.text agge)
-target_link_libraries(wpl.generic PRIVATE CONAN_PKG::freetype)
+target_link_libraries(wpl.generic PRIVATE Freetype::Freetype)
 
 add_library(wpl INTERFACE)
 target_include_directories(wpl INTERFACE ..)

@@ -1,0 +1,9 @@
+[requires]
+freetype/2.12.1
+
+[options]
+freetype/*:shared=False
+freetype/*:with_brotli=False
+freetype/*:withbzip2=False
+freetype/*:with_png=False
+freetype/*:with_zlib=False
