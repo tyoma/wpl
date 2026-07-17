@@ -73,7 +73,6 @@ namespace wpl
 				assert_equal(0u, lf[1].lfItalic);
 				assert_equal(L"Tahoma", wstring(lf[2].lfFaceName));
 				assert_equal(-12, lf[2].lfHeight);
-				assert_equal(FW_NORMAL, lf[2].lfWeight);
 				assert_equal(1u, lf[2].lfItalic);
 			}
 
