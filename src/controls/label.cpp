@@ -20,12 +20,11 @@
 
 #include <wpl/controls/label.h>
 
-#include <agge/blenders.h>
-#include <agge/blenders_simd.h>
 #include <agge/filling_rules.h>
 #include <agge.text/limit.h>
 #include <agge.text/text_engine.h>
 #include <wpl/stylesheet.h>
+#include <wpl/visual_blender.h>
 
 using namespace agge;
 using namespace std;
@@ -35,7 +34,6 @@ namespace wpl
 	namespace
 	{
 		const font_style_annotation c_base_annotation = {	font_descriptor::create("Arial", 10),	};
-		typedef blender_solid_color<simd::blender_solid_color, platform_pixel_order> blender;
 	}
 
 	namespace controls
@@ -83,7 +81,7 @@ namespace wpl
 			context.text_engine.render(*rasterizer_, _text_buffer, _halign, _valign,
 				create_rect(0.0f, 0.0f, static_cast<real_t>(get_last_size().w), static_cast<real_t>(get_last_size().h)),
 				limit::wrap(static_cast<real_t>(get_last_size().w)));
-			context(rasterizer_, blender(_color), winding<>());
+			context(rasterizer_, platform_blender_solid_color(_color), winding<>());
 		}
 	}
 }

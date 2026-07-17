@@ -1,5 +1,3 @@
-#include <agge/blenders.h>
-#include <agge/blenders_simd.h>
 #include <agge/figures.h>
 #include <agge/filling_rules.h>
 #include <agge/tools.h>
@@ -12,6 +10,7 @@
 #include <wpl/form.h>
 #include <wpl/helpers.h>
 #include <wpl/view.h>
+#include <wpl/visual_blender.h>
 
 using namespace std;
 using namespace wpl;
@@ -40,19 +39,16 @@ namespace
 		{	return agge::create_box(static_cast<int>(_box.w) + 1, static_cast<int>(_box.h) + 1);	}
 
 	private:
-		typedef agge::blender_solid_color<agge::simd::blender_solid_color, platform_pixel_order> blender_t;
-
-	private:
 		virtual void draw(gcontext &ctx, gcontext::rasterizer_ptr &rasterizer) const
 		{
 			auto r = agge::create_rect(0.0f, 0.0f, _box.w, _box.h);
 
 			agge::add_path(*rasterizer, agge::rectangle(r.x1, r.y1, r.x2, r.y2));
-			ctx(rasterizer, blender_t(agge::color::make(240, 240, 240)), agge::winding<>());
+			ctx(rasterizer, platform_blender_solid_color(agge::color::make(240, 240, 240)), agge::winding<>());
 			inflate(r, -4.999f, -5.0f);
 			ctx.text_engine.render(*rasterizer, _text, agge::align_center, agge::align_center, r, agge::limit::none());
 			rasterizer->sort(true);
-			ctx(rasterizer, blender_t(agge::color::make(32, 32, 32)), agge::winding<>());
+			ctx(rasterizer, platform_blender_solid_color(agge::color::make(32, 32, 32)), agge::winding<>());
 		}
 
 	private:
@@ -67,9 +63,6 @@ namespace
 		cursor_location(shared_ptr<gcontext::text_engine_type> text_services)
 			: _text_services(text_services)
 		{	}
-
-	private:
-		typedef agge::blender_solid_color<agge::simd::blender_solid_color, platform_pixel_order> blender_t;
 
 	private:
 		virtual void layout(const placed_view_appender &append_view, const agge::box<int> &b) override

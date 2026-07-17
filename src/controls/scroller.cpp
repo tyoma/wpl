@@ -21,13 +21,12 @@
 #include <wpl/controls/scroller.h>
 
 #include <algorithm>
-#include <agge/blenders.h>
-#include <agge/blenders_simd.h>
 #include <agge/figures.h>
 #include <agge/filling_rules.h>
 #include <agge/path.h>
 #include <agge/stroke_features.h>
 #include <math.h>
+#include <wpl/visual_blender.h>
 
 using namespace agge;
 using namespace std;
@@ -120,8 +119,6 @@ namespace wpl
 
 		void scroller::draw(gcontext &ctx, gcontext::rasterizer_ptr &rasterizer_) const
 		{
-			typedef blender_solid_color<simd::blender_solid_color, platform_pixel_order> blender_t;
-
 			const auto t = get_thumb();
 
 			if (t.active)
@@ -135,9 +132,9 @@ namespace wpl
 				const color clr_thumb = { 64, 64, 64, 128 };
 
 				add_path(*rasterizer_, assist(l_channel, _thumb_style));
-				ctx(rasterizer_, blender_t(clr_channel), winding<>());
+				ctx(rasterizer_, platform_blender_solid_color(clr_channel), winding<>());
 				add_path(*rasterizer_, assist(l_thumb, _thumb_style));
-				ctx(rasterizer_, blender_t(clr_thumb), winding<>());
+				ctx(rasterizer_, platform_blender_solid_color(clr_thumb), winding<>());
 			}
 		}
 

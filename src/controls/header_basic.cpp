@@ -22,14 +22,13 @@
 
 #include "../glyphs.h"
 
-#include <agge/blenders.h>
-#include <agge/blenders_simd.h>
 #include <agge/filling_rules.h>
 #include <agge/figures.h>
 #include <agge.text/limit.h>
 #include <agge.text/text_engine.h>
 #include <wpl/helpers.h>
 #include <wpl/stylesheet.h>
+#include <wpl/visual_blender.h>
 
 using namespace agge;
 using namespace std;
@@ -41,7 +40,6 @@ namespace wpl
 		namespace
 		{
 			const font_style_annotation c_base_annotation = {	font_descriptor::create("Arial", 10),	};
-			typedef blender_solid_color<simd::blender_solid_color, platform_pixel_order> blender;
 		}
 
 		header_basic::header_basic(shared_ptr<gcontext::text_engine_type> text_services,
@@ -87,14 +85,14 @@ namespace wpl
 				const auto ua = ctx.update_area();
 				add_path(*ras, rectangle(static_cast<real_t>(ua.x1), static_cast<real_t>(ua.y1),
 					static_cast<real_t>(ua.x2), static_cast<real_t>(ua.y2)));
-				ctx(ras, blender(_bg), winding<>());
+				ctx(ras, platform_blender_solid_color(_bg), winding<>());
 			}
 
 			header_core::draw(ctx, ras);
 			const auto &size = get_last_size();
 
 			add_path(*ras, rectangle(0.0f, size.h - _separator_width, size.w, size.h));
-			ctx(ras, blender(_fg_separator), winding<>());
+			ctx(ras, platform_blender_solid_color(_fg_separator), winding<>());
 		}
 
 		box<int> header_basic::measure_item(const headers_model &model, index_type item) const
@@ -122,7 +120,7 @@ namespace wpl
 			if ((state & sorted) && _bg_sorted.a)
 			{
 				add_path(*ras, rectangle(b.x1, b.y1, b.x2, b.y2));
-				ctx(ras, blender(_bg_sorted), winding<>());
+				ctx(ras, platform_blender_solid_color(_bg_sorted), winding<>());
 			}
 
 			box.x2 -= _separator_width;
@@ -138,18 +136,18 @@ namespace wpl
 					add_path(*ras, offset(*g, box.x1 - gbox.x1, box.y1 - gbox.y1)), box.x1 += wpl::width(gbox) + _padding;
 				else
 					add_path(*ras, offset(*g, box.x2 - gbox.x2, box.y1 - gbox.y1)), box.x2 -= wpl::width(gbox) + _padding;
-				ctx(ras, blender(_fg_indicator), winding<>());
+				ctx(ras, platform_blender_solid_color(_fg_indicator), winding<>());
 			}
 
 			// 2. Draw text.
 			_caption_buffer.clear();
 			model.get_caption(item, _caption_buffer);
 			ctx.text_engine.render(*ras, _caption_buffer, a.halign, a.valign, box, limit::wrap(width(box)));
-			ctx(ras, blender(state & sorted ? _fg_sorted : _fg_normal), winding<>());
+			ctx(ras, platform_blender_solid_color(state & sorted ? _fg_sorted : _fg_normal), winding<>());
 
 			// 3. Draw right separator.
 			add_path(*ras, rectangle(b.x2 - _separator_width, box.y1, b.x2, box.y2));
-			ctx(ras, blender(_fg_separator), winding<>());
+			ctx(ras, platform_blender_solid_color(_fg_separator), winding<>());
 		}
 	}
 }

@@ -20,8 +20,6 @@
 
 #include <wpl/controls/listview_basic.h>
 
-#include <agge/blenders.h>
-#include <agge/blenders_simd.h>
 #include <agge/figures.h>
 #include <agge/filling_rules.h>
 #include <agge/stroke_features.h>
@@ -29,6 +27,7 @@
 #include <agge.text/text_engine.h>
 #include <wpl/helpers.h>
 #include <wpl/stylesheet.h>
+#include <wpl/visual_blender.h>
 
 using namespace agge;
 using namespace std;
@@ -37,11 +36,6 @@ namespace wpl
 {
 	namespace controls
 	{
-		namespace
-		{
-			typedef blender_solid_color<simd::blender_solid_color, platform_pixel_order> blender;
-		}
-
 		listview_basic::listview_basic()
 			: _text_buffer(agge::font_style_annotation())
 		{	}
@@ -95,7 +89,7 @@ namespace wpl
 
 				add_path(*ras, rectangle(static_cast<real_t>(ua.x1), static_cast<real_t>(ua.y1),
 					static_cast<real_t>(ua.x2), static_cast<real_t>(ua.y2)));
-				ctx(ras, blender(_bg), winding<>());
+				ctx(ras, platform_blender_solid_color(_bg), winding<>());
 			}
 			listview_core::draw(ctx, ras);
 		}
@@ -113,7 +107,7 @@ namespace wpl
 				if (bg.a)
 				{
 					add_path(*ras, rectangle(b_.x1, b_.y1, b_.x2, b_.y2));
-					ctx(ras, blender(bg), winding<>());
+					ctx(ras, platform_blender_solid_color(bg), winding<>());
 				}
 			}
 			else if (1u == layer && (state & focused))
@@ -122,7 +116,7 @@ namespace wpl
 
 				inflate(b, -0.5f * _padding, -0.5f * _padding);
 				add_path(*ras, assist(assist(rectangle(b.x1, b.y1, b.x2, b.y2), _dash), _stroke));
-				ctx(ras, blender(state & selected ? _fg_focus_selected : _fg_focus), winding<>());
+				ctx(ras, platform_blender_solid_color(state & selected ? _fg_focus_selected : _fg_focus), winding<>());
 			}
 		}
 
@@ -144,7 +138,7 @@ namespace wpl
 
 				ctx.text_engine.render(*ras, _text_buffer, a.halign, a.valign, b, agge::limit::ellipsis(width(b)));
 				ras->sort(true);
-				ctx(ras, blender(c), winding<>());
+				ctx(ras, platform_blender_solid_color(c), winding<>());
 			}
 		}
 	}

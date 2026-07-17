@@ -20,14 +20,13 @@
 
 #include <wpl/misc/statistics_view.h>
 
-#include <agge/blenders.h>
-#include <agge/blenders_simd.h>
 #include <agge/color.h>
 #include <agge/figures.h>
 #include <agge/filling_rules.h>
 #include <agge.text/limit.h>
 #include <agge.text/text_engine.h>
 #include <wpl/helpers.h>
+#include <wpl/visual_blender.h>
 
 using namespace agge;
 using namespace std;
@@ -83,18 +82,16 @@ namespace wpl
 
 		void statistics_view::draw(gcontext &context, gcontext::rasterizer_ptr &rasterizer_) const
 		{
-			typedef blender_solid_color<simd::blender_solid_color, platform_pixel_order> blender;
-
 			if (!_text.empty())
 			{
 				auto r = create_rect(static_cast<real_t>(_last_invalid.x1), static_cast<real_t>(_last_invalid.y1),
 					static_cast<real_t>(_last_invalid.x2), static_cast<real_t>(_last_invalid.y2));
 
 				add_path(*rasterizer_, rectangle(r.x1, r.y1, r.x2, r.y2));
-				context(rasterizer_, blender(color::make(64, 64, 64, 192)), winding<>());
+				context(rasterizer_, platform_blender_solid_color(color::make(64, 64, 64, 192)), winding<>());
 				inflate(r, -5.0f, -5.0f);
 				context.text_engine.render(*rasterizer_, _text, align_near, align_near, r, limit::none());
-				context(rasterizer_, blender(color::make(255, 255, 255)), winding<>());
+				context(rasterizer_, platform_blender_solid_color(color::make(255, 255, 255)), winding<>());
 			}
 		}
 	}

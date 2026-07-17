@@ -20,8 +20,6 @@
 
 #include <wpl/controls/range_slider.h>
 
-#include <agge/blenders.h>
-#include <agge/blenders_simd.h>
 #include <agge/curves.h>
 #include <agge/figures.h>
 #include <agge/filling_rules.h>
@@ -31,6 +29,7 @@
 #include <agge/tools.h>
 #include <agge/vertex_sequence.h>
 #include <wpl/stylesheet.h>
+#include <wpl/visual_blender.h>
 
 using namespace agge;
 using namespace std;
@@ -39,8 +38,6 @@ namespace wpl
 {
 	namespace controls
 	{
-		typedef blender_solid_color<simd::blender_solid_color, platform_pixel_order> blender;
-
 		auto thumb_inner = [] (real_t x0, real_t x1, real_t x2, real_t x3, real_t y0, real_t y1, real_t y2, real_t y3, real_t y4, real_t d) {
 			return agge::joining(line(x0, y1, x1, y0))
 				& line(x1, y2, x2, y2)
@@ -154,16 +151,16 @@ namespace wpl
 			rasterizer_->reset();
 			_stroke[0].width(_thumb_width + 2.0f);
 			add_path(*rasterizer_, assist(channel, _stroke[0]));
-			ctx(rasterizer_, blender(color::make(64, 64, 64)), winding<>());
+			ctx(rasterizer_, platform_blender_solid_color(color::make(64, 64, 64)), winding<>());
 
 			rasterizer_->reset();
 			_stroke[0].width(_thumb_width + 3.0f);
 			add_path(*rasterizer_, assist(assist(channel, _stroke[0]), _stroke[1]));
-			ctx(rasterizer_, blender(color::make(255, 255, 255)), winding<>());
+			ctx(rasterizer_, platform_blender_solid_color(color::make(255, 255, 255)), winding<>());
 
 			rasterizer_->reset();
 			add_path(*rasterizer_, thumb(state.thumb.near_x, state.thumb.far_x, state.y, _thumb_width));
-			ctx(rasterizer_, blender(color::make(128, 128, 128)), winding<>());
+			ctx(rasterizer_, platform_blender_solid_color(color::make(128, 128, 128)), winding<>());
 		}
 
 		range_slider::thumb_part range_slider::hit_test(const descriptor &state, point_r point_)

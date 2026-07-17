@@ -1,13 +1,12 @@
 #include "piechart.h"
 
-#include <agge/blenders.h>
-#include <agge/blenders_simd.h>
 #include <agge/curves.h>
 #include <agge/filling_rules.h>
 #include <agge/math.h>
 #include <agge/path.h>
 #include <agge/stroke_features.h>
 #include <math.h>
+#include <wpl/visual_blender.h>
 
 using namespace agge;
 using namespace std;
@@ -19,8 +18,6 @@ namespace wpl
 		join<arc, arc> pie_segment(real_t cx, real_t cy, real_t outer_r, real_t inner_r, real_t start, real_t end)
 		{	return join<arc, arc>(arc(cx, cy, outer_r, start, end), arc(cx, cy, inner_r, end, start));	}
 	}
-
-	typedef blender_solid_color<simd::blender_solid_color, platform_pixel_order> blender_t;
 
 	piechart::piechart(const control_context &ctx)
 		: _base_radius(200), _hover_index(-1), _clock(ctx.clock_), _animation_queue(ctx.queue_)
@@ -59,7 +56,7 @@ namespace wpl
 				0.6f * _base_radius, (1.0f + i->aline.get_value()) * _base_radius,
 				angle, angle + d));
 			ras->close_polygon();
-			ctx(ras, blender_t(agge::color::make(i->clr.r, i->clr.g, i->clr.b, i->clr.a)), winding<>());
+			ctx(ras, platform_blender_solid_color(agge::color::make(i->clr.r, i->clr.g, i->clr.b, i->clr.a)), winding<>());
 			angle += d;
 		}
 	}

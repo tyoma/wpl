@@ -20,12 +20,11 @@
 
 #include <wpl/controls/background.h>
 
-#include <agge/blenders.h>
-#include <agge/blenders_simd.h>
 #include <agge/figures.h>
 #include <agge/filling_rules.h>
 #include <agge/path.h>
 #include <wpl/stylesheet.h>
+#include <wpl/visual_blender.h>
 
 using namespace agge;
 
@@ -33,11 +32,6 @@ namespace wpl
 {
 	namespace controls
 	{
-		namespace
-		{
-			typedef blender_solid_color<simd::blender_solid_color, platform_pixel_order> blender;
-		}
-
 		void solid_background::apply_styles(const stylesheet &stylesheet_)
 		{
 			_color = stylesheet_.get_color("background");
@@ -50,7 +44,7 @@ namespace wpl
 
 			add_path(*rasterizer_, rectangle(static_cast<real_t>(r.x1), static_cast<real_t>(r.y1),
 				static_cast<real_t>(r.x2), static_cast<real_t>(r.y2)));
-			context(rasterizer_, blender(_color), winding<>());
+			context(rasterizer_, platform_blender_solid_color(_color), winding<>());
 		}
 	}
 }
