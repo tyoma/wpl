@@ -1,0 +1,9 @@
+{
+    "sarif-viewer.connectToGithubCodeScanning": "off",
+    "cmake.sourceDirectory": "${workspaceFolder}",
+    "cmake.buildDirectory": "${workspaceFolder}/_build.${buildKitHostOs}-${buildKitTargetArch}-${buildType}",
+    "cmake.configureSettings": {
+        "CMAKE_PROJECT_TOP_LEVEL_INCLUDES": "${workspaceFolder}/build.props/conan_provider.cmake"
+    },
+    "cmake.ctest.debugLaunchTarget": "(ctest) Launch"
+}
