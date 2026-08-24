@@ -1,45 +1,35 @@
 #include <crtdbg.h>
 
 #include "../application.h"
-#include "../simple_queue.h"
 #include "../stylesheet.h"
 
-#include <tchar.h>
 #include <wpl/factory.h>
 #include <wpl/freetype2/font_loader.h>
 #include <wpl/win32/cursor_manager.h>
 #include <wpl/win32/helpers.h>
+
+#include <chrono>
+#include <tasker/ui_queue.h>
+#include <tchar.h>
 #include <windows.h>
 
 using namespace std;
+using namespace std::chrono;
 
 namespace wpl
 {
-	namespace
-	{
-		LARGE_INTEGER g_pq_frequency;
-		const long long c_pq_frequency = (::QueryPerformanceFrequency(&g_pq_frequency), g_pq_frequency.QuadPart);
-
-		timestamp clock_win32()
-		{
-			LARGE_INTEGER v;
-			::QueryPerformanceCounter(&v);
-			return 1000 * v.QuadPart / c_pq_frequency;
-		}
-	}
-
 	class application::impl
 	{
 	};
 
 	application::application()
-	{
-		_CrtSetDbgFlag(_CrtSetDbgFlag(_CRTDBG_REPORT_FLAG) | _CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
-
-		const auto q = make_shared<simple_queue>();
-
-		_queue = [q] (const queue_task &task, timespan defer_by) {	return q->schedule(task, defer_by);	};
-	}
+		: _ui_queue(new tasker::ui_queue([] {
+			return duration_cast<milliseconds>(high_resolution_clock::now().time_since_epoch());
+		})), _queue([this] (queue_task task, timespan defer_by) {
+			_ui_queue->schedule(std::move(task), milliseconds(defer_by));
+			return true;
+		})
+	{	_CrtSetDbgFlag(_CrtSetDbgFlag(_CRTDBG_REPORT_FLAG) | _CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);	}
 
 	application::~application()
 	{	}
@@ -54,7 +44,7 @@ namespace wpl
 			text_engine,
 			stylesheet_,
 			make_shared<win32::cursor_manager>(),
-			clock_win32,
+			[] { return duration_cast<milliseconds>(high_resolution_clock::now().time_since_epoch()).count(); },
 			_queue,
 		};
 

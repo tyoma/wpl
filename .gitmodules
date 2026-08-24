@@ -10,3 +10,6 @@
 	path = libraries/utfia
 	url = ../utfia.git
 	branch = master
+[submodule "libraries/tasker"]
+	path = libraries/tasker
+	url = ../tasker.git

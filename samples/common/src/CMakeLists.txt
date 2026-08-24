@@ -7,7 +7,6 @@ set(SAMPLES_COMMON_SOURCES
 if (WIN32)
 	set(SAMPLES_COMMON_SOURCES ${SAMPLES_COMMON_SOURCES}
 		application_win32.cpp
-		simple_queue_win32.cpp
 	)
 elseif(APPLE)
 	enable_language(OBJCXX)
@@ -21,4 +20,4 @@ endif()
 
 add_library(samples.common STATIC ${SAMPLES_COMMON_SOURCES})
 
-target_link_libraries(samples.common wpl)
+target_link_libraries(samples.common wpl tasker)

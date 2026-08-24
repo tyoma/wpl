@@ -3,6 +3,11 @@
 #include <memory>
 #include <wpl/queue.h>
 
+namespace tasker
+{
+	class ui_queue;
+}
+
 namespace wpl
 {
 	class factory;
@@ -24,6 +29,7 @@ namespace wpl
 		
 	private:
 		std::unique_ptr<impl> _impl;
+		std::unique_ptr<tasker::ui_queue> _ui_queue;
 		queue _queue;
 	};
 }

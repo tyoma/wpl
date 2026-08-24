@@ -22,19 +22,10 @@
 
 #include "visual.h"
 
-#include <agge/config.h>
+#include <agge/blenders.h>
+#include <agge/blenders_simd.h>
 
-#if defined(AGGE_ARCH_INTEL)
-	#include <agge/blenders.h>
-	#include <agge/blenders_simd.h>
-	namespace wpl
-	{
-		typedef agge::blender_solid_color<agge::simd::blender_solid_color, platform_pixel_order> platform_blender_solid_color;
-	}
-#else
-	#include <agge/blenders_generic.h>
-	namespace wpl
-	{
-		typedef agge::blender_solid_color_rgb<gcontext::pixel_type, platform_pixel_order> platform_blender_solid_color;
-	}
-#endif
+namespace wpl
+{
+	typedef agge::blender_solid_color<agge::simd::blender_solid_color, platform_pixel_order> platform_blender_solid_color;
+}
